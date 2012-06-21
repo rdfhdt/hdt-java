@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="hdt-java">
+    <property environment="env"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="hdt-java.classpath">
+        <pathelement location="bin"/>
+        <pathelement location="lib/arq-2.8.7.jar"/>
+        <pathelement location="lib/icu4j-3.4.4.jar"/>
+        <pathelement location="lib/iri-0.8.jar"/>
+        <pathelement location="lib/jakarta-commons-collections-3.2.1.jar"/>
+        <pathelement location="lib/jakarta-commons-configuration-1.4.jar"/>
+        <pathelement location="lib/jakarta-commons-io-1.4.jar"/>
+        <pathelement location="lib/jakarta-commons-lang-2.3.jar"/>
+        <pathelement location="lib/jcommander.jar"/>
+        <pathelement location="lib/jena-2.6.4.jar"/>
+        <pathelement location="lib/jsap-2.1.jar"/>
+        <pathelement location="lib/log4j-1.2.14.jar"/>
+        <pathelement location="lib/slf4j-api-1.5.8.jar"/>
+        <pathelement location="lib/slf4j-log4j12-1.5.8.jar"/>
+        <pathelement location="lib/stax-api-1.0.1.jar"/>
+        <pathelement location="lib/wstx-asl-3.2.9.jar"/>
+        <pathelement location="lib/xercesImpl-2.7.1.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="examples">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="tools">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="src"/>
+            <classpath refid="hdt-java.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="examples"/>
+            <classpath refid="hdt-java.classpath"/>
+        </javac>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="tools"/>
+            <classpath refid="hdt-java.classpath"/>
+        </javac>
+    </target>
+    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target name="HdtSearch2 test">
+        <java classname="hdt.tools.HdtSearch" failonerror="true" fork="yes">
+            <arg line="data/test.hdt"/>
+            <classpath refid="hdt-java.classpath"/>
+        </java>
+    </target>
+    <target name="RDF2HDT">
+        <java classname="hdt.tools.RDF2HDT" failonerror="true" fork="yes">
+            <arg line="data/test.nt data/test.hdt"/>
+            <classpath refid="hdt-java.classpath"/>
+        </java>
+    </target>
+    <target name="HdtSearch">
+        <java classname="hdt.tools.HdtSearch" failonerror="true" fork="yes">
+            <arg line="data/test.hdt"/>
+            <classpath refid="hdt-java.classpath"/>
+        </java>
+    </target>
+</project>

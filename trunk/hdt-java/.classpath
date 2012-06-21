@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="examples"/>
+	<classpathentry kind="src" path="tools"/>
+	<classpathentry kind="lib" path="lib/arq-2.8.7.jar"/>
+	<classpathentry kind="lib" path="lib/icu4j-3.4.4.jar"/>
+	<classpathentry kind="lib" path="lib/iri-0.8.jar"/>
+	<classpathentry kind="lib" path="lib/jakarta-commons-collections-3.2.1.jar"/>
+	<classpathentry kind="lib" path="lib/jakarta-commons-configuration-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jakarta-commons-io-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/jakarta-commons-lang-2.3.jar"/>
+	<classpathentry kind="lib" path="lib/jcommander.jar"/>
+	<classpathentry kind="lib" path="lib/jena-2.6.4.jar"/>
+	<classpathentry kind="lib" path="lib/jsap-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-log4j12-1.5.8.jar"/>
+	<classpathentry kind="lib" path="lib/stax-api-1.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/wstx-asl-3.2.9.jar"/>
+	<classpathentry kind="lib" path="lib/xercesImpl-2.7.1.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
