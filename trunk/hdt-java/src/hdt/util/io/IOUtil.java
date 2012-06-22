@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.io;
 
 import hdt.listener.ProgressListener;
@@ -36,7 +35,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class IOUtil {

@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.hdt;
 
 import hdt.iterator.IteratorTripleString;
@@ -33,7 +32,7 @@ import hdt.listener.ProgressListener;
 import hdt.options.HDTSpecification;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public interface ModifiableHDT extends HDT {

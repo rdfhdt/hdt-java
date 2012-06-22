@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.compact.bitmap;
 
 import hdt.compact.integer.VByte;
@@ -41,7 +40,7 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class Bitmap64 {

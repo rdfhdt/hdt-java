@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,13 +24,11 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.exceptions;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class NotFoundException extends Exception {

@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.triples.impl;
 
 import hdt.compact.bitmap.AdjacencyList;
@@ -40,7 +39,7 @@ import hdt.triples.TripleID;
  * Iterates over all Y components of a BitmapTriples. 
  * i.e. In SPO it would iterate over all appearances of a predicate ?P?
  * 
- * @author mck
+ * @author mario.arias
  *
  */
 public class BitmapTriplesIteratorY implements IteratorTripleID {

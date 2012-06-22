@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.triples.impl;
 
 import hdt.compact.bitmap.AdjacencyList;
@@ -36,7 +35,7 @@ import hdt.iterator.IteratorTripleID;
 import hdt.triples.TripleID;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {

@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.rdf.parsers;
 
 import hdt.enums.RDFNotation;
@@ -47,7 +46,7 @@ import org.openjena.riot.lang.LangTurtle;
 import com.hp.hpl.jena.graph.Triple;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {

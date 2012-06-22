@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.string;
 
 import hdt.exceptions.NotImplementedException;
@@ -36,7 +35,7 @@ import java.io.UnsupportedEncodingException;
 /**
  * Implementation of CharSequence that uses only one byte per character to save memory.
  * The String length is defined by the buffer size.
- * @author mck
+ * @author mario.arias
  *
  */
 public class CompactString implements CharSequence, Serializable, Comparable<CompactString> {

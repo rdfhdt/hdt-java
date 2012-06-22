@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.hdt;
 
 import hdt.dictionary.Dictionary;
@@ -71,6 +70,11 @@ public interface HDT extends RDFAccess {
 	 */
 	public Triples getTriples();
 		
+	/**
+	 * Generates a new compact HDT file from a ModifiableHDT
+	 * @param modHdt
+	 * @param listener
+	 */
 	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener);
 	
 	/**
@@ -115,6 +119,11 @@ public interface HDT extends RDFAccess {
 	 */
 	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException;
 
+	/**
+	 * Generates any additional index needed to solve all triple patterns more efficiently
+	 * 
+	 * @param listener A listener to be notified of the progress.
+	 */
 	public void generateIndex(ProgressListener listener);
 
 	/**
@@ -125,6 +134,10 @@ public interface HDT extends RDFAccess {
 	 */
 	public void saveToHDT(String fileName, ProgressListener listener) throws IOException;
 	
+	/**
+	 * Resturns the size of the Data Structure in bytes.
+	 * @return
+	 */
 	public long size();
 	
 	/**

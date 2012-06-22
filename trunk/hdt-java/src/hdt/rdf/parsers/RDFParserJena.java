@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.rdf.parsers;
 
 import hdt.enums.RDFNotation;
@@ -46,7 +45,7 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class RDFParserJena implements RDFParserCallback {

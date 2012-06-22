@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.iterator;
 
 import hdt.exceptions.NotImplementedException;
@@ -36,7 +35,7 @@ import java.util.Iterator;
 /**
  * Given two iterators of sorted elements, returns the merge of the two in order, discarding duplicates.
  * 
- * @author mck
+ * @author mario.arias
  *
  */
 public class MergedIterator<T> implements Iterator<T> {

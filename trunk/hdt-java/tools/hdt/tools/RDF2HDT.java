@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -41,7 +42,7 @@ import com.beust.jcommander.internal.Lists;
 
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class RDF2HDT implements ProgressListener {

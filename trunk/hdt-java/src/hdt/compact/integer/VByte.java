@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.compact.integer;
 
 import hdt.util.Mutable;
@@ -43,7 +42,7 @@ import java.io.OutputStream;
  * Numbers from 127 to 16383 are encoded using two bytes.
  * Numbers from 16384 to 2097151 are encodeng using three bytes.
  * 
- * @author mck
+ * @author mario.arias
  *
  */
 public class VByte {

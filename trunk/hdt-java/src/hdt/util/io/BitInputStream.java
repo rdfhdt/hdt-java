@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.io;
 
 import java.io.DataInputStream;
@@ -34,7 +33,7 @@ import java.io.InputStream;
 
 /**
  * Stream that allows efficiently reading single bits by buffering a full byte.
- * @author mck
+ * @author mario.arias
  *
  */
 public class BitInputStream extends DataInputStream {

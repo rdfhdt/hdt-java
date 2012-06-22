@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.dictionary.impl;
 
 import hdt.dictionary.DictionarySection;
@@ -39,7 +38,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class DictionarySectionCache implements DictionarySection {
@@ -49,9 +48,7 @@ public class DictionarySectionCache implements DictionarySection {
 	private Map<Integer,CharSequence> cacheID;
 	final int CACHE_ENTRIES = 128;
 	
-	/**
-	 * 
-	 */
+	
 	@SuppressWarnings("serial")
 	public DictionarySectionCache(DictionarySection child) {
 		this.child = child;

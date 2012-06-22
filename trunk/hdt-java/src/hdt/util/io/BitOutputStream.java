@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.io;
 
 import java.io.DataOutputStream;
@@ -36,7 +35,7 @@ import java.io.OutputStream;
  * Stream that allows writing single bits to a stream.
  * It caches the results in a long, it flushes it when full, or when flush() is called.
  * flush() must be called before writing any other datatype.
- * @author mck
+ * @author mario.arias
  *
  */
 public class BitOutputStream extends DataOutputStream {

@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.io;
 
 import java.io.IOException;
@@ -33,7 +32,7 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class ByteBufferInputStream extends InputStream {

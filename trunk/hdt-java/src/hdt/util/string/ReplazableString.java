@@ -1,4 +1,5 @@
 /**
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -23,9 +24,7 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-/**
- * 
- */
+
 package hdt.util.string;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ import java.io.InputStream;
  * CharSequence implementation suitable for appending or replacing the suffix of the string.
  * It grows as necessary but it never returns that size back.
  * 
- * @author mck
+ * @author mario.arias
  *
  */
 public class ReplazableString implements CharSequence {
