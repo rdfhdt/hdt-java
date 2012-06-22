@@ -71,6 +71,11 @@
         </javac>
     </target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
+    <target depends="build" name="jar">
+	<jar destfile="hdt-lib.jar">
+	    <fileset dir="bin" />
+	</jar>
+    </target>
     <target name="HdtSearch2 test">
         <java classname="hdt.tools.HdtSearch" failonerror="true" fork="yes">
             <arg line="data/test.hdt"/>
