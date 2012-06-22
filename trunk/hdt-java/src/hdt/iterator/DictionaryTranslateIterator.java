@@ -51,8 +51,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	 * @param dictionary
 	 *            The dictionary to be used
 	 */
-	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID,
-			Dictionary dictionary) {
+	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary) {
 		this.iterator = iteratorTripleID;
 		this.dictionary = dictionary;
 	}

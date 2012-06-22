@@ -91,6 +91,7 @@ public class DictionarySectionCache implements DictionarySection {
 		if(o==null) {
 			o = child.extract(pos);
 			cacheID.put(pos, o);
+			cacheString.put(o, pos);
 		}
  		return o;
 	}

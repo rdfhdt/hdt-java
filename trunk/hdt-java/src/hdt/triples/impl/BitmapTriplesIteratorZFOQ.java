@@ -220,7 +220,7 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	@Override
 	public void goTo(long pos) {
 		if(pos>maxIndex-minIndex || pos<0) {
-			throw new IndexOutOfBoundsException("Cannot goTo beyond last element");
+			throw new IndexOutOfBoundsException();
 		}
 		posIndex = minIndex+pos;
 	}

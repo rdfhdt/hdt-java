@@ -103,7 +103,7 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 	 */
 	@Override
 	public boolean hasPrevious() {
-		return false;
+		throw new NotImplementedException();
 	}
 
 	/* (non-Javadoc)
@@ -112,21 +112,6 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 	@Override
 	public TripleID previous() {
 		throw new NotImplementedException();
-//		// Go backward finding previous appearance
-//		prevZ = posZ;
-//		posZ = nextZ;
-//		nextZ = adjZ.findNextAppearance(nextZ+1, patZ);
-//		
-//		// Find posY from posZ
-//		long posY = adjZ.findListIndex(posZ);
-//		
-//		// Set full triple
-//		z = (int) adjZ.get(posZ);
-//		y = (int) adjY.get(posY);
-//		x = (int) adjY.findListIndex(posY)+1;
-//		
-//		updateOutput();
-//		return returnTriple;
 	}
 
 	/* (non-Javadoc)
