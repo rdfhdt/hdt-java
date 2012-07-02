@@ -357,4 +357,11 @@ public class TriplesList implements ModifiableTriples {
 		// TODO Auto-generated method stub
 		
 	}
+
+	@Override
+	public void clear() {
+		this.arrayOfTriples.clear();
+		this.numValidTriples=0;
+		this.order = TripleComponentOrder.Unknown;
+	}
 }

@@ -25,21 +25,52 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package hdt.hdt;
+package hdt.util.io;
 
-import hdt.iterator.IteratorTripleString;
-import hdt.listener.ProgressListener;
-import hdt.options.HDTSpecification;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- * @author mario.arias
+ * @author mck
  *
  */
-public interface ModifiableHDT extends HDT {
-	void insert(CharSequence subject, CharSequence predicate, CharSequence object);
-	void insert(IteratorTripleString triples);
-	void remove(CharSequence subject, CharSequence predicate, CharSequence object);
-	void remove(IteratorTripleString triples);
-	void reorganize(HDTSpecification spec, ProgressListener listener);
-	void clear();
+public class DummyOutputStream extends OutputStream {
+
+	private static DummyOutputStream instance;
+	
+	public static DummyOutputStream getInstance() {
+		if(instance==null) {
+			instance = new DummyOutputStream();
+		}
+		return instance;
+	}
+	
+	private DummyOutputStream() {
+		
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.io.OutputStream#write(int)
+	 */
+	@Override
+	public void write(int b) throws IOException {
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.io.OutputStream#write(byte[])
+	 */
+	@Override
+	public void write(byte[] b) throws IOException {
+
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.io.OutputStream#write(byte[], int, int)
+	 */
+	@Override
+	public void write(byte[] b, int off, int len) throws IOException {
+
+	}
+
 }

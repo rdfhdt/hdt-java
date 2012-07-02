@@ -334,7 +334,26 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public Iterator<CharSequence> getEntries() {
-		throw new NotImplementedException();
+		return new Iterator<CharSequence>() {
+			int pos = 0;
+
+			@Override
+			public boolean hasNext() {
+				return pos<getNumberOfElements();
+			}
+
+			@Override
+			public CharSequence next() {
+				// FIXME: It is more efficient to go through each block, each entry.
+				pos++;
+				return extract(pos);
+			}
+
+			@Override
+			public void remove() {
+
+			}
+		};
 	}
 
 	/* (non-Javadoc)

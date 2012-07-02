@@ -28,6 +28,7 @@
 package hdt.dictionary.impl;
 
 import hdt.dictionary.DictionarySection;
+import hdt.dictionary.DictionarySectionModifiable;
 import hdt.exceptions.NotImplementedException;
 import hdt.listener.ProgressListener;
 import hdt.options.HDTSpecification;
@@ -47,7 +48,7 @@ import java.util.List;
  * @author mario.arias
  *
  */
-public class DictionarySectionHash implements DictionarySection {
+public class DictionarySectionHash implements DictionarySectionModifiable {
 	public static final int TYPE_INDEX = 1;
 
 	private HashMap<CharSequence, Integer> map;
@@ -160,6 +161,7 @@ public class DictionarySectionHash implements DictionarySection {
 		Collections.sort(list, new CharSequenceComparator());
 		
 		// Update map indexes
+		map.clear();
 		for(int i=1;i<=getNumberOfElements();i++) {
 			map.put(extract(i), i);
 		}
@@ -175,5 +177,12 @@ public class DictionarySectionHash implements DictionarySection {
 			CharSequence str = it.next();
 			this.add(str);
 		}
+	}
+
+	@Override
+	public void clear() {
+		list.clear();
+		map.clear();
+		size=0;
 	}
 }

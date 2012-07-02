@@ -40,8 +40,7 @@ import hdt.triples.TripleString;
  */
 public abstract class BaseDictionary implements Dictionary {
 	protected HDTSpecification spec;
-	protected DictionarySection subjects;
-	protected DictionarySection predicates, objects, shared;
+	protected DictionarySection subjects, predicates, objects, shared;
 	
 	public BaseDictionary(HDTSpecification spec) {
 		this.spec = spec;

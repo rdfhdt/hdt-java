@@ -25,21 +25,19 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package hdt.hdt;
+package hdt.util;
 
-import hdt.iterator.IteratorTripleString;
-import hdt.listener.ProgressListener;
-import hdt.options.HDTSpecification;
+import java.text.DecimalFormat;
 
 /**
- * @author mario.arias
+ * @author mck
  *
  */
-public interface ModifiableHDT extends HDT {
-	void insert(CharSequence subject, CharSequence predicate, CharSequence object);
-	void insert(IteratorTripleString triples);
-	void remove(CharSequence subject, CharSequence predicate, CharSequence object);
-	void remove(IteratorTripleString triples);
-	void reorganize(HDTSpecification spec, ProgressListener listener);
-	void clear();
+public class StringUtil {
+	private static final DecimalFormat formatter = new DecimalFormat("##.##");
+	
+	public static String getPercent(long v1, long max) {
+		double v = (100.0*v1)/max;
+        return formatter.format(v)+"%";
+	}
 }

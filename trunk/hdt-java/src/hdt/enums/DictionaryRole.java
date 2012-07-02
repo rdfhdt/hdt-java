@@ -25,21 +25,14 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package hdt.hdt;
-
-import hdt.iterator.IteratorTripleString;
-import hdt.listener.ProgressListener;
-import hdt.options.HDTSpecification;
+package hdt.enums;
 
 /**
- * @author mario.arias
+ * @author mck
  *
  */
-public interface ModifiableHDT extends HDT {
-	void insert(CharSequence subject, CharSequence predicate, CharSequence object);
-	void insert(IteratorTripleString triples);
-	void remove(CharSequence subject, CharSequence predicate, CharSequence object);
-	void remove(IteratorTripleString triples);
-	void reorganize(HDTSpecification spec, ProgressListener listener);
-	void clear();
+public enum DictionaryRole {
+	URI,
+	LITERAL,
+	BLANK
 }

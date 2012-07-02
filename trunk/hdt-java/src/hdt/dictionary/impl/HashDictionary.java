@@ -28,6 +28,7 @@
 package hdt.dictionary.impl;
 
 import hdt.dictionary.Dictionary;
+import hdt.dictionary.DictionarySectionModifiable;
 import hdt.dictionary.ModifiableDictionary;
 import hdt.enums.TripleComponentRole;
 import hdt.exceptions.NotImplementedException;
@@ -68,11 +69,11 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	public int insert(CharSequence str, TripleComponentRole position) {
 		switch(position) {
 		case SUBJECT:
-			return ((DictionarySectionHash)subjects).add(str);
+			return ((DictionarySectionModifiable)subjects).add(str);
 		case PREDICATE:
-			return ((DictionarySectionHash)predicates).add(str);			
+			return ((DictionarySectionModifiable)predicates).add(str);			
 		case OBJECT:
-			return ((DictionarySectionHash)objects).add(str);
+			return ((DictionarySectionModifiable)objects).add(str);
 		}
 		throw new IllegalArgumentException();
 	}
@@ -94,6 +95,14 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public void clear() {
+		((DictionarySectionModifiable)subjects).clear();
+		((DictionarySectionModifiable)predicates).clear();
+		((DictionarySectionModifiable)shared).clear();
+		((DictionarySectionModifiable)objects).clear();
+	}
+	
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#reorganize(hdt.triples.ModifiableTriples)
 	 */
@@ -112,8 +121,8 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 			mapSubj.add(str);
 			
 			// GENERATE SHARED at the same time
-			if(objects.locate(str)!=0) {
-				((DictionarySectionHash)shared).add(str);
+			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
+				((DictionarySectionModifiable)shared).add(str);
 			}
 		}
 		System.out.println("Num shared: "+shared.getNumberOfElements()+" in "+st.stopAndShow());
@@ -137,17 +146,22 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		Iterator<CharSequence> itShared = shared.getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
-			((DictionarySectionHash)subjects).remove(sharedStr);
-			((DictionarySectionHash)objects).remove(sharedStr);
+			((DictionarySectionModifiable)subjects).remove(sharedStr);
+			((DictionarySectionModifiable)objects).remove(sharedStr);
 		}
 		System.out.println("Mapping generated in "+st.stopAndShow());
 		
+		// Group objects by datatype
+//		DictionarySectionLiterals sectLit = new DictionarySectionLiterals();
+//		sectLit.load(objects, null);
+//		objects = sectLit;
+		
 		// Sort sections individually
 		st.reset();
-		((DictionarySectionHash)subjects).sort();
-		((DictionarySectionHash)predicates).sort();
-		((DictionarySectionHash)objects).sort();
-		((DictionarySectionHash)shared).sort();
+		((DictionarySectionModifiable)subjects).sort();
+		((DictionarySectionModifiable)predicates).sort();
+		((DictionarySectionModifiable)objects).sort();
+		((DictionarySectionModifiable)shared).sort();
 		System.out.println("Sections sorted in "+ st.stopAndShow());
 		
 		// Update mappings with new IDs

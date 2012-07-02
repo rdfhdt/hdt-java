@@ -64,4 +64,9 @@ public interface ModifiableDictionary extends Dictionary {
 	 * and updates the IDs of the triples.
 	 */
 	public void reorganize(ModifiableTriples triples);
+	
+	/**
+	 * Empty all the strings of the dictionary.
+	 */
+	public void clear();
 }

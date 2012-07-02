@@ -246,8 +246,13 @@ public class HDTRW implements ModifiableHDT {
 
 	@Override
 	public void loadOrCreateIndex(ProgressListener listener) {
-		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void clear() {
+		dictionary.clear();
+		triples.clear();
 	}
 
 }

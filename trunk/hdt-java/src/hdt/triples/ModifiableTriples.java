@@ -84,4 +84,9 @@ public interface ModifiableTriples extends Triples {
 	 *            The order to set
 	 */
 	public abstract void setOrder(TripleComponentOrder order);
+	
+	/**
+	 * Clear all triples, resulting in an empty triples section.
+	 */
+	public abstract void clear();
 }
