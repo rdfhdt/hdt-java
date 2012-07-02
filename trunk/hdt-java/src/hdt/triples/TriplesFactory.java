@@ -57,7 +57,19 @@ public class TriplesFactory {
 	 * @return Triples
 	 */
 	static public Triples createTriples(HDTSpecification spec) {
-		return create(spec.get("triples.type"));
+		String type = spec.get("triples.type");
+		
+		if(type==null) {
+			return new BitmapTriples(spec);
+		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
+			return new TriplesList(spec);
+		} else if(HDTVocabulary.TRIPLES_TYPE_PLAIN.equals(type)) {
+			return new PlainTriples(spec);
+		} else if(HDTVocabulary.TRIPLES_TYPE_BITMAP.equals(type)) {
+			return new BitmapTriples(spec);
+		} else {
+			return new BitmapTriples(spec);
+		}
 	}
 	
 	/**
@@ -68,10 +80,8 @@ public class TriplesFactory {
 	 * @return Triples
 	 */
 	public static Triples createTriples(ControlInformation ci) {
-		return create(ci.get("triples.type"));
-	}
-	
-	private static Triples create(String type) {
+		String type = ci.get("triples.type");
+		
 		if(type==null) {
 			return new BitmapTriples();
 		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {

@@ -1,0 +1,90 @@
+HDT Library, Java Implementation. http://www.rdfhdt.org
+
+Overview
+=================
+
+HDT-lib is a Java Library that implements the W3C Submission (http://www.w3.org/Submission/2011/03/) of the RDF HDT (Header-Dictionary-Triples) binary format for publishing and exchanging RDF data at large scale. Its compact representation allows storing RDF in fewer space, providing at the same time direct access to the stored information. This is achieved by depicting the RDF graph in terms of three main components: Header, Dictionary and Triples. The Header includes extensible metadata required to describe the RDF data set and details of its internals. The Dictionary organizes the vocabulary of strings present in the RDF graph by assigning numerical IDs to each different string. The Triples component comprises the internal structure of the RDF graph in a compressed form.
+
+It provides two components:
+- Java Library: Provides an API to use HDT files programmatically. It allows creating HDT files from RDF and converting HDT files back to RDF. It also provides a Search interface to find triples that match a specific triple pattern.
+- Command line tools. Allow to convert between RDF and HDT, and also perform searches against HDT files.
+
+Compiling
+=================
+
+The source package contains an Ant buildfile "build.xml". 
+
+Just run 'ant' to compile or 'ant jar' to generate a jar package.
+			
+Dependencies: The HDT library itself does not have any dependency to load and search HDT files, you just need to include the generated jar. However for parsing RDF files (in NTriples, Turtle, N3, RDF-XML...) you will need Jena RIOT. The commandline tools use JCommander for parsing the arguments.
+
+Command line tools
+=================
+
+The tool provides three main command line tools:
+
+** The tool rdf2hdt converts an RDF file to HDT format. The format of the input file will be NTriples by default, altough it can be set by using the "-f" flag. 
+
+$ Usage: ./rdf2hdt.sh [options] Files
+  Options:
+    -base      Base URI for the dataset
+    -config    Conversion config file
+    -input     Input RDF file name
+    -options   HDT Conversion options
+    -output    Output HDT file name
+    -rdftype   Type of RDF Input (ntriples, n3, rdfxml)
+
+
+** The tool hdt2rdf converts an HDT file back to RDF in NTriples format.
+
+$ hdt2rdf [options] <HDT input file> <RDF output file> 
+	-h			This help
+	-f	<format>	RDF Format of the output
+
+
+** The tool hdtSearch allows to search triple patterns against an HDT file. For example, to list all patterns, one can use the "? ? ?" query. To search all information about <myns:subject1> one can use "<myns:subject1> ? ?"
+
+$ hdtSearch [options] <hdtfile> 
+	-h			This help
+	-q	<query>	Launch query and exit.
+	-o	<output>	Save query output to file.
+
+
+
+Tool Usage example
+=================
+
+After installation, run:
+
+$ tools/rdf2hdt -c presets/bitmaplog data/test.n3 data/test.hdt
+# This creates the HDT representation
+
+$ tools/hdt2rdf data/test.hdt data/test.hdtexport.n3
+# This converts back the HDT to RDF.
+
+$ tools/hdtSearch data/test.hdt
+
+>> ? ? ?
+<http://example.org/uri3> <http://example.org/predicate3> <http://example.org/uri4>
+<http://example.org/uri3> <http://example.org/predicate3> <http://example.org/uri5>
+<http://example.org/uri1> <http://example.org/predicate1> "literal1"
+<http://example.org/uri1> <http://example.org/predicate1> "literalA"
+<http://example.org/uri1> <http://example.org/predicate1> "literalB"
+<http://example.org/uri1> <http://example.org/predicate1> "literalC"
+<http://example.org/uri1> <http://example.org/predicate2> <http://example.org/uri3>
+<http://example.org/uri1> <http://example.org/predicate2> <http://example.org/uriA3>
+<http://example.org/uri2> <http://example.org/predicate1> "literal1"
+9 results shown.
+
+>> <http://example.org/uri3> ? ?
+<http://example.org/uri3> <http://example.org/predicate3> <http://example.org/uri4>
+<http://example.org/uri3> <http://example.org/predicate3> <http://example.org/uri5>
+2 results shown.
+
+>> exit
+
+
+
+USING THE LIBRARY
+=================
+

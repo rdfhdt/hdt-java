@@ -67,6 +67,9 @@ public class RDF2HDT implements ProgressListener {
 	@Parameter(names = "-base", description = "Base URI for the dataset")
 	public String baseURI = null;
 	
+	@Parameter(names = "-index", description = "Generate also external indices to solve all queries")
+	public boolean generateIndex = false;
+	
 	public void execute() throws ParserException, IOException {
 		HDTSpecification spec;
 		if(configFile!=null) {
@@ -85,6 +88,9 @@ public class RDF2HDT implements ProgressListener {
 		
 		hdt.saveToHDT(hdtOutput, this);
 		
+		if(generateIndex) {
+			hdt.loadOrCreateIndex(this);
+		}
 		// Debug all inserted triples
 		//HdtSearch.iterate(hdt, "","","");
 	}

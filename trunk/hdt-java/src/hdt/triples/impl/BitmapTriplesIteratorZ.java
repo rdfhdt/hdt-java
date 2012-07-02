@@ -58,8 +58,8 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 			throw new IllegalArgumentException("This structure is not meant to process this pattern");
 		}
 		
-		adjY = new AdjacencyList(triples.arrayY, triples.bitmapY);
-		adjZ = new AdjacencyList(triples.arrayZ, triples.bitmapZ);
+		adjY = triples.adjY;
+		adjZ = triples.adjZ;
 				
 		goToStart();
 	}

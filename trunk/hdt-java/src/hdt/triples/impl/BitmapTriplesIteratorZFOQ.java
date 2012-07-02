@@ -59,11 +59,10 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 			throw new IllegalArgumentException("This structure is not meant to process this pattern");
 		}
 		
-	    patY = pattern.getPredicate();
-	    patZ = pattern.getObject();
+	    patY = this.pattern.getPredicate();
 		
-		adjY = new AdjacencyList(triples.arrayY, triples.bitmapY);
-		adjIndex = new AdjacencyList(triples.indexZ, triples.bitmapIndexZ);
+		adjY = triples.adjY;
+		adjIndex = triples.adjIndex;
 		
 		calculateRange();
 		goToStart();

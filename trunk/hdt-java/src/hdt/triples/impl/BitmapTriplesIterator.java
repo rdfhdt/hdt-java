@@ -55,13 +55,13 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 		this.pattern = new TripleID(pattern);
 		this.returnTriple = new TripleID();
 		
-		TripleOrderConvert.swapComponentOrder(pattern, TripleComponentOrder.SPO, triples.order);
-		patX = pattern.getSubject();
-		patY = pattern.getPredicate();
-		patZ = pattern.getObject();
+		TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
+		patX = this.pattern.getSubject();
+		patY = this.pattern.getPredicate();
+		patZ = this.pattern.getObject();
 		
-		adjY = new AdjacencyList(triples.arrayY, triples.bitmapY);
-		adjZ = new AdjacencyList(triples.arrayZ, triples.bitmapZ);
+		adjY = triples.adjY;
+		adjZ = triples.adjZ;
 		
 //		((BitSequence375)triples.bitmapZ).dump();
 				

@@ -46,7 +46,7 @@ public static void main(String[] args) throws IOException, NotFoundException {
 	hdt.loadFromHDT("data/example.hdt", null);
 	
 	// Recommended: Generate index to speed up ?P? ?PO and ??O queries.
-	hdt.generateIndex(null);
+	hdt.loadOrCreateIndex(null);
 	
 	// Search pattern: Empty string means "any"
 	IteratorTripleString it = hdt.search("", "", "");

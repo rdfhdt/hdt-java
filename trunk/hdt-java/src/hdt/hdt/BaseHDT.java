@@ -316,7 +316,7 @@ public class BaseHDT implements HDT {
 	 * @see hdt.hdt.HDT#generateIndex(hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void generateIndex(ProgressListener listener) {
+	public void loadOrCreateIndex(ProgressListener listener) {
 		String indexName = hdtFileName+".index";
 		ControlInformation ci = new ControlInformation();
 		

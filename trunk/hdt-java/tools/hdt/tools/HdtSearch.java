@@ -53,7 +53,7 @@ public class HdtSearch implements ProgressListener {
 	@Parameter(description = "Files")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names = "-input", description = "Input RDF file name")
+	@Parameter(names = "-input", description = "Input HDT file name")
 	public String hdtInput = null;	
 	
 	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
@@ -88,7 +88,7 @@ public class HdtSearch implements ProgressListener {
 		
 		HDT hdt = HDTFactory.createHDT(new HDTSpecification());
 		hdt.loadFromHDT(hdtInput, this);
-		hdt.generateIndex(this);
+		hdt.loadOrCreateIndex(this);
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		TripleString cmd = new TripleString();

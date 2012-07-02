@@ -68,6 +68,8 @@ public class BitmapTriples implements Triples {
 	protected StaticArray arrayY, arrayZ, indexZ;
 	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 	
+	protected AdjacencyList adjY, adjZ, adjIndex;
+	
 	// Index for Y
 	protected ArrayList<byte[]> indexYBuffers;
 
@@ -85,6 +87,9 @@ public class BitmapTriples implements Triples {
 		arrayZ = ArrayFactory.createStream(spec.get("array.z"));
 		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.z"));
 		bitmapZ = BitmapFactory.createBitmap(spec.get("bitmap.z"));
+		
+		adjY = new AdjacencyList(arrayY, bitmapY);
+		adjZ = new AdjacencyList(arrayZ, bitmapZ);
 	}
 
 	/* (non-Javadoc)
@@ -105,7 +110,7 @@ public class BitmapTriples implements Triples {
 		
 		IteratorTripleID it = triples.searchAll();
 		while(it.hasNext()) {
-			TripleID triple = it.next();
+			TripleID triple = new TripleID(it.next());
 			TripleOrderConvert.swapComponentOrder(triple, TripleComponentOrder.SPO, order);
 			
 			x = triple.getSubject();
@@ -155,9 +160,10 @@ public class BitmapTriples implements Triples {
 		bitmapY = bitY;
 		bitmapZ = bitZ;
 		
+		adjY = new AdjacencyList(arrayY, bitmapY);
+		adjZ = new AdjacencyList(arrayZ, bitmapZ);
+
 		// DEBUG
-//		AdjacencyList adjY = new AdjacencyList(arrayY, bitmapY);
-//		AdjacencyList adjZ = new AdjacencyList(arrayZ, bitmapZ);
 //		adjY.dump();
 //		adjZ.dump();
 	}
@@ -272,36 +278,38 @@ public class BitmapTriples implements Triples {
 		bitmapZ.load(input, iListener);
 		arrayY.load(input, iListener);
 		arrayZ.load(input, iListener);
+		
+		adjY = new AdjacencyList(arrayY, bitmapY);
+		adjZ = new AdjacencyList(arrayZ, bitmapZ);
 	}
 	
 	private void createIndexObjects() {
 		class Pair {
-			int predicate;
-			int position;
+			int valueY;
+			int positionY;
 		};
 		
 		ArrayList<List<Pair>> list=new ArrayList<List<Pair>>();
-		AdjacencyList adjZ = new AdjacencyList(arrayZ, bitmapZ);
-		
+			
 		// Generate lists
 		for(long i=0;i<arrayZ.getNumberOfElements();i++) {
 			Pair pair = new Pair();
-			pair.position = (int)adjZ.findListIndex(i);
-			pair.predicate = (int) arrayY.get(pair.position);
+			pair.positionY = (int)adjZ.findListIndex(i);
+			pair.valueY = (int) arrayY.get(pair.positionY);
 			
-			long obj = arrayZ.get(i);
+			long valueZ = arrayZ.get(i);
 
-			if(list.size()<=(int)obj) {
-				list.ensureCapacity((int)obj);
-				while(list.size()<obj) {
+			if(list.size()<=(int)valueZ) {
+				list.ensureCapacity((int)valueZ);
+				while(list.size()<valueZ) {
 					list.add(new ArrayList<Pair>());	
 				}
 			}
 			
-			List<Pair> inner = list.get((int)obj-1);
+			List<Pair> inner = list.get((int)valueZ-1);
 			if(inner==null) {
 				inner = new ArrayList<Pair>();
-				list.set((int)obj-1, inner);
+				list.set((int)valueZ-1, inner);
 			}
 			
 			inner.add(pair);
@@ -315,17 +323,17 @@ public class BitmapTriples implements Triples {
 		for(int i=0;i<list.size(); i++) {
 			List<Pair> inner = list.get(i);
 			
-			// Sort by predicate
+			// Sort by Y
 			Collections.sort(inner, new Comparator<Pair>() {
 				@Override
 				public int compare(Pair o1, Pair o2) {
-					return o1.predicate-o2.predicate;
+					return o1.valueY-o2.valueY;
 				}
 			});
 			
 			// Serialize
 			for(int j=0;j<inner.size();j++){
-				indexZ.append(inner.get(j).position);
+				indexZ.append(inner.get(j).positionY);
 
 				if(j==inner.size()-1) {
 					bitmapIndexZ.set(pos, true);
@@ -338,6 +346,7 @@ public class BitmapTriples implements Triples {
 		
 		this.indexZ = indexZ;
 		this.bitmapIndexZ = bitmapIndexZ;
+		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
 	
 	
@@ -398,6 +407,8 @@ public class BitmapTriples implements Triples {
 		
 		indexZ.load(input, iListener);
 		bitmapIndexZ.load(input, iListener);
+		
+		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
 
 

@@ -269,7 +269,9 @@ public class TriplesList implements ModifiableTriples {
 	 */
 	@Override
 	public void sort(TripleComponentOrder order, ProgressListener listener) {
-		Collections.sort(arrayOfTriples, new TripleComparator(order));
+		if(this.order!=order) {
+			Collections.sort(arrayOfTriples, new TripleComparator(order));
+		}
 		this.order = order;
 	}
 	

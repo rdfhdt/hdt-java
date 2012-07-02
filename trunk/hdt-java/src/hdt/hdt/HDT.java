@@ -124,7 +124,7 @@ public interface HDT extends RDFAccess {
 	 * 
 	 * @param listener A listener to be notified of the progress.
 	 */
-	public void generateIndex(ProgressListener listener);
+	public void loadOrCreateIndex(ProgressListener listener);
 
 	/**
 	 * Saves to OutputStream in HDT format

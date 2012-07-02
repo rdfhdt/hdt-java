@@ -50,11 +50,17 @@ public class RDFParserSimple implements RDFParserCallback {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)));
 			String line;
+			long numLine = 1;
 			TripleString triple = new TripleString();
 			while((line=reader.readLine())!=null) {
 				triple.read(line);
-//				System.out.println(triple);
-				callback.processTriple(triple, 0);
+				if(!triple.hasEmpty()) {
+//					System.out.println(triple);
+					callback.processTriple(triple, 0);
+				} else {
+					System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
+				}
+				numLine++;
 			}
 			reader.close();
 		}catch(Exception e) {

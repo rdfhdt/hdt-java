@@ -245,7 +245,7 @@ public class HDTRW implements ModifiableHDT {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener) {
+	public void loadOrCreateIndex(ProgressListener listener) {
 		// TODO Auto-generated method stub
 		
 	}
