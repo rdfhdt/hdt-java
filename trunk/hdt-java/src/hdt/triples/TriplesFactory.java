@@ -31,7 +31,6 @@ import hdt.hdt.HDTVocabulary;
 import hdt.options.ControlInformation;
 import hdt.options.HDTSpecification;
 import hdt.triples.impl.BitmapTriples;
-import hdt.triples.impl.PlainTriples;
 import hdt.triples.impl.TriplesList;
 
 /**
@@ -63,8 +62,6 @@ public class TriplesFactory {
 			return new BitmapTriples(spec);
 		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
 			return new TriplesList(spec);
-		} else if(HDTVocabulary.TRIPLES_TYPE_PLAIN.equals(type)) {
-			return new PlainTriples(spec);
 		} else if(HDTVocabulary.TRIPLES_TYPE_BITMAP.equals(type)) {
 			return new BitmapTriples(spec);
 		} else {
@@ -86,8 +83,6 @@ public class TriplesFactory {
 			return new BitmapTriples();
 		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
 			return new TriplesList();
-		} else if(HDTVocabulary.TRIPLES_TYPE_PLAIN.equals(type)) {
-			return new PlainTriples();
 		} else if(HDTVocabulary.TRIPLES_TYPE_BITMAP.equals(type)) {
 			return new BitmapTriples();
 		} else {
