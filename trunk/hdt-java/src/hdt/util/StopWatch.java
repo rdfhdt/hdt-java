@@ -27,8 +27,7 @@
 package hdt.util;
 
 public class StopWatch {
-	private long ini;
-	private long end;
+	protected long ini, end;
 
 	public StopWatch() {
 		reset();

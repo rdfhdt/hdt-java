@@ -27,29 +27,44 @@
 
 package hdt.util;
 
+
 /**
  * @author mario.arias
  *
  */
-public class ArrayUtil {
-	public static final long[] intArray2LongArray( final int a[] ) {
-		final long[] b = new long[ a.length ];
-		for( int i = a.length; i-- != 0; ) b[ i ] = a[ i ];
-		return b;
-	}
-	
-	public static final void setAll(boolean [] bitarray, boolean value) {
-		for(int i=bitarray.length; i-- != 0; ) {
-			bitarray[i] = false;
+public class ProfilingUtil {
+
+	public static String tidyFileSize(long size ){
+		long calcSize;
+		String str;
+		if (size >= 1024 * 1024 * 1024)
+		{
+			calcSize = (long) (((double)size) / (1024 * 1024 * 1024));
+			str = ""+calcSize +"GB";
 		}
-	}
-	
-	public static final long [] countFrequencies(byte [] array, int offset, int len) {
-		long [] count = new long[256];
-		
-		for(int i=offset+len; i-- > offset; ) {
-			count[array[i]&0xFF]++;
+		else if (size>= 1024 * 1024) {
+			calcSize = (long) (((double)size) / (1024 * 1024 ));
+			str = ""+ calcSize +"MB";
 		}
-		return count;
+		else if (size>= 1024) {
+			calcSize = (long) (((double)size) / (1024));
+			str = ""+ calcSize +"KB";
+		}
+		else {
+			calcSize = size;
+			str = ""+ calcSize +"GB";
+		}
+		return str;
+	}
+
+	public static void showMemory(String label) {
+		System.out.println(label+": "+getMemory());
+
+	}
+
+	public static String getMemory() {
+		return tidyFileSize(Runtime.getRuntime().totalMemory()-Runtime.getRuntime().freeMemory())+" / "+
+		tidyFileSize(Runtime.getRuntime().totalMemory())+" / "+
+		tidyFileSize(Runtime.getRuntime().maxMemory());
 	}
 }
