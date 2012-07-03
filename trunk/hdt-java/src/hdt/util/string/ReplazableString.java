@@ -27,6 +27,8 @@
 
 package hdt.util.string;
 
+import hdt.exceptions.NotImplementedException;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -76,6 +78,15 @@ public class ReplazableString implements CharSequence {
 		this.replace(used, data, offset, len);
 	}
 	
+	public void append(CharSequence other) {
+		ensureSize(this.used+other.length());
+		for(int i=0;i<other.length();i++) {
+			buffer[this.used+i] = (byte) other.charAt(i);
+		}
+		used+=other.length();
+	}
+	
+	
 	public void replace(int pos, byte [] data, int offset, int len) {
 		ensureSize(pos+len);
 		System.arraycopy(data, offset, buffer, pos, len);
@@ -103,6 +114,44 @@ public class ReplazableString implements CharSequence {
 	public int length() {
 		return used;
 	}
+	
+	public int hashCode() {
+		// FNV Hash function: http://isthe.com/chongo/tech/comp/fnv/
+		int hash = (int) 2166136261L; 				
+		int i = used;
+
+		while(i-- != 0) {
+			hash = 	(hash * 16777619) ^ buffer[i];
+		}
+
+		return hash;
+	}
+	
+	public boolean equals(Object o) {
+		if(this==o) {
+			return true;
+		}
+		if(o instanceof CompactString) {
+			CompactString cmp = (CompactString) o;
+			if(buffer.length!=cmp.data.length) {
+				return false;
+			}
+			
+			// Byte by byte comparison
+			int i = buffer.length;
+			while(i-- != 0) {
+				if(buffer[i]!=cmp.data[i]) {
+					return false;
+				}
+			}
+			return true;
+		} else if (o instanceof CharSequence) {
+			CharSequence other = (CharSequence) o;
+			return (length()==other.length() && CharSequenceComparator.instance.compare(this, other)==0);
+		}
+		throw new NotImplementedException();
+	}
+
 
 	/* (non-Javadoc)
 	 * @see java.lang.CharSequence#subSequence(int, int)
@@ -113,8 +162,8 @@ public class ReplazableString implements CharSequence {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
 		}
-		byte [] newdata = new byte[end-start];
-		System.arraycopy(buffer, start, newdata, 0, end-start);
+		byte [] newdata = new byte[end-start+1];
+		System.arraycopy(buffer, start, newdata, 0, end-start+1);
 		return new ReplazableString(newdata);
 	}
 	

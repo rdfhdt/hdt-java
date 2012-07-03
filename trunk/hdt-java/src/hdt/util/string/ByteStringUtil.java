@@ -70,12 +70,15 @@ public class ByteStringUtil {
 	}
 	
 	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2) {
+		return strcmp(buff1, off1, buff2, off2, Math.min(buff1.length-off1, buff2.length-off2));
+	}
+	
+	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2, int n) {
 		byte a,b;
 		int diff;
 		int p1 = off1;
 		int p2 = off2;	
-		int n = Math.min(buff1.length-off1, buff2.length-off2);
-
+	
 		if (n == 0) {
 			return 0;
 		}
@@ -127,6 +130,9 @@ public class ByteStringUtil {
 		if(str instanceof String) {
 			return strcmp(((String) str).getBytes(), 0, text, offset);
 		}
+		if(str instanceof ReplazableString) {
+			return strcmp(((ReplazableString) str).buffer, 0, text, offset, ((ReplazableString) str).used);
+		}
 		throw new NotImplementedException();
 	}
 	
@@ -151,7 +157,7 @@ public class ByteStringUtil {
 	
 	public static final int strcmp(ByteBuffer a, ByteBuffer b) {
 		int x=1;
-		int y=1;
+		int y=1	;
 		while(a.hasRemaining() && b.hasRemaining() && x!=0 && y!=0 && x==y) {
 			x = a.get();
 			y = b.get();

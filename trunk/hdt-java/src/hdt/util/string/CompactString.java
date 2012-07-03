@@ -44,22 +44,33 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	private static final String ENCODING = "UTF-8";
 	
 	// String buffer as bytes.
-	private final byte[] data;
+	final byte[] data;
 	
 	// Cached hash value.
 	private int hash=0;
 	
+	public static final CompactString EMPTY = new CompactString();
+	
+	private CompactString() {
+		this.data = new byte[0];
+	}
+	
 	public CompactString(CharSequence str) {
+		this(str,0, str.length());
+	}
+	
+	public CompactString(CharSequence str, int ini, int end) {
 		if(str instanceof CompactString) {
-			data = new byte[str.length()];
-			System.arraycopy(((CompactString) str).data, 0, data, 0, data.length);
+			CompactString comp = (CompactString) str;
+			data = new byte[Math.min(end-ini+1,comp.data.length)];
+			System.arraycopy(comp.data, ini, data, 0, data.length);
 		} else if(str instanceof ReplazableString) {
 			ReplazableString rep = (ReplazableString) str;
-			data = new byte[str.length()];
-			System.arraycopy(rep.buffer, 0, data, 0, rep.used);
+			data = new byte[Math.min(end-ini+1,rep.used)];
+			System.arraycopy(rep.buffer, ini, data, 0, data.length);
 		} else {
 			try {
-				data = str.toString().getBytes(ENCODING);
+				data = str.toString().substring(ini, end).getBytes(ENCODING);
 			} catch (UnsupportedEncodingException e) {
 				throw new RuntimeException("Unexpected: " + ENCODING + " not supported!");
 			}
@@ -91,8 +102,8 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
 		}
-		byte [] newdata = new byte[end-start];
-		System.arraycopy(data, start, newdata, 0, end-start);
+		byte [] newdata = new byte[end-start+1];
+		System.arraycopy(data, start, newdata, 0, end-start+1);
 		return new CompactString(newdata);
 	}
 
