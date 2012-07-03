@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -server -Xmx20000M -classpath 'bin:lib/*' hdt.tools.RDF2HDT $*
+java -server -Xmx1024M -classpath 'bin:lib/*' org.rdfhdt.hdt.tools.RDF2HDT $*
