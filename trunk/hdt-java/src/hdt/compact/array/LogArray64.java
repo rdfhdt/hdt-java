@@ -44,6 +44,7 @@ import java.util.Iterator;
  *
  */
 public class LogArray64 implements DynamicArray {
+	// TODO: Use System.getProperty("sun.arch.data.model") to determine 
 	private static final byte W = 64;
 	
 	private long [] data = new long[10];

@@ -30,27 +30,22 @@ import hdt.dictionary.ModifiableDictionary;
 import hdt.enums.TripleComponentRole;
 import hdt.rdf.RDFParserCallback.RDFCallback;
 import hdt.triples.ModifiableTriples;
-import hdt.triples.TripleID;
 import hdt.triples.TripleString;
 
 class TripleAppender implements RDFCallback {
 	ModifiableDictionary dict;
 	ModifiableTriples triples;
-	TripleID tripleID;
 
 	public TripleAppender(ModifiableDictionary dict, ModifiableTriples triples) {
 		this.dict = dict;
 		this.triples = triples;
-		tripleID = new TripleID();
 	}
 
 	public void processTriple(TripleString triple, long pos) {
-		tripleID.setAll(
+		triples.insert(
 				dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
 				dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
 				dict.insert(triple.getObject(), TripleComponentRole.OBJECT)
 		);
-
-		triples.insert(tripleID);
 	}
 }

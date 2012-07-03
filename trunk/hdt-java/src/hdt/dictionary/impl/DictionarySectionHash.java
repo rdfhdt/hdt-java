@@ -132,14 +132,15 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	}
 
 	public int add(CharSequence entry) {
-		Integer pos = map.get(entry);
+		CharSequence compact = new CompactString(entry);
+		Integer pos = map.get(compact);
 		if(pos!=null) {
 			// Found return existing ID.
 			return pos;
 		}
 		// Not found, insert new
-		CharSequence compact = new CompactString(entry);
-		//CharSequence compact = entry;
+//		CharSequence compact = new CompactString(entry);
+//		CharSequence compact = entry;
 		list.add(compact);
 		map.put(compact, list.size());
 		size+=compact.length();
