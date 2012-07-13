@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/LongArray.java $
+ * Revision: $Rev: 17 $
+ * Last modified: $Date: 2012-07-03 21:43:15 +0100 (mar, 03 jul 2012) $
+ * Last modified by: $Author: mario.arias@gmail.com $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -42,33 +42,35 @@ import java.util.Iterator;
  * Stream of Integer objects
  * 
  */
-public class IntegerArray implements DynamicArray {
+public class LongArray implements DynamicArray {
 
 	/** The array that holds the objects **/
-	int [] data;
-	int numelements = 0;
+	long [] data;
+	long numelements = 0;
 
 	/**
 	 * Basic constructor
 	 * 
 	 */
-	public IntegerArray() {
+	public LongArray() {
 		this(10);
 	}
 	
-	public IntegerArray(int capacity) {
-		data = new int[capacity];
+	public LongArray(long capacity) {
+		assert capacity>=0 && capacity<=Integer.MAX_VALUE;
+		
+		data = new long[(int)capacity];
 		numelements = 0;
 	}
 	
 	private void resizeArray(int size) {
-		int [] newData = new int[size];
+		long [] newData = new long[size];
 		System.arraycopy(data, 0, newData, 0, Math.min(newData.length, data.length));
 		data = newData;
 	}
 	
 	public void trimToSize() {
-		resizeArray(numelements);
+		resizeArray((int)numelements);
 	}
 	
 	public void aggresiveTrimToSize() {
@@ -91,17 +93,18 @@ public class IntegerArray implements DynamicArray {
 		assert position>=0 && position<=Integer.MAX_VALUE;
 		assert value>=0 && value<=Integer.MAX_VALUE;
 		
-		data[(int)position] = (int)value;
+		data[(int)position] = value;
 		numelements = (int) Math.max(numelements, position+1);
 	}
 	
 	public void append(long value) {
-		assert value>=0 && value<=Integer.MAX_VALUE;
+		assert value>=0 && value<=Long.MAX_VALUE;
+		assert numelements<Integer.MAX_VALUE;
 		
 		if(data.length<numelements+1) {
 			resizeArray(data.length*2);
 		}
-		data[numelements++] = (int) value;
+		data[(int)numelements++] = value;
 	}
 
 	/*
@@ -124,7 +127,7 @@ public class IntegerArray implements DynamicArray {
 		DataOutputStream dos = new DataOutputStream(output);
 		dos.writeLong(numelements);
 		for (int i=0;i<numelements;i++) {
-			dos.writeInt(data[i]);
+			dos.writeLong(data[i]);
 		}
 		dos.close();
 	}
@@ -144,10 +147,10 @@ public class IntegerArray implements DynamicArray {
 		}
 		
 		numelements = 0;
-		data = new int[(int)size];
+		data = new long[(int)size];
 
 		for(long i=0;i<size;i++) {
-			append(dis.readInt());
+			append(dis.readLong());
 		}
 		dis.close();
 	}

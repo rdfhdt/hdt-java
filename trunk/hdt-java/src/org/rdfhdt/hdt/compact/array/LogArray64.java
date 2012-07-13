@@ -43,16 +43,16 @@ import java.util.Iterator;
  * @author mario.arias
  *
  */
-public class LogArray64 implements DynamicArray {
-	// TODO: Use System.getProperty("sun.arch.data.model") to determine 
+public class LogArray64 implements DynamicArray { 
 	private static final byte W = 64;
 	
 	private long [] data = new long[10];
-	private int numbits=32;
+	private int numbits;
 	private long numentries=0;
+	private long maxvalue;
 	
 	public LogArray64() {
-		this(64);
+		this(W);
 	}
 	
 	public LogArray64(int numbits) {
@@ -62,15 +62,20 @@ public class LogArray64 implements DynamicArray {
 	public LogArray64(int numbits, long numentries) {
 		this.numentries = 0;
 		this.numbits = numbits;
+		this.maxvalue = BitUtil.maxVal(numbits);
+		
 		long size = numWordsFor(numbits, numentries);
-		data = new long[Math.max((int)size,10)];
+		assert size>=0 && size<=Integer.MAX_VALUE;
+		
+		data = new long[Math.max((int)size,1)];
 	}
 	
 	/** longs required to represent "total" integers of "bitsField" bits each */
 	private static final long numWordsFor(int bitsField, long total) {
-		return ((bitsField*total+64-1)/64) * (64/W);
+		return ((bitsField*total+64-1)/64);
 	}
 	
+	/** Number of bytes required for last word */
 	protected static final int lastWordNumBits(int bitsField, long total) {
 		long totalBits = bitsField*total;
     	if(totalBits==0) {
@@ -91,27 +96,18 @@ public class LogArray64 implements DynamicArray {
      */
 	private static final long getField(long [] data, int bitsField, long index) {
 		if(bitsField==0) return 0;
-		long i=index*bitsField/W, j=index*bitsField-W*i;
+		
+        long bitPos = index*bitsField;
+        int i=(int)(bitPos / W);
+        int j=(int)(bitPos % W);
         long result;
         if (j+bitsField <= W) {
-                result = (data[(int)i] << (W-j-bitsField)) >>> (W-bitsField);
+        	result = (data[i] << (W-j-bitsField)) >>> (W-bitsField);
         } else {
-                result = data[(int)i] >>> j;
-                result = result | (data[(int)i+1] << ( (W<<1) -j-bitsField)) >>> (W-bitsField);
+        	result = data[i] >>> j;
+        	result = result | (data[i+1] << ( (W<<1) -j-bitsField)) >>> (W-bitsField);
         }
         return result;
-		
-//		long bitPos = index*bitsField;
-//		int i=(int)(bitPos / W);
-//		int j=(int)(bitPos % W);
-//        long result;
-//        if (j+bitsField <= W) {
-//        	result = (data[i] << (W-j-bitsField)) >>> (W-bitsField);
-//        } else {
-//        	result = data[i] >>> j;
-//        	result = result | (data[i+1] << ( (W<<1) -j-bitsField)) >>> (W-bitsField);
-//        }
-//        return result;
 	}
 	
 	/** Store a given value in index into array data where every value uses bitsField bits
@@ -120,32 +116,20 @@ public class LogArray64 implements DynamicArray {
      * @param index Position to store in
      * @param value Value to be stored
      */
-	private static final void setField(long [] data, int bitsField, int index, long value) {
+	private static final void setField(long [] data, int bitsField, long index, long value) {
 		if(bitsField==0) return;
-		int i=index*bitsField/W, j=index*bitsField-i*W;
-		long mask = ((j+bitsField) < W ? ~0L << (j+bitsField) : 0) 
-						| ((W-j) < W ? ~0L >>> (W-j) : 0);
-
-		value = value & ~(~0L << bitsField);
 		
-		data[i] = (data[i] & mask) | value << j;
-		if (j+bitsField>W) {
+		long bitPos = index*bitsField;
+		int i=(int)(bitPos/W);
+		int j=(int)(bitPos%W);
+		
+		long mask = ~(~0L << bitsField) << j;
+		data[i] = (data[i] & ~mask) | (value << j);
+			
+		if((j+bitsField>W)) {
 			mask = ~0L << (bitsField+j-W);
-			data[i+1] = (data[i+1] & mask)| value >>> (W-j);
+			data[i+1] = (data[i+1] & mask) | value >>> (W-j);
 		}
-		
-//		
-//		long bitPos = index*bitsField;
-//		int i=(int)(bitPos/W);
-//		int j=(int)(bitPos%W);
-//		
-//		long mask = ~(~0L << bitsField) << j;
-//		data[i] = (data[i] & ~mask) | (value << j);
-//			
-//		if((j+bitsField>W)) {
-//			mask = ~0L << (bitsField+j-W);
-//			data[i+1] = (data[i+1] & mask) | value >>> (W-j);
-//		}
 	}
 	
 	private final void resizeArray(int size) {
@@ -180,6 +164,7 @@ public class LogArray64 implements DynamicArray {
         int count = 0;
         while(elements.hasNext()) {
         	long element = elements.next().longValue();
+        	assert element<=maxvalue;
         	setField(data, numbits, count, element);
         	count++;
         }
@@ -190,25 +175,33 @@ public class LogArray64 implements DynamicArray {
 	 */
 	@Override
 	public long get(long position) {
-		if(position>=numentries) {
+		if(position<0 || position>=numentries) {
 			throw new IndexOutOfBoundsException();
 		}
 		
 		return getField(data, numbits, position);
 	}
 	
-	public void set(int position, long value) {
+	public void set(long position, long value) {
+		if(value<0 || value>maxvalue) {
+			throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
+		}
 		setField(data, numbits, position, value);
 	}
 	
 	public void append(long value) {
-//		if(value>=1<<numbits) {
-//			throw new IllegalArgumentException();
-//		}
+
+		assert numentries<Integer.MAX_VALUE;
+		
+		if(value<0 || value>maxvalue) {
+			throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
+		}
+		
 		long neededSize = numWordsFor(numbits, numentries+1);
 		if(data.length<neededSize) {
-			resizeArray(data.length<<1);
+			resizeArray(data.length*2);
 		}
+		
 		this.set((int)numentries, value);
 		numentries++;
 	}
@@ -222,12 +215,15 @@ public class LogArray64 implements DynamicArray {
 		}
 		int newbits = BitUtil.log2(max);
 		
+		assert newbits <= numbits;
+		
 		if(newbits!=numbits) {
 			for(int i=0;i<numentries;i++) {
 				long value = getField(data, numbits, i);
 				setField(data, newbits, i, value);
 			}
 			numbits = newbits;
+			maxvalue = BitUtil.maxVal(numbits);
 			long totalSize = numWordsFor(numbits, numentries);
 			resizeArray((int)totalSize);
 		}

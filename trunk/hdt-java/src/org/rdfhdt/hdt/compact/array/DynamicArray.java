@@ -32,8 +32,27 @@ package org.rdfhdt.hdt.compact.array;
  *
  */
 public interface DynamicArray extends StaticArray {
-	public void set(int index, long value);
+	/**
+	 * Set a new value at the specified position.
+	 * @param index
+	 * @param value
+	 */
+	public void set(long index, long value);
+	
+	/**
+	 * Append a new value after the last position, increasing the number of elements by one.
+	 * @param value
+	 */
 	public void append(long value);
+	
+	/**
+	 * Trim the internal data structure to fit the actual number of elements.
+	 */
 	void trimToSize();
+	
+	/**
+	 * Trim the internal data structure to fit the actual number of elements. 
+	 * Use advanced algorithm to reduce the size to the minimum, even if it is costly.
+	 */
 	void aggresiveTrimToSize();
 }

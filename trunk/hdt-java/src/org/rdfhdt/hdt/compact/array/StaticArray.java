@@ -64,6 +64,11 @@ public interface StaticArray {
 	 */
 	public abstract long getNumberOfElements();
 	
+	/**
+	 * Return the size of the data structure in bytes
+	 * 
+	 * @return
+	 */
 	public abstract long size();
 
 	/**
