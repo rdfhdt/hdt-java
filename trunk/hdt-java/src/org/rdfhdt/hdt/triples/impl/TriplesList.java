@@ -155,7 +155,7 @@ public class TriplesList implements ModifiableTriples {
 		controlInformation.clear();
 		controlInformation.setInt("numTriples", numValidTriples);
         controlInformation.set("codification", HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
-        controlInformation.setInt("triples.component.order", order.ordinal());
+        controlInformation.setInt("componentOrder", order.ordinal());
         controlInformation.save(output);
 		
         DataOutputStream dout = new DataOutputStream(output);
@@ -178,7 +178,7 @@ public class TriplesList implements ModifiableTriples {
 	 */
 	@Override
 	public void load(InputStream input, ControlInformation controlInformation, ProgressListener listener) throws IOException {
-		order = TripleComponentOrder.values()[(int)controlInformation.getInt("triples.component.order")];
+		order = TripleComponentOrder.values()[(int)controlInformation.getInt("componentOrder")];
 		long totalTriples = controlInformation.getInt("numTriples");
 
 		int numRead=0;

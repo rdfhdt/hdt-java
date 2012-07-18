@@ -104,6 +104,14 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	}
 	
 	/* (non-Javadoc)
+	 * @see hdt.dictionary.Dictionary#startProcessing()
+	 */
+	@Override
+	public void startProcessing() {
+		
+	}
+	
+	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#reorganize(hdt.triples.ModifiableTriples)
 	 */
 	@Override
@@ -151,11 +159,6 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		}
 		System.out.println("Mapping generated in "+st.stopAndShow());
 		
-		// Group objects by datatype
-//		DictionarySectionLiterals sectLit = new DictionarySectionLiterals();
-//		sectLit.load(objects, null);
-//		objects = sectLit;
-		
 		// Sort sections individually
 		st.reset();
 		((DictionarySectionModifiable)subjects).sort();
@@ -200,34 +203,44 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 
 
 	/* (non-Javadoc)
+	 * @see hdt.dictionary.Dictionary#endProcessing()
+	 */
+	@Override
+	public void reorganize() {
+
+		// Generate shared
+		Iterator<CharSequence> itSubj = subjects.getEntries();
+		while(itSubj.hasNext()) {
+			CharSequence str = itSubj.next();
+			
+			// FIXME: This checks really needed?
+			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
+				((DictionarySectionModifiable)shared).add(str);
+			}
+		}
+		
+		// Remove shared from subjects and objects
+		Iterator<CharSequence> itShared = shared.getEntries();
+		while(itShared.hasNext()) {
+			CharSequence sharedStr = itShared.next();
+			((DictionarySectionModifiable)subjects).remove(sharedStr);
+			((DictionarySectionModifiable)objects).remove(sharedStr);
+		}
+				
+		// Sort sections individually
+		((DictionarySectionModifiable)subjects).sort();
+		((DictionarySectionModifiable)predicates).sort();
+		((DictionarySectionModifiable)objects).sort();
+		((DictionarySectionModifiable)shared).sort();
+	}
+
+	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#populateHeader(hdt.header.Header, java.lang.String)
 	 */
 	@Override
 	public void populateHeader(Header header, String rootNode) {
-		// TODO Auto-generated method stub
 		
 	}
-
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#startProcessing()
-	 */
-	@Override
-	public void startProcessing() {
-		// TODO Auto-generated method stub
-		
-	}
-
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#endProcessing()
-	 */
-	@Override
-	public void endProcessing() {
-		// TODO Auto-generated method stub
-		
-	}
-
 
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#load(hdt.dictionary.Dictionary)

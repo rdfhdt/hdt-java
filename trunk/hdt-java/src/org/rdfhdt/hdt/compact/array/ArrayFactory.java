@@ -39,7 +39,7 @@ public class ArrayFactory {
 			return new LogArray64();
 		} else if(name.equals(HDTVocabulary.ARRAY_TYPE_INTEGER)) {
 			return new IntegerArray();
-		} else if(name.equals(HDTVocabulary.ARRAY_TYPE_LOG)) {
+		} else if(name.equals(HDTVocabulary.ARRAY_TYPE_LOG2)) {
 			return new LogArray64();
 		}
 		return new LogArray64();

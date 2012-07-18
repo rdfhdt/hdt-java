@@ -27,10 +27,16 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.BitUtil;
@@ -38,14 +44,6 @@ import org.rdfhdt.hdt.util.Mutable;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.ReplazableString;
-
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * @author mario.arias
@@ -194,7 +192,7 @@ public class DictionarySectionPFC implements DictionarySection {
 		int pos = (int)blocks.get(block);
 		ReplazableString tempString = new ReplazableString();
 		
-		Mutable<Integer> delta = new Mutable<Integer>(0);
+		Mutable<Long> delta = new Mutable<Long>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
@@ -213,7 +211,7 @@ public class DictionarySectionPFC implements DictionarySection {
 			
 			//Copy suffix
 			slen = ByteStringUtil.strlen(text, pos);
-			tempString.replace(delta.getValue(), text, pos, slen);
+			tempString.replace(delta.getValue().intValue(), text, pos, slen);
 			
 			if(delta.getValue()>=cshared)
 			{
@@ -261,7 +259,7 @@ public class DictionarySectionPFC implements DictionarySection {
 		int pos = (int) blocks.get(block);
  		int len = ByteStringUtil.strlen(text, pos);
 		
-		Mutable<Integer> delta = new Mutable<Integer>(0);
+		Mutable<Long> delta = new Mutable<Long>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(text, pos, len);
 		
@@ -269,7 +267,7 @@ public class DictionarySectionPFC implements DictionarySection {
 			pos+=len+1;
 			pos += VByte.decode(text, pos, delta);
 			len = ByteStringUtil.strlen(text, pos);
-			tempString.replace(delta.getValue(), text, pos, len);
+			tempString.replace(delta.getValue().intValue(), text, pos, len);
 		}
 		return tempString;
 	}
@@ -361,14 +359,12 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		DataOutputStream dout = new DataOutputStream(output);
-		dout.writeByte(TYPE_INDEX);
-		dout.writeInt(numstrings);
-//		dout.writeInt(maxLength);
-		dout.writeLong(text.length);
-		IOUtil.writeBuffer(dout, text, 0, text.length, listener);
-		dout.writeInt(blocksize);
-		blocks.save(dout, listener);
+		output.write(TYPE_INDEX);
+		VByte.encode(output, numstrings);
+		VByte.encode(output, text.length);
+		IOUtil.writeBuffer(output, text, 0, text.length, listener);
+		VByte.encode(output, blocksize);
+		blocks.save(output, listener);
 	}
 
 	/* (non-Javadoc)
@@ -376,13 +372,11 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		DataInputStream din = new DataInputStream(input);
-		numstrings = din.readInt();
-//		maxlength = din.readInt();
-		int bytes = (int) din.readLong();
-		text = IOUtil.readBuffer(din, bytes, listener);
-		blocksize = din.readInt();
+		numstrings = (int) VByte.decode(input);
+		int bytes = (int) VByte.decode(input);
+		text = IOUtil.readBuffer(input, bytes, listener);
+		blocksize = (int) VByte.decode(input);
 		blocks = new LogArray64();
-		blocks.load(din, listener);
+		blocks.load(input, listener);
 	}
 }

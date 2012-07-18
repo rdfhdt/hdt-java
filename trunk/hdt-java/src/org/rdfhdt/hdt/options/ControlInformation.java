@@ -27,14 +27,12 @@
 
 package org.rdfhdt.hdt.options;
 
-import org.rdfhdt.hdt.util.io.IOUtil;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
+
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -110,34 +108,32 @@ public class ControlInformation extends HDTOptionsBase {
 	}
 	
 	public void save(OutputStream output) throws IOException {
-		DataOutputStream dout = new DataOutputStream(output);
-		IOUtil.writeLine(dout, "$HDT");
+		IOUtil.writeLine(output, "$HDT");
 		
-		dout.writeShort(version);
-		dout.writeShort(components);
+		IOUtil.writeShort(output, version);
+		IOUtil.writeShort(output, components);
 		
 		for (Enumeration<Object> e = properties.keys(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			
-			IOUtil.writeLine(dout, key+':'+properties.getProperty(key)+";\n");
+			IOUtil.writeLine(output, key+':'+properties.getProperty(key)+";\n");
 		}
-		IOUtil.writeLine(dout, "$END\n");
+		IOUtil.writeLine(output, "$END\n");
 	}
 	
 	public void load(InputStream input) throws IOException {
-        DataInputStream din = new DataInputStream(input);
-        
-        String magic = IOUtil.readChars(din, 4);
+       
+        String magic = IOUtil.readChars(input, 4);
         if(!magic.equals("$HDT")) {
         	 throw new IOException("Non-HDT Section");
         }
  
-        version = din.readShort();
-        components = din.readShort();
+        version = IOUtil.readShort(input);
+        components = IOUtil.readShort(input);
         
         String line;
         StringBuilder out = new StringBuilder();
-        while((line = IOUtil.readLine(din, '\n'))!=null) {
+        while((line = IOUtil.readLine(input, '\n'))!=null) {
 //        	System.out.println("LINE: "+line);
         	out.append(line);
         	if(line.equals("$END")) {

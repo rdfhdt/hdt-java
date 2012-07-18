@@ -68,11 +68,6 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 		}
 	}
 	
-	public void showWordForBit(long bit) {
-		IOUtil.printBits(1L<<(bit%64), 64);
-		IOUtil.printBits(words[wordIndex(bit)], 64);
-	}
-	
 	public void updateIndex() {
 		trimToSize();
 		superBlocks = new int[1+(words.length-1)/BLOCKS_PER_SUPER];

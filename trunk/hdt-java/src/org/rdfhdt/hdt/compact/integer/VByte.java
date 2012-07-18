@@ -27,11 +27,12 @@
 
 package org.rdfhdt.hdt.compact.integer;
 
-import org.rdfhdt.hdt.util.Mutable;
-
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+
+import org.rdfhdt.hdt.util.Mutable;
 
 /**
  * Typical implementation of Variable-Byte encoding for integers.
@@ -46,21 +47,31 @@ import java.io.OutputStream;
  *
  */
 public class VByte {
-	public static void encode(OutputStream out, int value) throws IOException {
+	public static void encode(OutputStream out, long value) throws IOException {
+		if(value<0) {
+			throw new IllegalArgumentException("Only can encode VByte of positive values");
+		}
 		while( value > 127) {
-			out.write(value & 127);
+			out.write((int)(value & 127));
 			value>>>=7;
 		}
-		out.write(value|0x80);
+		out.write((int)(value|0x80));
 	}
 	
-	public static int decode(InputStream in) throws IOException {
-		int out = 0;
+	public static long decode(InputStream in) throws IOException {
+		long out = 0;
 		int shift=0;
-		byte readbyte = (byte)in.read();
+		long readbyte = in.read(); if(readbyte==-1) throw new EOFException();
+		
 		while( (readbyte & 0x80)==0) {
+			if(shift>=50) { // We read more bytes than required to load the max long
+				throw new IllegalArgumentException();
+			}
+			
 			out |= (readbyte & 127) << shift;
-			readbyte = (byte)in.read();
+			
+			readbyte = in.read(); if(readbyte==-1) throw new EOFException();
+			
 			shift+=7;
 		}
 		out |= (readbyte & 127) << shift;
@@ -68,6 +79,9 @@ public class VByte {
 	}
 	
 	public static int encode(byte[] data, int offset, int value) {
+		if(value<0) {
+			throw new IllegalArgumentException("Only can encode VByte of positive values");
+		}
 		int i=0;
 		while( value > 127) {
 			data[offset+i] = (byte)(value & 127);
@@ -80,8 +94,8 @@ public class VByte {
 		return i;
 	}
 	
-	public static int decode(byte[] data, int offset, Mutable<Integer> value) {
-		int out = 0;
+	public static int decode(byte[] data, int offset, Mutable<Long> value) {
+		long out = 0;
 		int i=0;
 		int shift=0;
 		while( (0x80 & data[offset+i])==0) {

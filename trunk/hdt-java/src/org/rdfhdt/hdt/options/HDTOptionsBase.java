@@ -74,7 +74,7 @@ public class HDTOptionsBase implements HDTOptions {
 	 * @return
 	 */
 	public long getInt(String string) {
-		String val = properties.getProperty(string);
+		String val = properties.getProperty(string.trim());
 		if(val!=null) {
 			return Long.parseLong(val);
 		}

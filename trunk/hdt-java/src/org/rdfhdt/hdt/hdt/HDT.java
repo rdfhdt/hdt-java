@@ -27,20 +27,17 @@
 
 package org.rdfhdt.hdt.hdt;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.rdf.RDFAccess;
-import org.rdfhdt.hdt.rdf.RDFSerializer;
 import org.rdfhdt.hdt.triples.Triples;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 
 /**
@@ -78,14 +75,6 @@ public interface HDT extends RDFAccess {
 	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener);
 	
 	/**
-	 * Loads a RDF from an InputStream to a HDT format
-	 * 
-	 * @param input
-	 *            InputStream to read from
-	 */
-	public void loadFromRDF(String fileName, String baseUri, RDFNotation notation, ProgressListener listener) throws ParserException, IOException;
-
-	/**
 	 * Loads a HDT file
 	 * 
 	 * @param input
@@ -102,16 +91,6 @@ public interface HDT extends RDFAccess {
 	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException;
 	
 	/**
-	 * Saves to OutputStream in RDF format
-	 * 
-	 * @param output
-	 *            The OutputStream to save to
-	 * @param notation
-	 *            RDFNotation of the output
-	 */
-	public void saveToRDF(RDFSerializer serializer, ProgressListener listener) throws IOException;
-
-	/**
 	 * Saves to OutputStream in HDT format
 	 * 
 	 * @param output
@@ -120,19 +99,19 @@ public interface HDT extends RDFAccess {
 	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException;
 
 	/**
-	 * Generates any additional index needed to solve all triple patterns more efficiently
-	 * 
-	 * @param listener A listener to be notified of the progress.
-	 */
-	public void loadOrCreateIndex(ProgressListener listener);
-
-	/**
-	 * Saves to OutputStream in HDT format
+	 * Saves to a file in HDT format
 	 * 
 	 * @param output
 	 *            The OutputStream to save to
 	 */
 	public void saveToHDT(String fileName, ProgressListener listener) throws IOException;
+	
+	/**
+	 * Generates any additional index needed to solve all triple patterns more efficiently
+	 * 
+	 * @param listener A listener to be notified of the progress.
+	 */
+	public void loadOrCreateIndex(ProgressListener listener);
 	
 	/**
 	 * Resturns the size of the Data Structure in bytes.

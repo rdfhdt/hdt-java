@@ -54,10 +54,10 @@ public interface ModifiableDictionary extends Dictionary {
 	public int insert(CharSequence str, TripleComponentRole position);
 
 	/**
-	 * To be executed at the end of the processing
+	 * Reorganizes the dictionary (Extract shared SO, sort sections)
 	 * 
 	 */
-	public void endProcessing();
+	public void reorganize();
 	
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections)

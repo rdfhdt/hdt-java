@@ -80,11 +80,10 @@ public class RDF2HDT implements ProgressListener {
 		if(options!=null) {
 			spec.setOptions(options);
 		}
-		HDT hdt = HDTFactory.createHDT(spec);
 		if(baseURI==null) {
 			baseURI = "file://"+rdfInput;
 		}
-		hdt.loadFromRDF(rdfInput, baseURI, RDFNotation.parse(rdfType), this);
+		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(rdfType), this);
 		
 		hdt.saveToHDT(hdtOutput, this);
 		

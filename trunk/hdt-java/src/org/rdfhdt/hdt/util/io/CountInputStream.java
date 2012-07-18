@@ -24,28 +24,70 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
-package org.rdfhdt.hdt.hdt;
 
-import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
-import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
-import org.rdfhdt.hdt.triples.ModifiableTriples;
-import org.rdfhdt.hdt.triples.TripleString;
+package org.rdfhdt.hdt.util.io;
 
-class TripleAppender implements RDFCallback {
-	ModifiableDictionary dict;
-	ModifiableTriples triples;
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
-	public TripleAppender(ModifiableDictionary dict, ModifiableTriples triples) {
-		this.dict = dict;
-		this.triples = triples;
+/**
+ * @author mck
+ *
+ */
+public class CountInputStream extends FilterInputStream {
+	long total;
+	long partial;
+	
+	/**
+	 * @param parent
+	 */
+	public CountInputStream(InputStream parent) {
+		super(parent);
+		total = 0;
+		partial = 0;
 	}
-
-	public void processTriple(TripleString triple, long pos) {
-		triples.insert(
-				dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
-				dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
-				dict.insert(triple.getObject(), TripleComponentRole.OBJECT)
-		);
+	
+	public long getTotalBytes() {
+		return total;
+	}
+	
+	public long getPartialBytes() {
+		return partial;
+	}
+	
+	public void resetPartial() {
+		partial = 0;
+	}
+	
+	@Override
+	public int read() throws IOException {
+		// TODO Auto-generated method stub
+		int value = super.read();
+		if(value!=-1) {
+			partial+=value;
+			total+=value;
+		}
+		return value;
+	}
+	
+	@Override
+	public int read(byte[] b) throws IOException {
+		int value = super.read(b);
+		if(value!=-1) {
+			partial+=value;
+			total+=value;
+		}
+		return value;
+	}
+	
+	@Override
+	public int read(byte[] b, int off, int len) throws IOException {
+		int value = super.read(b, off, len);
+		if(value!=-1) {
+			partial+=value;
+			total+=value;
+		}
+		return value;
 	}
 }

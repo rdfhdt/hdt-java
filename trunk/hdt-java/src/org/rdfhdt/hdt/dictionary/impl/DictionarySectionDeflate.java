@@ -191,8 +191,8 @@ public class DictionarySectionDeflate implements DictionarySection {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		numstrings = VByte.decode(input);
-		int bytes = VByte.decode(input);
+		numstrings = (int)VByte.decode(input);
+		int bytes = (int)VByte.decode(input);
 		//blocksize = VByte.decode(input);
 		
 		text = IOUtil.readBuffer(input, bytes, listener);

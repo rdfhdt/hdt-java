@@ -78,16 +78,17 @@ public class BitmapTriples implements Triples {
 	}
 	
 	public BitmapTriples(HDTSpecification spec) {
-		String orderStr = spec.get("triples.component.order");
+		String orderStr = spec.get("componentOrder");
 		if(orderStr!=null) {
 			order = TripleComponentOrder.valueOf(orderStr);
 		}
-		
-		arrayY = ArrayFactory.createStream(spec.get("array.y"));
-		arrayZ = ArrayFactory.createStream(spec.get("array.z"));
+
 		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.z"));
 		bitmapZ = BitmapFactory.createBitmap(spec.get("bitmap.z"));
-		
+
+		arrayY = ArrayFactory.createStream(spec.get("array.y"));
+		arrayZ = ArrayFactory.createStream(spec.get("array.z"));
+
 		adjY = new AdjacencyList(arrayY, bitmapY);
 		adjZ = new AdjacencyList(arrayZ, bitmapZ);
 	}
@@ -251,10 +252,9 @@ public class BitmapTriples implements Triples {
 		ci.set("array.z", arrayZ.getType());
 		ci.set("bitmap.y", bitmapY.getType());
 		ci.set("bitmap.z", bitmapZ.getType());
-		//ci.save(output);
+		ci.save(output);
 		
 		IntermediateListener iListener = new IntermediateListener(listener);
-		output.write(order.ordinal());
 		bitmapY.save(output, iListener);
 		bitmapZ.save(output, iListener);
 		arrayY.save(output, iListener);
@@ -266,14 +266,13 @@ public class BitmapTriples implements Triples {
 	 */
 	@Override
 	public void load(InputStream input, ControlInformation ci, ProgressListener listener) throws IOException {
-		/*order = TripleComponentOrder.values()[(int)ci.getInt("componentarray)];
-		arrayY = StreamFactory.createStream(ci.get("array.y"));
-		arrayZ = StreamFactory.createStream(ci.get("array.z"));
+		order = TripleComponentOrder.values()[(int)ci.getInt("componentOrder")];
+		arrayY = ArrayFactory.createStream(ci.get("array.y"));
+		arrayZ = ArrayFactory.createStream(ci.get("array.z"));
 		bitmapY = BitmapFactory.createBitmap(ci.get("bitmap.y"));
-		bitmapZ = BitmapFactory.createBitmap(ci.get("bitmap.z"));*/
+		bitmapZ = BitmapFactory.createBitmap(ci.get("bitmap.z"));
 		
 		IntermediateListener iListener = new IntermediateListener(listener);
-		order = TripleComponentOrder.values()[input.read()];
 		bitmapY.load(input, iListener);
 		bitmapZ.load(input, iListener);
 		arrayY.load(input, iListener);

@@ -27,29 +27,6 @@
 
 package org.rdfhdt.hdt.hdt;
 
-import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.DictionaryFactory;
-import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.header.HeaderFactory;
-import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
-import org.rdfhdt.hdt.listener.IntermediateListener;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.ControlInformation;
-import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.rdf.RDFSerializer;
-import org.rdfhdt.hdt.triples.ModifiableTriples;
-import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.Triples;
-import org.rdfhdt.hdt.triples.TriplesFactory;
-import org.rdfhdt.hdt.util.StopWatch;
-
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.FileInputStream;
@@ -58,18 +35,38 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.DictionaryFactory;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
+import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.header.HeaderFactory;
+import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
+import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.listener.IntermediateListener;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.ModifiableTriples;
+import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.triples.TriplesFactory;
+import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.io.CountInputStream;
+
 /**
  * Basic implementation of HDT interface
  * 
  */
 public class BaseHDT implements HDT {
-	private HDTSpecification spec;
+	HDTSpecification spec;
 
-	private Header header;
-	private Dictionary dictionary;
-	private Triples triples;
+	Header header;
+	Dictionary dictionary;
+	Triples triples;
 	
-	private String hdtFileName;
+	String hdtFileName;
 	
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
@@ -85,101 +82,42 @@ public class BaseHDT implements HDT {
 
 		createComponents();
 	}
-
-//	private static void showTriples(Triples triples, Dictionary dict, int max) {
-//		max = max<=0 ? Integer.MAX_VALUE : max;
-//		IteratorTripleID it = triples.searchAll();
-//		int count=0;
-//		System.out.println("******");
-//		while(it.hasNext() && count<max) {
-//			TripleID triple = it.next();
-//			System.out.println("Triple: "+triple+ "\t => " + dict.tripleIDtoTripleString(triple));
-//			count++;
-//		}
-//	}
 	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.HDT#loadFromRDF(java.io.InputStream, hdt.HDTSpecification)
-	 */
-	@Override
-	public void loadFromRDF(String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
-		
-		StopWatch st = new StopWatch();
-		
-		// Create Modifiable Instance
-		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(new HDTSpecification());
-		
-		// Load all RDF data to It.
-		modHDT.loadFromRDF(filename, baseUri, notation, listener);
-		
-		// Generate compact version
-		this.loadFromModifiableHDT(modHDT, listener);
-		
-		// Debug
-		System.out.println("Total conversion time: "+st.stopAndShow());
-		System.out.println("Total HDT size: "+ this.size());
-		System.out.println("Bytes per triple: "+ this.size()/triples.getNumberOfElements());
-		
-		// Note: ModifiableHDT is no longer needed and Java will free it after leaving this instance.
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.HDT#loadFromHDT(java.io.InputStream)
-	 */
 	@Override
 	public void loadFromHDT(InputStream input, ProgressListener listener) throws IOException {
 		ControlInformation ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
 		
 		// Load header
-		/*ci.clear();
+		ci.clear();
 		ci.load(input);
 		iListener.setRange(0, 5);
 		header = HeaderFactory.getHeader(ci);
-		header.load(input, ci, iListener);*/
+		header.load(input, ci, iListener);
 		
 		// Load dictionary
 		ci.clear();
-		//ci.load(input);
+		ci.load(input);
 		iListener.setRange(5, 60);
 		dictionary = DictionaryFactory.createDictionary(ci);
 		dictionary.load(input, ci, iListener);
 		
 		// Load Triples
 		ci.clear();
-		//ci.load(input);
+		ci.load(input);
 		iListener.setRange(60, 100);
 		triples = TriplesFactory.createTriples(ci);
 		triples.load(input, ci, iListener);
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.HDT#loadFromHDT(java.io.InputStream)
-	 */
+
 	@Override
-	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException {
+	public void loadFromHDT(String hdtFileName, ProgressListener listener)	throws IOException {
 //		InputStream in = new GZIPInputStream(new FileInputStream(fileName));
-		InputStream in = new BufferedInputStream(new FileInputStream(fileName));
+		InputStream in = new BufferedInputStream(new FileInputStream(hdtFileName));
 		loadFromHDT(in, listener);
 		in.close();
 		
-		this.hdtFileName = fileName;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.HDT#saveToRDF(java.io.OutputStream, datatypes.RDFNotation)
-	 */
-	@Override
-	public void saveToRDF(RDFSerializer serializer, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();
+		this.hdtFileName = hdtFileName;
 	}
 
 	/*
@@ -192,9 +130,9 @@ public class BaseHDT implements HDT {
 		ControlInformation ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
 		
-		/*ci.clear();
+		ci.clear();
 		ci.setHeader(true);
-		header.save(output, ci, iListener);*/
+		header.save(output, ci, iListener);
 		
 		ci.clear();
 		ci.setDictionary(true);
@@ -284,40 +222,38 @@ public class BaseHDT implements HDT {
 	 * @see hdt.hdt.HDT#loadFromModifiableHDT(hdt.hdt.ModifiableHDT, hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void loadFromModifiableHDT(ModifiableHDT modHdt,	ProgressListener listener) {
-		// Reorganize source
-		modHdt.reorganize(this.spec, listener);
+	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener) {
+		// WARNING: The modifiable HDT must be reorganized before calling this method.
 		
-		// Get parts
-		ModifiableTriples modifiableTriples = (ModifiableTriples) modHdt.getTriples();
-		ModifiableDictionary modifiableDictionary = (ModifiableDictionary) modHdt.getDictionary();
-		
-		// Convert triples to final format
-		if(triples.getClass().equals(modifiableTriples.getClass())) {
-			triples = modifiableTriples;
-		} else {
-			StopWatch tripleConvTime = new StopWatch();
-			triples.load(modifiableTriples, listener);
-			System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow() + " Compression: "+ (triples.size()*100.0/modifiableTriples.size()));
-		}
-		
-		// Convert dictionary to final format
-		if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
-			dictionary = modifiableDictionary;
-		} else {
-			StopWatch dictConvTime = new StopWatch();
-			dictionary.load(modifiableDictionary, listener);
-			System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow()+ " Compression: "+ (dictionary.size()*100.0/modifiableDictionary.size()));
-		}		
+        // Get parts
+        ModifiableTriples modifiableTriples = (ModifiableTriples) modHdt.getTriples();
+        ModifiableDictionary modifiableDictionary = (ModifiableDictionary) modHdt.getDictionary();
+        
+        // Convert triples to final format
+        if(triples.getClass().equals(modifiableTriples.getClass())) {
+                triples = modifiableTriples;
+        } else {
+                StopWatch tripleConvTime = new StopWatch();
+                triples.load(modifiableTriples, listener);
+                System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow());
+        }
+        
+        // Convert dictionary to final format
+        if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
+                dictionary = modifiableDictionary;
+        } else {
+                StopWatch dictConvTime = new StopWatch();
+                dictionary.load(modifiableDictionary, listener);
+                System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
+        }       
 	}
 	
-
 	/* (non-Javadoc)
 	 * @see hdt.hdt.HDT#generateIndex(hdt.listener.ProgressListener)
 	 */
 	@Override
 	public void loadOrCreateIndex(ProgressListener listener) {
-		String indexName = hdtFileName+".index";
+		String indexName = hdtFileName+".jindex";
 		ControlInformation ci = new ControlInformation();
 		
 		try {

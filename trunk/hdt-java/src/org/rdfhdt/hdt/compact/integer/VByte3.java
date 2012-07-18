@@ -18,16 +18,16 @@ import java.io.OutputStream;
  *
  */
 public class VByte3 {
-	public static void encode(OutputStream out, int value) throws IOException {
+	public static void encode(OutputStream out, long value) throws IOException {
 		if(value<255) {
-			out.write(value);
+			out.write((int)value);
 		} else {
 			out.write(255);
 			VByte.encode(out, value-255);
 		}
 	}
 	
-	public static int decode(InputStream in) throws IOException {
+	public static long decode(InputStream in) throws IOException {
 		int read = in.read();
 		if(read<255) {
 			return read;

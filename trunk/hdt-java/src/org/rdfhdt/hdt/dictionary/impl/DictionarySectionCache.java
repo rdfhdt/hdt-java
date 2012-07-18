@@ -56,14 +56,14 @@ public class DictionarySectionCache implements DictionarySection {
 		// Create cache
 		this.cacheString = new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
 		    // This method is called just after a new entry has been added
-		    public boolean removeEldestEntry(Map.Entry eldest) {
+		    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
 		        return size() > CACHE_ENTRIES;
 		    }
 		};
 
 		this.cacheID = new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
 		    // This method is called just after a new entry has been added
-		    public boolean removeEldestEntry(Map.Entry eldest) {
+		    public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {
 		        return size() > CACHE_ENTRIES;
 		    }
 		};

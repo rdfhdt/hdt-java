@@ -27,17 +27,20 @@
 
 package org.rdfhdt.hdt.header;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+
+import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.TripleString;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -101,7 +104,12 @@ public class PlainHeader extends HeaderBase {
 		ci.set("codification", HDTVocabulary.HEADER_PLAIN);
 		ci.save(output);
 		
-		// FIXME: Write header.
+		ByteArrayOutputStream headerBytes = new ByteArrayOutputStream();
+		
+		IOUtil.writeLine(headerBytes, "Test Header");
+		
+		VByte.encode(output, headerBytes.size());
+		output.write(headerBytes.toByteArray());
 	}
 
 	/* (non-Javadoc)
@@ -114,7 +122,8 @@ public class PlainHeader extends HeaderBase {
 			throw new IllegalArgumentException("Unexpected PlainHeader format");
 		}
 		
-		// FIXME: Read header
+		int headerSize = (int)VByte.decode(input);
+		input.skip(headerSize);
 	}
 
 	/* (non-Javadoc)

@@ -56,7 +56,7 @@ public class TriplesFactory {
 	 * @return Triples
 	 */
 	static public Triples createTriples(HDTSpecification spec) {
-		String type = spec.get("triples.type");
+		String type = spec.get("codification");
 		
 		if(type==null) {
 			return new BitmapTriples(spec);
@@ -77,16 +77,14 @@ public class TriplesFactory {
 	 * @return Triples
 	 */
 	public static Triples createTriples(ControlInformation ci) {
-		String type = ci.get("triples.type");
+		String type = ci.get("codification");
 		
-		if(type==null) {
-			return new BitmapTriples();
-		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
+		if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
 			return new TriplesList();
 		} else if(HDTVocabulary.TRIPLES_TYPE_BITMAP.equals(type)) {
 			return new BitmapTriples();
 		} else {
-			return new BitmapTriples();
+			throw new IllegalArgumentException("No implementation for Triples type: "+type);
 		}
 	}
 

@@ -27,14 +27,6 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
-import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.util.string.CharSequenceComparator;
-import org.rdfhdt.hdt.util.string.CompactString;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,6 +35,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+
+import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.string.CharSequenceComparator;
+import org.rdfhdt.hdt.util.string.CompactString;
 
 /**
  * @author mario.arias
@@ -73,7 +73,8 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	 */
 	@Override
 	public int locate(CharSequence s) {
-		Integer val = map.get(s);
+		CompactString compact = new CompactString(s);
+		Integer val = map.get(compact);
 		if(val==null) {
 			return 0;
 		}
@@ -138,9 +139,8 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 			// Found return existing ID.
 			return pos;
 		}
+		
 		// Not found, insert new
-//		CharSequence compact = new CompactString(entry);
-//		CharSequence compact = entry;
 		list.add(compact);
 		map.put(compact, list.size());
 		size+=compact.length();
@@ -153,7 +153,7 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	
 	public void sort() {
 		// Update list.
-		list.clear();
+		list = new ArrayList<CharSequence>(map.size());
 		for(CharSequence str : map.keySet()) {
 			list.add(str);
 		}

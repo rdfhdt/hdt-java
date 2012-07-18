@@ -97,7 +97,7 @@ public class HDTVocabulary {
 	// Streams
 	public static final String ARRAY_TYPE_INTEGER = HDT_ARRAY_BASE+"Integer>";
 	public static final String ARRAY_TYPE_LOG = HDT_ARRAY_BASE+"Log>";
-	public static final String ARRAY_TYPE_LOG32 = HDT_ARRAY_BASE+"Log32>";
+	public static final String ARRAY_TYPE_LOG2 = HDT_ARRAY_BASE+"Log2>";
 	public static final String ARRAY_TYPE_HUFFMAN = HDT_ARRAY_BASE+"Huffman>";
 	public static final String ARRAY_TYPE_WAVELET = HDT_ARRAY_BASE+"Wavelet>";
 

@@ -86,10 +86,9 @@ public class SectionDictionary extends BaseDictionary {
 		ci.set("format", "text/plain");
 		ci.setInt("$mapping", this.mapping.ordinal());
 		ci.setInt("$elements", this.getNumberOfElements());
-		//ci.save(output);
+		ci.save(output);
 		
 		IntermediateListener iListener = new IntermediateListener(listener);
-		output.write(this.mapping.ordinal());
 		shared.save(output, iListener);
 		subjects.save(output, iListener);
 		predicates.save(output, iListener);
@@ -102,8 +101,11 @@ public class SectionDictionary extends BaseDictionary {
 	 */
 	@Override
 	public void load(InputStream input, ControlInformation ci, ProgressListener listener) throws IOException {
-		//this.mapping = Mapping.values()[(int)ci.getInt("$mapping")];
-		this.mapping = Mapping.values()[input.read()];
+		int mappingVal = (int)ci.getInt("$mapping");
+		if(mappingVal>=Mapping.values().length) {
+			throw new IllegalArgumentException("Mapping out of bounds");
+		}
+		this.mapping = Mapping.values()[mappingVal];
 	
 		IntermediateListener iListener = new IntermediateListener(listener);
 		

@@ -29,17 +29,7 @@ public class BitSequence375Test {
 			boolean value =r.nextBoolean(); 
 			bitset.set(i, value);
 			bitseq.set(i, value);
-		}
-		
-//		for(long i=0;i<bitseq.getNumBits();i++) {
-//			if(i%(BitSequence375.W*BitSequence375.BLOCKS_PER_SUPER)==0) {
-//				System.out.println("*** SUPER: "+ i/(BitSequence375.W*BitSequence375.BLOCKS_PER_SUPER));
-//			}
-//			if(i%BitSequence375.W==0) {
-//				System.out.println("--- BLOCK: "+ i/BitSequence375.W);
-//			}	
-//			System.out.print("***"+i+"> "+(bitseq.access(i)?1:0)+ " \t  Rank1("+i+"): "+ bitseq.rank1(i) + " Select1("+bitseq.rank1(i)+"): " + bitseq.select1(bitseq.rank1(i))+ " SelectNext1("+i+"): "+ bitseq.selectNext1(i));
-//		}		
+		}	
 	}
 
 	@Test
@@ -63,6 +53,29 @@ public class BitSequence375Test {
 		
 	}
 	
+	@Test
+	public void testNumbits() {
+		assertEquals(0, Bitmap64.lastWordNumBits(0));
+		assertEquals(1, Bitmap64.lastWordNumBits(1));
+		assertEquals(64, Bitmap64.lastWordNumBits(64));
+		assertEquals(1, Bitmap64.lastWordNumBits(65));
+		assertEquals(64, Bitmap64.lastWordNumBits(128));
+		assertEquals(1, Bitmap64.lastWordNumBits(129));
+		
+		assertEquals(0, Bitmap64.numWords(0));
+		assertEquals(1, Bitmap64.numWords(1));
+		assertEquals(1, Bitmap64.numWords(64));
+		assertEquals(2, Bitmap64.numWords(65));
+		assertEquals(5, Bitmap64.numWords(257));
+		
+		for(int i=0;i<1000;i++) {
+			int words=Bitmap64.numWords(i);
+			int bitsLast=Bitmap64.lastWordNumBits(i);
+			int bytes = Bitmap64.numBytes(i);
+			System.out.println(i+" bits  "+bytes+" bytes  "+words+" words / "+bitsLast+" bits last.");
+		}	
+	}
+	
 	@Test 
 	public void testSize() {
 		assertEquals(bitseq.getNumBits(), num);
@@ -81,7 +94,7 @@ public class BitSequence375Test {
 		for(int i=0;i<bitseq.getNumBits();i++) {
 			if(bitseq.access(i)) {
 				count++;
-				assertEquals("Wrong rank", count, bitseq.rank1(i));
+				assertEquals("Wrong rank1", count, bitseq.rank1(i));
 			}
 		}
 	}
@@ -92,7 +105,7 @@ public class BitSequence375Test {
 			
 //			System.out.print("***"+i+"> "+(bitseq.access(i)?1:0)+ " \t  Rank1("+i+"): "+ bitseq.rank1(i) + " Select1("+bitseq.rank1(i)+"): " + bitseq.select1(bitseq.rank1(i))+ " SelectNext1("+i+"): "+ bitseq.selectNext1(i));
 			if(bitseq.access(i)) {
-				assertEquals("Select wrong",i,  (bitseq.select1(bitseq.rank1(i))));
+				assertEquals("Select1 wrong",i,  (bitseq.select1(bitseq.rank1(i))));
 			}
 		}	
 	}
@@ -118,5 +131,4 @@ public class BitSequence375Test {
 		}
 		assertEquals("Wrong count zeros", count, bitseq.countZeros());
 	}
-
 }

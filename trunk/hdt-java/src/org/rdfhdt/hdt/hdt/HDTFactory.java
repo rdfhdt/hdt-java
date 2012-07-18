@@ -27,19 +27,30 @@
 
 package org.rdfhdt.hdt.hdt;
 
+import java.io.IOException;
+
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.StopWatch;
 
 /**
  * Factory that creates HDT objects
  * 
  */
 public class HDTFactory {
+	
+	// TODO: Choose from config file / depending on input size?
+	private static ModHDTImporter converter = new ModHDTImporterOnePass();
+	//private static ModHDTImporter converter = new ModHDTImporterTwoPass();
+
 	/**
 	 * Creates a default HDT
 	 * 
 	 * @return HDT
 	 */
-	static public HDT createHDT() {
+	public static HDT createHDT() {
 		return createHDT(new HDTSpecification());
 	}
 
@@ -48,16 +59,31 @@ public class HDTFactory {
 	 * 
 	 * @return HDT
 	 */
-	static public HDT createHDT(HDTSpecification specification) {
+	public static HDT createHDT(HDTSpecification specification) {
 		return new BaseHDT(specification);
 	}
+
+	public static HDT createHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
+		StopWatch st = new StopWatch();
+		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
+		HDT hdt = HDTFactory.createHDT(spec);
+		hdt.loadFromModifiableHDT(modHdt, listener);
+		System.out.println("File converted in: "+st.stopAndShow());
+		
+		return hdt;
+	}
+	
+	public static ModifiableHDT createModHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
+		return converter.loadFromRDF(spec, filename, baseUri, notation, listener);
+	}
+
 	
 	/**
 	 * Creates a ModifiableHDT
 	 * @param spec
 	 * @return
 	 */
-	static public ModifiableHDT createModifiableHDT(HDTSpecification spec) {
+	public static ModifiableHDT createModifiableHDT(HDTSpecification spec) {
 		return new HDTRW(spec);
 	}
 }

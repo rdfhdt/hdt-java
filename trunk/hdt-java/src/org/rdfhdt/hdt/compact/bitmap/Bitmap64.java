@@ -27,17 +27,15 @@
 
 package org.rdfhdt.hdt.compact.bitmap;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.util.BitUtil;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -79,23 +77,22 @@ public class Bitmap64 {
      * Given a bit index, return word index containing it.
      */
 	protected static final int wordIndex(long bitIndex) {
-        return (int) (bitIndex >> LOGW);
+        return (int) (bitIndex >>> LOGW);
     }
     
-	/**
-	 * How many words are needed to store numbits
-	 * @param numbits
-	 * @return
-	 */
     protected static final int numWords(long numbits) {
-    	return wordIndex(numbits-1) + 1;
+    	return (int) ((numbits-1)>>>LOGW) + 1;
+    }
+    
+    protected static final int numBytes(long numbits) {
+    	return (int) ((numbits-1)>>>3) + 1;
     }
     
     protected static final int lastWordNumBits(long numbits) {
     	if(numbits==0) {
     		return 0;
     	}
-    	return (int) (W-((W*numWords(numbits))-numbits));
+    	return (int) ((numbits-1) % W)+1;	// +1 To have output in the range 1-64, -1 to compensate.
     }
 
 	protected final void ensureSize(int wordsRequired) {
@@ -188,12 +185,11 @@ public class Bitmap64 {
 	}
 
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		DataOutputStream dout = new DataOutputStream(output);
-		
-		VByte.encode(output, (int)numbits);
+		output.write((byte)7); // Code for BitSequence375 in C++
+		IOUtil.writeLong(output, numbits);
 		int numwords = numWords(numbits);
 		for(int i=0;i<numwords-1;i++) {
-			dout.writeLong(words[i]);
+			IOUtil.writeLong(output, words[i]);
 		}
 		
 		if(numwords==0) {
@@ -202,17 +198,19 @@ public class Bitmap64 {
 		
 		// Write only used bits from last entry (byte aligned, little endian)
 		int lastWordUsed = lastWordNumBits(numbits);
-		BitUtil.writeLowerBitsByteAligned(words[numwords-1], lastWordUsed, dout);
+		BitUtil.writeLowerBitsByteAligned(words[numwords-1], lastWordUsed, output);
 	}
 
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		DataInputStream din = new DataInputStream(input);
-		
-		numbits = VByte.decode(input);
+		int type = input.read();
+		if(type!=7) {
+			throw new IllegalArgumentException("Trying to read Bitmap64 on a section that is not Bitmap64");
+		}
+		numbits = IOUtil.readLong(input);
 		int numwords = numWords(numbits);
 		words = new long[numwords];
 		for(int i=0;i<numwords-1;i++) {
-			words[i] = din.readLong();
+			words[i] = IOUtil.readLong(input);
 		}
 		
 		if(numwords==0) {
@@ -221,7 +219,7 @@ public class Bitmap64 {
 		
 		// Read only used bits from last entry (byte aligned, little endian)
 		int lastWordUsedBits = lastWordNumBits(numbits);
-		words[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsedBits, din);
+		words[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsedBits, input);
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

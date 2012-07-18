@@ -28,8 +28,6 @@
 package org.rdfhdt.hdt.hdt;
 
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
  * @author mario.arias
@@ -40,6 +38,5 @@ public interface ModifiableHDT extends HDT {
 	void insert(IteratorTripleString triples);
 	void remove(CharSequence subject, CharSequence predicate, CharSequence object);
 	void remove(IteratorTripleString triples);
-	void reorganize(HDTSpecification spec, ProgressListener listener);
 	void clear();
 }

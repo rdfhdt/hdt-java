@@ -27,17 +27,16 @@
 
 package org.rdfhdt.hdt.compact.array;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.util.BitUtil;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+
+import org.rdfhdt.hdt.compact.integer.VByte;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -72,21 +71,21 @@ public class LogArray64 implements DynamicArray {
 	
 	/** longs required to represent "total" integers of "bitsField" bits each */
 	private static final long numWordsFor(int bitsField, long total) {
-		return ((bitsField*total+64-1)/64);
+		return ((bitsField*total+63)/64);
 	}
 	
-	/** Number of bytes required for last word */
+	/** Number of bits required for last word */
 	protected static final int lastWordNumBits(int bitsField, long total) {
 		long totalBits = bitsField*total;
-    	if(totalBits==0) {
-    		return 0;
-    	}
-    	return (int) (W-((W*numWordsFor(bitsField, total))-totalBits));
-    }
+		if(totalBits==0) {
+			return 0;
+		}
+		return (int) ((totalBits-1) % W)+1;	// +1 To have output in the range 1-64, -1 to compensate.
+	}
 	
-	/** Number of bytes required to represent n integers of e bits each, aligned to 64bit */
+	/** Number of bytes required to represent n integers of e bits each */
 	private static final long numBytesFor(int bitsField, long total) {
-		return ((bitsField*total+64-1)/64) * (64/8);
+		return (bitsField*total+7)/8;
 	}
 
 	 /** Retrieve a given index from array data where every value uses bitsField bits
@@ -247,14 +246,12 @@ public class LogArray64 implements DynamicArray {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		DataOutputStream dout = new DataOutputStream(output);
-		
 		output.write(numbits);
-		VByte.encode(output, (int)numentries);
+		VByte.encode(output, numentries);
 		int numwords = (int)numWordsFor(numbits, numentries);
-
+		
 		for(int i=0;i<numwords-1;i++) {
-			dout.writeLong(data[i]);
+			IOUtil.writeLong(output, data[i]);
 		}
 		
 		if(numwords==0) {
@@ -263,7 +260,7 @@ public class LogArray64 implements DynamicArray {
 		
 		// Write only used bits from last entry (byte aligned, little endian)
 		int lastWordUsedBits = lastWordNumBits(numbits, numentries);
-		BitUtil.writeLowerBitsByteAligned(data[numwords-1], lastWordUsedBits, dout);
+		BitUtil.writeLowerBitsByteAligned(data[numwords-1], lastWordUsedBits, output);
 	}
 
 	/* (non-Javadoc)
@@ -271,15 +268,13 @@ public class LogArray64 implements DynamicArray {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		DataInputStream din = new DataInputStream(input);
-		
 		numbits = input.read();
 		numentries = VByte.decode(input);
 		int numwords = (int)numWordsFor(numbits, numentries);
 		
 		data = new long[numwords];
 		for(int i=0;i<numwords-1;i++) {
-			data[i] = din.readLong();
+			data[i] = IOUtil.readLong(input);
 		}
 		
 		if(numwords==0) {
@@ -288,7 +283,7 @@ public class LogArray64 implements DynamicArray {
 		
 		// Read only used bits from last entry (byte aligned, little endian)
 		int lastWordUsed = lastWordNumBits(numbits, numentries);
-		data[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsed, din);
+		data[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsed, input);
 	}
 
 	/* (non-Javadoc)
