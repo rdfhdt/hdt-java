@@ -50,6 +50,9 @@ public class ExampleInsert {
 		mhdt.insert("uri1", "p2", "val3");
 		mhdt.insert("uri1", "p2", "val4");
 		
+		// FIXME:
+		// Need to call mhdt.reorganize()
+		
 		// Compact and save
 		HDT hdt = HDTFactory.createHDT(new HDTSpecification());
 		hdt.loadFromModifiableHDT(mhdt, null);
