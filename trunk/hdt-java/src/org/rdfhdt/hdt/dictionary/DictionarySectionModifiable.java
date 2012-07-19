@@ -27,6 +27,8 @@
 
 package org.rdfhdt.hdt.dictionary;
 
+import java.util.Iterator;
+
 /**
  * @author mck
  *
@@ -35,5 +37,10 @@ public interface DictionarySectionModifiable extends DictionarySection {
 	public void sort();
 	public int add(CharSequence str);
 	public void remove(CharSequence str);
+	/**
+	 * Iterator over all entries in the dictionary, not neccessarily sorted.
+	 * @return
+	 */
+	public Iterator<CharSequence> getEntries();
 	public void clear();
 }

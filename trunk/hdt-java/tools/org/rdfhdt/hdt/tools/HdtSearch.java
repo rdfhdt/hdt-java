@@ -93,6 +93,8 @@ public class HdtSearch implements ProgressListener {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		TripleString cmd = new TripleString();
 		
+		// FIXME: Implement everything that the README says it does
+		
 		while(true) {
 			System.out.print("> ");
 			System.out.flush();

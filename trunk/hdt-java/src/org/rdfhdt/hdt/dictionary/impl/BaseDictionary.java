@@ -256,12 +256,15 @@ public abstract class BaseDictionary implements Dictionary {
 	 * @see hdt.dictionary.Dictionary#getSsubobj()
 	 */
 	@Override
-	public long getSsubobj() {
+	public long getNshared() {
 		return shared.getNumberOfElements();
 	}
 
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#getMaxID()
+	 */
+	/**
+	 * Returns the max ID of subjects and objects (WARNING: Does not consider predicates)
 	 */
 	@Override
 	public long getMaxID() {

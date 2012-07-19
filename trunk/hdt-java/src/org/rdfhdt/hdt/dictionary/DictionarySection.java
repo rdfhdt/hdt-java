@@ -66,10 +66,10 @@ public interface DictionarySection {
 	public int getNumberOfElements();
 	
 	/**
-	 * Iterator over all entries in the dictionary
+	 * Iterator over all entries in the dictionary, sorted lexicographically.
 	 * @return
 	 */
-	public Iterator<CharSequence> getEntries();
+	public Iterator<CharSequence> getSortedEntries();
 	
 	/**
 	 * Serialize dictionary to a stream.

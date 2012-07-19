@@ -1,13 +1,12 @@
 package org.rdfhdt.hdt.compact.integer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 
-import org.junit.Before;
 import org.junit.Test;
 
 public class VByteTest {

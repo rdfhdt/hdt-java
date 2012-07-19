@@ -116,7 +116,7 @@ public interface Dictionary {
 	
 	public long getNobjects();
 	
-	public long getSsubobj();
+	public long getNshared();
 	
 	public long getMaxID();
 	

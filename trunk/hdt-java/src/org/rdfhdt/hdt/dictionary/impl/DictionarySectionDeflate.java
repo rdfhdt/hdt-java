@@ -164,7 +164,7 @@ public class DictionarySectionDeflate implements DictionarySection {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
-	public Iterator<CharSequence> getEntries() {
+	public Iterator<CharSequence> getSortedEntries() {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -218,7 +218,7 @@ public class DictionarySectionDeflate implements DictionarySection {
 		
 		try {
 			StopWatch st = new StopWatch();
-			Iterator<CharSequence> it = other.getEntries();
+			Iterator<CharSequence> it = other.getSortedEntries();
 			while(it.hasNext()) {
 				CharSequence str = it.next();
 //				System.out.println(str);

@@ -123,7 +123,7 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		StopWatch st = new StopWatch();
 		
 		// Generate old subject mapping
-		Iterator<CharSequence> itSubj = subjects.getEntries();
+		Iterator<CharSequence> itSubj = ((DictionarySectionModifiable) subjects).getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			mapSubj.add(str);
@@ -137,21 +137,21 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 
 		// Generate old predicate mapping
 		st.reset();
-		Iterator<CharSequence> itPred = predicates.getEntries();
+		Iterator<CharSequence> itPred = ((DictionarySectionModifiable) predicates).getEntries();
 		while(itPred.hasNext()) {
 			CharSequence str = itPred.next();
 			mapPred.add(str);
 		}		
 		
 		// Generate old object mapping
-		Iterator<CharSequence> itObj = objects.getEntries();
+		Iterator<CharSequence> itObj = ((DictionarySectionModifiable) objects).getEntries();
 		while(itObj.hasNext()) {
 			CharSequence str = itObj.next();
 			mapObj.add(str);
 		}
 		
 		// Remove shared from subjects and objects
-		Iterator<CharSequence> itShared = shared.getEntries();
+		Iterator<CharSequence> itShared = ((DictionarySectionModifiable) shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			((DictionarySectionModifiable)subjects).remove(sharedStr);
@@ -209,7 +209,7 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	public void reorganize() {
 
 		// Generate shared
-		Iterator<CharSequence> itSubj = subjects.getEntries();
+		Iterator<CharSequence> itSubj = subjects.getSortedEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			
@@ -220,7 +220,7 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		}
 		
 		// Remove shared from subjects and objects
-		Iterator<CharSequence> itShared = shared.getEntries();
+		Iterator<CharSequence> itShared = shared.getSortedEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			((DictionarySectionModifiable)subjects).remove(sharedStr);

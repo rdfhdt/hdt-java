@@ -174,7 +174,7 @@ public class DictionarySectionLiterals implements DictionarySection {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
-	public Iterator<CharSequence> getEntries() {
+	public Iterator<CharSequence> getSortedEntries() {
 		return null;
 	}
 
@@ -234,7 +234,7 @@ public class DictionarySectionLiterals implements DictionarySection {
 			return;
 		}
 		
-		Iterator<CharSequence> it = other.getEntries();
+		Iterator<CharSequence> it = other.getSortedEntries();
 		numElements=0;
 		while(it.hasNext()) {
 			CharSequence entry = it.next();

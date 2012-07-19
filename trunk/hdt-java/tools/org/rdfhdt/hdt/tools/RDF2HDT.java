@@ -62,13 +62,16 @@ public class RDF2HDT implements ProgressListener {
 	public String hdtOutput = null;
 	
 	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, n3, rdfxml)")
-	public String rdfType = null;
+	public String rdfType = "ntriples";
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
 	public String baseURI = null;
 	
 	@Parameter(names = "-index", description = "Generate also external indices to solve all queries")
 	public boolean generateIndex = false;
+	
+	@Parameter(names = "-progress", description = "Show progress of the conversion")
+	public boolean progress = false;
 	
 	public void execute() throws ParserException, IOException {
 		HDTSpecification spec;
@@ -99,22 +102,36 @@ public class RDF2HDT implements ProgressListener {
 	 */
 	@Override
 	public void notifyProgress(float level, String message) {
-		//System.out.println(message + "\t"+ Float.toString(level));
+		if(progress) {
+			// TODO: Add progress notifications to the internal classes
+			//System.out.println(message + "\t"+ Float.toString(level));
+		}
 	}
 	
 	public static void main(String[] args) throws Throwable {
 		RDF2HDT rdf2hdt = new RDF2HDT();
 		JCommander com = new JCommander(rdf2hdt, args);
-		if(rdf2hdt.parameters.size()<2) {
-			com.usage();
-			System.exit(1);
+
+		if (rdf2hdt.rdfInput==null){
+			try {
+				rdf2hdt.rdfInput = rdf2hdt.parameters.get(0); //first 'free' param
+			} catch (IndexOutOfBoundsException e){
+				com.usage();
+				System.exit(1);
+			}
 		}
-		
-		rdf2hdt.rdfInput = rdf2hdt.parameters.get(0);
-		rdf2hdt.hdtOutput = rdf2hdt.parameters.get(1);
+		if (rdf2hdt.hdtOutput==null){
+			try {
+				rdf2hdt.hdtOutput = rdf2hdt.parameters.get(rdf2hdt.parameters.size()-1); //last 'free' param
+				if (rdf2hdt.rdfInput.equals(rdf2hdt.hdtOutput))
+					throw new IndexOutOfBoundsException(); //have to be different
+			} catch (IndexOutOfBoundsException e){
+				com.usage();
+				System.exit(1);
+			}
+		}
+		System.out.println("Converting "+rdf2hdt.rdfInput+" to "+rdf2hdt.hdtOutput+" as "+rdf2hdt.rdfType);
 		
 		rdf2hdt.execute();
 	}
-
-	
 }

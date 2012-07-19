@@ -256,6 +256,7 @@ public class TriplesList implements ModifiableTriples {
 					triple.clear();
 					removed = true;
 					numValidTriples--;
+					break;
 				}
 			}
 		}

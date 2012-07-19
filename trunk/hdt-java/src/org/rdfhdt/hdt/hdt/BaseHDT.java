@@ -53,7 +53,6 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.util.StopWatch;
-import org.rdfhdt.hdt.util.io.CountInputStream;
 
 /**
  * Basic implementation of HDT interface
@@ -92,7 +91,7 @@ public class BaseHDT implements HDT {
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(0, 5);
-		header = HeaderFactory.getHeader(ci);
+		header = HeaderFactory.createHeader(ci);
 		header.load(input, ci, iListener);
 		
 		// Load dictionary

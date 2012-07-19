@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.options;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.Properties;
 
 /**
  * Holds the properties of HDT from a configuration file
@@ -37,9 +36,6 @@ import java.util.Properties;
  */
 public class HDTSpecification extends HDTOptionsBase {
 	
-	/** The properties are stored here */
-	protected Properties properties;
-
 	/**
 	 * Default constructor, reads the file config.properties
 	 * 
@@ -61,7 +57,15 @@ public class HDTSpecification extends HDTOptionsBase {
 	}
 	
 	public void load(String filename) throws IOException {
-		properties.load(new FileInputStream(filename));
+        FileInputStream fin = null;
+        try {
+                fin = new FileInputStream(filename);
+                properties.load(fin);
+                fin.close();
+        } catch (IOException e) {
+                try {fin.close();} catch (IOException ignorable) {/*ignorable*/}
+                throw e;
+        }
 	}
 
 }

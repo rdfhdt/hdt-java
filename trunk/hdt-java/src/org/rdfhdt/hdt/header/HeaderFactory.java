@@ -36,10 +36,10 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  */
 public class HeaderFactory {
 	public static Header createHeader(HDTSpecification spec) {
-		return new PlainHeader();
+		return new PlainHeader(spec);
 	}
 	
-	public static Header getHeader(ControlInformation ci) {
+	public static Header createHeader(ControlInformation ci) {
 		return new PlainHeader();
 	}
 }

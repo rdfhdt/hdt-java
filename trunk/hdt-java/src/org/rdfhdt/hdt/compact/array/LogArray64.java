@@ -58,12 +58,12 @@ public class LogArray64 implements DynamicArray {
 		this(numbits, 0);
 	}
 	
-	public LogArray64(int numbits, long numentries) {
+	public LogArray64(int numbits, long capacity) {
 		this.numentries = 0;
 		this.numbits = numbits;
 		this.maxvalue = BitUtil.maxVal(numbits);
 		
-		long size = numWordsFor(numbits, numentries);
+		long size = numWordsFor(numbits, capacity);
 		assert size>=0 && size<=Integer.MAX_VALUE;
 		
 		data = new long[Math.max((int)size,1)];

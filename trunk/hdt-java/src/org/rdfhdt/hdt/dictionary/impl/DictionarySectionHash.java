@@ -54,6 +54,7 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	private HashMap<CharSequence, Integer> map;
 	private List<CharSequence> list;
 	private int size;
+	boolean sorted=false;
 	
 	/**
 	 * 
@@ -112,6 +113,14 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
+	public Iterator<CharSequence> getSortedEntries() {
+		if(!sorted) {
+			this.sort();
+		}
+		return list.iterator();
+	}
+	
+	@Override
 	public Iterator<CharSequence> getEntries() {
 		return list.iterator();
 	}
@@ -162,10 +171,11 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 		Collections.sort(list, new CharSequenceComparator());
 		
 		// Update map indexes
-		map.clear();
 		for(int i=1;i<=getNumberOfElements();i++) {
 			map.put(extract(i), i);
 		}
+		
+		sorted=true;
 	}
 
 	/* (non-Javadoc)
@@ -173,7 +183,7 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	 */
 	@Override
 	public void load(DictionarySection other, ProgressListener listener) {
-		Iterator<CharSequence> it = other.getEntries();
+		Iterator<CharSequence> it = other.getSortedEntries();
 		while(it.hasNext()) {
 			CharSequence str = it.next();
 			this.add(str);

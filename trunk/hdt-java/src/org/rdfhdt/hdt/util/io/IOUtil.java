@@ -27,7 +27,6 @@
 package org.rdfhdt.hdt.util.io;
 
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutput;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;

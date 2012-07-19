@@ -31,7 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * @author mck
+ * @author mario.arias 
  *
  */
 public class LRUCache<K,V> extends LinkedHashMap<K, V> {
@@ -41,7 +41,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K, V> {
 	int entries=1024;
 	
 	public LRUCache() {
-		super(1024, .75F, true);
+		this(1024);
 	}
 	
 	public LRUCache(int entries) {
@@ -50,7 +50,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K, V> {
 	}
 	
 	 // This method is called just after a new entry has been added
-    public boolean removeEldestEntry(Map.Entry eldest) {
+    public boolean removeEldestEntry(Map.Entry<K,V> eldest) {
         return size() > entries;
     }
 }

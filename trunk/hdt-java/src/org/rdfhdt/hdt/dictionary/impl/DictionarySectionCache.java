@@ -116,8 +116,8 @@ public class DictionarySectionCache implements DictionarySection {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
-	public Iterator<CharSequence> getEntries() {
-		return child.getEntries();
+	public Iterator<CharSequence> getSortedEntries() {
+		return child.getSortedEntries();
 	}
 
 	/* (non-Javadoc)

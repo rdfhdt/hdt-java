@@ -81,7 +81,7 @@ public class DictionarySectionPFC implements DictionarySection {
 		CharSequence previousStr=null;
 		
 		try {
-			Iterator<CharSequence> it = other.getEntries();
+			Iterator<CharSequence> it = other.getSortedEntries();
 			while(it.hasNext()) {
 				CharSequence str = it.next();
 				//ensureSize(bytes+str.length()+4);
@@ -331,7 +331,7 @@ public class DictionarySectionPFC implements DictionarySection {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
-	public Iterator<CharSequence> getEntries() {
+	public Iterator<CharSequence> getSortedEntries() {
 		return new Iterator<CharSequence>() {
 			int pos = 0;
 
