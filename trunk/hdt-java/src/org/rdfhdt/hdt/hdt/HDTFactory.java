@@ -42,8 +42,8 @@ import org.rdfhdt.hdt.util.StopWatch;
 public class HDTFactory {
 	
 	// TODO: Choose from config file / depending on input size?
-	private static ModHDTImporter converter = new ModHDTImporterOnePass();
-	//private static ModHDTImporter converter = new ModHDTImporterTwoPass();
+	//private static ModHDTImporter converter = new ModHDTImporterOnePass();
+	private static ModHDTImporter converter = new ModHDTImporterTwoPass();
 
 	/**
 	 * Creates a default HDT
