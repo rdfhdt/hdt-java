@@ -62,7 +62,6 @@ public class CountInputStream extends FilterInputStream {
 	
 	@Override
 	public int read() throws IOException {
-		// TODO Auto-generated method stub
 		int value = super.read();
 		if(value!=-1) {
 			partial+=value;
