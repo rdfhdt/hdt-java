@@ -36,6 +36,7 @@ import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.IteratorTripleID;
@@ -105,7 +106,7 @@ public class BitmapTriples implements Triples {
 		ModifiableBitmap bitY = new BitSequence375();
 		ModifiableBitmap bitZ = new BitSequence375(triples.getNumberOfElements());
 		
-		int lastX=0, lastY=0;
+		int lastX=0, lastY=0, lastZ=0;
 		int x, y, z;
 		int numTriples=0;
 		
@@ -123,6 +124,9 @@ public class BitmapTriples implements Triples {
 				vectorY.append(y);
 				vectorZ.append(z);
 			} else if(x!=lastX) {
+				if(x!=lastX+1) {
+					throw new IllegalFormatException("Upper level must be increasing and correlative.");
+				}
 				// X changed
 				bitY.append(true);
 				vectorY.append(y);
@@ -130,6 +134,10 @@ public class BitmapTriples implements Triples {
 				bitZ.append(true);
 				vectorZ.append(z);
 			} else if(y!=lastY) {
+				if(y<lastY) {
+					throw new IllegalFormatException("Middle level must be increasing for each parent.");
+				}
+				
 				// Y changed
 				bitY.append(false);
 				vectorY.append(y);
@@ -137,6 +145,10 @@ public class BitmapTriples implements Triples {
 				bitZ.append(true);
 				vectorZ.append(z);
 			} else {
+				if(z<lastZ) {
+					throw new IllegalFormatException("Lower level must be increasing for each parent.");
+				}
+				
 				// Z changed
 				bitZ.append(false);
 				vectorZ.append(z);
@@ -144,6 +156,7 @@ public class BitmapTriples implements Triples {
 			
 			lastX = x;
 			lastY = y;
+			lastZ = z;
 			
 			ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, triples.getNumberOfElements());
 			numTriples++;

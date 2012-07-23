@@ -1,8 +1,7 @@
 package org.rdfhdt.hdt.exceptions;
 
-import java.io.IOException;
 
-public class IllegalFormatException extends IOException {
+public class IllegalFormatException extends RuntimeException {
 
 	/**
 	 * 
