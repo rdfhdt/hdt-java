@@ -362,9 +362,11 @@ public class DictionarySectionPFC implements DictionarySection {
 		output.write(TYPE_INDEX);
 		VByte.encode(output, numstrings);
 		VByte.encode(output, text.length);
-		IOUtil.writeBuffer(output, text, 0, text.length, listener);
 		VByte.encode(output, blocksize);
+		
 		blocks.save(output, listener);
+		IOUtil.writeBuffer(output, text, 0, text.length, listener);
+
 	}
 
 	/* (non-Javadoc)
@@ -374,9 +376,10 @@ public class DictionarySectionPFC implements DictionarySection {
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		numstrings = (int) VByte.decode(input);
 		int bytes = (int) VByte.decode(input);
-		text = IOUtil.readBuffer(input, bytes, listener);
 		blocksize = (int) VByte.decode(input);
+		
 		blocks = new LogArray64();
 		blocks.load(input, listener);
+		text = IOUtil.readBuffer(input, bytes, listener);
 	}
 }

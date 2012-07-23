@@ -45,7 +45,7 @@ public class ListenerUtil {
 	}
 	
 	public static void notifyCond(ProgressListener listener, String message, long counter, float value, float total) {
-		if(listener!=null && (value%5000==0)) {
+		if(listener!=null && (counter%5000==0)) {
 			listener.notifyProgress( ((value)*100/total), message);
 		}
 	}

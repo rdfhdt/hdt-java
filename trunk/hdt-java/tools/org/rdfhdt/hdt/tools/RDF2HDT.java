@@ -26,15 +26,16 @@
  */
 package org.rdfhdt.hdt.tools;
 
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.List;
+
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
-
-import java.io.IOException;
-import java.util.List;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -104,14 +105,14 @@ public class RDF2HDT implements ProgressListener {
 	public void notifyProgress(float level, String message) {
 		if(progress) {
 			// TODO: Add progress notifications to the internal classes
-			//System.out.println(message + "\t"+ Float.toString(level));
+			System.out.println(message + "\t"+ Float.toString(level));
 		}
 	}
 	
 	public static void main(String[] args) throws Throwable {
 		RDF2HDT rdf2hdt = new RDF2HDT();
 		JCommander com = new JCommander(rdf2hdt, args);
-
+	
 		if (rdf2hdt.rdfInput==null){
 			try {
 				rdf2hdt.rdfInput = rdf2hdt.parameters.get(0); //first 'free' param

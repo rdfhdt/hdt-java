@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.listener.ListenerUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
@@ -21,10 +22,13 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 	class TripleAppender implements RDFCallback {
 		ModifiableDictionary dict;
 		ModifiableTriples triples;
+		ProgressListener listener;
+		long num = 0;
 
-		public TripleAppender(ModifiableDictionary dict, ModifiableTriples triples) {
+		public TripleAppender(ModifiableDictionary dict, ModifiableTriples triples, ProgressListener listener) {
 			this.dict = dict;
 			this.triples = triples;
+			this.listener = listener;
 		}
 
 		public void processTriple(TripleString triple, long pos) {
@@ -33,6 +37,8 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 					dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
 					dict.insert(triple.getObject(), TripleComponentRole.OBJECT)
 			);
+			num++;
+			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
 	};
 
@@ -69,7 +75,7 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 
         // Import all triples
         dictionary.startProcessing();
-        parser.doParse(filename, baseUri, notation, new TripleAppender(dictionary, triples));
+        parser.doParse(filename, baseUri, notation, new TripleAppender(dictionary, triples, listener));
 		
 		// Reorganize
 		this.reorganize(modHDT, spec, listener);

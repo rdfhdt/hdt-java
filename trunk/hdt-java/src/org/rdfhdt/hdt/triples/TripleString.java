@@ -27,10 +27,14 @@
 
 package org.rdfhdt.hdt.triples;
 
+import java.io.IOException;
+
+import org.rdfhdt.hdt.util.string.UnicodeEscape;
+
 /**
  * TripleString holds a triple as Strings
  */
-public class TripleString {
+public final class TripleString {
 
 	private CharSequence subject;
 	private CharSequence predicate;
@@ -191,7 +195,7 @@ public class TripleString {
 			if(posb>posa && line.charAt(posb-1)=='>') posb--;
 		}
 		
-		this.setObject(line.substring(posa, posb));
+		this.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 	}
 	
 	/*
@@ -202,5 +206,33 @@ public class TripleString {
 	@Override
 	public String toString() {
 		return subject + " " + predicate + " " + object;
+	}
+	
+	public CharSequence asNtriple() throws IOException {
+		StringBuilder str = new StringBuilder();
+		char s0 = subject.charAt(0);
+		if(s0=='_' || s0=='<') {
+			str.append(subject);
+		} else {
+			str.append('<').append(subject).append('>');
+		}
+		
+		char p0 = predicate.charAt(0);
+		if(p0=='<') {
+			str.append(' ').append(predicate).append(' ');	
+		} else {
+			str.append(" <").append(predicate).append("> ");
+		}
+		
+		char o0 = object.charAt(0);
+		if(o0=='"') {
+			UnicodeEscape.escapeString(object, str);
+			str.append(" .\n");
+		} else if(o0=='_' ||o0=='<' ) {
+			str.append(object).append(" .\n");
+		} else {
+			str.append('<').append(object).append("> .\n");
+		}
+		return str;
 	}
 }

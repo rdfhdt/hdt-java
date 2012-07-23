@@ -570,9 +570,20 @@ public class BitmapTriples implements Triples {
 	 * @see hdt.triples.Triples#populateHeader(hdt.header.Header, java.lang.String)
 	 */
 	@Override
-	public void populateHeader(Header head, String rootNode) {
-		// TODO Auto-generated method stub
-
+	public void populateHeader(Header header, String rootNode) {
+		header.insert(rootNode, HDTVocabulary.TRIPLES_TYPE, getType());
+		header.insert(rootNode, HDTVocabulary.TRIPLES_NUM_TRIPLES, getNumberOfElements() );
+		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.toString() );
+		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYY_TYPE, arrayY.getType() );
+		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYZ_TYPE, arrayZ.getType() );
+		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYY_SIZE, arrayY.size() );
+		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYZ_SIZE, arrayZ.size() );
+		if(bitmapY!=null) {
+			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPY_SIZE, bitmapY.getSizeBytes() );
+		}
+		if(bitmapZ!=null) {
+			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPZ_SIZE, bitmapZ.getSizeBytes() );
+		}
 	}
 
 	/* (non-Javadoc)

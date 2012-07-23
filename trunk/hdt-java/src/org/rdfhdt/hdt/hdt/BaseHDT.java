@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
@@ -53,6 +54,7 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.StringUtil;
 
 /**
  * Basic implementation of HDT interface
@@ -71,6 +73,28 @@ public class BaseHDT implements HDT {
 		header = HeaderFactory.createHeader(spec);
         dictionary = DictionaryFactory.createDictionary(spec);
         triples = TriplesFactory.createTriples(spec);
+	}
+	
+	void populateHeaderStructure(String baseUri) {
+		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
+		String formatNode = "_:format";
+		header.insert(baseUri, HDTVocabulary.HDT_FORMAT_INFORMATION, formatNode);
+		String dictNode = "_:dictionary";
+		header.insert(formatNode, HDTVocabulary.HDT_DICTIONARY, dictNode);
+		String triplesNode = "_:triples";
+		header.insert(formatNode, HDTVocabulary.HDT_TRIPLES, triplesNode);
+		String statisticsNode = "_:statistics";
+		header.insert(baseUri, HDTVocabulary.HDT_STATISTICAL_INFORMATION, statisticsNode);
+		String publicationInfoNode = "_:publicationInformation";
+		header.insert(baseUri, HDTVocabulary.HDT_PUBLICATION_INFORMATION, publicationInfoNode);
+
+		dictionary.populateHeader(header, dictNode);
+		triples.populateHeader(header, triplesNode);
+
+		header.insert(statisticsNode, HDTVocabulary.HDT_SIZE, getDictionary().size()+getTriples().size());
+
+		// Current time
+		header.insert(publicationInfoNode, HDTVocabulary.DUBLIN_CORE_ISSUED, StringUtil.formatDate(new Date()));
 	}
 	
 	/**
@@ -245,6 +269,7 @@ public class BaseHDT implements HDT {
                 dictionary.load(modifiableDictionary, listener);
                 System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
         }       
+      
 	}
 	
 	/* (non-Javadoc)

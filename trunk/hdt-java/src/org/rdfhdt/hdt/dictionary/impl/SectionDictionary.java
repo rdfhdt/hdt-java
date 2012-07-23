@@ -127,7 +127,16 @@ public class SectionDictionary extends BaseDictionary {
 	 */
 	@Override
 	public void populateHeader(Header header, String rootNode) {
-
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_TYPE, HDTVocabulary.DICTIONARY_TYPE_PFC);
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMSUBJECTS, getNsubjects());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMPREDICATES, getNpredicates());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMOBJECTS, getNobjects());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMSHARED, getNshared());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_MAXSUBJECTID, getMaxSubjectID());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_MAXPREDICATEID, getMaxPredicateID());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_MAXOBJECTTID, getMaxObjectID());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_MAPPING, mapping.toString());
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_SIZE_STRINGS, size());
 	}
 
 	/* (non-Javadoc)

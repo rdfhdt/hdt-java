@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.hdt;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -66,8 +67,12 @@ public class HDTFactory {
 	public static HDT createHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
 		StopWatch st = new StopWatch();
 		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
-		HDT hdt = HDTFactory.createHDT(spec);
+		BaseHDT hdt = new BaseHDT(spec);
 		hdt.loadFromModifiableHDT(modHdt, listener);
+		
+		hdt.populateHeaderStructure(baseUri);
+		hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, new File(filename).length());
+		
 		System.out.println("File converted in: "+st.stopAndShow());
 		
 		return hdt;

@@ -58,22 +58,7 @@ public class HDT2RDF implements ProgressListener {
 		IteratorTripleString it = hdt.search("","","");
 		while(it.hasNext()) {
 			TripleString triple = it.next();
-			
-			char s0 = triple.getSubject().charAt(0);
-			if(s0!='_') {
-				System.out.print("<"+triple.getSubject()+">");
-			} else {
-				System.out.print(triple.getSubject());
-			}
-			
-			System.out.print(" <"+triple.getPredicate()+"> ");
-			
-			char o0 = triple.getObject().charAt(0);
-			if(o0!='_' && o0!='"') {
-				System.out.println("<"+triple.getObject()+"> .");
-			} else {
-				System.out.println(triple.getObject()+" .");
-			}
+			System.out.print(triple.asNtriple());
 		}		
 	}
 	

@@ -27,18 +27,25 @@
 
 package org.rdfhdt.hdt.header;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -46,10 +53,10 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  * @author mario.arias
  *
  */
-public class PlainHeader extends HeaderBase {
+public class PlainHeader extends HeaderBase implements RDFCallback {
 	
 	protected HDTSpecification spec;
-	protected ArrayList<TripleString> triples;
+	protected List<TripleString> triples= new ArrayList<TripleString>();
 	
 	public PlainHeader() {
 		spec = new HDTSpecification();
@@ -74,7 +81,11 @@ public class PlainHeader extends HeaderBase {
 	 */
 	@Override
 	public void insert(String subject, String predicate, String object) {
-		triples.add(new TripleString(subject, predicate, object));
+		if(object.startsWith("http://")||object.startsWith("file://")) {
+			triples.add(new TripleString(subject, predicate, object));
+		} else {
+			triples.add(new TripleString(subject, predicate, '"'+object+'"'));
+		}
 	}
 
 	/* (non-Javadoc)
@@ -82,7 +93,7 @@ public class PlainHeader extends HeaderBase {
 	 */
 	@Override
 	public void insert(String subject, String predicate, long object) {
-		triples.add(new TripleString(subject, predicate, Long.toString(object)));
+		triples.add(new TripleString(subject, predicate, '"'+Long.toString(object)+'"'));
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +103,7 @@ public class PlainHeader extends HeaderBase {
 	public void remove(TripleString... removedTriples) {
 		for(TripleString triple : removedTriples) {
 			triples.remove(triple);
-		}
+		}	
 	}
 
 	/* (non-Javadoc)
@@ -104,12 +115,16 @@ public class PlainHeader extends HeaderBase {
 		ci.set("codification", HDTVocabulary.HEADER_PLAIN);
 		ci.save(output);
 		
-		ByteArrayOutputStream headerBytes = new ByteArrayOutputStream();
+		ByteArrayOutputStream headerData = new ByteArrayOutputStream();
 		
-		IOUtil.writeLine(headerBytes, "Test Header");
+		IteratorTripleString iterator = this.search("", "", "");
+		while(iterator.hasNext()) {
+			TripleString next = iterator.next();
+			IOUtil.writeLine(headerData, next.asNtriple().toString());
+		}
 		
-		VByte.encode(output, headerBytes.size());
-		output.write(headerBytes.toByteArray());
+		VByte.encode(output, headerData.size());
+		output.write(headerData.toByteArray());
 	}
 
 	/* (non-Javadoc)
@@ -123,7 +138,16 @@ public class PlainHeader extends HeaderBase {
 		}
 		
 		int headerSize = (int)VByte.decode(input);
-		input.skip(headerSize);
+		
+		byte [] headerData = IOUtil.readBuffer(input, headerSize, listener);
+		
+		try {
+			RDFParserSimple parser = new RDFParserSimple();
+			parser.doParse(new ByteArrayInputStream(headerData), RDFNotation.NTRIPLES, this);
+		} catch (ParserException e) {
+			e.printStackTrace();
+			throw new IllegalFormatException("Error parsing header");
+		}
 	}
 
 	/* (non-Javadoc)
@@ -141,6 +165,11 @@ public class PlainHeader extends HeaderBase {
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) {
 		TripleString pattern = new TripleString(subject, predicate, object);
 		return new PlainHeaderIterator(this, pattern);
+	}
+
+	@Override
+	public void processTriple(TripleString triple, long pos) {
+		this.insert(triple);
 	}
 
 }

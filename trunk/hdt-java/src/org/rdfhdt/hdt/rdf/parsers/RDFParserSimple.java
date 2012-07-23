@@ -27,14 +27,17 @@
 
 package org.rdfhdt.hdt.rdf.parsers;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 
 /**
  * @author mario.arias
@@ -69,4 +72,27 @@ public class RDFParserSimple implements RDFParserCallback {
 		}
 	}
 
+	public void doParse(InputStream input, RDFNotation notation, RDFCallback callback) throws ParserException {
+		try {
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			String line;
+			long numLine = 1;
+			TripleString triple = new TripleString();
+			while((line=reader.readLine())!=null) {
+				triple.read(line);
+				if(!triple.hasEmpty()) {
+//					System.out.println(triple);
+					callback.processTriple(triple, 0);
+				} else {
+					System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
+				}
+				numLine++;
+			}
+			reader.close();
+		}catch(Exception e) {
+			e.printStackTrace();
+			throw new ParserException();
+		}
+	}
+	
 }

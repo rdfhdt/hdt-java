@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.listener.ListenerUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
@@ -18,12 +19,15 @@ import org.rdfhdt.hdt.util.StopWatch;
 
 public class ModHDTImporterTwoPass implements ModHDTImporter {
 
-	public class DictionaryAppender implements RDFCallback {
+	class DictionaryAppender implements RDFCallback {
 
 		ModifiableDictionary dict;
+		ProgressListener listener;
+		long count=0;
 
-		public DictionaryAppender(ModifiableDictionary dict) {
+		DictionaryAppender(ModifiableDictionary dict, ProgressListener listener) {
 			this.dict = dict;
+			this.listener = listener;
 		}
 		
 		@Override
@@ -31,6 +35,12 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 			dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT);
 			dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE);
 			dict.insert(triple.getObject(), TripleComponentRole.OBJECT);
+			count++;
+			ListenerUtil.notifyCond(listener, "Generating dictionary "+count+" triples processed.", count, 0, 100);
+		}
+		
+		public long getCount() {
+			return count;
 		}
 	};
 	
@@ -43,10 +53,13 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 	class TripleAppender2 implements RDFCallback {
 		ModifiableDictionary dict;
 		ModifiableTriples triples;
+		ProgressListener listener;
+		long count=0;
 
-		public TripleAppender2(ModifiableDictionary dict, ModifiableTriples triples) {
+		public TripleAppender2(ModifiableDictionary dict, ModifiableTriples triples, ProgressListener listener) {
 			this.dict = dict;
 			this.triples = triples;
+			this.listener = listener;
 		}
 
 		public void processTriple(TripleString triple, long pos) {
@@ -55,6 +68,8 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 					dict.stringToId(triple.getPredicate(), TripleComponentRole.PREDICATE),
 					dict.stringToId(triple.getObject(), TripleComponentRole.OBJECT)
 			);
+			count++;
+			ListenerUtil.notifyCond(listener, "Generating triples "+count+" triples processed.", count, 0, 100);
 		}
 	};
 	
@@ -69,12 +84,12 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 		// Load dictionary
 		ModifiableDictionary dictionary = (ModifiableDictionary) modHDT.getDictionary();
 		dictionary.startProcessing();
-		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary));
+		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary, listener));
 		dictionary.reorganize();
 		
 		// Load triples
 		ModifiableTriples triples = (ModifiableTriples) modHDT.getTriples();
-		parser.doParse(filename, baseUri, notation, new TripleAppender2(dictionary, triples));
+		parser.doParse(filename, baseUri, notation, new TripleAppender2(dictionary, triples, listener));
 		
 		// SORT and duplicates
 		String orderStr = spec.get("triples.component.order");

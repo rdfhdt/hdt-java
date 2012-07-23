@@ -1,10 +1,12 @@
 package org.rdfhdt.hdt.util.io;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -24,7 +26,7 @@ public class IOUtilTest {
 			IOUtil.writeLong(bout, 4);
 			IOUtil.writeLong(bout, 0xFF000000000000AAL);
 			IOUtil.writeLong(bout, 0x33AABBCCDDEEFF11L);
-			
+						
 			ByteArrayInputStream bin = new ByteArrayInputStream(bout.toByteArray());
 			
 			long a = IOUtil.readLong(bin);

@@ -27,17 +27,30 @@
 
 package org.rdfhdt.hdt.util;
 
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * @author mck
  *
  */
 public class StringUtil {
-	private static final DecimalFormat formatter = new DecimalFormat("##.##");
+	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+	private static final DecimalFormat decimalFormat = new DecimalFormat("##.##");
+
+	static {
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
 	
 	public static String getPercent(long v1, long max) {
 		double v = (100.0*v1)/max;
-        return formatter.format(v)+"%";
+        return decimalFormat.format(v)+"%";
+	}
+	
+	public static String formatDate(Date date) {
+		return dateFormat.format(date);
 	}
 }
