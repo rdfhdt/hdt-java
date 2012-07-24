@@ -46,7 +46,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	private int patX, patY, patZ;
 	
 	private AdjacencyList adjY, adjZ;
-	private long posY, posZ, minY, minZ, maxY, maxZ;
+	long posY, posZ, minY, minZ, maxY, maxZ;
 	private long nextY, nextZ;
 	private int x, y, z;
 	

@@ -49,7 +49,7 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 	private int patY;
 	
 	private AdjacencyList adjY, adjZ;
-	private long posY, posZ;
+	long posY, posZ;
 	private long prevY, nextY, prevZ, nextZ;
 	private int x, y, z;
 	
@@ -157,7 +157,7 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 		
 		x = (int) adjY.findListIndex(posY)+1;
 		y = (int) adjY.get(posY);
-        z = (int) adjY.get(posZ);
+        z = (int) adjZ.get(posZ);
 	}
 
 	/* (non-Javadoc)
