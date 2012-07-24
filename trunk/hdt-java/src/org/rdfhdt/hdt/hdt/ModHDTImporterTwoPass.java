@@ -78,7 +78,7 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 			throws IOException, ParserException {
 		
 		// Create Modifiable Instance and parser
-		HDTRW modHDT = new HDTRW(new HDTSpecification());
+		HDTRW modHDT = new HDTRW(spec);
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 		
 		// Load dictionary

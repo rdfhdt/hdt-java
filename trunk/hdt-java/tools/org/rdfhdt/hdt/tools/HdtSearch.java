@@ -127,12 +127,14 @@ public class HdtSearch implements ProgressListener {
 	public static void main(String[] args) throws Throwable {
 		HdtSearch hdtSearch = new HdtSearch();
 		JCommander com = new JCommander(hdtSearch, args);
-		if(hdtSearch.parameters.size()<1) {
+		
+		try {
+			if (hdtSearch.hdtInput==null)
+				hdtSearch.hdtInput = hdtSearch.parameters.get(0);
+		} catch (Exception e){
 			com.usage();
 			System.exit(1);
 		}
-		
-		hdtSearch.hdtInput = hdtSearch.parameters.get(0);
 		
 		hdtSearch.execute();
 	}

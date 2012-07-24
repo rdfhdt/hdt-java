@@ -42,6 +42,11 @@ public interface ModifiableDictionary extends Dictionary {
 	 */
 	public void startProcessing();
 	
+	/**
+	 * To be executed at the end of the processing
+	 * 
+	 */
+	public void endProcessing();
 
 	/**
 	 * Inserts a string in the dictionary in a position

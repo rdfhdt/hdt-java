@@ -69,7 +69,7 @@ public interface DictionarySection {
 	 * Iterator over all entries in the dictionary, sorted lexicographically.
 	 * @return
 	 */
-	public Iterator<CharSequence> getSortedEntries();
+	public Iterator<? extends CharSequence> getSortedEntries();
 	
 	/**
 	 * Serialize dictionary to a stream.

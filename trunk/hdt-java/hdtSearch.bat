@@ -1,1 +1,1 @@
-java -Xmx1024M -classpath bin;lib/* org.rdfhdt.hdt.tools.HdtSearch %*
+java -Xmx1024M -classpath bin;lib/*;lib/DBs/* org.rdfhdt.hdt.tools.HdtSearch %*

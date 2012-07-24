@@ -57,7 +57,7 @@ public class HDTRW implements ModifiableHDT {
 	ModifiableTriples triples;
 	
 	protected HDTRW(HDTSpecification spec) {
-		dictionary = DictionaryFactory.createModifiableDictionary();
+		dictionary = DictionaryFactory.createModifiableDictionary(spec);
 		triples = TriplesFactory.createModifiableTriples();
 	}
 	

@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.dictionary;
 
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
+import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
 import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -38,6 +39,9 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * 
  */
 public class DictionaryFactory {
+	
+	public static final String DICT_MOD_HASH = "hash";
+	public static final String DICT_MOD_JDBM = "jdbm";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -54,9 +58,17 @@ public class DictionaryFactory {
 	 * 
 	 * @return Dictionary
 	 */
-	public static ModifiableDictionary createModifiableDictionary()
+	public static ModifiableDictionary createModifiableDictionary(HDTSpecification spec)
 			throws IllegalArgumentException {
-		return new HashDictionary(new HDTSpecification());
+		//FIXME ... dictionary.name as option... some values in HDTVocabulary... ?
+		String dictName = spec.get("dictionary.name");
+		//TODO switch-case can use String in 1.7 and after...
+		if (DICT_MOD_HASH.equalsIgnoreCase(dictName)){
+			return new HashDictionary(spec);
+		} else if (DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
+			return new JDBMDictionary(spec);
+		}
+		return new HashDictionary(spec);
 	}
 	
 	public static Dictionary createDictionary(HDTSpecification spec) {
@@ -73,13 +85,14 @@ public class DictionaryFactory {
 	 * @param spec Specification of the required dictionary
 	 * @return Dictionary
 	 */
+	//FIXME specs passed on...?
 	private static Dictionary create(String name) {
 		if(HDTVocabulary.DICTIONARY_TYPE_PFC.equals(name)) {
 			return new SectionDictionary(new HDTSpecification());
 		} else if(HDTVocabulary.DICTIONARY_TYPE_PLAIN.equals(name)) {
+			//FIXME other versions...?
 			return new HashDictionary(new HDTSpecification());
-		} else {
-			return new SectionDictionary(new HDTSpecification());
 		}
+		return new SectionDictionary(new HDTSpecification());
 	}
 }

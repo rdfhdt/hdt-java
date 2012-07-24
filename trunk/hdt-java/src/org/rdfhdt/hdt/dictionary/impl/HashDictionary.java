@@ -112,6 +112,14 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	}
 	
 	/* (non-Javadoc)
+	 * @see hdt.dictionary.Dictionary#endProcessing()
+	 */
+	@Override
+	public void endProcessing() {
+		
+	}
+	
+	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#reorganize(hdt.triples.ModifiableTriples)
 	 */
 	@Override
@@ -123,7 +131,7 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 		StopWatch st = new StopWatch();
 		
 		// Generate old subject mapping
-		Iterator<CharSequence> itSubj = ((DictionarySectionModifiable) subjects).getEntries();
+		Iterator<? extends CharSequence> itSubj = ((DictionarySectionModifiable) subjects).getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			mapSubj.add(str);
@@ -137,21 +145,21 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 
 		// Generate old predicate mapping
 		st.reset();
-		Iterator<CharSequence> itPred = ((DictionarySectionModifiable) predicates).getEntries();
+		Iterator<? extends CharSequence> itPred = ((DictionarySectionModifiable) predicates).getEntries();
 		while(itPred.hasNext()) {
 			CharSequence str = itPred.next();
 			mapPred.add(str);
 		}		
 		
 		// Generate old object mapping
-		Iterator<CharSequence> itObj = ((DictionarySectionModifiable) objects).getEntries();
+		Iterator<? extends CharSequence> itObj = ((DictionarySectionModifiable) objects).getEntries();
 		while(itObj.hasNext()) {
 			CharSequence str = itObj.next();
 			mapObj.add(str);
 		}
 		
 		// Remove shared from subjects and objects
-		Iterator<CharSequence> itShared = ((DictionarySectionModifiable) shared).getEntries();
+		Iterator<? extends CharSequence> itShared = ((DictionarySectionModifiable) shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			((DictionarySectionModifiable)subjects).remove(sharedStr);
@@ -209,18 +217,18 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	public void reorganize() {
 
 		// Generate shared
-		Iterator<CharSequence> itSubj = subjects.getSortedEntries();
+		Iterator<? extends CharSequence> itSubj = ((DictionarySectionModifiable)subjects).getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			
-			// FIXME: This checks really needed?
+			// FIXME: These checks really needed?
 			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
 				((DictionarySectionModifiable)shared).add(str);
 			}
 		}
 		
 		// Remove shared from subjects and objects
-		Iterator<CharSequence> itShared = shared.getSortedEntries();
+		Iterator<? extends CharSequence> itShared = ((DictionarySectionModifiable)shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			((DictionarySectionModifiable)subjects).remove(sharedStr);

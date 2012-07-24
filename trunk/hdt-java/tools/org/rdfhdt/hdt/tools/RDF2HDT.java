@@ -27,7 +27,6 @@
 package org.rdfhdt.hdt.tools;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -94,6 +93,9 @@ public class RDF2HDT implements ProgressListener {
 		if(generateIndex) {
 			hdt.loadOrCreateIndex(this);
 		}
+		//TODO REMOVE
+		System.out.println("triples= "+hdt.getTriples().getNumberOfElements());
+		
 		// Debug all inserted triples
 		//HdtSearch.iterate(hdt, "","","");
 	}

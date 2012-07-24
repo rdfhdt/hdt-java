@@ -113,15 +113,15 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	 * @see hdt.dictionary.DictionarySection#getEntries()
 	 */
 	@Override
-	public Iterator<CharSequence> getSortedEntries() {
+	public Iterator<? extends CharSequence> getSortedEntries() {
 		if(!sorted) {
-			this.sort();
+			this.sort(); //FIXME not sure this is smart... because of use in one-pass way of working (if something calls this before remapping done everything is wrong... and most probably will not be detected as an error because everything will work)
 		}
 		return list.iterator();
 	}
 	
 	@Override
-	public Iterator<CharSequence> getEntries() {
+	public Iterator<? extends CharSequence> getEntries() {
 		return list.iterator();
 	}
 
@@ -152,12 +152,16 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 		// Not found, insert new
 		list.add(compact);
 		map.put(compact, list.size());
+		
 		size+=compact.length();
+		sorted = false; //because if sorted won't be anymore
+		
 		return list.size();
 	}
 
 	public void remove(CharSequence seq) {
 		map.remove(seq);
+		sorted = false; //because if sorted won't be anymore
 	}
 	
 	public void sort() {
@@ -183,11 +187,12 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	 */
 	@Override
 	public void load(DictionarySection other, ProgressListener listener) {
-		Iterator<CharSequence> it = other.getSortedEntries();
+		Iterator<? extends CharSequence> it = other.getSortedEntries();
 		while(it.hasNext()) {
 			CharSequence str = it.next();
 			this.add(str);
 		}
+		sorted = false; //because if sorted won't be anymore
 	}
 
 	@Override
@@ -195,5 +200,6 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 		list.clear();
 		map.clear();
 		size=0;
+		sorted = false; //because if sorted won't be anymore
 	}
 }

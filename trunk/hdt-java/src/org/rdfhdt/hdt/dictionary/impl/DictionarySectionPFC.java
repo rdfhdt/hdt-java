@@ -81,7 +81,7 @@ public class DictionarySectionPFC implements DictionarySection {
 		CharSequence previousStr=null;
 		
 		try {
-			Iterator<CharSequence> it = other.getSortedEntries();
+			Iterator<? extends CharSequence> it = other.getSortedEntries();
 			while(it.hasNext()) {
 				CharSequence str = it.next();
 				//ensureSize(bytes+str.length()+4);

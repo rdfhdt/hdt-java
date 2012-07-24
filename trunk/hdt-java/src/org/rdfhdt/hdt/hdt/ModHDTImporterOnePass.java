@@ -67,7 +67,7 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 			throws IOException, ParserException {
 		
 		// Create Modifiable Instance
-		HDTRW modHDT = new HDTRW(new HDTSpecification());
+		HDTRW modHDT = new HDTRW(spec);
 		ModifiableDictionary dictionary = modHDT.dictionary;
 		ModifiableTriples triples = modHDT.triples;
 		

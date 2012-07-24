@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.hdt;
 import java.io.File;
 import java.io.IOException;
 
+import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -43,8 +44,8 @@ import org.rdfhdt.hdt.util.StopWatch;
 public class HDTFactory {
 	
 	// TODO: Choose from config file / depending on input size?
-	private static ModHDTImporter converter = new ModHDTImporterOnePass();
-	//private static ModHDTImporter converter = new ModHDTImporterTwoPass();
+	//private static ModHDTImporter converter = new ModHDTImporterOnePass();
+	private static ModHDTImporter converter = new ModHDTImporterTwoPass();
 
 	/**
 	 * Creates a default HDT
@@ -69,6 +70,7 @@ public class HDTFactory {
 		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
 		BaseHDT hdt = new BaseHDT(spec);
 		hdt.loadFromModifiableHDT(modHdt, listener);
+		((ModifiableDictionary)modHdt.getDictionary()).endProcessing();
 		
 		hdt.populateHeaderStructure(baseUri);
 		hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, new File(filename).length());

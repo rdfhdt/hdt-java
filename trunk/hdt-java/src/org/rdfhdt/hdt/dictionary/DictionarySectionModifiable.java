@@ -41,6 +41,6 @@ public interface DictionarySectionModifiable extends DictionarySection {
 	 * Iterator over all entries in the dictionary, not neccessarily sorted.
 	 * @return
 	 */
-	public Iterator<CharSequence> getEntries();
+	public Iterator<? extends CharSequence> getEntries();
 	public void clear();
 }

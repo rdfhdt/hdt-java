@@ -35,7 +35,7 @@ import java.io.IOException;
  * 
  */
 public class HDTSpecification extends HDTOptionsBase {
-	
+
 	/**
 	 * Default constructor, reads the file config.properties
 	 * 
@@ -55,17 +55,17 @@ public class HDTSpecification extends HDTOptionsBase {
 		super();
 		load(filename);
 	}
-	
+
 	public void load(String filename) throws IOException {
-        FileInputStream fin = null;
-        try {
-                fin = new FileInputStream(filename);
-                properties.load(fin);
-                fin.close();
-        } catch (IOException e) {
-                try {fin.close();} catch (IOException ignorable) {/*ignorable*/}
-                throw e;
-        }
+		FileInputStream fin = null;
+		try {
+			fin = new FileInputStream(filename);
+			properties.load(fin);
+			fin.close();
+		} catch (IOException e) {
+			try {fin.close();} catch (IOException ignorable) {/*ignorable*/}
+			throw e;
+		}
 	}
 
 }
