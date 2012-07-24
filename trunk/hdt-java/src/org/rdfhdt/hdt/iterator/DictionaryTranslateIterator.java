@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.iterator;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -112,6 +113,16 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	@Override
 	public void goToStart() {
 		iterator.goToStart();
+	}
+
+	@Override
+	public long estimatedNumResults() {
+		return iterator.estimatedNumResults();
+	}
+
+	@Override
+	public ResultEstimationType numResultEstimation() {		
+		return iterator.numResultEstimation();
 	}
 
 }

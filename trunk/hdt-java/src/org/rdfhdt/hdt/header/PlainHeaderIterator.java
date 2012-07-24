@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.header;
 
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -114,6 +115,16 @@ public class PlainHeaderIterator implements IteratorTripleString {
 	@Override
 	public void remove() {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public long estimatedNumResults() {
+		return header.triples.size();
+	}
+
+	@Override
+	public ResultEstimationType numResultEstimation() {
+		return ResultEstimationType.UP_TO;
 	}
 
 }

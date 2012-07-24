@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.iterator;
 
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.triples.TripleString;
 
 import java.util.Iterator;
@@ -57,4 +58,8 @@ public interface IteratorTripleString extends Iterator<TripleString> {
 	public TripleString previous();
 	
 	public void goToStart();
+	
+	public long estimatedNumResults();
+	
+	public ResultEstimationType numResultEstimation();
 }
