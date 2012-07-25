@@ -109,17 +109,13 @@ public class SectionDictionary extends BaseDictionary {
 	
 		IntermediateListener iListener = new IntermediateListener(listener);
 		
-		shared = DictionarySectionFactory.createInstance(input, iListener);
-		shared.load(input, iListener);
+		shared = DictionarySectionFactory.loadFrom(input, iListener);
 				
-		subjects = DictionarySectionFactory.createInstance(input, iListener);
-		subjects.load(input, iListener);
+		subjects = DictionarySectionFactory.loadFrom(input, iListener);
 		
-		predicates = DictionarySectionFactory.createInstance(input, iListener);
-		predicates.load(input, iListener);
+		predicates = DictionarySectionFactory.loadFrom(input, iListener);
 		
-		objects = DictionarySectionFactory.createInstance(input, iListener);
-		objects.load(input,iListener);
+		objects = DictionarySectionFactory.loadFrom(input, iListener);
 	}
 
 	/* (non-Javadoc)

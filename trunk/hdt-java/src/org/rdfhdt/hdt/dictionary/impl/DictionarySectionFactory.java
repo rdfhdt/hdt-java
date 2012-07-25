@@ -27,12 +27,12 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
-
-import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author mario.arias
@@ -46,8 +46,33 @@ public class DictionarySectionFactory {
 			return new DictionarySectionHash(new HDTSpecification());
 		case DictionarySectionPFC.TYPE_INDEX:
 //			return new DictionarySectionPFC(new HDTSpecification());
-			return new DictionarySectionCache(new DictionarySectionPFC(new HDTSpecification()));
-//			return new DictionarySectionCache(new DictionarySectionPFCBig(new HDTSpecification()));
+			//return new DictionarySectionCache(new DictionarySectionPFC(new HDTSpecification()));
+			return new DictionarySectionCache(new DictionarySectionPFCBig(new HDTSpecification()));
+		}
+		throw new IOException("DictionarySection implementation not available for id "+dictType);
+	}
+	
+	public static DictionarySection loadFrom(InputStream input, ProgressListener listener) throws IOException {
+		int dictType = input.read();
+		
+		DictionarySection section=null;
+		
+		switch(dictType) {
+		case DictionarySectionHash.TYPE_INDEX:
+			section = new DictionarySectionHash(new HDTSpecification());
+			section.load(input, listener);
+			return section;
+		case DictionarySectionPFC.TYPE_INDEX:
+			try{
+				// First try load using the standard PFC 
+				section = new DictionarySectionPFC(new HDTSpecification());
+				section.load(input, listener);
+			} catch (IllegalArgumentException e) {
+				// The PFC Could not load the file because it is too big, use PFCBig
+				section = new DictionarySectionPFCBig(new HDTSpecification());
+				section.load(input, listener);
+			}
+			return new DictionarySectionCache(section);
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}

@@ -369,12 +369,18 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
+		input.mark(64);
 		numstrings = (int) VByte.decode(input);
-		int bytes = (int) VByte.decode(input);
+		long bytes = VByte.decode(input);
+		if(bytes>Integer.MAX_VALUE) {
+			input.reset();
+			throw new IllegalArgumentException("This class cannot process files with a packed buffer bigger than 2GB"); 
+		}
+		
 		blocksize = (int) VByte.decode(input);
 		
 		blocks = new LogArray64();
 		blocks.load(input, listener);
-		text = IOUtil.readBuffer(input, bytes, listener);
+		text = IOUtil.readBuffer(input, (int) bytes, listener);
 	}
 }
