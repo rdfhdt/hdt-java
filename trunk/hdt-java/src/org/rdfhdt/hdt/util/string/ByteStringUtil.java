@@ -70,7 +70,13 @@ public class ByteStringUtil {
 	}
 	
 	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2) {
-		return strcmp(buff1, off1, buff2, off2, Math.min(buff1.length-off1, buff2.length-off2));
+		int len = Math.min(buff1.length-off1, buff2.length-off2);
+		
+		if(len==0) {
+			// Empty string is smaller than any string.
+			return (buff2.length-off2)-(buff1.length-off1);
+		}
+		return strcmp(buff1, off1, buff2, off2, len);
 	}
 	
 	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2, int n) {
