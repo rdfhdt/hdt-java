@@ -118,6 +118,9 @@ public class BitmapTriples implements Triples {
 			x = triple.getSubject();
 			y = triple.getPredicate();
 			z = triple.getObject();
+			if(x==0 || y==0 || z==0) {
+				throw new IllegalFormatException("None of the components of a triple can be null");
+			}
 			
 			if(numTriples==0) {
 				// First triple
@@ -507,15 +510,18 @@ public class BitmapTriples implements Triples {
 		}
 
 	private void createIndexObjects() {
+		// FIXME: Very memory inefficient. Think of a better way.
 		class Pair {
 			int valueY;
 			int positionY;
 		};
 		
 		ArrayList<List<Pair>> list=new ArrayList<List<Pair>>();
-			
+		
+		System.out.println("Generate object lists");
 		// Generate lists
-		for(long i=0;i<arrayZ.getNumberOfElements();i++) {
+		long total=arrayZ.getNumberOfElements();
+		for(long i=0;i<total;i++) {
 			Pair pair = new Pair();
 			pair.positionY = (int)adjZ.findListIndex(i);
 			pair.valueY = (int) arrayY.get(pair.positionY);
@@ -525,25 +531,31 @@ public class BitmapTriples implements Triples {
 			if(list.size()<=(int)valueZ) {
 				list.ensureCapacity((int)valueZ);
 				while(list.size()<valueZ) {
-					list.add(new ArrayList<Pair>());	
+					list.add(new ArrayList<Pair>(1));	
 				}
 			}
 			
 			List<Pair> inner = list.get((int)valueZ-1);
 			if(inner==null) {
-				inner = new ArrayList<Pair>();
+				inner = new ArrayList<Pair>(1);
 				list.set((int)valueZ-1, inner);
 			}
 			
 			inner.add(pair);
+
+			if((i%100000)==0) {
+				System.out.println("Processed: "+i+" objects out of "+total);
+			}
 		}
 		
+		System.out.println("Serialize object lists");
 		// Serialize
 		LogArray64 indexZ = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()), list.size());
 		BitSequence375 bitmapIndexZ = new BitSequence375(arrayY.getNumberOfElements());
 		long pos = 0;
 		
-		for(int i=0;i<list.size(); i++) {
+		total = list.size();
+		for(int i=0;i<total; i++) {
 			List<Pair> inner = list.get(i);
 			
 			// Sort by Y
@@ -565,6 +577,13 @@ public class BitmapTriples implements Triples {
 				}
 				pos++;
 			}
+			
+			if((i%100000)==0) {
+				System.out.println("Serialized: "+i+" lists out of "+total);
+			}
+			
+			// Dereference processed list to let GC release the memory.
+			list.set(i, null);
 		}
 		
 		this.indexZ = indexZ;
