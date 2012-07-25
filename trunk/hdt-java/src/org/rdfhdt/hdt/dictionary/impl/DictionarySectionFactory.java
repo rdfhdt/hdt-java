@@ -47,6 +47,7 @@ public class DictionarySectionFactory {
 		case DictionarySectionPFC.TYPE_INDEX:
 //			return new DictionarySectionPFC(new HDTSpecification());
 			return new DictionarySectionCache(new DictionarySectionPFC(new HDTSpecification()));
+//			return new DictionarySectionCache(new DictionarySectionPFCBig(new HDTSpecification()));
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}

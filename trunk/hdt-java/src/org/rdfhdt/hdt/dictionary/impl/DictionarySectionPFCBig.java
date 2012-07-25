@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/DictionarySectionPFC.java $
+ * Revision: $Rev: 30 $
+ * Last modified: $Date: 2012-07-23 11:59:21 +0100 (lun, 23 jul 2012) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,8 +27,6 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,31 +38,32 @@ import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.Mutable;
-import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
+ * Implementation of Plain Front Coding that stores each block in its own array, therefore
+ * overcoming Java's limitation of 2Gb for a single array.
+ * 
+ *  It allows loading much bigger files, but wastes a lot of memory in pointers to the blocks.
+ *  
+ *  TODO: Make it gather a few blocks in each array.
+ *  
  * @author mario.arias
  *
  */
-public class DictionarySectionPFC implements DictionarySection {
+public class DictionarySectionPFCBig implements DictionarySection {
 	public static final int TYPE_INDEX = 2;
-	public static final int DEFAULT_BLOCK_SIZE = 8;
+	public static final int DEFAULT_BLOCK_SIZE = 32;
 	
-	// FIXME: Due to java array indexes being int, only 2GB can be addressed per dictionary section.
-	protected byte [] text; // Encoded sequence
+	byte [][] data;
 	protected int blocksize;
 	protected int numstrings;
-	protected LogArray64 blocks;
+	protected long size;
 	
-	public DictionarySectionPFC(HDTSpecification spec) {
-		this.blocksize = (int) spec.getInt("pfc.blocksize");
-		if(blocksize==0) {
-			blocksize = DEFAULT_BLOCK_SIZE;
-		}
+	public DictionarySectionPFCBig(HDTSpecification spec) {
+
 	}
 	
 	/* (non-Javadoc)
@@ -72,71 +71,21 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void load(DictionarySection other, ProgressListener listener) {
-		this.blocks = new LogArray64(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
-		this.numstrings = 0;
-		//this.text = new byte[(int)other.size()/10];
-		
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-		DataOutputStream dout = new DataOutputStream(byteOut);
-		
-		CharSequence previousStr=null;
-		
-		try {
-			Iterator<? extends CharSequence> it = other.getSortedEntries();
-			while(it.hasNext()) {
-				CharSequence str = it.next();
-				//ensureSize(bytes+str.length()+4);
-
-				if(numstrings%blocksize==0) {
-					// Add new block pointer
-					blocks.append(byteOut.size());
-
-					// Copy full string
-					ByteStringUtil.append(dout, str, 0);
-				} else {
-					// Find common part.
-					int delta = ByteStringUtil.longestCommonPrefix(previousStr, str);
-					// Write Delta in VByte
-					VByte.encode(dout, delta);
-					// Write remaining
-					ByteStringUtil.append(dout, str, delta);
-				}
-				dout.write(0); // End of string
-
-				numstrings++;
-				previousStr = str;
-			}
-			
-			// Ending block pointer.
-			blocks.append(byteOut.size());
-
-			// Trim text/blocks
-			blocks.aggresiveTrimToSize();
-
-			dout.flush();
-			text = byteOut.toByteArray();
-
-			// DEBUG
-			//dumpAll();
-		} catch (IOException e) {
-
-		}
+		throw new NotImplementedException();
 	}
-		
-	private int locateBlock(CharSequence str) {
-		if(blocks.getNumberOfElements()==0) {
-			return -1;
-		}
-		
+	
+	/**
+	 * Locate the block of a string doing binary search.
+	 */
+	private int locateBlock(CharSequence str) {	
 		int low = 0;
-		int high = (int)blocks.getNumberOfElements()-1;
+		int high = data.length - 1;
 		
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
-			System.out.println("Locateblock: "+low+" / "+ mid + " / "+ high);
-			
-			int cmp = ByteStringUtil.strcmp(str, text, (int)blocks.get(mid));
-//			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(text, (int)blocks.get(mid))+ " Result: "+cmp);
+
+			int cmp = ByteStringUtil.strcmp(str, data[mid], 0);
+			//System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(data[mid], 0)+ " Result: "+cmp);
 
 			if (cmp<0) {
 				high = mid - 1;
@@ -149,16 +98,12 @@ public class DictionarySectionPFC implements DictionarySection {
 		return -(low + 1);  // key not found.
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.DictionarySection#locate(java.lang.CharSequence)
 	 */
 	@Override
 	public int locate(CharSequence str) {
-		if(text==null || blocks==null) {
-			return 0;
-		}
-		
+
 		int blocknum = locateBlock(str);
 		if(blocknum>=0) {
 			// Located exactly
@@ -168,7 +113,7 @@ public class DictionarySectionPFC implements DictionarySection {
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				int idblock = locateInBlock(blocknum, str);
+				int idblock = locateInBlock(data[blocknum], str);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -176,37 +121,33 @@ public class DictionarySectionPFC implements DictionarySection {
 			}
 		}
 		
+		// Not found
 		return 0;
 	}
-	
-	public int locateInBlock(int block, CharSequence str) {
-		if(block>=blocks.getNumberOfElements()) {
-			return 0;
-		}
 		
-		int pos = (int)blocks.get(block);
+	private int locateInBlock(byte[] block, CharSequence str) {
+		
+		int pos = 0;
 		ReplazableString tempString = new ReplazableString();
 		
 		Mutable<Long> delta = new Mutable<Long>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
-//		dumpBlock(block);
-		
 		// Read the first string in the block
-		int slen = ByteStringUtil.strlen(text, pos);
-		tempString.append(text, pos, slen);
+		int slen = ByteStringUtil.strlen(block, pos);
+		tempString.append(block, pos, slen);
 		pos+=slen+1;
 		idInBlock++;
 		
-		while( (idInBlock<blocksize) && (pos<text.length)) 
+		while( (idInBlock<blocksize) && (pos<block.length)) 
 		{
 			// Decode prefix
-			pos += VByte.decode(text, pos, delta);
+			pos += VByte.decode(block, pos, delta);
 			
-			//Copy suffix
-			slen = ByteStringUtil.strlen(text, pos);
-			tempString.replace(delta.getValue().intValue(), text, pos, slen);
+			// Copy suffix
+			slen = ByteStringUtil.strlen(block, pos);
+			tempString.replace(delta.getValue().intValue(), block, pos, slen);
 			
 			if(delta.getValue()>=cshared)
 			{
@@ -229,89 +170,53 @@ public class DictionarySectionPFC implements DictionarySection {
 			
 		}
 
-		if(pos==text.length || idInBlock== blocksize) {
+		// Not found
+		if(pos==block.length || idInBlock== blocksize) {
 			idInBlock=0;
 		}
 		
 		return idInBlock;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
 	public CharSequence extract(int id) {
-		if(text==null || blocks==null) {
-			return null;
-		}
 		
 		if(id<1 || id>numstrings) {
 			return null;
 		}
 		
-		int block = (id-1)/blocksize;
-		int stringid = (id-1)%blocksize;
-		int pos = (int) blocks.get(block);
- 		int len = ByteStringUtil.strlen(text, pos);
+		// Locate block
+		int nblock = (id-1)/blocksize;
+		int nstring = (id-1)%blocksize;
+		int pos = 0;
+		byte [] block=data[nblock];
+		
+		// Copy first string
+ 		int len = ByteStringUtil.strlen(block, pos);
 		
 		Mutable<Long> delta = new Mutable<Long>(0L);
 		ReplazableString tempString = new ReplazableString();
-		tempString.append(text, pos, len);
+		tempString.append(block, pos, len);
 		
-		for(int i=0;i<stringid;i++) {
+		// Copy strings untill we find our's.
+		for(int i=0;i<nstring;i++) {
 			pos+=len+1;
-			pos += VByte.decode(text, pos, delta);
-			len = ByteStringUtil.strlen(text, pos);
-			tempString.replace(delta.getValue().intValue(), text, pos, len);
+			pos += VByte.decode(block, pos, delta);
+			len = ByteStringUtil.strlen(block, pos);
+			tempString.replace(delta.getValue().intValue(), block, pos, len);
 		}
 		return tempString;
 	}
-	
-//	private void dumpAll() {
-//		for(int i=0;i<blocks.getNumberOfElements();i++) {
-//			dumpBlock(i);
-//		}
-//	}
-//	
-//	private void dumpBlock(int block) {
-//		if(text==null || blocks==null || block>=blocks.getNumberOfElements()) {
-//			return;
-//		}
-//		
-//		System.out.println("Dump block "+block);
-//		ReplazableString tempString = new ReplazableString();
-//		Mutable<Integer> delta = new Mutable<Integer>(0);
-//		int idInBlock = 0;
-//			
-//		int pos = (int)blocks.get(block);
-//		
-//		// Copy first string
-//		int len = ByteStringUtil.strlen(text, pos);
-//		tempString.append(text, pos, len);
-//		pos+=len+1;
-//		
-//		System.out.println((block*blocksize+idInBlock)+ " ("+idInBlock+") => "+ tempString);
-//		idInBlock++;
-//		
-//		while( (idInBlock<blocksize) && (pos<text.length)) {
-//			pos += VByte.decode(text, pos, delta);
-//			
-//			len = ByteStringUtil.strlen(text, pos);
-//			tempString.replace(delta.getValue(), text, pos, len);
-//			
-//			System.out.println((block*blocksize+idInBlock)+ " ("+idInBlock+") => "+ tempString + " Delta="+delta.getValue()+ " Len="+len);
-//			
-//			pos+=len+1;
-//			idInBlock++;
-//		}
-//	}
 
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.DictionarySection#size()
 	 */
 	@Override
 	public long size() {
-		return text.length+blocks.size();
+		return size;
 	}
 
 	/* (non-Javadoc)
@@ -354,14 +259,7 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		output.write(TYPE_INDEX);
-		VByte.encode(output, numstrings);
-		VByte.encode(output, text.length);
-		VByte.encode(output, blocksize);
-		
-		blocks.save(output, listener);
-		IOUtil.writeBuffer(output, text, 0, text.length, listener);
-
+		throw new NotImplementedException();
 	}
 
 	/* (non-Javadoc)
@@ -370,11 +268,31 @@ public class DictionarySectionPFC implements DictionarySection {
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		numstrings = (int) VByte.decode(input);
-		int bytes = (int) VByte.decode(input);
-		blocksize = (int) VByte.decode(input);
+		this.size = VByte.decode(input);
+		blocksize = (int)VByte.decode(input);
 		
-		blocks = new LogArray64();
+		// Load block pointers
+		LogArray64 blocks = new LogArray64();
 		blocks.load(input, listener);
-		text = IOUtil.readBuffer(input, bytes, listener);
+		
+		// Initialize global block array
+		int nblocks = (int)blocks.getNumberOfElements()-1;
+		data = new byte[nblocks][];
+		
+		// Read block by block
+		long previous = 0;
+		long current = 0;
+		for(int i=0;i<nblocks;i++) {
+			current = blocks.get(i+1);
+			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+			data[i]=new byte[(int)(current-previous)];
+			
+			int read = input.read(data[i]);
+			if(read!=data[i].length) {
+				throw new IOException("Error reading from input");
+			}
+			previous=current;	
+		}
+		System.out.println("MAxshort"+Short.MAX_VALUE);
 	}
 }
