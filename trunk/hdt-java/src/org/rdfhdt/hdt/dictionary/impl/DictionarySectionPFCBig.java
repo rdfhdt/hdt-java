@@ -293,6 +293,5 @@ public class DictionarySectionPFCBig implements DictionarySection {
 			}
 			previous=current;	
 		}
-		System.out.println("MAxshort"+Short.MAX_VALUE);
 	}
 }
