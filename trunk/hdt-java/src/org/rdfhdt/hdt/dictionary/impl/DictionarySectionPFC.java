@@ -133,7 +133,6 @@ public class DictionarySectionPFC implements DictionarySection {
 		
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
-			System.out.println("Locateblock: "+low+" / "+ mid + " / "+ high);
 			
 			int cmp = ByteStringUtil.strcmp(str, text, (int)blocks.get(mid));
 //			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(text, (int)blocks.get(mid))+ " Result: "+cmp);
