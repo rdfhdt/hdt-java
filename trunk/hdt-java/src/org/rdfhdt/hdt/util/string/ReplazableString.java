@@ -158,12 +158,12 @@ public class ReplazableString implements CharSequence {
 	 */
 	@Override
 	public CharSequence subSequence(int start, int end) {
-		if (start < 0 || end >= (this.length())) {
+		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
 		}
-		byte [] newdata = new byte[end-start+1];
-		System.arraycopy(buffer, start, newdata, 0, end-start+1);
+		byte [] newdata = new byte[end-start];
+		System.arraycopy(buffer, start, newdata, 0, end-start);
 		return new ReplazableString(newdata);
 	}
 	
