@@ -226,7 +226,7 @@ public final class TripleString {
 		
 		char o0 = object.charAt(0);
 		if(o0=='"') {
-			UnicodeEscape.escapeString(object, str);
+			UnicodeEscape.escapeString(object.toString(), str);
 			str.append(" .\n");
 		} else if(o0=='_' ||o0=='<' ) {
 			str.append(object).append(" .\n");

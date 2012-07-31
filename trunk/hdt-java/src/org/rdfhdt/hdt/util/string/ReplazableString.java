@@ -31,6 +31,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 
 
 /**
@@ -41,6 +42,9 @@ import java.io.InputStream;
  *
  */
 public class ReplazableString implements CharSequence {
+	
+	private static final String ENCODING = "UTF-8";
+	
 	byte [] buffer;
 	int used, reserved;
 	/**
@@ -168,6 +172,10 @@ public class ReplazableString implements CharSequence {
 	}
 	
 	public String toString() {
-		return new String(buffer, 0, used);
+		try {
+			return new String(buffer, 0, used, ENCODING);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException("Unexpected: " + ENCODING + " not supported");
+		}
 	}
 }

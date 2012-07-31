@@ -36,7 +36,7 @@ public class UnicodeEscape {
      * etc.), and non-ascii/non-printable characters are escaped using Unicode
      * escapes (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>).
      */
-    public static String escapeString(CharSequence label) {
+    public static String escapeString(String label) {
         try {
             StringBuilder sb = new StringBuilder(2 * label.length());
             escapeString(label, sb);
@@ -55,7 +55,7 @@ public class UnicodeEscape {
      * 
      * @throws IOException
      */
-    public static void escapeString(CharSequence label, Appendable appendable)
+    public static void escapeString(String label, Appendable appendable)
         throws IOException
     {
       

@@ -340,13 +340,13 @@ public class DictionarySectionLiterals implements DictionarySection {
 				char prev = entry.charAt(i-1);
 				if(curr=='@' && prev=='"') {
 					//System.out.println(entry);
-					dataType = entry.subSequence(i, entry.length()-1);
+					dataType = entry.subSequence(i, entry.length());
 					//System.out.println("\tLANG: "+dataType);
 					break;
 				}
 				if(curr=='^' && prev=='^') {
 					//System.out.println(entry);
-					dataType = entry.subSequence(i-1, entry.length()-1);
+					dataType = entry.subSequence(i-1, entry.length());
 					//System.out.println("\tDATATYPE: "+ dataType);
 					break;
 				}

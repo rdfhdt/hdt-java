@@ -48,6 +48,8 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
 			return cs1.compareTo(cs2);
 		}
 		
+		//TODO ... special for String class like for CompactString above
+		
 		int len1 = s1.length();
         int len2 = s2.length();
         int n = Math.min(len1, len2);
