@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
@@ -35,6 +36,7 @@ import java.util.Iterator;
 import org.apache.jdbm.DB;
 import org.apache.jdbm.DBMaker;
 import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -188,7 +190,7 @@ public class JDBMDictionary extends BaseDictionary implements ModifiableDictiona
 	
 	@Override
 	public void endProcessing() {
-		db.close();
+
 	}
 
 
@@ -208,5 +210,30 @@ public class JDBMDictionary extends BaseDictionary implements ModifiableDictiona
 	public String getType() {
 		//FIXME ... different type?
 		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	}
+
+	@Override
+	public void close() throws IOException {
+		db.close();
+	}
+
+	@Override
+	public DictionarySection getSubjects() {
+		return subjects;
+	}
+
+	@Override
+	public DictionarySection getPredicates() {
+		return predicates;
+	}
+
+	@Override
+	public DictionarySection getObjects() {
+		return objects;
+	}
+
+	@Override
+	public DictionarySection getShared() {
+		return shared;
 	}
 }

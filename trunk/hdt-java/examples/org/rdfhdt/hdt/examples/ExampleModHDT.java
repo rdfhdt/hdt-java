@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleInsert.java $
+ * Revision: $Rev: 27 $
+ * Last modified: $Date: 2012-07-19 01:22:22 +0100 (jue, 19 jul 2012) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,20 +27,19 @@
 
 package org.rdfhdt.hdt.examples;
 
-import java.io.IOException;
-
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
+import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleInsert {
+public class ExampleModHDT {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		// Create instance
 		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/");
 		
@@ -48,10 +47,20 @@ public class ExampleInsert {
 		mhdt.insert("uri1", "p1", "val1");
 		mhdt.insert("uri1", "p1", "val2");
 		mhdt.insert("uri1", "p2", "val3");
-		mhdt.insert("uri1", "p2", "val4");
-			
-		// Compact and save
+		mhdt.insert("uri2", "p2", "val4");
+		
+		// Convert to HDT
 		HDT hdt = HDTFactory.createHDTFromModtHDT(new HDTSpecification(), mhdt, null);
-		hdt.saveToHDT("data/example.hdt", null);
+		// Close ModifiableHDT
+		mhdt.close();
+		
+		// Load back
+		ModifiableHDT mhdt2 = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/");
+		mhdt2.loadFromHDT(hdt, null);
+		
+		IteratorTripleString it = mhdt2.search("", "", "");
+		while(it.hasNext()) {
+			System.out.println(it.next());
+		}
 	}
 }

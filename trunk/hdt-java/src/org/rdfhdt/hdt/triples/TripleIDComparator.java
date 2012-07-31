@@ -36,7 +36,7 @@ import java.util.Comparator;
  * Comparator between triples, based on the TripleComponentOrder
  * 
  */
-public class TripleComparator implements Comparator<TripleID> {
+public class TripleIDComparator implements Comparator<TripleID> {
 	private TripleComponentOrder order;
 
 	/**
@@ -45,7 +45,7 @@ public class TripleComparator implements Comparator<TripleID> {
 	 * @param order
 	 *            The order to compare with
 	 */
-	public TripleComparator(TripleComponentOrder order) {
+	public TripleIDComparator(TripleComponentOrder order) {
 		super();
 		this.order = order;
 	}

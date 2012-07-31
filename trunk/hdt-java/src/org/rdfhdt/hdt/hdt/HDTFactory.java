@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.hdt;
 import java.io.File;
 import java.io.IOException;
 
-import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -65,19 +64,45 @@ public class HDTFactory {
 		return new BaseHDT(specification);
 	}
 
+	public static HDT createHDTFromModtHDT(HDTSpecification spec, ModifiableHDT modHdt, ProgressListener listener) throws IOException {
+		BaseHDT hdt = new BaseHDT(spec);
+		
+		modHdt.reorganize(listener);
+		
+		hdt.loadFromModifiableHDT(modHdt, listener);
+		hdt.populateHeaderStructure(modHdt.getBaseURI());
+
+		return hdt;
+	}
+	
 	public static HDT createHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
 		StopWatch st = new StopWatch();
-		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
-		BaseHDT hdt = new BaseHDT(spec);
-		hdt.loadFromModifiableHDT(modHdt, listener);
-		((ModifiableDictionary)modHdt.getDictionary()).endProcessing();
 		
-		hdt.populateHeaderStructure(baseUri);
+		// Create ModifiableHDT
+		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
+		
+		// Convert to HDT
+		HDT hdt = HDTFactory.createHDTFromModtHDT(spec, modHdt, listener);
+		
+		// Add file size to Header
 		hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, new File(filename).length());
 		
 		System.out.println("File converted in: "+st.stopAndShow());
 		
+		modHdt.close();
+		
 		return hdt;
+	}
+	
+	/**
+	 * Creates a ModifiableHDT
+	 * @param spec
+	 * @return
+	 */
+	public static ModifiableHDT createModifiableHDT(HDTSpecification spec, String baseUri) {
+		HDTRW modhdt = new HDTRW(spec);
+		modhdt.baseUri = baseUri;
+		return modhdt;
 	}
 	
 	public static ModifiableHDT createModHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
@@ -85,12 +110,4 @@ public class HDTFactory {
 	}
 
 	
-	/**
-	 * Creates a ModifiableHDT
-	 * @param spec
-	 * @return
-	 */
-	public static ModifiableHDT createModifiableHDT(HDTSpecification spec) {
-		return new HDTRW(spec);
-	}
 }

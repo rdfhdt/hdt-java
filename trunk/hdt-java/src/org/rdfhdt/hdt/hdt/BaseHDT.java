@@ -68,6 +68,7 @@ public class BaseHDT implements HDT {
 	Triples triples;
 	
 	String hdtFileName;
+	String baseUri;
 	
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
@@ -117,6 +118,16 @@ public class BaseHDT implements HDT {
 		iListener.setRange(0, 5);
 		header = HeaderFactory.createHeader(ci);
 		header.load(input, ci, iListener);
+		
+		// Set base URI.
+		try {
+			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
+			if(it.hasNext()) {
+				this.baseUri = it.next().getSubject().toString();
+			}
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
 		
 		// Load dictionary
 		ci.clear();
@@ -246,7 +257,7 @@ public class BaseHDT implements HDT {
 	 */
 	@Override
 	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener) {
-		// WARNING: The modifiable HDT must be reorganized before calling this method.
+		modHdt.reorganize(listener);
 		
         // Get parts
         ModifiableTriples modifiableTriples = (ModifiableTriples) modHdt.getTriples();
@@ -268,8 +279,9 @@ public class BaseHDT implements HDT {
                 StopWatch dictConvTime = new StopWatch();
                 dictionary.load(modifiableDictionary, listener);
                 System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
-        }       
+        }
       
+        this.baseUri = modHdt.getBaseURI();
 	}
 	
 	/* (non-Javadoc)
@@ -299,6 +311,11 @@ public class BaseHDT implements HDT {
 				
 			}
 		} 
+	}
+
+	@Override
+	public String getBaseURI() {
+		return baseUri;
 	}
 
 }

@@ -85,13 +85,16 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 		ModifiableDictionary dictionary = (ModifiableDictionary) modHDT.getDictionary();
 		dictionary.startProcessing();
 		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary, listener));
+		dictionary.endProcessing();
+		
+		// Reorganize IDs
 		dictionary.reorganize();
 		
 		// Load triples
 		ModifiableTriples triples = (ModifiableTriples) modHDT.getTriples();
 		parser.doParse(filename, baseUri, notation, new TripleAppender2(dictionary, triples, listener));
 		
-		// SORT and duplicates
+		// Sort and Duplicates
 		String orderStr = spec.get("triples.component.order");
 		if(orderStr==null)
 			orderStr = "SPO";
@@ -100,6 +103,10 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 		triples.sort(TripleComponentOrder.valueOf(orderStr), listener);
 		triples.removeDuplicates(listener);
 		System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
+		
+		// Mark as reorganized
+		modHDT.isOrganized=true;
+		modHDT.baseUri = baseUri;
 		
 		return modHDT;
 	}

@@ -34,6 +34,7 @@ import java.util.Iterator;
 
 /**
  * Given two iterators of sorted elements, returns the merge of the two in order, discarding duplicates.
+ * Assumes that the input didn't have any duplicates.
  * 
  * @author mario.arias
  *
@@ -95,7 +96,12 @@ public class MergedIterator<T> implements Iterator<T> {
 		}
 		
 		// Compare
-		if(comparator.compare(currentLeft, currentRight)>0) {
+		int cmp = comparator.compare(currentLeft, currentRight); 
+		if(cmp==0) {
+			// Equal, return one, advance both to discard duplicate.
+			advanceRight();
+			return advanceLeft();
+		}else if(cmp>0) {
 			return advanceLeft();
 		} else {
 			return advanceRight();

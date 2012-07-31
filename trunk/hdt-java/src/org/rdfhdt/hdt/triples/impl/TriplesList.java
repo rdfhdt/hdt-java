@@ -37,8 +37,9 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
-import org.rdfhdt.hdt.triples.TripleComparator;
+import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.Triples;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -271,7 +272,7 @@ public class TriplesList implements ModifiableTriples {
 	@Override
 	public void sort(TripleComponentOrder order, ProgressListener listener) {
 		if(this.order!=order) {
-			Collections.sort(arrayOfTriples, new TripleComparator(order));
+			Collections.sort(arrayOfTriples, new TripleIDComparator(order));
 		}
 		this.order = order;
 	}
@@ -364,5 +365,20 @@ public class TriplesList implements ModifiableTriples {
 		this.arrayOfTriples.clear();
 		this.numValidTriples=0;
 		this.order = TripleComponentOrder.Unknown;
+	}
+
+	@Override
+	public void load(Triples triples, ProgressListener listener) {
+		this.clear();
+		IteratorTripleID it = triples.searchAll();
+		while(it.hasNext()) {
+			TripleID triple = it.next();
+			this.insert(triple.getSubject(), triple.getPredicate(), triple.getObject());
+		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		
 	}
 }

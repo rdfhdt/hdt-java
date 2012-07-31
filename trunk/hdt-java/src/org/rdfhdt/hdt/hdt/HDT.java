@@ -120,6 +120,12 @@ public interface HDT extends RDFAccess {
 	public long size();
 	
 	/**
+	 * Get the Base URI for the Dataset.
+	 * @return
+	 */
+	public String getBaseURI();
+	
+	/**
 	 * Search a pattern in a HDT
 	 * 
 	 * The null string acts as a wildcard. (i.e. search(null, null, null)

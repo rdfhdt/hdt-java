@@ -27,6 +27,8 @@
 
 package org.rdfhdt.hdt.triples;
 
+import java.io.Closeable;
+
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
@@ -37,7 +39,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  * {@link Triples}
  * 
  */
-public interface ModifiableTriples extends Triples {
+public interface ModifiableTriples extends Triples, Closeable {
 	/**
 	 * Add one triple
 	 * @param subject
@@ -89,4 +91,9 @@ public interface ModifiableTriples extends Triples {
 	 * Clear all triples, resulting in an empty triples section.
 	 */
 	public abstract void clear();
+	
+	/**
+	 * Load triples from another instance.
+	 */
+	public void load(Triples triples, ProgressListener listener);
 }

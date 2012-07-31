@@ -129,4 +129,12 @@ public interface Dictionary {
 	public void populateHeader(Header header, String rootNode);
 	
 	public String getType(); 
+	
+	public DictionarySection getSubjects();
+	
+	public DictionarySection getPredicates();
+	
+	public DictionarySection getObjects();
+	
+	public DictionarySection getShared();
 }

@@ -27,16 +27,21 @@
 
 package org.rdfhdt.hdt.hdt;
 
+import java.io.Closeable;
+
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.listener.ProgressListener;
 
 /**
  * @author mario.arias
  *
  */
-public interface ModifiableHDT extends HDT {
+public interface ModifiableHDT extends HDT, Closeable {
 	void insert(CharSequence subject, CharSequence predicate, CharSequence object);
 	void insert(IteratorTripleString triples);
 	void remove(CharSequence subject, CharSequence predicate, CharSequence object);
 	void remove(IteratorTripleString triples);
+	void loadFromHDT(HDT hdt, ProgressListener listener);
+	void reorganize(ProgressListener listener);
 	void clear();
 }

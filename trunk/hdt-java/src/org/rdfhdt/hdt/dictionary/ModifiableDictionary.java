@@ -27,6 +27,8 @@
 
 package org.rdfhdt.hdt.dictionary;
 
+import java.io.Closeable;
+
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 
@@ -34,7 +36,7 @@ import org.rdfhdt.hdt.triples.ModifiableTriples;
  * @author mario.arias
  *
  */
-public interface ModifiableDictionary extends Dictionary {
+public interface ModifiableDictionary extends Dictionary, Closeable {
 	
 	/**
 	 * To be executed at the start of the processing

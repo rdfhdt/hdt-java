@@ -27,18 +27,18 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.listener.IntermediateListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 
 
 /**
@@ -64,17 +64,11 @@ public class SectionDictionary extends BaseDictionary {
 	 */
 	@Override
 	public void load(Dictionary other, ProgressListener listener) {
-		if(other instanceof BaseDictionary) {
-			BaseDictionary baseDict = (BaseDictionary) other;
-			
 			IntermediateListener iListener = new IntermediateListener(listener);
-			subjects.load(baseDict.subjects, iListener);
-			predicates.load(baseDict.predicates, iListener);
-			objects.load(baseDict.objects, iListener);
-			shared.load(baseDict.shared, iListener);
-		} else {
-			throw new NotImplementedException();
-		}
+			subjects.load(other.getSubjects(), iListener);
+			predicates.load(other.getPredicates(), iListener);
+			objects.load(other.getObjects(), iListener);
+			shared.load(other.getShared(), iListener);
 	}
 
 	/* (non-Javadoc)
@@ -141,6 +135,26 @@ public class SectionDictionary extends BaseDictionary {
 	@Override
 	public String getType() {
 		return HDTVocabulary.DICTIONARY_TYPE_PFC;
+	}
+
+	@Override
+	public DictionarySection getSubjects() {
+		return subjects;
+	}
+
+	@Override
+	public DictionarySection getPredicates() {
+		return predicates;
+	}
+
+	@Override
+	public DictionarySection getObjects() {
+		return objects;
+	}
+
+	@Override
+	public DictionarySection getShared() {
+		return shared;
 	}
 
 }

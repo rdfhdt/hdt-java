@@ -27,7 +27,13 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+
 import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -40,10 +46,6 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.util.StopWatch;
-
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * @author mario.arias
@@ -255,7 +257,15 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	 */
 	@Override
 	public void load(Dictionary other, ProgressListener listener) {
-		throw new NotImplementedException();
+		((DictionarySectionModifiable)subjects).clear();
+		((DictionarySectionModifiable)predicates).clear();
+		((DictionarySectionModifiable)objects).clear();
+		((DictionarySectionModifiable)shared).clear();
+		
+		((DictionarySectionModifiable)subjects).load(other.getSubjects(), null);
+		((DictionarySectionModifiable)predicates).load(other.getPredicates(), null);
+		((DictionarySectionModifiable)objects).load(other.getObjects(), null);
+		((DictionarySectionModifiable)shared).load(other.getShared(), null);
 	}
 
 
@@ -265,5 +275,31 @@ public class HashDictionary extends BaseDictionary implements ModifiableDictiona
 	@Override
 	public String getType() {
 		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	}
+
+
+	@Override
+	public void close() throws IOException {
+		// Do nothing.
+	}
+
+	@Override
+	public DictionarySection getSubjects() {
+		return subjects;
+	}
+
+	@Override
+	public DictionarySection getPredicates() {
+		return predicates;
+	}
+
+	@Override
+	public DictionarySection getObjects() {
+		return objects;
+	}
+
+	@Override
+	public DictionarySection getShared() {
+		return shared;
 	}
 }

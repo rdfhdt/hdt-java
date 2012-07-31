@@ -49,6 +49,15 @@ public class TriplesFactory {
 	}
 
 	/**
+	 * Creates a new ModifiableTriples (writable triples structure)
+	 * 
+	 * @return ModifiableTriples
+	 */
+	static public ModifiableTriples createModifiableTriples(HDTSpecification spec) {
+		return new TriplesList(spec);
+	}
+	
+	/**
 	 * Creates a new Triples based on an HDTSpecification
 	 * 
 	 * @param specification

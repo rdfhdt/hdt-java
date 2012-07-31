@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ListenerUtil;
@@ -15,7 +14,6 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.util.StopWatch;
 
 public class ModHDTImporterOnePass implements ModHDTImporter {
 
@@ -41,26 +39,6 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
 	};
-
-	private void reorganize(HDTRW modHDT, HDTSpecification spec, ProgressListener listener) {
-		ModifiableDictionary dictionary = modHDT.dictionary;
-		ModifiableTriples triples = modHDT.triples;
-		
-		// Reorganize dictionary and update IDs on Triples accordingly.
-		StopWatch reorgStp = new StopWatch();
-		dictionary.reorganize(triples);
-		System.out.println("Dictionary reorganized in "+reorgStp.stopAndShow());
-
-		// Reorganize triples.
-		String orderStr = spec.get("triples.component.order");
-		if(orderStr==null) {
-			orderStr = "SPO";
-		}
-		StopWatch sortDupTime = new StopWatch();
-		triples.sort(TripleComponentOrder.valueOf(orderStr), listener);
-		triples.removeDuplicates(listener);
-		System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
-	}
 	
 	@Override
 	public ModifiableHDT loadFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
@@ -76,9 +54,12 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
         // Import all triples
         dictionary.startProcessing();
         parser.doParse(filename, baseUri, notation, new TripleAppender(dictionary, triples, listener));
+        dictionary.endProcessing();
 		
 		// Reorganize
-		this.reorganize(modHDT, spec, listener);
+		modHDT.reorganize(listener);
+		
+		modHDT.baseUri = baseUri;
 		
 		return modHDT; 
 	}

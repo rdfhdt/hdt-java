@@ -93,8 +93,8 @@ public class RDF2HDT implements ProgressListener {
 		if(generateIndex) {
 			hdt.loadOrCreateIndex(this);
 		}
-		//TODO REMOVE
-		System.out.println("triples= "+hdt.getTriples().getNumberOfElements());
+
+		System.out.println("Converted "+hdt.getTriples().getNumberOfElements() +" triples");
 		
 		// Debug all inserted triples
 		//HdtSearch.iterate(hdt, "","","");

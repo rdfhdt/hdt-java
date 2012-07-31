@@ -27,6 +27,10 @@
 
 package org.rdfhdt.hdt.hdt;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,31 +38,41 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
+import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.listener.IntermediateListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
+import org.rdfhdt.hdt.util.StopWatch;
 
 /**
  * @author mario.arias
  *
  */
 public class HDTRW implements ModifiableHDT {
+	HDTSpecification spec;
+	
 	Header header;
 	ModifiableDictionary dictionary;
 	ModifiableTriples triples;
 	
+	String baseUri=null;
+	boolean isOrganized=false;
+	
 	protected HDTRW(HDTSpecification spec) {
+		this.spec = spec;
 		dictionary = DictionaryFactory.createModifiableDictionary(spec);
-		triples = TriplesFactory.createModifiableTriples();
+		triples = TriplesFactory.createModifiableTriples(spec);
 	}
 	
 	/* (non-Javadoc)
@@ -90,7 +104,20 @@ public class HDTRW implements ModifiableHDT {
 	 */
 	@Override
 	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();
+		ControlInformation ci = new ControlInformation();
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		ci.clear();
+		ci.setHeader(true);
+		header.save(output, ci, iListener);
+		
+		ci.clear();
+		ci.setDictionary(true);
+		dictionary.save(output, ci, iListener);
+		
+		ci.clear();
+		ci.setTriples(true);
+		triples.save(output, ci, iListener);
 	}
 
 	/* (non-Javadoc)
@@ -98,7 +125,10 @@ public class HDTRW implements ModifiableHDT {
 	 */
 	@Override
 	public void saveToHDT(String fileName, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();
+		OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
+		//OutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+		saveToHDT(out, listener);
+		out.close();
 	}
 
 	/* (non-Javadoc)
@@ -155,7 +185,10 @@ public class HDTRW implements ModifiableHDT {
 	@Override
 	public void remove(IteratorTripleString triples) {
 		// FIXME: Removing from triples is easy, but how to know if the dictionary entry should be removed??
-		throw new NotImplementedException();
+		while(triples.hasNext()) {
+			TripleString triple = triples.next();
+			this.remove(triple.getSubject(), triple.getPredicate(), triple.getObject());
+		}
 	}
 
 	/* (non-Javadoc)
@@ -164,12 +197,7 @@ public class HDTRW implements ModifiableHDT {
 	@Override
 	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
 		// FIXME: Removing from triples is easy, but how to know if the dictionary entry should be removed??
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public void loadOrCreateIndex(ProgressListener listener) {
-		// Do nothing
+		triples.remove(dictionary.tripleStringtoTripleID(new TripleString(subject, predicate, object)));
 	}
 
 	@Override
@@ -180,17 +208,94 @@ public class HDTRW implements ModifiableHDT {
 
 	@Override
 	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener) {
-		throw new NotImplementedException();
+		this.loadFromHDT(modHdt, listener);
 	}
 
 	@Override
 	public void loadFromHDT(InputStream input, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();	
+		ControlInformation ci = new ControlInformation();
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		// Load header
+		ci.clear();
+		ci.load(input);
+		iListener.setRange(0, 5);
+		header = HeaderFactory.createHeader(ci);
+		header.load(input, ci, iListener);
+		
+		// Load dictionary
+		ci.clear();
+		ci.load(input);
+		iListener.setRange(5, 60);
+		dictionary.clear();
+		dictionary.load(input, ci, iListener);
+		
+		// Load Triples
+		ci.clear();
+		ci.load(input);
+		iListener.setRange(60, 100);
+		triples.clear();
+		triples.load(input, ci, iListener);	
 	}
 
 	@Override
 	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();
+//		InputStream in = new GZIPInputStream(new FileInputStream(fileName));
+		InputStream in = new BufferedInputStream(new FileInputStream(fileName));
+		loadFromHDT(in, listener);
+		in.close();
+	}
+
+	@Override
+	public void loadFromHDT(HDT hdt, ProgressListener listener) {
+		Dictionary otherDict = hdt.getDictionary();
+		Triples otherTriples = hdt.getTriples();
+		
+		dictionary.clear();
+		dictionary.load(otherDict, listener);
+		
+		triples.clear();
+		triples.load(otherTriples, listener);
+	}
+
+	@Override
+	public void close() throws IOException {
+		dictionary.close();
+		triples.close();
+	}
+
+	@Override
+	public String getBaseURI() {
+		return baseUri;
+	}
+
+	@Override
+	public void reorganize(ProgressListener listener) {
+		if(!isOrganized) {
+			// Reorganize dictionary and update IDs on Triples accordingly.
+			StopWatch reorgStp = new StopWatch();
+			dictionary.reorganize(triples);
+			System.out.println("Dictionary reorganized in "+reorgStp.stopAndShow());
+
+			// Reorganize triples.
+			String orderStr = spec.get("triples.component.order");
+			if(orderStr==null) {
+				orderStr = "SPO";
+			}
+			
+			// Sort and remove duplicates.
+			StopWatch sortDupTime = new StopWatch();
+			triples.sort(TripleComponentOrder.valueOf(orderStr), listener);
+			triples.removeDuplicates(listener);
+			System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
+			
+			isOrganized=true;
+		}
+	}
+
+	@Override
+	public void loadOrCreateIndex(ProgressListener listener) {
+		// TODO: Do some kind of index to enhance queries.
 	}
 
 }
