@@ -27,9 +27,11 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
@@ -64,8 +66,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 	private Integer IDcounter;
 	private int numElements;
-	private long size;
-	
+
 	//private boolean changesFlag = false;
 	private boolean sorted = false;
 
@@ -77,12 +78,11 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 		this.db = db;
 		this.sectionID = sectionID;
-		
+
 		//Strings have to be used because CHarSequance does not implement Comparable and thus cannot be a key to a TreeMap (I have no choice)
 		this.map_IDToString = db.<Integer, String>createHashMap(sectionID+"_map_IDToString");
 		this.map_StringToID = db.<String, Integer>createTreeMap(sectionID+"_map_StringToID"); //no need for custom comparator, String are sorted lexicographically by their default Comparator
-		
-		this.size = 0;
+
 		this.IDcounter = 0;
 		this.numElements = 0;
 	}
@@ -99,12 +99,12 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		IDcounter++;
 		map_IDToString.put(IDcounter, str);
 		map_StringToID.put(str, IDcounter);
-		
+
 		numElements++;
-		size += charSeq.length(); //FIXME x2 because two maps ?? (and to remove)
+		
 		//changesFlag = true;
 		sorted = false;
-		
+
 		return IDcounter;
 	}
 
@@ -112,29 +112,46 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 	public void remove(CharSequence charSeq) {
 		Integer ID = map_StringToID.remove(charSeq.toString());
 		if (ID==null) return; //string not in dictionary
-		map_IDToString.remove(ID); //TODO quazi-unnecessary... only for consistency
-		
+		map_IDToString.remove(ID); //TODO quasi-unnecessary... only for consistency
+
 		numElements--;
-		size -= charSeq.length(); //FIXME look at add...??
+		
 		//changesFlag = true;
 		sorted = false;
 	}
 
 	@Override
 	public void sort() {
-		
+
 		// first way - persisted linked list instead of map_IDToString (offered by JDBM)
 		// bad sides:
 		//		1) when sorted is it all in memory or is it done somehow with elements partly(mostly) on disc??
-		//		2) this way of sorting very very expencive ??
-		
+		//		2) this way of sorting very very expencive and slow??
+
 		IDcounter = 0;
+		/* FIXME something stupid going on... */
+		PrintStream fout = null;
+		try {
+			File file = new File("DB/sort_jdbm_"+getNumberOfElements()+".txt");
+			file.createNewFile();
+			fout = new PrintStream(file, "UTF-8");
+		/**/
 		for (String key : map_StringToID.keySet()){
 			IDcounter++;
+			fout.println(key+" , ID= "+IDcounter);
+			
 			map_StringToID.put(key, IDcounter);
 			map_IDToString.put(IDcounter, key); 
 		}
-		
+		/* FIXME */
+		} catch (Exception e){
+			fout.println("IDcounter= "+IDcounter+" ; numElem= "+numElements);
+			throw new RuntimeException(e);
+		} finally {
+			fout.close();
+		}
+		/**/
+
 		//changesFlag = true;
 		sorted = true;
 	}
@@ -158,7 +175,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		if (!sorted) return null; //best this way to avoid any misunderstandings
 		return map_StringToID.keySet().iterator();
 	}
-	
+
 	/**
 	 * Does the same as getSortedEntries(), so returns current strings in
 	 * lexicographical order, only it doesn't guarantee that sort was called
@@ -200,9 +217,17 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		sorted = false;
 	}
 
+	/**
+	 * Should return the size in bytes of the structure.
+	 * 
+	 * It is not implemented in this implementation of DictionarySection because it cannot be
+	 * measured. The correct value would be the sum of the sizes of the DB files on disc that the
+	 * object uses to persist the maps in, but that information is not obtainable... and it is
+	 * irrelevant for a DicitonarySectionModifiable anyway.
+	 */
 	@Override
 	public long size() {
-		return size;
+		throw new NotImplementedException();
 	}
 
 	@Override
@@ -210,7 +235,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		map_IDToString.clear();
 		map_StringToID.clear();
 		db.commit();
-		size = 0;
 		//changesFlag = true;
 		sorted = false;
 	}
@@ -243,7 +267,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		public boolean hasNext() {
 			if (changesFlag)
 				throw new ConcurrentModificationException();
-			
+
 			return this.iterated<this.numElements;
 		}
 
@@ -251,7 +275,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		public CharSequence next() {
 			if (changesFlag)
 				throw new ConcurrentModificationException();
-			
+
 			CharSequence value = null;
 			while (value==null){
 				value = map_IDToString.get(currID++);
@@ -269,5 +293,5 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		}
 
 	}
-    */
+	 */
 }

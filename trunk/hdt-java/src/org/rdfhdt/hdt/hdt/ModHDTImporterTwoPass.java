@@ -78,7 +78,8 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 			throws IOException, ParserException {
 		
 		// Create Modifiable Instance and parser
-		HDTRW modHDT = new HDTRW(spec);
+		/* HDTRW modHDT = new HDTRW(spec); */
+		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(spec, baseUri);
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 		
 		// Load dictionary
@@ -105,8 +106,8 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 		System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
 		
 		// Mark as reorganized
-		modHDT.isOrganized=true;
-		modHDT.baseUri = baseUri;
+		((HDTRW)modHDT).isOrganized = true; //FIXME this is a hack... should be done better somehow
+		//modHDT.baseUri = baseUri;
 		
 		return modHDT;
 	}

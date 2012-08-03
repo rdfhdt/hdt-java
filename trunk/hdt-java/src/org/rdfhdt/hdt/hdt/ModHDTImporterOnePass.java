@@ -45,9 +45,10 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 			throws IOException, ParserException {
 		
 		// Create Modifiable Instance
-		HDTRW modHDT = new HDTRW(spec);
-		ModifiableDictionary dictionary = modHDT.dictionary;
-		ModifiableTriples triples = modHDT.triples;
+		/* HDTRW modHDT = new HDTRW(spec); */
+		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(spec, baseUri);
+		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
+		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();
 		
         RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 
@@ -59,7 +60,7 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 		// Reorganize
 		modHDT.reorganize(listener);
 		
-		modHDT.baseUri = baseUri;
+		//modHDT.baseUri = baseUri;
 		
 		return modHDT; 
 	}

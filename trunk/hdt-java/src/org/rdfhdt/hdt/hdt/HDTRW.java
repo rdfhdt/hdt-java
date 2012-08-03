@@ -197,7 +197,8 @@ public class HDTRW implements ModifiableHDT {
 	@Override
 	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
 		// FIXME: Removing from triples is easy, but how to know if the dictionary entry should be removed??
-		triples.remove(dictionary.tripleStringtoTripleID(new TripleString(subject, predicate, object)));
+		triples.remove(dictionary.tripleStringtoTripleID(
+				new TripleString(subject.toString(), predicate.toString(), object.toString()) ));
 	}
 
 	@Override

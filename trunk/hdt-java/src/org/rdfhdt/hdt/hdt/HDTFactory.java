@@ -79,7 +79,7 @@ public class HDTFactory {
 		StopWatch st = new StopWatch();
 		
 		// Create ModifiableHDT
-		ModifiableHDT modHdt = converter.loadFromRDF(spec, filename, baseUri, notation, listener);
+		ModifiableHDT modHdt = HDTFactory.createModHDTFromRDF(spec, filename, baseUri, notation, listener);
 		
 		// Convert to HDT
 		HDT hdt = HDTFactory.createHDTFromModtHDT(spec, modHdt, listener);

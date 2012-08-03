@@ -163,7 +163,7 @@ public class PlainHeader extends HeaderBase implements RDFCallback {
 	 */
 	@Override
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) {
-		TripleString pattern = new TripleString(subject, predicate, object);
+		TripleString pattern = new TripleString(subject.toString(), predicate.toString(), object.toString());
 		return new PlainHeaderIterator(this, pattern);
 	}
 

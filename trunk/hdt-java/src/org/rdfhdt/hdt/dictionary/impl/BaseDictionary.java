@@ -154,9 +154,9 @@ public abstract class BaseDictionary implements Dictionary {
 	@Override
 	public TripleString tripleIDtoTripleString(TripleID tripleID) {
 		return new TripleString(
-				idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT), 
-				idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE), 
-				idToString(tripleID.getObject(), TripleComponentRole.OBJECT)
+				idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT).toString(), 
+				idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE).toString(), 
+				idToString(tripleID.getObject(), TripleComponentRole.OBJECT).toString()
 		);
 	}
 
