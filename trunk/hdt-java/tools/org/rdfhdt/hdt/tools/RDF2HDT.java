@@ -94,6 +94,7 @@ public class RDF2HDT implements ProgressListener {
 			hdt.loadOrCreateIndex(this);
 		}
 
+		//TODO remove debug
 		System.out.println("Converted "+hdt.getTriples().getNumberOfElements() +" triples");
 		
 		// Debug all inserted triples

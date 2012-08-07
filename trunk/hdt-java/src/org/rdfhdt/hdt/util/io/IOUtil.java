@@ -33,6 +33,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 /**
  * @author mario.arias
@@ -67,7 +68,7 @@ public class IOUtil {
 	}
 	
 	public static void writeLine(OutputStream out, String line) throws IOException {
-		out.write(line.getBytes());
+		out.write(line.getBytes(ByteStringUtil.STRING_ENCODING));
 	}
 	
 	public static void writeBuffer(OutputStream output, byte [] buffer, int offset, int length, ProgressListener listener) throws IOException {

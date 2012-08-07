@@ -27,11 +27,9 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.SortedMap;
@@ -42,6 +40,7 @@ import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 /**
  * This is a class implementing a modifiable section of the dictionary that uses
@@ -66,6 +65,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 	private Integer IDcounter;
 	private int numElements;
+	private long size;
 
 	//private boolean changesFlag = false;
 	private boolean sorted = false;
@@ -85,6 +85,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 		this.IDcounter = 0;
 		this.numElements = 0;
+		this.size = 0;
 	}
 
 	@Override
@@ -101,7 +102,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		map_StringToID.put(str, IDcounter);
 
 		numElements++;
-		
+		size += str.getBytes(ByteStringUtil.STRING_ENCODING).length;
 		//changesFlag = true;
 		sorted = false;
 
@@ -129,28 +130,13 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		//		2) this way of sorting very very expencive and slow??
 
 		IDcounter = 0;
-		/* FIXME something stupid going on... */
-		PrintStream fout = null;
-		try {
-			File file = new File("DB/sort_jdbm_"+getNumberOfElements()+".txt");
-			file.createNewFile();
-			fout = new PrintStream(file, "UTF-8");
-		/**/
-		for (String key : map_StringToID.keySet()){
+		
+		for (Map.Entry<String, Integer> e : map_StringToID.entrySet()){
 			IDcounter++;
-			fout.println(key+" , ID= "+IDcounter);
 			
-			map_StringToID.put(key, IDcounter);
-			map_IDToString.put(IDcounter, key); 
+			e.setValue(IDcounter);
+			map_IDToString.put(IDcounter, e.getKey()); 
 		}
-		/* FIXME */
-		} catch (Exception e){
-			fout.println("IDcounter= "+IDcounter+" ; numElem= "+numElements);
-			throw new RuntimeException(e);
-		} finally {
-			fout.close();
-		}
-		/**/
 
 		//changesFlag = true;
 		sorted = true;
@@ -217,17 +203,9 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		sorted = false;
 	}
 
-	/**
-	 * Should return the size in bytes of the structure.
-	 * 
-	 * It is not implemented in this implementation of DictionarySection because it cannot be
-	 * measured. The correct value would be the sum of the sizes of the DB files on disc that the
-	 * object uses to persist the maps in, but that information is not obtainable... and it is
-	 * irrelevant for a DicitonarySectionModifiable anyway.
-	 */
 	@Override
 	public long size() {
-		throw new NotImplementedException();
+		return this.size;
 	}
 
 	@Override

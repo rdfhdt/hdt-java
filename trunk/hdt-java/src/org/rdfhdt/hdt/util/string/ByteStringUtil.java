@@ -32,12 +32,19 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 /**
  * @author mario.arias
  *
  */
 public class ByteStringUtil {
+	
+	/**
+	 * For use in the project when using String.getBytes() and making Strings from byte[]
+	 */
+	public static final Charset STRING_ENCODING = Charset.forName("UTF-8");
+	
 	public static int longestCommonPrefix(byte [] buf1, int off1, byte [] buf2, int off2) {
 		int len1 = buf1.length;
 		int len2 = buf2.length;
@@ -134,7 +141,7 @@ public class ByteStringUtil {
 			return strcmp(((CompactString) str).getData(), 0, text, offset);
 		}
 		if(str instanceof String) {
-			return strcmp(((String) str).getBytes(), 0, text, offset);
+			return strcmp(((String) str).getBytes(ByteStringUtil.STRING_ENCODING), 0, text, offset);
 		}
 		if(str instanceof ReplazableString) {
 			return strcmp(((ReplazableString) str).buffer, 0, text, offset, ((ReplazableString) str).used);
@@ -153,7 +160,7 @@ public class ByteStringUtil {
 		if(str instanceof CompactString) {
 			buf = ((CompactString) str).getData();
 		}else if(str instanceof String) {
-			buf = ((String) str).getBytes();
+			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
 		} else {
 			throw new NotImplementedException();
 		}
@@ -175,7 +182,7 @@ public class ByteStringUtil {
 		byte [] bytes;
 		int len;
 		if(str instanceof String) {
-			bytes = ((String) str).getBytes();
+			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
 			len = bytes.length;
 		} else if(str instanceof CompactString) {
 			bytes = ((CompactString) str).getData();
@@ -194,7 +201,7 @@ public class ByteStringUtil {
 		byte [] bytes;
 		int len;
 		if(str instanceof String) {
-			bytes = ((String) str).getBytes();
+			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
 			len = bytes.length;
 		} else if(str instanceof CompactString) {
 			bytes = ((CompactString) str).getData();

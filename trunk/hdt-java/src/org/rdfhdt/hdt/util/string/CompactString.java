@@ -27,10 +27,9 @@
 
 package org.rdfhdt.hdt.util.string;
 
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
+
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
 /**
  * Implementation of CharSequence that uses only one byte per character to save memory.
@@ -41,7 +40,6 @@ import java.io.UnsupportedEncodingException;
 public class CompactString implements CharSequence, Serializable, Comparable<CompactString> {
 
 	private static final long serialVersionUID = 6789858615261959413L;
-	private static final String ENCODING = "UTF-8";
 	
 	// String buffer as bytes.
 	final byte[] data;
@@ -69,11 +67,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 			data = new byte[Math.min(end-ini+1,rep.used)];
 			System.arraycopy(rep.buffer, ini, data, 0, data.length);
 		} else {
-			try {
-				data = str.toString().substring(ini, end).getBytes(ENCODING);
-			} catch (UnsupportedEncodingException e) {
-				throw new RuntimeException("Unexpected: " + ENCODING + " not supported!");
-			}
+			data = str.toString().substring(ini, end).getBytes(ByteStringUtil.STRING_ENCODING);
 		}
 	}
 	
@@ -108,11 +102,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	}
 
 	public String toString() {
-		try {
-			return new String(data, 0, data.length, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("Unexpected: " + ENCODING + " not supported");
-		}
+		return new String(data, 0, data.length, ByteStringUtil.STRING_ENCODING);
 	}
 	
 	public int hashCode() {

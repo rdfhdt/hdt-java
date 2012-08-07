@@ -229,7 +229,7 @@ public class DictionarySectionDeflate implements DictionarySection {
 				} else if(str instanceof ReplazableString) {
 					bytes = ((ReplazableString) str).getBuffer();
 				} else {
-					bytes = str.toString().getBytes();
+					bytes = str.toString().getBytes(ByteStringUtil.STRING_ENCODING);
 				}
 			
 				if(numstrings%blocksize==0) {

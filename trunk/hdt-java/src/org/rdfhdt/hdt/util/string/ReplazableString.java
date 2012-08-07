@@ -27,11 +27,10 @@
 
 package org.rdfhdt.hdt.util.string;
 
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
 
 /**
@@ -42,8 +41,6 @@ import java.io.UnsupportedEncodingException;
  *
  */
 public class ReplazableString implements CharSequence {
-	
-	private static final String ENCODING = "UTF-8";
 	
 	byte [] buffer;
 	int used, reserved;
@@ -172,10 +169,6 @@ public class ReplazableString implements CharSequence {
 	}
 	
 	public String toString() {
-		try {
-			return new String(buffer, 0, used, ENCODING);
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("Unexpected: " + ENCODING + " not supported");
-		}
+		return new String(buffer, 0, used, ByteStringUtil.STRING_ENCODING);
 	}
 }
