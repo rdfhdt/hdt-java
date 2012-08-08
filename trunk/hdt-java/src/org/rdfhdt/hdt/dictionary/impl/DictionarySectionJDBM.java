@@ -67,7 +67,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 	private int numElements;
 	private long size;
 
-	//private boolean changesFlag = false;
 	private boolean sorted = false;
 
 	public DictionarySectionJDBM(DB db, String sectionName) {
@@ -79,8 +78,8 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		this.db = db;
 		this.sectionID = sectionID;
 
-		//Strings have to be used because CHarSequance does not implement Comparable and thus cannot be a key to a TreeMap (I have no choice)
-		this.map_IDToString = db.<Integer, String>createHashMap(sectionID+"_map_IDToString");
+		//TODO DEBUG
+		this.map_IDToString = db.<Integer, String>createTreeMap(sectionID+"_map_IDToString");
 		this.map_StringToID = db.<String, Integer>createTreeMap(sectionID+"_map_StringToID"); //no need for custom comparator, String are sorted lexicographically by their default Comparator
 
 		this.IDcounter = 0;
@@ -93,7 +92,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		String str = charSeq.toString();
 		Integer pos = map_StringToID.get(str);
 		if(pos!=null) {
-			// Found return existing ID.
+			// found, return existing ID.
 			return pos;
 		}
 		// Not found, insert new
@@ -103,7 +102,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 		numElements++;
 		size += str.getBytes(ByteStringUtil.STRING_ENCODING).length;
-		//changesFlag = true;
 		sorted = false;
 
 		return IDcounter;
@@ -113,32 +111,23 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 	public void remove(CharSequence charSeq) {
 		Integer ID = map_StringToID.remove(charSeq.toString());
 		if (ID==null) return; //string not in dictionary
-		map_IDToString.remove(ID); //TODO quasi-unnecessary... only for consistency
+		map_IDToString.remove(ID); //FIXME quasi-unnecessary... only for consistency
 
 		numElements--;
-		
-		//changesFlag = true;
+		size -= charSeq.toString().getBytes(ByteStringUtil.STRING_ENCODING).length;
 		sorted = false;
 	}
 
 	@Override
 	public void sort() {
 
-		// first way - persisted linked list instead of map_IDToString (offered by JDBM)
-		// bad sides:
-		//		1) when sorted is it all in memory or is it done somehow with elements partly(mostly) on disc??
-		//		2) this way of sorting very very expencive and slow??
-
-		IDcounter = 0;
-		
+		IDcounter = 0;	
 		for (Map.Entry<String, Integer> e : map_StringToID.entrySet()){
 			IDcounter++;
-			
 			e.setValue(IDcounter);
 			map_IDToString.put(IDcounter, e.getKey()); 
 		}
 
-		//changesFlag = true;
 		sorted = true;
 	}
 
@@ -181,14 +170,12 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 	@Override
 	public void save(OutputStream output, ProgressListener listener)
 			throws IOException {
-		// TODO
 		throw new NotImplementedException();
 	}
 
 	@Override
 	public void load(InputStream input, ProgressListener listener)
 			throws IOException {
-		// TODO
 		throw new NotImplementedException();
 	}
 
@@ -199,7 +186,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 			this.add(it.next());
 		}
 		db.commit();
-		//changesFlag = true;
 		sorted = false;
 	}
 
@@ -213,7 +199,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		map_IDToString.clear();
 		map_StringToID.clear();
 		db.commit();
-		//changesFlag = true;
 		sorted = false;
 	}
 
