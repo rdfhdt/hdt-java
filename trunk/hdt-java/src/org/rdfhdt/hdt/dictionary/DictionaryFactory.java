@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.dictionary;
 
+import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
 import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
@@ -42,6 +43,7 @@ public class DictionaryFactory {
 	
 	public static final String DICT_MOD_HASH = "hash";
 	public static final String DICT_MOD_JDBM = "jdbm";
+	public static final String DICT_MOD_BERKELEY = "berkeley";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -67,6 +69,8 @@ public class DictionaryFactory {
 			return new HashDictionary(spec);
 		} else if (DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
 			return new JDBMDictionary(spec);
+		} else if (DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
+			return new BerkeleyDBDictionary(spec);
 		}
 		return new HashDictionary(spec);
 	}
