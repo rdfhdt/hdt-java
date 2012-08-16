@@ -53,7 +53,10 @@ public class DictionarySectionFactory {
 	}
 	
 	public static DictionarySection loadFrom(InputStream input, ProgressListener listener) throws IOException {
+		input.mark(64);
 		int dictType = input.read();
+		input.reset();
+		input.mark(64);		// To allow children to reset() and try another instance.
 		
 		DictionarySection section=null;
 		

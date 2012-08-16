@@ -32,6 +32,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
+import org.rdfhdt.hdt.util.crc.CRC16;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
@@ -108,35 +111,39 @@ public class ControlInformation extends HDTOptionsBase {
 	}
 	
 	public void save(OutputStream output) throws IOException {
-		IOUtil.writeLine(output, "$HDT");
+		CRCOutputStream out = new CRCOutputStream(output, new CRC16());
 		
-		IOUtil.writeShort(output, version);
-		IOUtil.writeShort(output, components);
+		IOUtil.writeLine(out, "$HDT");
+		
+		IOUtil.writeShort(out, version);
+		IOUtil.writeShort(out, components);
 		
 		for (Enumeration<Object> e = properties.keys(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			
-			IOUtil.writeLine(output, key+':'+properties.getProperty(key)+";\n");
+			IOUtil.writeLine(out, key+':'+properties.getProperty(key)+";\n");
 		}
-		IOUtil.writeLine(output, "$END\n");
+		IOUtil.writeLine(out, "$END\n");
+		
+		out.writeCRC();
 	}
 	
 	public void load(InputStream input) throws IOException {
+		CRCInputStream in = new CRCInputStream(input, new CRC16());
        
-        String magic = IOUtil.readChars(input, 4);
+        String magic = IOUtil.readChars(in, 4);
         if(!magic.equals("$HDT")) {
         	 throw new IOException("Non-HDT Section");
         }
  
-        version = IOUtil.readShort(input);
-        components = IOUtil.readShort(input);
+        version = IOUtil.readShort(in);
+        components = IOUtil.readShort(in);
         
         String line;
         StringBuilder out = new StringBuilder();
-        while((line = IOUtil.readLine(input, '\n'))!=null) {
-//        	System.out.println("LINE: "+line);
+        while((line = IOUtil.readLine(in, '\n'))!=null) {
         	out.append(line);
-        	if(line.equals("$END")) {
+        	if(line.endsWith("$END")) {
         		break;
         	}
         }
@@ -152,5 +159,7 @@ public class ControlInformation extends HDTOptionsBase {
         		}
         	}
         }
+        
+        in.readCRCAndCheck();
 	}
 }

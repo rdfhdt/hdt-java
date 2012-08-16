@@ -37,11 +37,17 @@ import java.util.Iterator;
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.exceptions.CRCException;
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.Mutable;
+import org.rdfhdt.hdt.util.crc.CRC32;
+import org.rdfhdt.hdt.util.crc.CRC8;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.ReplazableString;
@@ -353,14 +359,20 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		output.write(TYPE_INDEX);
-		VByte.encode(output, numstrings);
-		VByte.encode(output, text.length);
-		VByte.encode(output, blocksize);
+		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
 		
-		blocks.save(output, listener);
-		IOUtil.writeBuffer(output, text, 0, text.length, listener);
+		out.write(TYPE_INDEX);
+		VByte.encode(out, numstrings);
+		VByte.encode(out, text.length);
+		VByte.encode(out, blocksize);
+				
+		out.writeCRC();
 
+		blocks.save(output, listener);	// Write blocks directly to output, they have their own CRC check.
+		
+		out.setCRC(new CRC32());
+		IOUtil.writeBuffer(out, text, 0, text.length, listener);
+		out.writeCRC();
 	}
 
 	/* (non-Javadoc)
@@ -368,18 +380,37 @@ public class DictionarySectionPFC implements DictionarySection {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		input.mark(64);
-		numstrings = (int) VByte.decode(input);
-		long bytes = VByte.decode(input);
+		CRCInputStream in = new CRCInputStream(input, new CRC8());
+		
+		// Read type
+		int type = in.read();
+		if(type!=TYPE_INDEX) {
+			throw new IllegalFormatException("Trying to read a DictionarySectionPFC from data that is not of the suitable type");
+		}
+		
+		// Read vars
+		numstrings = (int) VByte.decode(in);
+		long bytes = VByte.decode(in);
+		blocksize = (int) VByte.decode(in);		
+	
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Dictionary Section Plain Front Coding Header.");
+		}
+		
 		if(bytes>Integer.MAX_VALUE) {
 			input.reset();
 			throw new IllegalArgumentException("This class cannot process files with a packed buffer bigger than 2GB"); 
 		}
 		
-		blocksize = (int) VByte.decode(input);
-		
+		// Write blocks
 		blocks = new LogArray64();
-		blocks.load(input, listener);
-		text = IOUtil.readBuffer(input, (int) bytes, listener);
+		blocks.load(input, listener);	// Read blocks from input, they have their own CRC check.
+		
+		// Write packed data
+		in.setCRC(new CRC32());
+		text = IOUtil.readBuffer(in, (int) bytes, listener);
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Dictionary Section Plain Front Coding Data.");
+		}
 	}
 }

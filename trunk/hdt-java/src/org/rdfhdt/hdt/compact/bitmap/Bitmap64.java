@@ -32,9 +32,15 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
 
+import org.rdfhdt.hdt.compact.integer.VByte;
+import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.crc.CRC32;
+import org.rdfhdt.hdt.util.crc.CRC8;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
@@ -185,41 +191,65 @@ public class Bitmap64 {
 	}
 
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		output.write((byte)7); // Code for BitSequence375 in C++
-		IOUtil.writeLong(output, numbits);
+		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
+		
+		// Write Type and Numbits
+		out.write((byte)1);
+		VByte.encode(out, numbits);
+		
+		// Write CRC
+		out.writeCRC();
+		
+		// Setup new CRC
+		out.setCRC(new CRC32());
 		int numwords = numWords(numbits);
 		for(int i=0;i<numwords-1;i++) {
-			IOUtil.writeLong(output, words[i]);
+			IOUtil.writeLong(out, words[i]);
 		}
 		
-		if(numwords==0) {
-			return;
+		if(numwords>0) {
+			// Write only used bits from last entry (byte aligned, little endian)
+			int lastWordUsed = lastWordNumBits(numbits);
+			BitUtil.writeLowerBitsByteAligned(words[numwords-1], lastWordUsed, out);			
 		}
 		
-		// Write only used bits from last entry (byte aligned, little endian)
-		int lastWordUsed = lastWordNumBits(numbits);
-		BitUtil.writeLowerBitsByteAligned(words[numwords-1], lastWordUsed, output);
+		out.writeCRC();
 	}
 
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		int type = input.read();
-		if(type!=7) {
+		CRCInputStream in = new CRCInputStream(input, new CRC8());
+		
+		// Read type and numbits
+		int type = in.read();
+		if(type!=1) {
 			throw new IllegalArgumentException("Trying to read Bitmap64 on a section that is not Bitmap64");
 		}
-		numbits = IOUtil.readLong(input);
+		numbits = VByte.decode(in);
+		
+		// Validate CRC
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Bitmap64 header.");
+		}
+		
+		// Setup Data CRC
+		in.setCRC(new CRC32());
+		
+		// Read Words
 		int numwords = numWords(numbits);
 		words = new long[numwords];
 		for(int i=0;i<numwords-1;i++) {
-			words[i] = IOUtil.readLong(input);
+			words[i] = IOUtil.readLong(in);
 		}
 		
-		if(numwords==0) {
-			return;
+		if(numwords>0) {
+			// Read only used bits from last entry (byte aligned, little endian)
+			int lastWordUsedBits = lastWordNumBits(numbits);
+			words[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsedBits, in);
 		}
-		
-		// Read only used bits from last entry (byte aligned, little endian)
-		int lastWordUsedBits = lastWordNumBits(numbits);
-		words[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsedBits, input);
+		 
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Bitmap64 data.");
+		}
 	}
 	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()

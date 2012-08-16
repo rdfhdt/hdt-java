@@ -33,9 +33,15 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
+import org.rdfhdt.hdt.exceptions.CRCException;
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.crc.CRC32;
+import org.rdfhdt.hdt.util.crc.CRC8;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
@@ -246,21 +252,27 @@ public class LogArray64 implements DynamicArray {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		output.write(numbits);
-		VByte.encode(output, numentries);
-		int numwords = (int)numWordsFor(numbits, numentries);
+		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
 		
+		out.write(numbits);
+		VByte.encode(out, numentries);
+		
+		out.writeCRC();
+		
+		out.setCRC(new CRC32());
+		
+		int numwords = (int)numWordsFor(numbits, numentries);	
 		for(int i=0;i<numwords-1;i++) {
-			IOUtil.writeLong(output, data[i]);
+			IOUtil.writeLong(out, data[i]);
 		}
 		
-		if(numwords==0) {
-			return;
+		if(numwords>0) {
+			// Write only used bits from last entry (byte aligned, little endian)
+			int lastWordUsedBits = lastWordNumBits(numbits, numentries);
+			BitUtil.writeLowerBitsByteAligned(data[numwords-1], lastWordUsedBits, out);
 		}
 		
-		// Write only used bits from last entry (byte aligned, little endian)
-		int lastWordUsedBits = lastWordNumBits(numbits, numentries);
-		BitUtil.writeLowerBitsByteAligned(data[numwords-1], lastWordUsedBits, output);
+		out.writeCRC();
 	}
 
 	/* (non-Javadoc)
@@ -268,22 +280,36 @@ public class LogArray64 implements DynamicArray {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		numbits = input.read();
-		numentries = VByte.decode(input);
-		int numwords = (int)numWordsFor(numbits, numentries);
+		CRCInputStream in = new CRCInputStream(input, new CRC8());
 		
+		numbits = in.read();
+		numentries = VByte.decode(in);
+		
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading LogArray64 header.");
+		}
+		
+		if(numbits>64) {
+			throw new IllegalFormatException("LogArray64 cannot deal with more than 64bit per entry");
+		}
+		
+		in.setCRC(new CRC32());
+		
+		int numwords = (int)numWordsFor(numbits, numentries);
 		data = new long[numwords];
 		for(int i=0;i<numwords-1;i++) {
-			data[i] = IOUtil.readLong(input);
+			data[i] = IOUtil.readLong(in);
 		}
 		
-		if(numwords==0) {
-			return;
+		if(numwords>0) {
+			// Read only used bits from last entry (byte aligned, little endian)
+			int lastWordUsed = lastWordNumBits(numbits, numentries);
+			data[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsed, in);
 		}
 		
-		// Read only used bits from last entry (byte aligned, little endian)
-		int lastWordUsed = lastWordNumBits(numbits, numentries);
-		data[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsed, input);
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading LogArray64 data.");
+		}
 	}
 
 	/* (non-Javadoc)
