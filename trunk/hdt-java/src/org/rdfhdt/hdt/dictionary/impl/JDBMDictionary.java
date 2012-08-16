@@ -43,19 +43,19 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 
 	private DB db;
 
-	public JDBMDictionary(HDTSpecification hdtSpec) {
+	public JDBMDictionary(HDTSpecification spec) {
 
-		super(hdtSpec);
-		db = setupDB(hdtSpec);
+		super(spec);
+		db = setupDB(spec);
 
 		// FIXME: Read stuff from properties
 		subjects = new DictionarySectionJDBM(db, "subjects");
 		predicates = new DictionarySectionJDBM(db, "predicates");
 		objects = new DictionarySectionJDBM(db, "objects");
-		shared = new DictionarySectionJDBM(db, "shared"); //TODO maybe DictionarySectionHash because small?
+		shared = new DictionarySectionJDBM(db, "shared");
 	}
 
-	private DB setupDB(HDTSpecification dbSpec) {
+	private DB setupDB(HDTSpecification spec) {
 
 		//FIXME read from specs...
 		File folder = new File("DB");

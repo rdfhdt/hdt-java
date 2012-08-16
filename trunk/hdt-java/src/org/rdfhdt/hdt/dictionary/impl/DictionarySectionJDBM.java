@@ -78,7 +78,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		this.db = db;
 		this.sectionID = sectionID;
 
-		//TODO DEBUG
+		//TODO DEBUG hashmap
 		this.map_IDToString = db.<Integer, String>createTreeMap(sectionID+"_map_IDToString");
 		this.map_StringToID = db.<String, Integer>createTreeMap(sectionID+"_map_StringToID"); //no need for custom comparator, String are sorted lexicographically by their default Comparator
 

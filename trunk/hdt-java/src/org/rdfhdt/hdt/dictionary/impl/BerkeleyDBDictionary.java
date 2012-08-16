@@ -6,6 +6,7 @@ import java.io.IOException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
+import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
@@ -22,7 +23,7 @@ public class BerkeleyDBDictionary extends BaseModifiableDictionary {
 		subjects = new DictionarySectionBerkeley(env, "subjects");
 		predicates = new DictionarySectionBerkeley(env, "predicates");
 		objects = new DictionarySectionBerkeley(env, "objects");
-		shared = new DictionarySectionBerkeley(env, "shared"); //TODO maybe DictionarySectionHash because small?
+		shared = new DictionarySectionBerkeley(env, "shared");
 	}
 	
 	private void setupDBEnvironment(HDTSpecification spec) {
@@ -34,33 +35,46 @@ public class BerkeleyDBDictionary extends BaseModifiableDictionary {
 		}
 
 		EnvironmentConfig envConf = new EnvironmentConfig();
-		envConf.setAllowCreate(true);
-		envConf.setTransactional(false);
-		//TODO setup cache
-		//envConf.setCacheMode(CacheMode.DEFAULT);
-		//envConf.setCacheModeStrategy(CacheModeStrategy...);
-		//envConf.setCachePercent(percent); envConf.setCacheSize(totalBytes);
+		envConf.setAllowCreateVoid(true);
+		envConf.setTransactionalVoid(false);
+		envConf.setCacheModeVoid(CacheMode.DEFAULT);
+		//TODO read from specs... ? (or fixed in percent? the Xmx is given anyway manually outside...)
+		envConf.setCachePercentVoid(25); //envConf.setCacheSizeVoid(totalBytes);
 		
 		env = new Environment(folder, envConf);
 	}
 
 	@Override
 	public void startProcessing() {
+		//do nothing
 	}
 
 	@Override
 	public void endProcessing() {
+		//do nothing
 	}
 
 	@Override
 	public void close() throws IOException {
+		
 		((DictionarySectionBerkeley)subjects).cleanup();
 		((DictionarySectionBerkeley)predicates).cleanup();
 		((DictionarySectionBerkeley)objects).cleanup();
 		((DictionarySectionBerkeley)shared).cleanup();
 		
+		File envHome = env.getHome();
+		env.cleanLog();
 		env.close();
 		env = null;
+		
+		//TODO cleanup DB folder manually like this, or not? ??
+		for (File f : envHome.listFiles()){
+			String fname = f.getName();
+			if (fname.equalsIgnoreCase("je.properties"))
+				continue;
+			if (fname.endsWith(".jdb") || fname.startsWith("je."))
+				f.delete();
+		}
 	}
 	
 	/* (non-Javadoc)

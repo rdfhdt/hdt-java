@@ -85,7 +85,7 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		this.env = env;
 		this.sectionID = sectionID;
 		
-		setupDatabases();
+		setupDatabases(spec);
 
 		this.map_StringToID = new StoredSortedMap<String, Integer>(db_StringToID, 
 				TupleBinding.getPrimitiveBinding(String.class), TupleBinding.getPrimitiveBinding(Integer.class), true);
@@ -98,14 +98,14 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		this.size = 0;
 	}
 	
-	private void setupDatabases(){
+	private void setupDatabases(HDTSpecification spec){
 		
 		DatabaseConfig dbConf = new DatabaseConfig();
-		dbConf.setExclusiveCreate(true); //so that it throws exception if already exists
-		dbConf.setAllowCreate(true);
-		dbConf.setTransactional(false);
-		dbConf.setTemporary(true);
-		//dbConf.setBtreeComparator(new StringUnicodeComparator()); //TODO byte by byte default ok??
+		dbConf.setExclusiveCreateVoid(true); //so that it throws exception if already exists
+		dbConf.setAllowCreateVoid(true);
+		dbConf.setTransactionalVoid(false);
+		dbConf.setTemporaryVoid(true);
+		//dbConf.setBtreeComparatorVoid(new StringUnicodeComparator()); //TODO byte by byte default ok??
 		
 		this.db_StringToID = env.openDatabase(null, sectionID+"_map_StringToID", dbConf);
 		//SecondaryDatabase worse solution because it keeps the key and primaryKey anyway (int and string), and THEN fetches the data (which is the same as secondaryKey) from the primary database... and less control over the structure and so on...
@@ -237,12 +237,12 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		//first closing secondary database
 		db_IDToString.close();
 		db_IDToString = null;
-		//env.removeDatabase(null, dbName); //to delete files // no need because temporary
+		//env.removeDatabase(null, sectionID+"_map_IDToString"); //to delete files // no need because temporary
 
 		// closing primary database
 		db_StringToID.close();
 		db_StringToID = null;
-		//env.removeDatabase(null, dbName); //to delete files // no need because temporary
+		//env.removeDatabase(null, sectionID+"_map_StringToID"); //to delete files // no need because temporary
 	}
 	
 	//----------------------------------------------------------------------
