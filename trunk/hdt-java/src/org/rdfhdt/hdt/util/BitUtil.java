@@ -71,12 +71,9 @@ public class BitUtil {
 	public static final int select1(long value, int rank) {
         int bitpos=0;
         while(rank>0 && value!=0) {
-                //System.out.println("\t"+Long.toBinaryString(blockData)+ " Bitpos: "+bitpos+ " Countdown: "+countdown);
-                if( (value & 1L)!=0) {
-                        rank--;
-                }
-                bitpos++;
-                value>>>=1;
+        	rank-= value & 1;
+        	bitpos++;
+        	value>>>=1;
         }
         return bitpos;
 	}
