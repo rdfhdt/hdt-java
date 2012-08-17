@@ -44,6 +44,7 @@ public class DictionaryFactory {
 	public static final String DICT_MOD_HASH = "hash";
 	public static final String DICT_MOD_JDBM = "jdbm";
 	public static final String DICT_MOD_BERKELEY = "berkeley";
+	public static final String DICT_MOD_BERKELEY_NATIVE = "berkeley_native";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -71,7 +72,9 @@ public class DictionaryFactory {
 			return new JDBMDictionary(spec);
 		} else if (DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
 			return new BerkeleyDBDictionary(spec);
-		}
+		} /*else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
+			return new BerkeleyDBDictionary_native(spec);
+		}*/
 		return new HashDictionary(spec);
 	}
 	

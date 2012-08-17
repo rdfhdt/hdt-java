@@ -49,10 +49,10 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 		db = setupDB(spec);
 
 		// FIXME: Read stuff from properties
-		subjects = new DictionarySectionJDBM(db, "subjects");
-		predicates = new DictionarySectionJDBM(db, "predicates");
-		objects = new DictionarySectionJDBM(db, "objects");
-		shared = new DictionarySectionJDBM(db, "shared");
+		subjects = new DictionarySectionJDBM(spec, db, "subjects");
+		predicates = new DictionarySectionJDBM(spec, db, "predicates");
+		objects = new DictionarySectionJDBM(spec, db, "objects");
+		shared = new DictionarySectionJDBM(spec, db, "shared");
 	}
 
 	private DB setupDB(HDTSpecification spec) {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src"/>
+	<classpathentry excluding="org/rdfhdt/hdt/dictionary/impl/BerkeleyDBDictionary_native.java|org/rdfhdt/hdt/dictionary/impl/DictionarySectionBerkeley_native.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="examples"/>
 	<classpathentry kind="src" path="tools"/>
 	<classpathentry kind="src" path="tests"/>
