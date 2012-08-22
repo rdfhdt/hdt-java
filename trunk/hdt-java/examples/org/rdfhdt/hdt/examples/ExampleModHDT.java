@@ -50,7 +50,7 @@ public class ExampleModHDT {
 		mhdt.insert("uri2", "p2", "val4");
 		
 		// Convert to HDT
-		HDT hdt = HDTFactory.createHDTFromModtHDT(new HDTSpecification(), mhdt, null);
+		HDT hdt = HDTFactory.createHDTFromModHDT(new HDTSpecification(), mhdt, null);
 		// Close ModifiableHDT
 		mhdt.close();
 		

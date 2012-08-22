@@ -47,6 +47,7 @@ import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.Environment;
 
+
 /**
  * This is a class implementing a modifiable section of the dictionary that uses
  * BerkeleyDB (JE version) key-value database to store dictionary entries for a section (subject, objects etc.)

@@ -64,7 +64,7 @@ public class HDTFactory {
 		return new BaseHDT(specification);
 	}
 
-	public static HDT createHDTFromModtHDT(HDTSpecification spec, ModifiableHDT modHdt, ProgressListener listener) throws IOException {
+	public static HDT createHDTFromModHDT(HDTSpecification spec, ModifiableHDT modHdt, ProgressListener listener) throws IOException {
 		BaseHDT hdt = new BaseHDT(spec);
 		
 		modHdt.reorganize(listener);
@@ -82,7 +82,7 @@ public class HDTFactory {
 		ModifiableHDT modHdt = HDTFactory.createModHDTFromRDF(spec, filename, baseUri, notation, listener);
 		
 		// Convert to HDT
-		HDT hdt = HDTFactory.createHDTFromModtHDT(spec, modHdt, listener);
+		HDT hdt = HDTFactory.createHDTFromModHDT(spec, modHdt, listener);
 		
 		// Add file size to Header
 		hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, new File(filename).length());

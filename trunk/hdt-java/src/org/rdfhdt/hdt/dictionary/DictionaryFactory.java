@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.dictionary;
 import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
+import org.rdfhdt.hdt.dictionary.impl.KyotoCabinetDictionary;
 import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -45,6 +46,7 @@ public class DictionaryFactory {
 	public static final String DICT_MOD_JDBM = "jdbm";
 	public static final String DICT_MOD_BERKELEY = "berkeley";
 	public static final String DICT_MOD_BERKELEY_NATIVE = "berkeley_native";
+	public static final String DICT_MOD_KYOTO = "kyoto";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -74,7 +76,10 @@ public class DictionaryFactory {
 			return new BerkeleyDBDictionary(spec);
 		} /*else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
 			return new BerkeleyDBDictionary_native(spec);
-		}*/
+		}*/ else if (DICT_MOD_KYOTO.equals(dictName)){
+			return new KyotoCabinetDictionary(spec);
+		}
+		System.err.println("Unknown dictionary... using hash...");
 		return new HashDictionary(spec);
 	}
 	

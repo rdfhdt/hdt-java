@@ -51,7 +51,7 @@ public class ExampleInsert {
 		mhdt.insert("uri1", "p2", "val4");
 			
 		// Compact and save
-		HDT hdt = HDTFactory.createHDTFromModtHDT(new HDTSpecification(), mhdt, null);
+		HDT hdt = HDTFactory.createHDTFromModHDT(new HDTSpecification(), mhdt, null);
 		hdt.saveToHDT("data/example.hdt", null);
 	}
 }
