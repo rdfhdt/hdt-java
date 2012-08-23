@@ -95,11 +95,11 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 
 		this.map_StringToID = new DB(DB.GEXCEPTIONAL);
 		//TODO setup and open the database in homeDir;
-		map_StringToID.open(homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct", DB.OWRITER | DB.OCREATE);
+		map_StringToID.open(homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct", DB.OWRITER | DB.OTRUNCATE);
 
 		this.map_IDToString = new DB(DB.GEXCEPTIONAL);
 		//TODO setup and open the database in homeDir;
-		map_IDToString.open(homeDir.getPath()+"/"+sectionID+"_map_IDToString.kch", DB.OWRITER | DB.OCREATE);
+		map_IDToString.open(homeDir.getPath()+"/"+sectionID+"_map_IDToString.kch", DB.OWRITER | DB.OTRUNCATE);
 	}
 
 	private byte[] intToByteArray(int value) {

@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.dictionary;
 
 import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary;
+import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary_native;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
 import org.rdfhdt.hdt.dictionary.impl.KyotoCabinetDictionary;
@@ -74,9 +75,9 @@ public class DictionaryFactory {
 			return new JDBMDictionary(spec);
 		} else if (DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
 			return new BerkeleyDBDictionary(spec);
-		} /*else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
+		} else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
 			return new BerkeleyDBDictionary_native(spec);
-		}*/ else if (DICT_MOD_KYOTO.equals(dictName)){
+		} else if (DICT_MOD_KYOTO.equals(dictName)){
 			return new KyotoCabinetDictionary(spec);
 		}
 		System.err.println("Unknown dictionary... using hash...");
