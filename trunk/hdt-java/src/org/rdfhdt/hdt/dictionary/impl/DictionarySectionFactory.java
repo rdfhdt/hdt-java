@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
@@ -39,15 +40,16 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  *
  */
 public class DictionarySectionFactory {
-	public static DictionarySection createInstance(InputStream input, ProgressListener listener) throws IOException {
+	
+	public static QueryableDictionarySection createInstance(InputStream input, ProgressListener listener) throws IOException {
 		int dictType = input.read();
 		switch(dictType) {
-		case DictionarySectionHash.TYPE_INDEX:
-			return new DictionarySectionHash(new HDTSpecification());
-		case DictionarySectionPFC.TYPE_INDEX:
+		case HashDictionarySection.TYPE_INDEX:
+			return new HashDictionarySection(new HDTSpecification());
+		case PFCDictionarySection.TYPE_INDEX:
 //			return new DictionarySectionPFC(new HDTSpecification());
 			//return new DictionarySectionCache(new DictionarySectionPFC(new HDTSpecification()));
-			return new DictionarySectionCache(new DictionarySectionPFCBig(new HDTSpecification()));
+			return new DictionarySectionCache(new PFCDictionarySectionBig(new HDTSpecification()));
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}
@@ -58,21 +60,21 @@ public class DictionarySectionFactory {
 		input.reset();
 		input.mark(64);		// To allow children to reset() and try another instance.
 		
-		DictionarySection section=null;
+		QueryableDictionarySection section=null;
 		
 		switch(dictType) {
-		case DictionarySectionHash.TYPE_INDEX:
-			section = new DictionarySectionHash(new HDTSpecification());
+		case HashDictionarySection.TYPE_INDEX:
+			section = new HashDictionarySection(new HDTSpecification());
 			section.load(input, listener);
 			return section;
-		case DictionarySectionPFC.TYPE_INDEX:
+		case PFCDictionarySection.TYPE_INDEX:
 			try{
 				// First try load using the standard PFC 
-				section = new DictionarySectionPFC(new HDTSpecification());
+				section = new PFCDictionarySection(new HDTSpecification());
 				section.load(input, listener);
 			} catch (IllegalArgumentException e) {
 				// The PFC Could not load the file because it is too big, use PFCBig
-				section = new DictionarySectionPFCBig(new HDTSpecification());
+				section = new PFCDictionarySectionBig(new HDTSpecification());
 				section.load(input, listener);
 			}
 			return new DictionarySectionCache(section);

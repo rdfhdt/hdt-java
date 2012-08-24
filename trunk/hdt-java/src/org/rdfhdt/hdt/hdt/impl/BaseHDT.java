@@ -25,7 +25,7 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.hdt;
+package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,8 +39,12 @@ import java.util.Date;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
+import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.ModifiableHDT;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
@@ -60,11 +64,12 @@ import org.rdfhdt.hdt.util.StringUtil;
  * Basic implementation of HDT interface
  * 
  */
-public class BaseHDT implements HDT {
+public class BaseHDT implements QueryableHDT {
+	
 	HDTSpecification spec;
 
 	Header header;
-	Dictionary dictionary;
+	QueryableDictionary dictionary;
 	Triples triples;
 	
 	String hdtFileName;
@@ -101,7 +106,7 @@ public class BaseHDT implements HDT {
 	/**
 	 * @param specification
 	 */
-	protected BaseHDT(HDTSpecification specification) {
+	BaseHDT(HDTSpecification specification) {
 		this.spec = specification;
 
 		createComponents();
@@ -192,11 +197,6 @@ public class BaseHDT implements HDT {
 		this.hdtFileName = fileName;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.HDT#search(java.lang.String, java.lang.String, java.lang.String)
-	 */
 	@Override
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 
@@ -274,7 +274,7 @@ public class BaseHDT implements HDT {
         
         // Convert dictionary to final format
         if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
-                dictionary = modifiableDictionary;
+                dictionary = (QueryableDictionary)modifiableDictionary;
         } else {
                 StopWatch dictConvTime = new StopWatch();
                 dictionary.load(modifiableDictionary, listener);

@@ -32,11 +32,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.rdf.RDFAccess;
 import org.rdfhdt.hdt.triples.Triples;
 
 
@@ -44,7 +41,7 @@ import org.rdfhdt.hdt.triples.Triples;
  * Interface that specifies the methods for a HDT implementation
  * 
  */
-public interface HDT extends RDFAccess {
+public interface HDT {
 
 	/**
 	 * Gets the header of the HDT
@@ -124,23 +121,5 @@ public interface HDT extends RDFAccess {
 	 * @return
 	 */
 	public String getBaseURI();
-	
-	/**
-	 * Search a pattern in a HDT
-	 * 
-	 * The null string acts as a wildcard. (i.e. search(null, null, null)
-	 * returns all elements)
-	 * 
-	 * @param subject
-	 *            The subject to search
-	 * @param predicate
-	 *            The predicate to search
-	 * @param object
-	 *            The object to search
-	 * 
-	 * @return Iterator of TripleStrings
-	 * @throws NotFoundException 
-	 */
-	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
 
 }

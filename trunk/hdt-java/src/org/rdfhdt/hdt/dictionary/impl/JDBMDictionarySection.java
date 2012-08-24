@@ -36,7 +36,7 @@ import java.util.SortedMap;
 
 import org.apache.jdbm.DB;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -53,14 +53,13 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
  * @author Eugen Rozic
  *
  */
-public class DictionarySectionJDBM implements DictionarySectionModifiable {
+public class JDBMDictionarySection implements ModifiableDictionarySection {
 	public static final int TYPE_INDEX = 3;
 
 	private DB db;
 	@SuppressWarnings("unused")
 	private String sectionID;
 
-	private Map<Integer, String> map_IDToString;
 	private SortedMap<String, Integer> map_StringToID;
 
 	private Integer IDcounter;
@@ -69,17 +68,15 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 	private boolean sorted = false;
 
-	public DictionarySectionJDBM(DB db, String sectionName) {
+	public JDBMDictionarySection(DB db, String sectionName) {
 		this(new HDTSpecification(), db, sectionName);
 	}
 
-	public DictionarySectionJDBM(HDTSpecification spec, DB db, String sectionID) {
+	public JDBMDictionarySection(HDTSpecification spec, DB db, String sectionID) {
 
 		this.db = db;
 		this.sectionID = sectionID;
 
-		//TODO DEBUG hashmap
-		this.map_IDToString = db.<Integer, String>createTreeMap(sectionID+"_map_IDToString");
 		this.map_StringToID = db.<String, Integer>createTreeMap(sectionID+"_map_StringToID"); //no need for custom comparator, String are sorted lexicographically by their default Comparator
 
 		this.IDcounter = 0;
@@ -98,7 +95,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		// Not found, insert new
 		IDcounter++;
 		map_StringToID.put(str, IDcounter);
-		//map_IDToString.put(IDcounter, str); FIXME optimization, no need for this info before sorting (because only two-pass way of working supported)
 
 		numElements++;
 		size += str.getBytes(ByteStringUtil.STRING_ENCODING).length;
@@ -112,7 +108,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		String str = charSeq.toString();
 		Integer ID = map_StringToID.remove(str);
 		if (ID==null) return; //string not in dictionary
-		//map_IDToString.remove(ID); FIXME optimization, no real need for this (only for consistency)
 
 		numElements--;
 		size -= str.getBytes(ByteStringUtil.STRING_ENCODING).length;
@@ -126,10 +121,14 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		for (Map.Entry<String, Integer> e : map_StringToID.entrySet()){
 			IDcounter++;
 			e.setValue(IDcounter);
-			map_IDToString.put(IDcounter, e.getKey()); 
 		}
 
 		sorted = true;
+	}
+	
+	@Override
+	public boolean isSorted() {
+		return sorted;
 	}
 
 	@Override
@@ -138,13 +137,7 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 		if(ID==null) return 0;
 		return ID.intValue();
 	}
-
-	@Override
-	public CharSequence extract(int ID) {
-		if (ID>IDcounter) return null; //after remove and sort... not necessary to remove extra values from disc map_IDToString, just made inaccesible this way (so to outside like they don't exist)
-		return map_IDToString.get(ID); //if not exsisting will return null which is fine
-	}
-
+	
 	@Override
 	public Iterator<? extends CharSequence> getSortedEntries() {
 		if (!sorted) return null; //best this way to avoid any misunderstandings
@@ -196,7 +189,6 @@ public class DictionarySectionJDBM implements DictionarySectionModifiable {
 
 	@Override
 	public void clear() {
-		map_IDToString.clear();
 		map_StringToID.clear();
 		db.commit();
 		sorted = false;

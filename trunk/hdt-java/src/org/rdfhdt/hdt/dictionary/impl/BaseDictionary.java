@@ -29,29 +29,28 @@ package org.rdfhdt.hdt.dictionary.impl;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.impl.BaseQueryableDictionary.DictionarySectionType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
 /**
- * @author mario.arias
+ * 
+ * This abstract clas implements all general methods that are the same
+ * for every implementation of Dictionary.
+ * 
+ * @author mario.arias, Eugen
  *
  */
 public abstract class BaseDictionary implements Dictionary {
+	
 	protected HDTSpecification spec;
 	protected DictionarySection subjects, predicates, objects, shared;
 	
 	public BaseDictionary(HDTSpecification spec) {
 		this.spec = spec;
 	}
-	
-	protected enum DictionarySectionType {
-		SUBJECT,
-		PREDICATE,
-		OBJECT,
-		SHARED
-	};
 	
 	protected enum Mapping {
 		MAPPING1,
@@ -60,27 +59,7 @@ public abstract class BaseDictionary implements Dictionary {
 	
 	protected Mapping mapping = Mapping.MAPPING2;
 	
-	private DictionarySection getSection(int id, TripleComponentRole role) {
-		switch (role) {
-		case SUBJECT:
-			if(id<=shared.getNumberOfElements()) {
-				return shared;
-			} else {
-				return subjects;
-			}
-		case PREDICATE:
-			return predicates;
-		case OBJECT:
-			if(id<=shared.getNumberOfElements()) {
-				return shared;
-			} else {
-				return objects;
-			}
-		}
-		throw new IllegalArgumentException();
-	}
-	
-	private int getGlobalId(Mapping mapping, int id, DictionarySectionType position) {
+	protected int getGlobalId(Mapping mapping, int id, DictionarySectionType position) {
 		switch (position) {
 		case SUBJECT:
 			return shared.getNumberOfElements()+id;
@@ -102,11 +81,11 @@ public abstract class BaseDictionary implements Dictionary {
 	}
 
 
-	private int getGlobalId(int id, DictionarySectionType position) {
+	protected int getGlobalId(int id, DictionarySectionType position) {
 		return getGlobalId(this.mapping, id, position);
 	}
-	
-	private int getLocalId(Mapping mapping, int id, TripleComponentRole position) {
+
+	protected int getLocalId(Mapping mapping, int id, TripleComponentRole position) {
 		switch (position) {
 		case SUBJECT:
 			if(id<=shared.getNumberOfElements()) {
@@ -131,11 +110,10 @@ public abstract class BaseDictionary implements Dictionary {
 		throw new IllegalArgumentException();
 	}
 
-	private int getLocalId(int id, TripleComponentRole position) {
+	protected int getLocalId(int id, TripleComponentRole position) {
 		return getLocalId(mapping,id,position);
 	}
-
-
+	
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#tripleStringtoTripleID(hdt.triples.TripleString)
 	 */
@@ -145,29 +123,7 @@ public abstract class BaseDictionary implements Dictionary {
 				stringToId(tripleString.getSubject(), TripleComponentRole.SUBJECT), 
 				stringToId(tripleString.getPredicate(), TripleComponentRole.PREDICATE), 
 				stringToId(tripleString.getObject(), TripleComponentRole.OBJECT)
-		);
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#tripleIDtoTripleString(hdt.triples.TripleID)
-	 */
-	@Override
-	public TripleString tripleIDtoTripleString(TripleID tripleID) {
-		return new TripleString(
-				idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT).toString(), 
-				idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE).toString(), 
-				idToString(tripleID.getObject(), TripleComponentRole.OBJECT).toString()
-		);
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#idToString(int, datatypes.TripleComponentRole)
-	 */
-	@Override
-	public CharSequence idToString(int id, TripleComponentRole role) {
-		DictionarySection section = getSection(id, role);
-		int localId = getLocalId(id, role);
-		return section.extract(localId);
+				);
 	}
 
 	/* (non-Javadoc)
@@ -175,11 +131,11 @@ public abstract class BaseDictionary implements Dictionary {
 	 */
 	@Override
 	public int stringToId(CharSequence str, TripleComponentRole position) {
-		
+
 		if(str==null || str.length()==0 || str.charAt(0)=='?') {
 			return 0;
 		}
-		
+
 		int ret=0;
 		switch(position) {
 		case SUBJECT:
@@ -210,62 +166,38 @@ public abstract class BaseDictionary implements Dictionary {
 			return -1;
 		}
 		throw new IllegalArgumentException();
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getNumberOfElements()
-	 */
+	}	
+	
 	@Override
 	public long getNumberOfElements() {
 		return subjects.getNumberOfElements()+predicates.getNumberOfElements()+objects.getNumberOfElements()+shared.getNumberOfElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#size()
-	 */
 	@Override
 	public long size() {
 		return subjects.size()+predicates.size()+objects.size()+shared.size();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getNsubjects()
-	 */
 	@Override
 	public long getNsubjects() {
 		return subjects.getNumberOfElements()+shared.getNumberOfElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getNpredicates()
-	 */
 	@Override
 	public long getNpredicates() {
 		return predicates.getNumberOfElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getNobjects()
-	 */
 	@Override
 	public long getNobjects() {
 		return objects.getNumberOfElements()+shared.getNumberOfElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getSsubobj()
-	 */
 	@Override
 	public long getNshared() {
 		return shared.getNumberOfElements();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getMaxID()
-	 */
-	/**
-	 * Returns the max ID of subjects and objects (WARNING: Does not consider predicates)
-	 */
 	@Override
 	public long getMaxID() {
 		int s = subjects.getNumberOfElements();
@@ -281,25 +213,16 @@ public abstract class BaseDictionary implements Dictionary {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getMaxSubjectID()
-	 */
 	@Override
 	public long getMaxSubjectID() {
 		return getNsubjects();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getMaxPredicateID()
-	 */
 	@Override
 	public long getMaxPredicateID() {
 		return getNpredicates();
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getMaxObjectID()
-	 */
 	@Override
 	public long getMaxObjectID() {
 		if(mapping==Mapping.MAPPING2) {
@@ -308,7 +231,25 @@ public abstract class BaseDictionary implements Dictionary {
 			return shared.getNumberOfElements()+subjects.getNumberOfElements()+objects.getNumberOfElements();
 		}
 	}
-
 	
-
+	@Override
+	public DictionarySection getSubjects() {
+		return subjects;
+	}
+	
+	@Override
+	public DictionarySection getPredicates() {
+		return predicates;
+	}
+	
+	@Override
+	public DictionarySection getObjects() {
+		return objects;
+	}
+	
+	@Override
+	public DictionarySection getShared() {
+		return shared;
+	}
+	
 }

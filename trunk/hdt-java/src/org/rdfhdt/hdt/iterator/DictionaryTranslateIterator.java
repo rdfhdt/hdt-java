@@ -27,7 +27,7 @@
 
 package org.rdfhdt.hdt.iterator;
 
-import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -41,7 +41,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	/** The iterator of TripleID */
 	IteratorTripleID iterator;
 	/** The dictionary */
-	Dictionary dictionary;
+	QueryableDictionary dictionary;
 
 	/**
 	 * Basic constructor
@@ -51,7 +51,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	 * @param dictionary
 	 *            The dictionary to be used
 	 */
-	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary) {
+	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, QueryableDictionary dictionary) {
 		this.iterator = iteratorTripleID;
 		this.dictionary = dictionary;
 	}

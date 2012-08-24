@@ -28,29 +28,34 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 import com.sleepycat.db.DatabaseException;
 import com.sleepycat.db.Environment;
 import com.sleepycat.db.EnvironmentConfig;
 
-public class BerkeleyDBDictionary_native extends BaseModifiableDictionary {
+public class BerkeleyNativeDictionary extends BaseModifiableDictionary {
 
 	private Environment env;
 
-	public BerkeleyDBDictionary_native(HDTSpecification spec) {
+	public BerkeleyNativeDictionary(HDTSpecification spec) {
 
 		super(spec);
 		setupDBEnvironment(spec);
 
 		// FIXME: Read stuff from properties
 		try {
-			subjects = new DictionarySectionBerkeley_native(spec, env, "subjects");
-			predicates = new DictionarySectionBerkeley_native(spec, env, "predicates");
-			objects = new DictionarySectionBerkeley_native(spec, env, "objects");
-			shared = new DictionarySectionBerkeley_native(spec, env, "shared");
+			subjects = new BerkeleyNativeDictionarySection(spec, env, "subjects");
+			predicates = new BerkeleyNativeDictionarySection(spec, env, "predicates");
+			objects = new BerkeleyNativeDictionarySection(spec, env, "objects");
+			shared = new BerkeleyNativeDictionarySection(spec, env, "shared");
 		} catch (Exception e){
 			//TODO something smarter??
 			cleanupEnvironment();
@@ -69,7 +74,7 @@ public class BerkeleyDBDictionary_native extends BaseModifiableDictionary {
 		EnvironmentConfig envConf = new EnvironmentConfig();
 		envConf.setAllowCreate(true);
 		envConf.setTransactional(false);
-		envConf.setTemporaryDirectory(new File("DB"));
+		envConf.setTemporaryDirectory(folder);
 		envConf.setInitializeCache(true);
 		envConf.setCacheSize(calculateCache(spec));
 		
@@ -135,10 +140,10 @@ public class BerkeleyDBDictionary_native extends BaseModifiableDictionary {
 	public void close() {
 
 		try {	
-			((DictionarySectionBerkeley_native)subjects).cleanup();
-			((DictionarySectionBerkeley_native)predicates).cleanup();
-			((DictionarySectionBerkeley_native)objects).cleanup();
-			((DictionarySectionBerkeley_native)shared).cleanup();
+			((BerkeleyNativeDictionarySection)subjects).cleanup();
+			((BerkeleyNativeDictionarySection)predicates).cleanup();
+			((BerkeleyNativeDictionarySection)objects).cleanup();
+			((BerkeleyNativeDictionarySection)shared).cleanup();
 		} catch (DatabaseException e){
 			cleanupEnvironment();
 			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
@@ -149,12 +154,15 @@ public class BerkeleyDBDictionary_native extends BaseModifiableDictionary {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getType()
-	 */
 	@Override
-	public String getType() {
-		//FIXME ... different type?
-		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	public void save(OutputStream output, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void load(InputStream input, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
 }

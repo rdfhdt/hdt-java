@@ -29,17 +29,21 @@ package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
  * @author mario.arias
  *
  */
-public class KyotoCabinetDictionary extends BaseModifiableDictionary {
+public class KyotoDictionary extends BaseModifiableDictionary {
 	
-	public KyotoCabinetDictionary(HDTSpecification spec) {
+	public KyotoDictionary(HDTSpecification spec) {
 
 		super(spec);
 		
@@ -50,10 +54,10 @@ public class KyotoCabinetDictionary extends BaseModifiableDictionary {
 		}
 
 		// FIXME: Read stuff from properties
-		subjects = new DictionarySectionKyoto(spec, homeDir, "subjects");
-		predicates = new DictionarySectionKyoto(spec, homeDir, "predicates");
-		objects = new DictionarySectionKyoto(spec, homeDir, "objects");
-		shared = new DictionarySectionKyoto(spec, homeDir, "shared");
+		subjects = new KyotoDictionarySection(spec, homeDir, "subjects");
+		predicates = new KyotoDictionarySection(spec, homeDir, "predicates");
+		objects = new KyotoDictionarySection(spec, homeDir, "objects");
+		shared = new KyotoDictionarySection(spec, homeDir, "shared");
 	}
 
 	@Override
@@ -69,21 +73,24 @@ public class KyotoCabinetDictionary extends BaseModifiableDictionary {
 	@Override
 	public void close() throws IOException {
 		try {	
-			((DictionarySectionKyoto)subjects).cleanup();
-			((DictionarySectionKyoto)predicates).cleanup();
-			((DictionarySectionKyoto)objects).cleanup();
-			((DictionarySectionKyoto)shared).cleanup();
+			((KyotoDictionarySection)subjects).cleanup();
+			((KyotoDictionarySection)predicates).cleanup();
+			((KyotoDictionarySection)objects).cleanup();
+			((KyotoDictionarySection)shared).cleanup();
 		} catch (Exception e){
 			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getType()
-	 */
+
 	@Override
-	public String getType() {
-		//FIXME ... different type?
-		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	public void save(OutputStream output, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void load(InputStream input, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
 }

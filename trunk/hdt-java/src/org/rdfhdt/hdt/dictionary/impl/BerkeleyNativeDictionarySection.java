@@ -27,6 +27,8 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,42 +36,43 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.collections.StoredMap;
 import com.sleepycat.collections.StoredSortedMap;
-import com.sleepycat.je.Database;
-import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.Environment;
-
+import com.sleepycat.db.Database;
+import com.sleepycat.db.DatabaseConfig;
+import com.sleepycat.db.DatabaseException;
+import com.sleepycat.db.DatabaseType;
+import com.sleepycat.db.Environment;
 
 /**
  * This is a class implementing a modifiable section of the dictionary that uses
- * BerkeleyDB (JE version) key-value database to store dictionary entries for a section (subject, objects etc.)
+ * BerkeleyDB (native version) key-value database to store dictionary entries for a section (subject, objects etc.)
  * 
  * It uses 2 collections backed on disc:
  *  - a SortedMap (StoredSortedMap...using BTree probably) for mapping ID's to string values
  *  - a Map (StoredMap...using HTree probably) for mapping string values to their ID's
+ * 
+ *  This class is almost identical to DictionarySectionBerkeley, the only
+ *  difference is in the "setupDatabases" and the "cleanup" methods, and of course
+ *  in the imports (which is why I can just extend that class). 
  *  
  * @author Eugen Rozic
- *
  */
-public class DictionarySectionBerkeley implements DictionarySectionModifiable {
+public class BerkeleyNativeDictionarySection implements ModifiableDictionarySection {
 	public static final int TYPE_INDEX = 4;
 
 	private Environment env;
 	private String sectionID;
 	
 	private Database db_StringToID;
-	private Database db_IDToString;
 
 	private StoredSortedMap<String, Integer> map_StringToID;
-	private StoredMap<Integer, String> map_IDToString;
 
 	private Integer IDcounter;
 	private int numElements;
@@ -77,11 +80,11 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 
 	private boolean sorted = false;
 
-	public DictionarySectionBerkeley(Environment env, String sectionName) throws Exception {
+	public BerkeleyNativeDictionarySection(Environment env, String sectionName) throws DatabaseException, FileNotFoundException {
 		this(new HDTSpecification(), env, sectionName);
 	}
 	
-	public DictionarySectionBerkeley(HDTSpecification spec, Environment env, String sectionID) throws Exception {
+	public BerkeleyNativeDictionarySection(HDTSpecification spec, Environment env, String sectionID) throws DatabaseException, FileNotFoundException {
 		
 		this.env = env;
 		this.sectionID = sectionID;
@@ -89,28 +92,23 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		setupDatabases(spec);
 
 		this.map_StringToID = new StoredSortedMap<String, Integer>(db_StringToID, 
-				TupleBinding.getPrimitiveBinding(String.class), TupleBinding.getPrimitiveBinding(Integer.class), true);
-		this.map_IDToString = new StoredMap<Integer, String>(db_IDToString,
-				TupleBinding.getPrimitiveBinding(Integer.class), TupleBinding.getPrimitiveBinding(String.class), true);
-		
+				TupleBinding.getPrimitiveBinding(String.class), TupleBinding.getPrimitiveBinding(Integer.class), true);	
 
 		this.IDcounter = 0;
 		this.numElements = 0;
 		this.size = 0;
 	}
 	
-	private void setupDatabases(HDTSpecification spec) throws Exception {
+	private void setupDatabases(HDTSpecification spec) throws DatabaseException, FileNotFoundException {
 		
 		DatabaseConfig dbConf = new DatabaseConfig();
-		dbConf.setExclusiveCreateVoid(true); //so that it throws exception if already exists
-		dbConf.setAllowCreateVoid(true);
-		dbConf.setTransactionalVoid(false);
-		dbConf.setTemporaryVoid(true);
+		dbConf.setExclusiveCreate(true); //so that it throws exception if already exists
+		dbConf.setAllowCreate(true);
+		dbConf.setTransactional(false);
 		//dbConf.setBtreeComparatorVoid(new StringUnicodeComparator()); //TODO byte by byte default ok??
+		dbConf.setType(DatabaseType.BTREE);
 		
-		this.db_StringToID = env.openDatabase(null, sectionID+"_map_StringToID", dbConf);
-		//SecondaryDatabase worse solution because it keeps the key and primaryKey anyway (int and string), and THEN fetches the data (which is the same as secondaryKey) from the primary database... and less control over the structure and so on...
-		this.db_IDToString = env.openDatabase(null, sectionID+"_map_IDToString", dbConf);
+		this.db_StringToID = env.openDatabase(null, sectionID, "map_StringToID", dbConf);
 	}
 
 	@Override
@@ -123,8 +121,7 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		}
 		// Not found, insert new
 		IDcounter++;
-		map_StringToID.put(str, IDcounter);
-		//map_IDToString.put(IDcounter, str); FIXME optimization, no need for this info before sorting (because only two-pass way of working supported) 
+		map_StringToID.put(str, IDcounter); 
 
 		numElements++;
 		size += str.getBytes(ByteStringUtil.STRING_ENCODING).length;
@@ -138,7 +135,6 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		String str = charSeq.toString();
 		Integer ID = map_StringToID.remove(str);
 		if (ID==null) return;
-		//map_IDToString.remove(ID); FIXME optimization, no real need for this (only for consistency)
 
 		numElements--;
 		size -= str.getBytes(ByteStringUtil.STRING_ENCODING).length;
@@ -152,10 +148,14 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		for (Map.Entry<String, Integer> e : map_StringToID.entrySet()){
 			IDcounter++;
 			e.setValue(IDcounter);
-			map_IDToString.put(IDcounter, e.getKey());
 		}
 
 		sorted = true;
+	}
+	
+	@Override
+	public boolean isSorted() {
+		return sorted;
 	}
 
 	@Override
@@ -163,12 +163,6 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 		Integer ID = map_StringToID.get(charSeq.toString());
 		if(ID==null) return 0;
 		return ID.intValue();
-	}
-
-	@Override
-	public CharSequence extract(int ID) {
-		if (ID>IDcounter) return null; //after remove and sort... not necessary to remove extra values from disc map_IDToString, just made inaccesible this way (so to outside like they don't exist)
-		return map_IDToString.get(ID); //if not exsisting will return null which is fine
 	}
 
 	@Override
@@ -224,29 +218,21 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 	@Override
 	public void clear() {
 		map_StringToID.clear();
-		map_IDToString.clear();
 		
 		sorted = false;
 	}
 	
 	/**
-	 * Closes the created databases, nulls the references (and deletes the databases,
-	 * currently implicit because they are temporary).
+	 * Closes the created databases, nulls the references and deletes the database file.
 	 */
-	public void cleanup() throws Exception {
+	public void cleanup() throws DatabaseException {
 		
-		db_IDToString.close();
-		db_IDToString = null;
-		//env.removeDatabase(null, sectionID+"_map_IDToString"); //to delete files // no need because temporary
-
 		db_StringToID.close();
 		db_StringToID = null;
-		//env.removeDatabase(null, sectionID+"_map_StringToID"); //to delete files // no need because temporary
+		
+		new File(env.getHome().getPath()+"/"+sectionID).delete();
 	}
 	
-	//----------------------------------------------------------------------
-	//---classes------------------------------------------------------------
-	//----------------------------------------------------------------------
 	
 	/*
 	private class StringUnicodeComparator implements Comparator<byte[]> {
@@ -260,73 +246,5 @@ public class DictionarySectionBerkeley implements DictionarySectionModifiable {
 	    }
 	}
 	*/
-	
-	/*
-	private class IDfromStringKeyCreator implements SecondaryKeyCreator {
-		
-		@Override
-		public boolean createSecondaryKey(SecondaryDatabase secDB,
-				DatabaseEntry key, DatabaseEntry data, DatabaseEntry secKey) {
-			
-			secKey.setData(data.getData()); //ID that was data is now key
-			return true;
-		}
-	}
-	*/
 
-	/*
-	 * A custom iterator for the mappings. It gives strings from the current dictionary
-	 * ordered by the current ID's (value with smallest ID first etc.)
-	 * 
-	 * Removing while iterating is not supported and changing the underlying maps ( i.e. 
-	 * calling add, remove, sort or clear methods of the DictionarySectionJDBM) will
-	 * cause a ConcurrentModificationException to be thrown.
-	 * 
-	 * @author Eugen Rozic
-	 *
-	 *
-	private class IteratorByID implements Iterator<CharSequence>{
-
-		private Integer numElements;
-		private Integer iterated;
-		private Integer currID;
-
-		public IteratorByID() {
-			this.numElements = getNumberOfElements();
-			this.iterated = 0;
-			currID = 1;
-			changesFlag = false;
-		}
-
-		@Override
-		public boolean hasNext() {
-			if (changesFlag)
-				throw new ConcurrentModificationException();
-
-			return this.iterated<this.numElements;
-		}
-
-		@Override
-		public CharSequence next() {
-			if (changesFlag)
-				throw new ConcurrentModificationException();
-
-			CharSequence value = null;
-			while (value==null){
-				value = map_IDToString.get(currID++);
-				if (currID>IDcounter) { //guard for endless looping, just in case
-					throw new ConcurrentModificationException();
-				}
-			}
-			iterated++;
-			return value;
-		}
-
-		@Override
-		public void remove() {
-			throw new NotImplementedException();
-		}
-
-	}
-	 */
 }

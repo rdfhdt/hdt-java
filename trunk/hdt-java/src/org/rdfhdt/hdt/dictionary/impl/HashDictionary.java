@@ -28,30 +28,100 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Iterator;
 
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
 
 /**
- * @author mario.arias
+ * @author mario.arias, Eugen
  *
  */
-public class HashDictionary extends BaseModifiableDictionary {
+public class HashDictionary extends BaseModifiableDictionary implements QueryableDictionary {
 	
+	/**
+	 * 'Cheat' for extending more than one class.
+	 * Essentially with this HashDictionary extends
+	 * both BaseModifiableDictionary AND BaseQueryableDictionary :)
+	 */
+	private final BaseQueryableDictionary innerDict;
+	
+	/**
+	 * Ad-hoc implementation of BaseQueryableDictionary...
+	 * ... because not possible ot make anonymous abstract class.
+	 * 
+	 * @author Eugen
+	 *
+	 */
+	private class InnerDict extends BaseQueryableDictionary {
+
+		public InnerDict(HDTSpecification spec) {
+			super(spec);
+			
+			InnerDict.this.subjects = HashDictionary.this.subjects;
+			InnerDict.this.predicates = HashDictionary.this.predicates;
+			InnerDict.this.objects = HashDictionary.this.objects;
+			InnerDict.this.shared = HashDictionary.this.shared;
+		}
+
+		@Override
+		public void populateHeader(Header header, String rootNode) {
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public String getType() {
+			return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+		}
+
+		@Override
+		public void load(Dictionary other, ProgressListener listener) {
+			//TODO
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public void save(OutputStream output, ControlInformation ci,
+				ProgressListener listener) throws IOException {
+			//TODO
+			throw new NotImplementedException();
+		}
+
+		@Override
+		public void load(InputStream input, ControlInformation ci,
+				ProgressListener listener) throws IOException {
+			//TODO
+			throw new NotImplementedException();
+		}
+		
+	}
+	
+	/**
+	 * constructor...
+	 */
 	public HashDictionary(HDTSpecification spec) {
 		super(spec);
-	
+		innerDict = new InnerDict(spec);
+		
 		// FIXME: Read types from spec
-		subjects = new DictionarySectionHash();
-		predicates = new DictionarySectionHash();
-		objects = new DictionarySectionHash();
-		shared = new DictionarySectionHash();
+		subjects = new HashDictionarySection();
+		predicates = new HashDictionarySection();
+		objects = new HashDictionarySection();
+		shared = new HashDictionarySection();
 	}
 	
 	/* (non-Javadoc)
@@ -66,48 +136,48 @@ public class HashDictionary extends BaseModifiableDictionary {
 		StopWatch st = new StopWatch();
 		
 		// Generate old subject mapping
-		Iterator<? extends CharSequence> itSubj = ((DictionarySectionModifiable) subjects).getEntries();
+		Iterator<? extends CharSequence> itSubj = ((ModifiableDictionarySection) subjects).getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			mapSubj.add(str);
 			
 			// GENERATE SHARED at the same time
 			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
-				((DictionarySectionModifiable)shared).add(str);
+				((ModifiableDictionarySection)shared).add(str);
 			}
 		}
 		System.out.println("Num shared: "+shared.getNumberOfElements()+" in "+st.stopAndShow());
 
 		// Generate old predicate mapping
 		st.reset();
-		Iterator<? extends CharSequence> itPred = ((DictionarySectionModifiable) predicates).getEntries();
+		Iterator<? extends CharSequence> itPred = ((ModifiableDictionarySection) predicates).getEntries();
 		while(itPred.hasNext()) {
 			CharSequence str = itPred.next();
 			mapPred.add(str);
 		}		
 		
 		// Generate old object mapping
-		Iterator<? extends CharSequence> itObj = ((DictionarySectionModifiable) objects).getEntries();
+		Iterator<? extends CharSequence> itObj = ((ModifiableDictionarySection) objects).getEntries();
 		while(itObj.hasNext()) {
 			CharSequence str = itObj.next();
 			mapObj.add(str);
 		}
 		
 		// Remove shared from subjects and objects
-		Iterator<? extends CharSequence> itShared = ((DictionarySectionModifiable) shared).getEntries();
+		Iterator<? extends CharSequence> itShared = ((ModifiableDictionarySection) shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
-			((DictionarySectionModifiable)subjects).remove(sharedStr);
-			((DictionarySectionModifiable)objects).remove(sharedStr);
+			((ModifiableDictionarySection)subjects).remove(sharedStr);
+			((ModifiableDictionarySection)objects).remove(sharedStr);
 		}
 		System.out.println("Mapping generated in "+st.stopAndShow());
 		
 		// Sort sections individually
 		st.reset();
-		((DictionarySectionModifiable)subjects).sort();
-		((DictionarySectionModifiable)predicates).sort();
-		((DictionarySectionModifiable)objects).sort();
-		((DictionarySectionModifiable)shared).sort();
+		((ModifiableDictionarySection)subjects).sort();
+		((ModifiableDictionarySection)predicates).sort();
+		((ModifiableDictionarySection)objects).sort();
+		((ModifiableDictionarySection)shared).sort();
 		System.out.println("Sections sorted in "+ st.stopAndShow());
 		
 		// Update mappings with new IDs
@@ -159,11 +229,37 @@ public class HashDictionary extends BaseModifiableDictionary {
 		// Do nothing.
 	}
 	
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getType()
-	 */
+//--- Queryable methods ---------------------	
+	
+	@Override
+	public void save(OutputStream output, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		innerDict.save(output, ci, listener);
+	}
+
+	@Override
+	public void load(InputStream input, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		innerDict.load(input, ci, listener);
+	}
+
+	@Override
+	public TripleString tripleIDtoTripleString(TripleID tripleID) {
+		return innerDict.tripleIDtoTripleString(tripleID);
+	}
+
+	@Override
+	public CharSequence idToString(int id, TripleComponentRole position) {
+		return innerDict.idToString(id, position);
+	}
+
+	@Override
+	public void populateHeader(Header header, String rootNode) {
+		innerDict.populateHeader(header, rootNode);
+	}
+
 	@Override
 	public String getType() {
-		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+		return innerDict.getType();
 	}
 }

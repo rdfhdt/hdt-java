@@ -37,7 +37,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -48,7 +49,7 @@ import org.rdfhdt.hdt.util.string.CompactString;
  * @author mario.arias
  *
  */
-public class DictionarySectionHash implements DictionarySectionModifiable {
+public class HashDictionarySection implements ModifiableDictionarySection, QueryableDictionarySection {
 	public static final int TYPE_INDEX = 1;
 
 	private HashMap<CharSequence, Integer> map;
@@ -59,11 +60,11 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	/**
 	 * 
 	 */
-	public DictionarySectionHash() {
+	public HashDictionarySection() {
 		this(new HDTSpecification());
 	}
 	
-	public DictionarySectionHash(HDTSpecification spec) {
+	public HashDictionarySection(HDTSpecification spec) {
 		map = new HashMap<CharSequence, Integer>();
 		list = new ArrayList<CharSequence>();
 		size=0;
@@ -115,7 +116,7 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 	@Override
 	public Iterator<? extends CharSequence> getSortedEntries() {
 		if(!sorted) {
-			this.sort(); //FIXME not sure this is smart... because of use in one-pass way of working (if something calls this before remapping done everything is wrong... and most probably will not be detected as an error because everything will work)
+			return null;
 		}
 		return list.iterator();
 	}
@@ -179,7 +180,12 @@ public class DictionarySectionHash implements DictionarySectionModifiable {
 			map.put(extract(i), i);
 		}
 		
-		sorted=true;
+		sorted = true;
+	}
+	
+	@Override
+	public boolean isSorted() {
+		return sorted;
 	}
 
 	/* (non-Javadoc)

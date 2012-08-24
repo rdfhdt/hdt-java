@@ -29,10 +29,14 @@ package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 import org.apache.jdbm.DB;
 import org.apache.jdbm.DBMaker;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
@@ -49,10 +53,10 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 		db = setupDB(spec);
 
 		// FIXME: Read stuff from properties
-		subjects = new DictionarySectionJDBM(spec, db, "subjects");
-		predicates = new DictionarySectionJDBM(spec, db, "predicates");
-		objects = new DictionarySectionJDBM(spec, db, "objects");
-		shared = new DictionarySectionJDBM(spec, db, "shared");
+		subjects = new JDBMDictionarySection(spec, db, "subjects");
+		predicates = new JDBMDictionarySection(spec, db, "predicates");
+		objects = new JDBMDictionarySection(spec, db, "objects");
+		shared = new JDBMDictionarySection(spec, db, "shared");
 	}
 
 	private DB setupDB(HDTSpecification spec) {
@@ -87,13 +91,17 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 	public void close() throws IOException {
 		db.close();
 	}
-	
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getType()
-	 */
+
 	@Override
-	public String getType() {
-		//FIXME ... different type?
-		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	public void save(OutputStream output, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
+
+	@Override
+	public void load(InputStream input, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+	
 }

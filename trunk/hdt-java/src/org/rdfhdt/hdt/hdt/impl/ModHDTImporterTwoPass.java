@@ -1,4 +1,4 @@
-package org.rdfhdt.hdt.hdt;
+package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.IOException;
 
@@ -7,6 +7,8 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.ModHDTImporter;
+import org.rdfhdt.hdt.hdt.ModifiableHDT;
 import org.rdfhdt.hdt.listener.ListenerUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;

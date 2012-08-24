@@ -35,6 +35,7 @@ import java.util.Iterator;
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -53,7 +54,7 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
  * @author mario.arias
  *
  */
-public class DictionarySectionPFCBig implements DictionarySection {
+public class PFCDictionarySectionBig implements QueryableDictionarySection {
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 32;
 	
@@ -62,7 +63,7 @@ public class DictionarySectionPFCBig implements DictionarySection {
 	protected int numstrings;
 	protected long size;
 	
-	public DictionarySectionPFCBig(HDTSpecification spec) {
+	public PFCDictionarySectionBig(HDTSpecification spec) {
 
 	}
 	

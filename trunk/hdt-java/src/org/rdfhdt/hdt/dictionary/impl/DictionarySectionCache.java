@@ -27,9 +27,6 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
-import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.listener.ProgressListener;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -37,12 +34,17 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
+import org.rdfhdt.hdt.listener.ProgressListener;
+
 /**
  * @author mario.arias
  *
  */
-public class DictionarySectionCache implements DictionarySection {
-	private DictionarySection child;
+public class DictionarySectionCache implements QueryableDictionarySection {
+	
+	private QueryableDictionarySection child;
 	
 	private Map<CharSequence,Integer> cacheString;
 	private Map<Integer,CharSequence> cacheID;
@@ -50,7 +52,7 @@ public class DictionarySectionCache implements DictionarySection {
 	
 	
 	@SuppressWarnings("serial")
-	public DictionarySectionCache(DictionarySection child) {
+	public DictionarySectionCache(QueryableDictionarySection child) {
 		this.child = child;
 		
 		// Create cache

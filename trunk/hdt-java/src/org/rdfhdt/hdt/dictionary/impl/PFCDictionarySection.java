@@ -37,6 +37,7 @@ import java.util.Iterator;
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
 import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -56,7 +57,7 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
  * @author mario.arias
  *
  */
-public class DictionarySectionPFC implements DictionarySection {
+public class PFCDictionarySection implements QueryableDictionarySection {
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 8;
 	
@@ -66,7 +67,7 @@ public class DictionarySectionPFC implements DictionarySection {
 	protected int numstrings;
 	protected LogArray64 blocks;
 	
-	public DictionarySectionPFC(HDTSpecification spec) {
+	public PFCDictionarySection(HDTSpecification spec) {
 		this.blocksize = (int) spec.getInt("pfc.blocksize");
 		if(blocksize==0) {
 			blocksize = DEFAULT_BLOCK_SIZE;

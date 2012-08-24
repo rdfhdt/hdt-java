@@ -30,8 +30,8 @@ package org.rdfhdt.hdt.examples;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
+import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
@@ -42,7 +42,7 @@ import org.rdfhdt.hdt.triples.TripleString;
 public class ExampleLoad {
 public static void main(String[] args) throws IOException, NotFoundException {
 	// Load HDT file
-	HDT hdt = HDTFactory.createHDT();
+	QueryableHDT hdt = HDTFactory.createHDT();
 	hdt.loadFromHDT("data/example.hdt", null);
 	
 	// Recommended: Generate index to speed up ?P? ?PO and ??O queries.

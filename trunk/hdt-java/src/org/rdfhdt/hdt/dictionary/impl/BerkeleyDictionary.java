@@ -28,29 +28,34 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
-public class BerkeleyDBDictionary extends BaseModifiableDictionary {
+public class BerkeleyDictionary extends BaseModifiableDictionary {
 
 	private Environment env;
 
-	public BerkeleyDBDictionary(HDTSpecification spec) {
+	public BerkeleyDictionary(HDTSpecification spec) {
 
 		super(spec);
 		setupDBEnvironment(spec);
 
 		// FIXME: Read stuff from properties
 		try {
-			subjects = new DictionarySectionBerkeley(spec, env, "subjects");
-			predicates = new DictionarySectionBerkeley(spec, env, "predicates");
-			objects = new DictionarySectionBerkeley(spec, env, "objects");
-			shared = new DictionarySectionBerkeley(spec, env, "shared");
+			subjects = new BerkeleyDictionarySection(spec, env, "subjects");
+			predicates = new BerkeleyDictionarySection(spec, env, "predicates");
+			objects = new BerkeleyDictionarySection(spec, env, "objects");
+			shared = new BerkeleyDictionarySection(spec, env, "shared");
 		} catch (Exception e){
 			//TODO something smarter??
 			cleanupEnvironment();
@@ -112,10 +117,10 @@ public class BerkeleyDBDictionary extends BaseModifiableDictionary {
 	public void close() {
 
 		try {	
-			((DictionarySectionBerkeley)subjects).cleanup();
-			((DictionarySectionBerkeley)predicates).cleanup();
-			((DictionarySectionBerkeley)objects).cleanup();
-			((DictionarySectionBerkeley)shared).cleanup();
+			((BerkeleyDictionarySection)subjects).cleanup();
+			((BerkeleyDictionarySection)predicates).cleanup();
+			((BerkeleyDictionarySection)objects).cleanup();
+			((BerkeleyDictionarySection)shared).cleanup();
 		} catch (Exception e){
 			cleanupEnvironment();
 			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
@@ -126,12 +131,16 @@ public class BerkeleyDBDictionary extends BaseModifiableDictionary {
 
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.Dictionary#getType()
-	 */
+
 	@Override
-	public String getType() {
-		//FIXME ... different type?
-		return HDTVocabulary.DICTIONARY_TYPE_PLAIN;
+	public void save(OutputStream output, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void load(InputStream input, ControlInformation ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
 }

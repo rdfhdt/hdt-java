@@ -25,7 +25,7 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.hdt;
+package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -38,8 +38,12 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
+import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.ModifiableHDT;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
@@ -59,22 +63,22 @@ import org.rdfhdt.hdt.util.StopWatch;
  * @author mario.arias
  *
  */
-public class HDTRW implements ModifiableHDT {
+public class HDTRW implements ModifiableHDT, QueryableHDT {
 	HDTSpecification spec;
-	
+
 	Header header;
 	ModifiableDictionary dictionary;
 	ModifiableTriples triples;
-	
+
 	String baseUri=null;
 	boolean isOrganized=false;
-	
+
 	protected HDTRW(HDTSpecification spec) {
 		this.spec = spec;
 		dictionary = DictionaryFactory.createModifiableDictionary(spec);
 		triples = TriplesFactory.createModifiableTriples(spec);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.hdt.HDT#getHeader()
 	 */
@@ -106,15 +110,15 @@ public class HDTRW implements ModifiableHDT {
 	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException {
 		ControlInformation ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		ci.clear();
 		ci.setHeader(true);
 		header.save(output, ci, iListener);
-		
+
 		ci.clear();
 		ci.setDictionary(true);
 		dictionary.save(output, ci, iListener);
-		
+
 		ci.clear();
 		ci.setTriples(true);
 		triples.save(output, ci, iListener);
@@ -145,15 +149,25 @@ public class HDTRW implements ModifiableHDT {
 	 */
 	@Override
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) {
+		
+		//FIXME - if goes goes... 
+		// should be in a separate specialized HDT and this class
+		// should be only Modifiable not Queryable also
+		QueryableDictionary dict = null;
+		try {
+			dict = (QueryableDictionary)dictionary;
+		} catch (Exception e){
+			throw new RuntimeException("Dictionary type "+dictionary.getClass()+" is not queryable (cannot do search)!", e);
+		}
 
 		// Conversion from TripleString to TripleID
 		TripleID triple = new TripleID(
 				dictionary.stringToId(subject, TripleComponentRole.SUBJECT),
 				dictionary.stringToId(predicate, TripleComponentRole.PREDICATE),
 				dictionary.stringToId(object, TripleComponentRole.OBJECT)
-			);
+				);
 
-		return new DictionaryTranslateIterator(triples.search(triple), dictionary);
+		return new DictionaryTranslateIterator(triples.search(triple), dict);
 	}
 
 	/* (non-Javadoc)
@@ -167,7 +181,7 @@ public class HDTRW implements ModifiableHDT {
 				dictionary.insert(object, TripleComponentRole.OBJECT)
 				);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.hdt.ModifiableHDT#insert(hdt.triples.TripleString[])
 	 */
@@ -196,6 +210,7 @@ public class HDTRW implements ModifiableHDT {
 	 */
 	@Override
 	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
+
 		// FIXME: Removing from triples is easy, but how to know if the dictionary entry should be removed??
 		triples.remove(dictionary.tripleStringtoTripleID(
 				new TripleString(subject.toString(), predicate.toString(), object.toString()) ));
@@ -216,21 +231,21 @@ public class HDTRW implements ModifiableHDT {
 	public void loadFromHDT(InputStream input, ProgressListener listener) throws IOException {
 		ControlInformation ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		// Load header
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(0, 5);
 		header = HeaderFactory.createHeader(ci);
 		header.load(input, ci, iListener);
-		
+
 		// Load dictionary
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(5, 60);
 		dictionary.clear();
 		dictionary.load(input, ci, iListener);
-		
+
 		// Load Triples
 		ci.clear();
 		ci.load(input);
@@ -241,7 +256,7 @@ public class HDTRW implements ModifiableHDT {
 
 	@Override
 	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException {
-//		InputStream in = new GZIPInputStream(new FileInputStream(fileName));
+		//		InputStream in = new GZIPInputStream(new FileInputStream(fileName));
 		InputStream in = new BufferedInputStream(new FileInputStream(fileName));
 		loadFromHDT(in, listener);
 		in.close();
@@ -251,10 +266,10 @@ public class HDTRW implements ModifiableHDT {
 	public void loadFromHDT(HDT hdt, ProgressListener listener) {
 		Dictionary otherDict = hdt.getDictionary();
 		Triples otherTriples = hdt.getTriples();
-		
+
 		dictionary.clear();
 		dictionary.load(otherDict, listener);
-		
+
 		triples.clear();
 		triples.load(otherTriples, listener);
 	}
@@ -283,13 +298,13 @@ public class HDTRW implements ModifiableHDT {
 			if(orderStr==null) {
 				orderStr = "SPO";
 			}
-			
+
 			// Sort and remove duplicates.
 			StopWatch sortDupTime = new StopWatch();
 			triples.sort(TripleComponentOrder.valueOf(orderStr), listener);
 			triples.removeDuplicates(listener);
 			System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
-			
+
 			isOrganized=true;
 		}
 	}

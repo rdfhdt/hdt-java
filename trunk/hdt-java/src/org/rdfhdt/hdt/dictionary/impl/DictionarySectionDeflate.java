@@ -27,6 +27,13 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
+import java.util.zip.DeflaterOutputStream;
+
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
@@ -39,13 +46,6 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
-import java.util.zip.DeflaterOutputStream;
 
 /**
  * @author mck
@@ -133,15 +133,6 @@ public class DictionarySectionDeflate implements DictionarySection {
 	public int locate(CharSequence s) {
 		// TODO Auto-generated method stub
 		return 0;
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.DictionarySection#extract(int)
-	 */
-	@Override
-	public CharSequence extract(int pos) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	/* (non-Javadoc)

@@ -33,7 +33,9 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 
 /**
- * @author mario.arias
+ * Interface that specifies the methods for a dictionary that can be modified.
+ * 
+ * @author Eugen
  *
  */
 public interface ModifiableDictionary extends Dictionary, Closeable {
@@ -61,14 +63,15 @@ public interface ModifiableDictionary extends Dictionary, Closeable {
 	public int insert(CharSequence str, TripleComponentRole position);
 
 	/**
-	 * Reorganizes the dictionary (Extract shared SO, sort sections)
+	 * Reorganizes the dictionary (Extract shared SO, sort sections).
+	 * (used for two-pass way of work).
 	 * 
 	 */
 	public void reorganize();
 	
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections)
-	 * and updates the IDs of the triples.
+	 * and updates the IDs of the triples (used for one-pass way of work).
 	 */
 	public void reorganize(ModifiableTriples triples);
 	
@@ -76,4 +79,5 @@ public interface ModifiableDictionary extends Dictionary, Closeable {
 	 * Empty all the strings of the dictionary.
 	 */
 	public void clear();
+
 }

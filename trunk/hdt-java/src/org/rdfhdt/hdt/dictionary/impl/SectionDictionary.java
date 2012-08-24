@@ -32,7 +32,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.listener.IntermediateListener;
@@ -45,30 +44,27 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * @author mario.arias
  *
  */
-public class SectionDictionary extends BaseDictionary {
-	
-	/**
-	 * 
-	 */
+public class SectionDictionary extends BaseQueryableDictionary {
+
 	public SectionDictionary(HDTSpecification spec) {
 		super(spec);
 		// FIXME: Read type from spec.
-		subjects = new DictionarySectionPFC(spec);
-		predicates = new DictionarySectionPFC(spec);
-		objects = new DictionarySectionPFC(spec);
-		shared = new DictionarySectionPFC(spec);
+		subjects = new PFCDictionarySection(spec);
+		predicates = new PFCDictionarySection(spec);
+		objects = new PFCDictionarySection(spec);
+		shared = new PFCDictionarySection(spec);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.Dictionary#load(hdt.dictionary.Dictionary)
 	 */
 	@Override
 	public void load(Dictionary other, ProgressListener listener) {
-			IntermediateListener iListener = new IntermediateListener(listener);
-			subjects.load(other.getSubjects(), iListener);
-			predicates.load(other.getPredicates(), iListener);
-			objects.load(other.getObjects(), iListener);
-			shared.load(other.getShared(), iListener);
+		IntermediateListener iListener = new IntermediateListener(listener);
+		subjects.load(other.getSubjects(), iListener);
+		predicates.load(other.getPredicates(), iListener);
+		objects.load(other.getObjects(), iListener);
+		shared.load(other.getShared(), iListener);
 	}
 
 	/* (non-Javadoc)
@@ -81,13 +77,13 @@ public class SectionDictionary extends BaseDictionary {
 		ci.setInt("$mapping", this.mapping.ordinal());
 		ci.setInt("$elements", this.getNumberOfElements());
 		ci.save(output);
-		
+
 		IntermediateListener iListener = new IntermediateListener(listener);
 		shared.save(output, iListener);
 		subjects.save(output, iListener);
 		predicates.save(output, iListener);
 		objects.save(output, iListener);
-		
+
 	}
 
 	/* (non-Javadoc)
@@ -100,15 +96,15 @@ public class SectionDictionary extends BaseDictionary {
 			throw new IllegalArgumentException("Mapping out of bounds");
 		}
 		this.mapping = Mapping.values()[mappingVal];
-	
+
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		shared = DictionarySectionFactory.loadFrom(input, iListener);
-				
+
 		subjects = DictionarySectionFactory.loadFrom(input, iListener);
-		
+
 		predicates = DictionarySectionFactory.loadFrom(input, iListener);
-		
+
 		objects = DictionarySectionFactory.loadFrom(input, iListener);
 	}
 
@@ -136,25 +132,4 @@ public class SectionDictionary extends BaseDictionary {
 	public String getType() {
 		return HDTVocabulary.DICTIONARY_TYPE_PFC;
 	}
-
-	@Override
-	public DictionarySection getSubjects() {
-		return subjects;
-	}
-
-	@Override
-	public DictionarySection getPredicates() {
-		return predicates;
-	}
-
-	@Override
-	public DictionarySection getObjects() {
-		return objects;
-	}
-
-	@Override
-	public DictionarySection getShared() {
-		return shared;
-	}
-
 }

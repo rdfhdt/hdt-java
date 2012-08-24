@@ -30,8 +30,8 @@ package org.rdfhdt.hdt.examples;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
+import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**

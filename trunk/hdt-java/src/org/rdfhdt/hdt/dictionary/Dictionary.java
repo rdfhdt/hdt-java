@@ -27,24 +27,23 @@
 
 package org.rdfhdt.hdt.dictionary;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
 import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 
 /**
- * Interface that specifies the methods for a Dictionary implementation
+ * Interface that specifies the basic methods for any Dictionary implementation
  * 
  */
 public interface Dictionary {
-
+	
 	/**
 	 * Converts a TripleString to a TripleID
 	 * 
@@ -53,27 +52,7 @@ public interface Dictionary {
 	 * @return TripleID
 	 */
 	public TripleID tripleStringtoTripleID(TripleString tripleString);
-
-	/**
-	 * Converts a TripleID to a TripleString
-	 * 
-	 * @param tripleID
-	 *            The Triple to convert from
-	 * @return TripleString
-	 */
-	public TripleString tripleIDtoTripleString(TripleID tripleID);
-
-	/**
-	 * Returns the string for a given id
-	 * 
-	 * @param id
-	 *            The id to convert to string
-	 * @param position
-	 *            TriplePosition of the id in the dictionary
-	 * @return String
-	 */
-	public CharSequence idToString(int id, TripleComponentRole position);
-
+	
 	/**
 	 * Returns the id for a given string
 	 * 
@@ -84,7 +63,12 @@ public interface Dictionary {
 	 * @return int
 	 */
 	public int stringToId(CharSequence str, TripleComponentRole position);
-
+	
+	/**
+	 * Loads all information from another dictionary into this dictionary.
+	 */
+	public void load(Dictionary other, ProgressListener listener);
+	
 	/**
 	 * Saves the dictionary to a OutputStream
 	 */
@@ -98,37 +82,56 @@ public interface Dictionary {
 	 * @throws IOException
 	 */
 	public void load(InputStream input, ControlInformation ci, ProgressListener listener) throws IOException;
-	
-	public void load(Dictionary other, ProgressListener listener);
 
 	/**
 	 * Returns the number of elements in the dictionary
-	 * 
-	 * @return int
 	 */
 	public long getNumberOfElements();
 
+	/**
+	 * Return the combined size of the sections of the dictionary (in bytes)
+	 */
 	public long size();
 	
+	/**
+	 * Returns the number of subjects in the dictionary.
+	 */
 	public long getNsubjects();
 	
+	/**
+	 * Returns the number of predicates in the dictionary.
+	 */
 	public long getNpredicates();
 	
+	/**
+	 * Returns the number of objects in the dictionary.
+	 */
 	public long getNobjects();
 	
+	/**
+	 * Returns the number of subjects/objects in the dictionary.
+	 */
 	public long getNshared();
 	
+	/**
+	 * Returns the biggest ID that a subject or an objects in the dictionary has
+	 */
 	public long getMaxID();
 	
+	/**
+	 * Returns the biggest ID that a subject in the dictionary has
+	 */
 	public long getMaxSubjectID();
-	
+
+	/**
+	 * Returns the biggest ID that a predicate in the dictionary has
+	 */
 	public long getMaxPredicateID();
 	
-	public long getMaxObjectID();
-	
-	public void populateHeader(Header header, String rootNode);
-	
-	public String getType(); 
+	/**
+	 * Returns the biggest ID that an object in the dictionary has
+	 */
+	public long getMaxObjectID(); 
 	
 	public DictionarySection getSubjects();
 	

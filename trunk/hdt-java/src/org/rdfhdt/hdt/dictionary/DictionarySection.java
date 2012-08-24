@@ -27,18 +27,21 @@
 
 package org.rdfhdt.hdt.dictionary;
 
-import org.rdfhdt.hdt.listener.ProgressListener;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.rdfhdt.hdt.listener.ProgressListener;
+
 /**
+ * Interface that specifies the basic methods for a dictionary section
+ * 
  * @author mario.arias
  *
  */
 public interface DictionarySection {
+	
 	/**
 	 * Find a String and return its ID.
 	 * @param s
@@ -47,29 +50,26 @@ public interface DictionarySection {
 	public int locate(CharSequence s);
 	
 	/**
-	 * Find the String associated to an ID
-	 * @param pos
-	 * @return
-	 */
-	public CharSequence extract(int pos);
-	
-	/**
-	 * Size in bytes of the structure
-	 * @return
+	 * Size in bytes of the strings held in teh dictionary section.
 	 */
 	public long size();
 	
 	/**
-	 * Number of entries in the dictionary.
-	 * @return
+	 * Number of entries in the dictionary section.
 	 */
 	public int getNumberOfElements();
 	
 	/**
 	 * Iterator over all entries in the dictionary, sorted lexicographically.
-	 * @return
 	 */
 	public Iterator<? extends CharSequence> getSortedEntries();
+	
+	/**
+	 * Load entries from another dictionary.
+	 * @param other
+	 * @param listener
+	 */
+	public void load(DictionarySection other, ProgressListener listener);
 	
 	/**
 	 * Serialize dictionary to a stream.
@@ -86,11 +86,4 @@ public interface DictionarySection {
 	 * @throws IOException
 	 */
 	public void load(InputStream input, ProgressListener listener) throws IOException;
-	
-	/**
-	 * Load entries from another dictionary.
-	 * @param other
-	 * @param listener
-	 */
-	public void load(DictionarySection other, ProgressListener listener);
 }

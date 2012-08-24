@@ -27,13 +27,6 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
-import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.util.string.CompactString;
-import org.rdfhdt.hdt.util.string.ReplazableString;
-
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -45,15 +38,23 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
+import org.rdfhdt.hdt.dictionary.QueryableDictionarySection;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.string.CompactString;
+import org.rdfhdt.hdt.util.string.ReplazableString;
+
 /**
  * @author mck
  *
  */
-public class DictionarySectionLiterals implements DictionarySection {
+public class DictionarySectionLiterals implements QueryableDictionarySection {
 	public static final byte TYPE_INDEX = 3;
 	
 	private Map<CharSequence, Integer> sectionMap;
-	private List<DictionarySection> sectionList;
+	private List<QueryableDictionarySection> sectionList;
 	private List<CharSequence> sectionLabel;
 	int [] accumLength;
 	int numElements;
@@ -63,7 +64,7 @@ public class DictionarySectionLiterals implements DictionarySection {
 	 */
 	public DictionarySectionLiterals() {
 		sectionMap = new HashMap<CharSequence, Integer>();
-		sectionList = new ArrayList<DictionarySection>();
+		sectionList = new ArrayList<QueryableDictionarySection>();
 		sectionLabel = new ArrayList<CharSequence>();
 	}
 	
@@ -140,7 +141,7 @@ public class DictionarySectionLiterals implements DictionarySection {
 			return "**********************************************************";
 		}
 		ReplazableString str = new ReplazableString();
-		DictionarySection section = sectionList.get(sectionNum); 
+		QueryableDictionarySection section = sectionList.get(sectionNum); 
 		int localID = getLocalID(sectionNum, pos);
 		CharSequence literal = section.extract(localID);
 		str.append(literal);
@@ -206,7 +207,7 @@ public class DictionarySectionLiterals implements DictionarySection {
 			CharSequence dataType = new CompactString(din.readUTF());
 			sectionLabel.add(dataType);
 			
-			DictionarySection section = DictionarySectionFactory.createInstance(din, null);
+			QueryableDictionarySection section = DictionarySectionFactory.createInstance(din, null);
 			section.load(din, listener);
 			sectionList.add(section);
 			
@@ -245,10 +246,10 @@ public class DictionarySectionLiterals implements DictionarySection {
 	
 			// Find section.
 			Integer sectionNum = sectionMap.get(dataType);
-			DictionarySection section;
+			QueryableDictionarySection section;
 			if(sectionNum==null) {
 				// Not extisting, create new section
-				section = new DictionarySectionHash();
+				section = new HashDictionarySection();
 				sectionList.add(section);
 				sectionLabel.add(dataType);
 				sectionNum = sectionList.size()-1;
@@ -256,18 +257,18 @@ public class DictionarySectionLiterals implements DictionarySection {
 			} else {
 				section = sectionList.get(sectionNum);
 			}
-			((DictionarySectionModifiable)section).add(compact);
+			((ModifiableDictionarySection)section).add(compact);
 			numElements++;
 		}
 		
 		// Sort each section
 		for(DictionarySection section : sectionList) {
-			((DictionarySectionModifiable)section).sort();
+			((ModifiableDictionarySection)section).sort();
 		}
 		
 		// Convert each section to final format.
 		for(int i=0;i<sectionList.size();i++) {
-			DictionarySection newSection = new DictionarySectionPFC(new HDTSpecification());
+			QueryableDictionarySection newSection = new PFCDictionarySection(new HDTSpecification());
 			newSection.load(sectionList.get(i), null);
 			sectionList.set(i, newSection);
 		}

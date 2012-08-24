@@ -31,6 +31,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
@@ -139,12 +140,23 @@ public class IOUtil {
 	}
 	
 	/**
+	 * Convert int to byte array, little endian
+	 */
+	public static byte[] intToByteArray(int value) {
+		writeBuffer[0] = (byte) (value & 0xFF);
+		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
+		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
+		writeBuffer[3] = (byte) ((value>>24) & 0xFF);
+		return Arrays.copyOfRange(writeBuffer, 0, 4);
+	}
+	
+	/**
 	 * Read int, little endian
 	 * @param input
 	 * @return
 	 * @throws IOException
 	 */
-	public static final int readInt(InputStream in) throws IOException {
+	public static int readInt(InputStream in) throws IOException {
 		int ch1 = in.read();
 		int ch2 = in.read();
 		int ch3 = in.read();
@@ -152,6 +164,15 @@ public class IOUtil {
 		if ((ch1 | ch2 | ch3 | ch4) < 0)
 			throw new EOFException();
 		return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+	}
+	
+	/**
+	 * Convert byte array to int, little endian
+	 * @param value
+	 * @return
+	 */
+	public static int byteArrayToInt(byte[] value){
+		return ((value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0));
 	}
 	
 	/**

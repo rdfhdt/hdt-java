@@ -27,11 +27,11 @@
 
 package org.rdfhdt.hdt.dictionary;
 
-import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary;
-import org.rdfhdt.hdt.dictionary.impl.BerkeleyDBDictionary_native;
+import org.rdfhdt.hdt.dictionary.impl.BerkeleyDictionary;
+import org.rdfhdt.hdt.dictionary.impl.BerkeleyNativeDictionary;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
-import org.rdfhdt.hdt.dictionary.impl.KyotoCabinetDictionary;
+import org.rdfhdt.hdt.dictionary.impl.KyotoDictionary;
 import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -74,21 +74,21 @@ public class DictionaryFactory {
 		} else if (DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
 			return new JDBMDictionary(spec);
 		} else if (DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
-			return new BerkeleyDBDictionary(spec);
+			return new BerkeleyDictionary(spec);
 		} else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
-			return new BerkeleyDBDictionary_native(spec);
+			return new BerkeleyNativeDictionary(spec);
 		} else if (DICT_MOD_KYOTO.equals(dictName)){
-			return new KyotoCabinetDictionary(spec);
+			return new KyotoDictionary(spec);
 		}
 		System.err.println("Unknown dictionary... using hash...");
 		return new HashDictionary(spec);
 	}
 	
-	public static Dictionary createDictionary(HDTSpecification spec) {
+	public static QueryableDictionary createDictionary(HDTSpecification spec) {
 		return create(spec.get("dictionary.type"));
 	}
 	
-	public static Dictionary createDictionary(ControlInformation ci) {
+	public static QueryableDictionary createDictionary(ControlInformation ci) {
 		return create(ci.get("codification"));
 	}
 	
@@ -99,11 +99,10 @@ public class DictionaryFactory {
 	 * @return Dictionary
 	 */
 	//FIXME specs passed on...?
-	private static Dictionary create(String name) {
+	private static QueryableDictionary create(String name) {
 		if(HDTVocabulary.DICTIONARY_TYPE_PFC.equals(name)) {
 			return new SectionDictionary(new HDTSpecification());
 		} else if(HDTVocabulary.DICTIONARY_TYPE_PLAIN.equals(name)) {
-			//FIXME other versions...?
 			return new HashDictionary(new HDTSpecification());
 		}
 		return new SectionDictionary(new HDTSpecification());

@@ -32,8 +32,8 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
+import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -56,7 +56,7 @@ public class HdtSearch implements ProgressListener {
 	@Parameter(names = "-input", description = "Input HDT file name")
 	public String hdtInput = null;	
 	
-	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
+	protected static void iterate(QueryableHDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
 		StopWatch iterateTime = new StopWatch();
 		try {
 			int count = 0;
@@ -86,7 +86,7 @@ public class HdtSearch implements ProgressListener {
 	
 	public void execute() throws ParserException, IOException {
 		
-		HDT hdt = HDTFactory.createHDT(new HDTSpecification());
+		QueryableHDT hdt = HDTFactory.createHDT(new HDTSpecification());
 		hdt.loadFromHDT(hdtInput, this);
 		hdt.loadOrCreateIndex(this);
 		

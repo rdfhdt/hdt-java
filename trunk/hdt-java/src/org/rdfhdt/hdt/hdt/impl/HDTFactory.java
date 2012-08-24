@@ -25,13 +25,18 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.hdt;
+package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.ModHDTImporter;
+import org.rdfhdt.hdt.hdt.ModifiableHDT;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -51,7 +56,7 @@ public class HDTFactory {
 	 * 
 	 * @return HDT
 	 */
-	public static HDT createHDT() {
+	public static QueryableHDT createHDT() {
 		return createHDT(new HDTSpecification());
 	}
 
@@ -60,7 +65,7 @@ public class HDTFactory {
 	 * 
 	 * @return HDT
 	 */
-	public static HDT createHDT(HDTSpecification specification) {
+	public static QueryableHDT createHDT(HDTSpecification specification) {
 		return new BaseHDT(specification);
 	}
 

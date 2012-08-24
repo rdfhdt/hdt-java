@@ -38,10 +38,11 @@ import kyotocabinet.Cursor;
 import kyotocabinet.DB;
 
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.DictionarySectionModifiable;
+import org.rdfhdt.hdt.dictionary.ModifiableDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 
@@ -56,14 +57,14 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
  * @author Eugen Rozic
  *
  */
-public class DictionarySectionKyoto implements DictionarySectionModifiable {
+public class KyotoDictionarySection implements ModifiableDictionarySection {
 	public static final int TYPE_INDEX = 5;
 
 	private File homeDir;
 	private String sectionID;
 
 	private DB map_StringToID;
-	private DB map_IDToString;
+	private String dbFileName;
 
 	private Integer IDcounter;
 	private int numElements;
@@ -72,11 +73,11 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 	private boolean changed = false;
 	private boolean sorted = false;
 
-	public DictionarySectionKyoto(File homeDir, String sectionName) throws Exception {
+	public KyotoDictionarySection(File homeDir, String sectionName) throws Exception {
 		this(new HDTSpecification(), homeDir, sectionName);
 	}
 
-	public DictionarySectionKyoto(HDTSpecification spec, File homeDir, String sectionID) {
+	public KyotoDictionarySection(HDTSpecification spec, File homeDir, String sectionID) {
 
 		this.homeDir = homeDir;
 		this.sectionID = sectionID;
@@ -94,32 +95,10 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 		//TODO catch exceptions...
 
 		this.map_StringToID = new DB(DB.GEXCEPTIONAL);
-		//TODO setup and open the database in homeDir;
-		map_StringToID.open(homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct", DB.OWRITER | DB.OTRUNCATE);
-
-		this.map_IDToString = new DB(DB.GEXCEPTIONAL);
-		//TODO setup and open the database in homeDir;
-		map_IDToString.open(homeDir.getPath()+"/"+sectionID+"_map_IDToString.kch", DB.OWRITER | DB.OTRUNCATE);
-	}
-
-	private byte[] intToByteArray(int value) {
+		this.dbFileName = homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct";
+		//TODO setup db parameters
+		map_StringToID.open(dbFileName+"", DB.OWRITER | DB.OTRUNCATE);
 		
-		byte[] b = new byte[4];
-		for (int i=0; i<4; i++) {
-			int offset = (3 - i) * 8;
-			b[i] = (byte) ((value >>> offset) & 0xFF);
-		}
-		return b;
-	}
-	
-	private int byteArrayToInt(byte[] value){
-		
-		int res = 0;
-		for (int i=0; i<4; i++){
-			int offset = (3 - i) * 8;
-			res |= ((value[i] & 0xFF) << offset);
-		}
-		return res;
 	}
 
 	@Override
@@ -128,15 +107,14 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 		byte[] pos = map_StringToID.get(str);
 		if(pos!=null) {
 			// found, return existing ID.
-			return byteArrayToInt(pos);
+			return IOUtil.byteArrayToInt(pos);
 		}
 		// Not found, insert new
 		IDcounter++;
-		pos = intToByteArray(IDcounter);
+		pos = IOUtil.intToByteArray(IDcounter);
 		boolean success = map_StringToID.add(str, pos);
 		if (!success)
-			throw new RuntimeException("Add failed in "+sectionID+"?!");
-		//map_IDToString.put(pos, str); FIXME optimization, no need for this info before sorting (because only two-pass way of working supported) 
+			throw new RuntimeException("Add failed in "+sectionID+"?!"); 
 
 		numElements++;
 		size += str.length;
@@ -151,7 +129,6 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 		byte[] str = charSeq.toString().getBytes(ByteStringUtil.STRING_ENCODING);
 		byte[] ID = map_StringToID.seize(str);
 		if (ID==null) return;
-		//map_IDToString.remove(ID); FIXME optimization, no real need for this (only for consistency)
 
 		numElements--;
 		size -= str.length;
@@ -163,34 +140,29 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 	public void sort() {
 
 		IDcounter = 0;
-		byte[] str = null;
-		byte[] currID = null;
+		boolean more = true;
 		Cursor cursor = map_StringToID.cursor();
 		cursor.jump();
-		while ((str = cursor.get_key(false))!=null){ //get key but don't move on
+		while (more){
 			IDcounter++;
-			currID = intToByteArray(IDcounter);
-			cursor.set_value(currID, true); //set value and move on
-			map_IDToString.set(currID, str);
+			more = cursor.set_value(IOUtil.intToByteArray(IDcounter), true); //set value and move on
 		}
 		cursor.disable();
 
 		changed = true;
 		sorted = true;
 	}
+	
+	@Override
+	public boolean isSorted() {
+		return sorted;
+	}
 
 	@Override
 	public int locate(CharSequence charSeq) {
 		byte[] ID = map_StringToID.get(charSeq.toString().getBytes(ByteStringUtil.STRING_ENCODING));
 		if(ID==null) return 0;
-		return byteArrayToInt(ID);
-	}
-
-	@Override
-	public CharSequence extract(int ID) {
-		if (ID>IDcounter) return null; //after remove and sort... not necessary to remove extra values from disc map_IDToString, just made inaccesible this way (so to outside like they don't exist)
-		byte[] str = map_IDToString.get(intToByteArray(ID)); //if not exsisting will return null
-		return str==null? null : new String(str, ByteStringUtil.STRING_ENCODING);
+		return IOUtil.byteArrayToInt(ID);
 	}
 
 	@Override
@@ -245,7 +217,7 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 
 	@Override
 	public void clear() {
-		if (!(map_StringToID.clear() && map_IDToString.clear()))
+		if (!map_StringToID.clear())
 			throw new RuntimeException("Clear of "+sectionID+" failed?!");
 		
 		changed = true;
@@ -260,14 +232,8 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 		changed = true;
 
 		map_StringToID.close();
-		//TODO ... is this the filename??
-		new File(homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct").delete();
+		new File(dbFileName).delete();
 
-		map_IDToString.close();
-		//TODO ... is this the filename??
-		new File(homeDir.getPath()+"/"+sectionID+"_map_IDToString.kch").delete();
-
-		//TODO are there any other files made?
 	}
 
 	//----------------------------------------------------------------------
@@ -307,11 +273,16 @@ public class DictionarySectionKyoto implements DictionarySectionModifiable {
 				load();
 			}
 			
-			return next==null? false : true; //if exsists then not null ergo true, else null ergo false
+			if (next==null){
+				cursor.disable();
+				return false;
+			} else {
+				return true;
+			}
 		}
 		
 		private void load(){
-			next = cursor.get_key(true); //gets key, does not advance
+			next = cursor.get_key(true); //gets key, and advances
 			loaded = true;
 		}
 
