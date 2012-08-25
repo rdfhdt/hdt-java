@@ -29,8 +29,8 @@ package org.rdfhdt.hdt.tools;
 import java.io.PrintStream;
 import java.util.List;
 
+import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -64,7 +64,7 @@ public class HDT2RDF implements ProgressListener {
 			out = new PrintStream(rdfOutput);
 		}
 		
-		QueryableHDT hdt = HDTFactory.createHDT(new HDTSpecification());
+		QueryableHDT hdt = HDTFactory.createQueryableHDT(new HDTSpecification());
 		hdt.loadFromHDT(hdtInput, this);
 
 		IteratorTripleString it = hdt.search("","","");

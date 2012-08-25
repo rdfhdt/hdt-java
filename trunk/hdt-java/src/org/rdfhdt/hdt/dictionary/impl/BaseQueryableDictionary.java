@@ -47,13 +47,6 @@ public abstract class BaseQueryableDictionary extends BaseDictionary implements 
 		super(spec);
 	}
 
-	protected enum DictionarySectionType {
-		SUBJECT,
-		PREDICATE,
-		OBJECT,
-		SHARED
-	};
-
 	private QueryableDictionarySection getSection(int id, TripleComponentRole role) {
 		switch (role) {
 		case SUBJECT:

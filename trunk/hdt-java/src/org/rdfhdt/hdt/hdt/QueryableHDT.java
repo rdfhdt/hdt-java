@@ -27,33 +27,20 @@
 
 package org.rdfhdt.hdt.hdt;
 
-import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.rdf.RDFAccess;
 
 /**
  * Interface for a queryable HDT object.
  * 
+ * It only grants basic HDT object the ability of RDF access,
+ * that is the ability to search through their triples.
+ * 
  * @author Eugen
  *
  */
-public interface QueryableHDT extends HDT {
+public interface QueryableHDT extends HDT, RDFAccess {
 	
-	/**
-	 * Search a pattern in a HDT
-	 * 
-	 * The null string acts as a wildcard. (i.e. search(null, null, null)
-	 * returns all elements)
-	 * 
-	 * @param subject
-	 *            The subject to search
-	 * @param predicate
-	 *            The predicate to search
-	 * @param object
-	 *            The object to search
-	 * 
-	 * @return Iterator of TripleStrings
-	 * @throws NotFoundException 
-	 */
-	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
-
+	//no need to put any additional methods because the only
+	//one needed (now) is search, and that is in RDFAccess
+	
 }

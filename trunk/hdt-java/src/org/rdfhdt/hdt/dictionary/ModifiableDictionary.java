@@ -75,6 +75,8 @@ public interface ModifiableDictionary extends Dictionary, Closeable {
 	 */
 	public void reorganize(ModifiableTriples triples);
 	
+	public boolean isOrganized();
+	
 	/**
 	 * Empty all the strings of the dictionary.
 	 */

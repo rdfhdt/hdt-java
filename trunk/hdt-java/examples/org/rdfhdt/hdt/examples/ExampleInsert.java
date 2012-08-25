@@ -30,8 +30,8 @@ package org.rdfhdt.hdt.examples;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
-import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
@@ -41,8 +41,9 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 public class ExampleInsert {
 
 	public static void main(String[] args) throws IOException {
+		
 		// Create instance
-		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/");
+		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/", null);
 		
 		// Load data
 		mhdt.insert("uri1", "p1", "val1");

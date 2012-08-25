@@ -38,7 +38,14 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
- * @author mario.arias
+ * This class is an implementation of a modifiable dictionary that
+ * uses dictionary sections that store entries on disc using a
+ * KyotoCabinet key-value database (native, written in c++).
+ * 
+ * This class creates only the folder for the database, databases
+ * are configured in each of the dictionary sections separately.
+ * 
+ * @author Eugen
  *
  */
 public class KyotoDictionary extends BaseModifiableDictionary {

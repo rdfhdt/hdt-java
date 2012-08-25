@@ -1,3 +1,30 @@
+/**
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/BaseDictionary.java $
+ * Revision: $Rev: 57 $
+ * Last modified: $Date: 2012-08-24 01:26:52 +0100 (Fri, 24 Aug 2012) $
+ * Last modified by: $Author: simpsonim13@gmail.com $
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ * Contacting the authors:
+ *   Mario Arias:               mario.arias@deri.org
+ *   Javier D. Fernandez:       jfergar@infor.uva.es
+ *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
+ *   Alejandro Andres:          fuzzy.alej@gmail.com
+ */
+
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.util.Iterator;
@@ -11,7 +38,16 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 
+/**
+ * This abstract class implements all methods that have implementation
+ * common to all modifiable dictionaries (or could apply to)
+ * 
+ * @author Eugen
+ *
+ */
 public abstract class BaseModifiableDictionary extends BaseDictionary implements ModifiableDictionary {
+	
+	protected boolean isOrganzied = false;
 
 	public BaseModifiableDictionary(HDTSpecification spec) {
 		super(spec);
@@ -24,10 +60,13 @@ public abstract class BaseModifiableDictionary extends BaseDictionary implements
 	public int insert(CharSequence str, TripleComponentRole position) {
 		switch(position) {
 		case SUBJECT:
+			isOrganzied = false;
 			return ((ModifiableDictionarySection)subjects).add(str);
 		case PREDICATE:
+			isOrganzied = false;
 			return ((ModifiableDictionarySection)predicates).add(str);			
 		case OBJECT:
+			isOrganzied = false;
 			return ((ModifiableDictionarySection)objects).add(str);
 		}
 		throw new IllegalArgumentException();
@@ -60,6 +99,8 @@ public abstract class BaseModifiableDictionary extends BaseDictionary implements
 		((ModifiableDictionarySection)predicates).sort();
 		((ModifiableDictionarySection)objects).sort();
 		((ModifiableDictionarySection)shared).sort();
+		
+		isOrganzied = true;
 
 	}
 
@@ -72,6 +113,11 @@ public abstract class BaseModifiableDictionary extends BaseDictionary implements
 	@Override
 	public void reorganize(ModifiableTriples triples) {
 		throw new NotImplementedException();
+	}
+	
+	@Override
+	public boolean isOrganized() {
+		return isOrganzied;
 	}
 
 	@Override

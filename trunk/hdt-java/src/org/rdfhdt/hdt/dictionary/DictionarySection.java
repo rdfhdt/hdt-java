@@ -37,7 +37,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 /**
  * Interface that specifies the basic methods for a dictionary section
  * 
- * @author mario.arias
+ * @author mario.arias, Eugen
  *
  */
 public interface DictionarySection {

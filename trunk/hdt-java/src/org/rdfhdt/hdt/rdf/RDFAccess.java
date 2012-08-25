@@ -35,5 +35,22 @@ import org.rdfhdt.hdt.iterator.IteratorTripleString;
  *
  */
 public interface RDFAccess {
-	IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
+	
+	/**
+	 * Search a pattern in a HDT
+	 * 
+	 * The null string acts as a wildcard. (i.e. search(null, null, null)
+	 * returns all elements)
+	 * 
+	 * @param subject
+	 *            The subject to search
+	 * @param predicate
+	 *            The predicate to search
+	 * @param object
+	 *            The object to search
+	 * 
+	 * @return Iterator of TripleStrings
+	 * @throws NotFoundException 
+	 */
+	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
 }

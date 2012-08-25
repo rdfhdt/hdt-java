@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.dictionary.impl;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.impl.BaseQueryableDictionary.DictionarySectionType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -46,11 +45,22 @@ import org.rdfhdt.hdt.triples.TripleString;
 public abstract class BaseDictionary implements Dictionary {
 	
 	protected HDTSpecification spec;
-	protected DictionarySection subjects, predicates, objects, shared;
+	
+	protected DictionarySection subjects; 
+	protected DictionarySection predicates;
+	protected DictionarySection objects;
+	protected DictionarySection shared;
 	
 	public BaseDictionary(HDTSpecification spec) {
 		this.spec = spec;
 	}
+	
+	protected enum DictionarySectionType {
+		SUBJECT,
+		PREDICATE,
+		OBJECT,
+		SHARED
+	};
 	
 	protected enum Mapping {
 		MAPPING1,

@@ -66,14 +66,14 @@ import org.rdfhdt.hdt.util.StringUtil;
  */
 public class BaseHDT implements QueryableHDT {
 	
-	HDTSpecification spec;
+	private HDTSpecification spec;
 
-	Header header;
-	QueryableDictionary dictionary;
-	Triples triples;
+	private Header header;
+	private QueryableDictionary dictionary;
+	private Triples triples;
 	
-	String hdtFileName;
-	String baseUri;
+	private String hdtFileName;
+	private String baseUri;
 	
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
@@ -81,7 +81,7 @@ public class BaseHDT implements QueryableHDT {
         triples = TriplesFactory.createTriples(spec);
 	}
 	
-	void populateHeaderStructure(String baseUri) {
+	public void populateHeaderStructure(String baseUri) {
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
 		String formatNode = "_:format";
 		header.insert(baseUri, HDTVocabulary.HDT_FORMAT_INFORMATION, formatNode);
@@ -106,7 +106,7 @@ public class BaseHDT implements QueryableHDT {
 	/**
 	 * @param specification
 	 */
-	BaseHDT(HDTSpecification specification) {
+	public BaseHDT(HDTSpecification specification) {
 		this.spec = specification;
 
 		createComponents();
@@ -257,7 +257,9 @@ public class BaseHDT implements QueryableHDT {
 	 */
 	@Override
 	public void loadFromModifiableHDT(ModifiableHDT modHdt, ProgressListener listener) {
-		modHdt.reorganize(listener);
+		
+		modHdt.reorganizeDictionary(listener);
+		modHdt.reorganizeTriples(listener);
 		
         // Get parts
         ModifiableTriples modifiableTriples = (ModifiableTriples) modHdt.getTriples();

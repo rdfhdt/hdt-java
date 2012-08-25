@@ -41,6 +41,18 @@ import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 
+/**
+ * This class is an implementation of a modifiable dictionary that
+ * uses dictionary sections that store entries on disc using a
+ * BerkeleyDB JE key-value database.
+ * 
+ * This class is responsible for creating and cleaning up the
+ * environment of the databses. All parameters of the environment
+ * are set up here (most importantly cache).
+ * 
+ * @author Eugen
+ *
+ */
 public class BerkeleyDictionary extends BaseModifiableDictionary {
 
 	private Environment env;

@@ -40,6 +40,8 @@ import org.rdfhdt.hdt.triples.Triples;
 /**
  * Interface that specifies the methods for a HDT implementation
  * 
+ * @author mario.arias, Eugen
+ * 
  */
 public interface HDT {
 

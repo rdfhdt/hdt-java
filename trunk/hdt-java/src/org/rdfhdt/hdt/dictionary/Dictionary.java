@@ -41,6 +41,8 @@ import org.rdfhdt.hdt.triples.TripleString;
 /**
  * Interface that specifies the basic methods for any Dictionary implementation
  * 
+ * @author mario.arias, Eugen
+ * 
  */
 public interface Dictionary {
 	

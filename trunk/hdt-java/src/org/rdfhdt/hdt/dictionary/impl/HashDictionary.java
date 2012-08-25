@@ -115,13 +115,14 @@ public class HashDictionary extends BaseModifiableDictionary implements Queryabl
 	 */
 	public HashDictionary(HDTSpecification spec) {
 		super(spec);
-		innerDict = new InnerDict(spec);
 		
 		// FIXME: Read types from spec
 		subjects = new HashDictionarySection();
 		predicates = new HashDictionarySection();
 		objects = new HashDictionarySection();
 		shared = new HashDictionarySection();
+		
+		innerDict = new InnerDict(spec);
 	}
 	
 	/* (non-Javadoc)
@@ -212,6 +213,8 @@ public class HashDictionary extends BaseModifiableDictionary implements Queryabl
 			);
 		}
 		System.out.println("Replace IDs in "+st.stopAndShow());
+		
+		isOrganzied = true;
 	}
 	
 	@Override

@@ -40,7 +40,15 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
- * @author mario.arias
+ * This class is an implementation of a modifiable dictionary that
+ * uses dictionary sections that store entries on disc using a
+ * JDBM key-value database.
+ * 
+ * This class is responsible for creating and cleaning up the
+ * database (environment of the maps). All parameters of the database
+ * are set up here (most importantly cache).
+ * 
+ * @author Eugen
  *
  */
 public class JDBMDictionary extends BaseModifiableDictionary {

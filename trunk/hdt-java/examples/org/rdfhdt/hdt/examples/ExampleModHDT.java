@@ -28,9 +28,9 @@
 package org.rdfhdt.hdt.examples;
 
 import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
 import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.hdt.impl.HDTFactory;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
@@ -42,7 +42,7 @@ public class ExampleModHDT {
 
 	public static void main(String[] args) throws Exception {
 		// Create instance
-		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/");
+		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/", null);
 		
 		// Load data
 		mhdt.insert("uri1", "p1", "val1");
@@ -56,7 +56,7 @@ public class ExampleModHDT {
 		mhdt.close();
 		
 		// Load back
-		ModifiableHDT mhdt2 = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/");
+		ModifiableHDT mhdt2 = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/", null);
 		mhdt2.loadFromHDT(hdt, null);
 		
 		IteratorTripleString it = ((QueryableHDT)mhdt2).search("", "", "");

@@ -41,6 +41,18 @@ import com.sleepycat.db.DatabaseException;
 import com.sleepycat.db.Environment;
 import com.sleepycat.db.EnvironmentConfig;
 
+/**
+ * This class is an implementation of a modifiable dictionary that
+ * uses dictionary sections that store entries on disc using a
+ * BerkeleyDB (native, written in c++) key-value database.
+ * 
+ * This class is responsible for creating and cleaning up the
+ * environment of the databses. All parameters of the environment
+ * are set up here (most importantly cache).
+ * 
+ * @author Eugen
+ *
+ */
 public class BerkeleyNativeDictionary extends BaseModifiableDictionary {
 
 	private Environment env;
