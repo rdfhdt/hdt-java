@@ -1,0 +1,1 @@
+java -Xmx1024M -classpath bin;lib/*;lib/DBs/* org.rdfhdt.hdt.tools.HDT2RDF %*

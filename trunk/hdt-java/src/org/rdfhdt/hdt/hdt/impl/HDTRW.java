@@ -63,7 +63,7 @@ public class HDTRW extends BaseModifiableHDT implements QueryableHDT {
 			throw new RuntimeException("HDTRW has to be instantiated with a Dictionary object " +
 					"that implements both ModifiableDictionary and QueryableDictionary. What " +
 					"implementation of the dictionary is used is probably determined in the " +
-					"constructor of BaseModifiableHDT or in the DictionaryFacory.",e);
+					"constructor of BaseModifiableHDT or in the DictionaryFactory.",e);
 		}
 	}
 

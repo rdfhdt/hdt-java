@@ -66,7 +66,7 @@ public class DictionaryFactory {
 	 */
 	public static ModifiableDictionary createModifiableDictionary(HDTSpecification spec)
 			throws IllegalArgumentException {
-		//FIXME ... dictionary.name as option... some values in HDTVocabulary... ?
+
 		String dictName = spec.get("dictionary.name");
 		//TODO switch-case can use String in 1.7 and after...
 		if (DICT_MOD_HASH.equalsIgnoreCase(dictName)){

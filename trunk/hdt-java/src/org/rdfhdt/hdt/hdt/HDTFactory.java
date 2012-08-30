@@ -30,10 +30,12 @@ package org.rdfhdt.hdt.hdt;
 import java.io.File;
 import java.io.IOException;
 
+import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.ModifiableHDT.ModeOfLoading;
 import org.rdfhdt.hdt.hdt.impl.BaseHDT;
+import org.rdfhdt.hdt.hdt.impl.BaseModifiableHDT;
 import org.rdfhdt.hdt.hdt.impl.HDTRW;
 import org.rdfhdt.hdt.hdt.impl.ModHDTImporterTwoPass;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -78,9 +80,24 @@ public class HDTFactory {
 	 * @return ModifiableHDT
 	 */
 	public static ModifiableHDT createModifiableHDT(HDTSpecification spec, String baseUri, ModeOfLoading modeOfLoading) {
-		//TODO ... some options here, a choice? (BaseModifiableHDT?)
-		HDTRW modhdt = new HDTRW(spec, baseUri, modeOfLoading);
-		return modhdt;
+		
+		//FIXME ... some options here, a choice? (BaseModifiableHDT?
+		String dictName = spec.get("dictionary.name");
+		//TODO switch-case can use String in 1.7 and after...
+		if (DictionaryFactory.DICT_MOD_HASH.equalsIgnoreCase(dictName)){
+			return new HDTRW(spec, baseUri, modeOfLoading);
+		} else if (DictionaryFactory.DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
+			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
+		} else if (DictionaryFactory.DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
+			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
+		} else if (DictionaryFactory.DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
+			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
+		} else if (DictionaryFactory.DICT_MOD_KYOTO.equals(dictName)){
+			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
+		} else {
+			return new HDTRW(spec, baseUri, modeOfLoading);
+		}
+		
 	}
 	
 //----------------------------------------------------------------------------------------------------

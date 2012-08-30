@@ -61,7 +61,7 @@ public class HDT2RDF implements ProgressListener {
 		if (rdfOutput.equals("stdout")){
 			out = System.out;
 		} else {
-			out = new PrintStream(rdfOutput);
+			out = new PrintStream(rdfOutput, "UTF-8");
 		}
 		
 		QueryableHDT hdt = HDTFactory.createQueryableHDT(new HDTSpecification());

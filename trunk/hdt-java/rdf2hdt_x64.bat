@@ -1,0 +1,1 @@
+java -XX:+UseCompressedOops -Xmx1024M -classpath bin;lib/*;lib/DBs/* org.rdfhdt.hdt.tools.RDF2HDT %*
