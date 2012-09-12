@@ -35,6 +35,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.StopWatch;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -88,11 +89,17 @@ public class RDF2HDT implements ProgressListener {
 		}
 		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(rdfType), this);
 		
+		//dumping to HDT file
+		StopWatch sw = new StopWatch();
 		hdt.saveToHDT(hdtOutput, this);
+		System.out.println("HDT saved to file in: "+sw.stopAndShow());
 		
+		//generating index and dumping it to jindex file
+		sw.reset();
 		if(generateIndex) {
 			hdt.loadOrCreateIndex(this);
 		}
+		System.out.println("Index generated and saved in: "+sw.stopAndShow());
 		
 		// Debug all inserted triples
 		//HdtSearch.iterate(hdt, "","","");

@@ -41,7 +41,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * @author mario.arias, Eugen
  *
  */
-public interface ModHDTImporter {
+public interface ModHDTLoader {
 	
 	ModifiableHDT loadFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException;
 	

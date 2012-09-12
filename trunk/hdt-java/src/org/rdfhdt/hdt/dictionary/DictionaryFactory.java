@@ -33,6 +33,7 @@ import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
 import org.rdfhdt.hdt.dictionary.impl.KyotoDictionary;
 import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
+import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -43,11 +44,14 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  */
 public class DictionaryFactory {
 	
-	public static final String DICT_MOD_HASH = "hash";
-	public static final String DICT_MOD_JDBM = "jdbm";
-	public static final String DICT_MOD_BERKELEY = "berkeley";
-	public static final String DICT_MOD_BERKELEY_NATIVE = "berkeley_native";
-	public static final String DICT_MOD_KYOTO = "kyoto";
+	public static final String MOD_DICT_TYPE_IN_MEM = "in-memory";
+	public static final String MOD_DICT_TYPE_ON_DISC = "on-disc";
+	
+	public static final String MOD_DICT_IMPL_HASH = "hash";
+	public static final String MOD_DICT_IMPL_JDBM = "jdbm";
+	public static final String MOD_DICT_IMPL_BERKELEY = "berkeleyJE";
+	public static final String MOD_DICT_IMPL_BERKELEY_NATIVE = "berkeley";
+	public static final String MOD_DICT_IMPL_KYOTO = "kyoto";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -66,22 +70,45 @@ public class DictionaryFactory {
 	 */
 	public static ModifiableDictionary createModifiableDictionary(HDTSpecification spec)
 			throws IllegalArgumentException {
-
-		String dictName = spec.get("dictionary.name");
+		
+		String dictType = spec.get("tempDictionary.type");
+		String dictImpl = spec.get("tempDictionary.impl");
+		String loaderType = spec.get("loader.type");
+		
 		//TODO switch-case can use String in 1.7 and after...
-		if (DICT_MOD_HASH.equalsIgnoreCase(dictName)){
+		if (MOD_DICT_TYPE_IN_MEM.equals(dictType)){
+			if (MOD_DICT_IMPL_HASH.equals(dictImpl)){
+				return new HashDictionary(spec);
+			} else {
+				System.err.println("Unknown in-memory dictionary implementation, using hash.");
+				spec.set("tempDictionary.impl", MOD_DICT_IMPL_HASH);
+				return new HashDictionary(spec);
+			}
+		} else if (MOD_DICT_TYPE_ON_DISC.equals(dictType)) {
+			if (!HDTFactory.LOADER_TWO_PASS.equals(loaderType)){
+				String errmsg = "tempTriples.impl cannot be \"set\" if loader.type is not set to two-pass!";
+				System.err.println(errmsg);
+				throw new RuntimeException(errmsg);
+			}
+			if (MOD_DICT_IMPL_JDBM.equals(dictImpl)) {
+				return new JDBMDictionary(spec);
+			} else if (MOD_DICT_IMPL_BERKELEY.equals(dictImpl)) {
+				return new BerkeleyDictionary(spec);
+			} else if (MOD_DICT_IMPL_BERKELEY_NATIVE.equals(dictImpl)) {
+				return new BerkeleyNativeDictionary(spec);
+			} else if (MOD_DICT_IMPL_KYOTO.equals(dictImpl)) {
+				return new KyotoDictionary(spec);
+			} else {
+				System.err.println("Unknown on-disc dictionary implementation, using jdbm.");
+				spec.set("tempDictionary.impl", MOD_DICT_IMPL_JDBM);
+				return new JDBMDictionary(spec);
+			} 
+		} else {
+			System.err.println("Unknown dictionary type, using in-memory hash.");
+			spec.set("tempDictionary.type", MOD_DICT_TYPE_IN_MEM);
+			spec.set("tempDictionary.impl", MOD_DICT_IMPL_HASH);
 			return new HashDictionary(spec);
-		} else if (DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
-			return new JDBMDictionary(spec);
-		} else if (DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
-			return new BerkeleyDictionary(spec);
-		} else if (DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
-			return new BerkeleyNativeDictionary(spec);
-		} else if (DICT_MOD_KYOTO.equals(dictName)){
-			return new KyotoDictionary(spec);
 		}
-		System.err.println("Unknown dictionary... using hash...");
-		return new HashDictionary(spec);
 	}
 	
 	public static QueryableDictionary createDictionary(HDTSpecification spec) {
@@ -95,7 +122,7 @@ public class DictionaryFactory {
 	/**
 	 * Creates a Dictionary
 	 * 
-	 * @param spec Specification of the required dictionary
+	 * @param specs Specification of the required dictionary
 	 * @return Dictionary
 	 */
 	//FIXME specs passed on...?

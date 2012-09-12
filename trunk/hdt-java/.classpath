@@ -20,7 +20,7 @@
 	<classpathentry kind="lib" path="lib/xml-apis-1.4.01.jar"/>
 	<classpathentry kind="lib" path="lib/DBs/BerkeleyDB_JE_5.0.55.jar" sourcepath="lib/DBs/sources/BerkeleyDB_JE_5.0.55_sources.jar"/>
 	<classpathentry kind="lib" path="lib/DBs/kyotocabinet.jar" sourcepath="lib/DBs/sources/kyotocabinet_sources.jar"/>
-	<classpathentry kind="lib" path="lib/DBs/JDBM3_29082012.jar" sourcepath="lib/DBs/sources/JDBM3_29082012_sources.jar"/>
+	<classpathentry kind="lib" path="lib/DBs/JDBM3_08092012.jar" sourcepath="lib/DBs/sources/JDBM3_08092012_sources.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

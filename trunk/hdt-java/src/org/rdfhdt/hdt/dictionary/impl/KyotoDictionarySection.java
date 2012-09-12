@@ -95,9 +95,14 @@ public class KyotoDictionarySection implements ModifiableDictionarySection {
 		//TODO catch exceptions...
 
 		this.map_StringToID = new DB(DB.GEXCEPTIONAL);
+		
 		this.dbFileName = homeDir.getPath()+"/"+sectionID+"_map_StringToID.kct";
-		//TODO setup db parameters
-		map_StringToID.open(dbFileName+"", DB.OWRITER | DB.OTRUNCATE);
+		String logParameters = "#log=-#logkinds=debug#logpx="+sectionID;
+		//setup for a lot of RAM, performance optimization
+		String dbParameters = "#apow=2#opts=l#bnum=???#msiz=1L<<29#";
+			//apow def=8 ; bnum=10%rec ; msiz=RAM(TODO preko postotaka od Xmx) ; pccap(page cache)~= msiz/30 (pow2)
+		
+		map_StringToID.open(dbFileName+logParameters+dbParameters, DB.OWRITER | DB.OTRUNCATE);
 		
 	}
 

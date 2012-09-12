@@ -202,11 +202,9 @@ public class HashDictionary extends BaseModifiableDictionary implements Queryabl
 		// Replace old IDs with news
 		st.reset();
 		Iterator<TripleID> iteratorTriples = triples.searchAll();
-		int count = 0;
 		while(iteratorTriples.hasNext()) {
 			TripleID triple = iteratorTriples.next();
-			
-			triples.replace(count++, 
+			triples.update(triple, 
 					mapSubj.getNewID(triple.getSubject()-1),
 					mapPred.getNewID(triple.getPredicate()-1),
 					mapObj.getNewID(triple.getObject()-1)

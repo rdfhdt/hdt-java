@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.iterator;
 
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -193,7 +194,8 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	 */
 	@Override
 	public void remove() {
-		
+		//TODO
+		throw new NotImplementedException();
 	}
 	
 	

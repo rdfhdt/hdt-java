@@ -74,7 +74,6 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	@Override
 	public TripleString next() {
 		TripleID triple = iterator.next();
-		//System.out.println(triple);
 		// convert the tripleID to TripleString
 		return dictionary.tripleIDtoTripleString(triple);
 	}

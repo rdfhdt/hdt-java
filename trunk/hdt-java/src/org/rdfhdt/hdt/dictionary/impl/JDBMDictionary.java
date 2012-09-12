@@ -80,7 +80,7 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 		db.closeOnExit();
 		db.deleteFilesAfterClose();
 		db.disableTransactions(); //more performance
-		db.enableHardCache(); //db.enableMRUCache(); + db.setMRUCacheSize(cacheSize);
+		db.setMRUCacheSize(4096); //db.enableHardCache();
 		
 		return db.make();
 	}

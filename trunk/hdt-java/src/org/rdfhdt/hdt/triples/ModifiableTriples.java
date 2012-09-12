@@ -47,7 +47,7 @@ public interface ModifiableTriples extends Triples, Closeable {
 	 * @param object
 	 * @return
 	 */
-	public abstract boolean insert(int subject, int predicate, int object);
+	public boolean insert(int subject, int predicate, int object);
 	
 	/**
 	 * Adds one or more triples
@@ -56,7 +56,23 @@ public interface ModifiableTriples extends Triples, Closeable {
 	 *            The triples to be inserted
 	 * @return boolean
 	 */
-	public abstract boolean insert(TripleID... triples);
+	public boolean insert(TripleID... triples);
+	
+	/**
+	 * Updates the given TripleID with the new values.
+	 * 
+	 * The control has to be given over this method to the ModifiableTriples
+	 * implementation instead of changing the triple manually because some
+	 * implementations might not react well to that (TriplesSet for example, changing
+	 * the triple will not trigger reordering)
+	 * 
+	 * @param triple
+	 * @param subj
+	 * @param pred
+	 * @param obj
+	 * @return
+	 */
+	public boolean update(TripleID triple, int subj, int pred, int obj);
 
 	/**
 	 * Deletes one or more triples according to a pattern
@@ -65,19 +81,16 @@ public interface ModifiableTriples extends Triples, Closeable {
 	 *            The pattern to match against
 	 * @return boolean
 	 */
-	public abstract boolean remove(TripleID... pattern);
-	
-	public abstract void replace(int id, int subject, int predicate, int object);
+	public boolean remove(TripleID... pattern);
 
 	/**
-	 * Sorts the triples based on an order(TripleComponentOrder)
-	 * 
-	 * @param order
-	 *            The order to sort the triples with
+	 * Sorts the triples based on the order(TripleComponentOrder) of the
+	 * triples.
+	 * If you want to sort in a different order use setOrder first.
 	 */
-	public abstract void sort(TripleComponentOrder order, ProgressListener listener);
+	public void sort(ProgressListener listener);
 
-	public abstract void removeDuplicates(ProgressListener listener);
+	public void removeDuplicates(ProgressListener listener);
 	
 	/**
 	 * Sets a type of order(TripleComponentOrder)
@@ -85,12 +98,17 @@ public interface ModifiableTriples extends Triples, Closeable {
 	 * @param order
 	 *            The order to set
 	 */
-	public abstract void setOrder(TripleComponentOrder order);
+	public void setOrder(TripleComponentOrder order);
+	
+	/**
+	 * Gets the currently set order(TripleComponentOrder)
+	 */
+	public TripleComponentOrder getOrder();
 	
 	/**
 	 * Clear all triples, resulting in an empty triples section.
 	 */
-	public abstract void clear();
+	public void clear();
 	
 	/**
 	 * Load triples from another instance.

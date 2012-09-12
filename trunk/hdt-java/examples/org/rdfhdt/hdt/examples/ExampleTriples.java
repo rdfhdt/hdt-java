@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.examples;
 
 import org.rdfhdt.hdt.iterator.IteratorTripleID;
+import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TriplesFactory;
@@ -41,7 +42,7 @@ public class ExampleTriples {
 public static void main(String[] args) {
 	
 	// Create triples
-	ModifiableTriples modTriples = TriplesFactory.createModifiableTriples();
+	ModifiableTriples modTriples = TriplesFactory.createModifiableTriples(new HDTSpecification());
 	
 	// Load data
 	// WARNING: All the subjects from 1 to n must appear at least once.

@@ -1,8 +1,27 @@
+#parameters of the input RDF file (optional, if not given can/will be calculated)
+
+#parameters of the HDT
+loader.type = two-pass
 header.type = <http://purl.org/HDT/hdt#headerSimple>
 triples.type = <http://purl.org/HDT/hdt#triplesBitmap>
+triples.component.order = SPO
 dictionary.type = <http://purl.org/HDT/hdt#dictionaryFrontCoding>
-dictionary.name = jdbm
 stream.x = <http://purl.org/HDT/hdt#streamLog>
 stream.y = <http://purl.org/HDT/hdt#streamLog>
 stream.z = <http://purl.org/HDT/hdt#streamLog>
-triples.component.order = SPO
+
+#parameters of the temporary triples used for building the HDT
+	# type = in-memory|on-disc
+tempTriples.type = in-memory
+	# impl  = list|set if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
+tempTriples.impl = list
+	# percent of Xmx for cache if "on-disc" (is going to be calculated if not specified)
+tempTriples.cache = 
+
+#parameters of the temporary dictionary used for building the HDT
+	# type = in-memory|on-disc
+tempDictionary.type = on-disc
+	# impl  = hash if "in-memory", or imple = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
+tempDictionary.impl = jdbm
+	# percent of Xmx for cache if "on-disc" (is going to be calculated if not specified)
+tempDictionary.cache = 

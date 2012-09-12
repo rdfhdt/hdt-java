@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
@@ -34,7 +35,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.ModHDTImporter;
+import org.rdfhdt.hdt.hdt.ModHDTLoader;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
 import org.rdfhdt.hdt.hdt.ModifiableHDT.ModeOfLoading;
 import org.rdfhdt.hdt.listener.ListenerUtil;
@@ -45,8 +46,9 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.RDFInfo;
 
-public class ModHDTImporterOnePass implements ModHDTImporter {
+public class ModHDTLoaderOnePass implements ModHDTLoader {
 
 	class TripleAppender implements RDFCallback {
 		ModifiableDictionary dict;
@@ -72,12 +74,18 @@ public class ModHDTImporterOnePass implements ModHDTImporter {
 	};
 	
 	@Override
-	public ModifiableHDT loadFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
+	public ModifiableHDT loadFromRDF(HDTSpecification specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
 		
+		// Fill the specs with missing properties
+		if (RDFInfo.getLines(specs)!=null) {//if lines set by user believe them
+			RDFInfo.setSizeInBytes(new File(filename).length(), specs);
+		} else {
+			RDFInfo.fillHDTSpecifications(filename, specs); //if lines not set count them and force setting both
+		}
+		
 		// Create Modifiable Instance
-		/* HDTRW modHDT = new HDTRW(spec, baseUri); */
-		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(spec, baseUri, 
+		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri, 
 				ModeOfLoading.ONE_PASS);
 		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
 		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();

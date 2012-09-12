@@ -95,10 +95,10 @@ public abstract class BaseModifiableDictionary extends BaseDictionary implements
 		}
 
 		// Sort sections individually
-		((ModifiableDictionarySection)subjects).sort();
-		((ModifiableDictionarySection)predicates).sort();
-		((ModifiableDictionarySection)objects).sort();
 		((ModifiableDictionarySection)shared).sort();
+		((ModifiableDictionarySection)subjects).sort();
+		((ModifiableDictionarySection)objects).sort();
+		((ModifiableDictionarySection)predicates).sort();
 		
 		isOrganzied = true;
 

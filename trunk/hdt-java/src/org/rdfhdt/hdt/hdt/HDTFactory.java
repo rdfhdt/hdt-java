@@ -37,7 +37,8 @@ import org.rdfhdt.hdt.hdt.ModifiableHDT.ModeOfLoading;
 import org.rdfhdt.hdt.hdt.impl.BaseHDT;
 import org.rdfhdt.hdt.hdt.impl.BaseModifiableHDT;
 import org.rdfhdt.hdt.hdt.impl.HDTRW;
-import org.rdfhdt.hdt.hdt.impl.ModHDTImporterTwoPass;
+import org.rdfhdt.hdt.hdt.impl.ModHDTLoaderOnePass;
+import org.rdfhdt.hdt.hdt.impl.ModHDTLoaderTwoPass;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -47,10 +48,14 @@ import org.rdfhdt.hdt.util.StopWatch;
  * 
  */
 public class HDTFactory {
+
+	public static final String LOADER_ONE_PASS = "one-pass";
+	public static final String LOADER_TWO_PASS = "two-pass";
 	
-	// TODO: Choose from config file / depending on input size?
-	//private static ModHDTImporter converter = new ModHDTImporterOnePass();
-	private static ModHDTImporter converter = new ModHDTImporterTwoPass();
+	/**
+	 * The loader... one-pass or two-pass
+	 */
+	private static ModHDTLoader loader;
 
 	/**
 	 * Creates a default HDT
@@ -82,20 +87,12 @@ public class HDTFactory {
 	public static ModifiableHDT createModifiableHDT(HDTSpecification spec, String baseUri, ModeOfLoading modeOfLoading) {
 		
 		//FIXME ... some options here, a choice? (BaseModifiableHDT?
-		String dictName = spec.get("dictionary.name");
+		String dictName = spec.get("tempDictionary.impl");
 		//TODO switch-case can use String in 1.7 and after...
-		if (DictionaryFactory.DICT_MOD_HASH.equalsIgnoreCase(dictName)){
+		if (DictionaryFactory.MOD_DICT_IMPL_HASH.equalsIgnoreCase(dictName)){
 			return new HDTRW(spec, baseUri, modeOfLoading);
-		} else if (DictionaryFactory.DICT_MOD_JDBM.equalsIgnoreCase(dictName)){
-			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
-		} else if (DictionaryFactory.DICT_MOD_BERKELEY.equalsIgnoreCase(dictName)){
-			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
-		} else if (DictionaryFactory.DICT_MOD_BERKELEY_NATIVE.equalsIgnoreCase(dictName)){
-			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
-		} else if (DictionaryFactory.DICT_MOD_KYOTO.equals(dictName)){
-			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
 		} else {
-			return new HDTRW(spec, baseUri, modeOfLoading);
+			return new BaseModifiableHDT(spec, baseUri, modeOfLoading);
 		}
 		
 	}
@@ -110,7 +107,7 @@ public class HDTFactory {
 	 * 
 	 */
 	public static ModifiableHDT createModHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
-		return converter.loadFromRDF(spec, filename, baseUri, notation, listener);
+		return loader.loadFromRDF(spec, filename, baseUri, notation, listener);
 	}
 
 	/**
@@ -136,6 +133,19 @@ public class HDTFactory {
 	 * 
 	 */
 	public static QueryableHDT createHDTFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener) throws IOException, ParserException {
+		
+		//choose the importer
+		String loaderType = spec.get("loader.type");
+		if (LOADER_ONE_PASS.equals(loaderType)){
+			loader = new ModHDTLoaderOnePass();
+		} else if (LOADER_TWO_PASS.equals(loaderType)) {
+			loader = new ModHDTLoaderTwoPass();
+		} else {
+			System.err.println("Loader type not specified: using two-pass");
+			spec.set("loader.type", LOADER_TWO_PASS);
+			loader = new ModHDTLoaderTwoPass();
+		}
+		
 		StopWatch st = new StopWatch();
 		
 		// Create ModifiableHDT

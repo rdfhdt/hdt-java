@@ -38,7 +38,6 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
-import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
@@ -61,8 +60,6 @@ import org.rdfhdt.hdt.util.StopWatch;
  */
 public class BaseModifiableHDT implements ModifiableHDT {
 
-	private HDTSpecification spec;
-
 	private Header header;
 	private ModifiableDictionary dictionary;
 	private ModifiableTriples triples;
@@ -73,8 +70,7 @@ public class BaseModifiableHDT implements ModifiableHDT {
 	private boolean isOrganized = false;
 
 	public BaseModifiableHDT(HDTSpecification spec, String baseUri, ModeOfLoading modeOfLoading) {
-
-		this.spec = spec;
+		
 		this.baseUri = baseUri;
 		this.modeOfLoading = modeOfLoading;
 
@@ -268,7 +264,7 @@ public class BaseModifiableHDT implements ModifiableHDT {
 
 	@Override
 	public void reorganizeDictionary(ProgressListener listener) {
-		if(isOrganized)
+		if(isOrganized || dictionary.isOrganized())
 			return;
 
 		// Reorganize dictionary
@@ -294,15 +290,9 @@ public class BaseModifiableHDT implements ModifiableHDT {
 		if (!dictionary.isOrganized())
 			throw new RuntimeException("Cannot reorganize triples before dictionary is reorganized!");
 
-		// Reorganize triples.
-		String orderStr = spec.get("triples.component.order");
-		if(orderStr==null) {
-			orderStr = "SPO";
-		}
-
 		// Sort and remove duplicates.
 		StopWatch sortDupTime = new StopWatch();
-		triples.sort(TripleComponentOrder.valueOf(orderStr), listener);
+		triples.sort(listener);
 		triples.removeDuplicates(listener);
 		System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
 

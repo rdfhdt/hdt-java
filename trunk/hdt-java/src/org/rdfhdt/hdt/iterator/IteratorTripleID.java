@@ -42,8 +42,6 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 	public long estimatedNumResults();
 	public ResultEstimationType numResultEstimation();
 	
-	public boolean hasNext();
-	public TripleID next();
 	public boolean hasPrevious();
 	public TripleID previous();
 	

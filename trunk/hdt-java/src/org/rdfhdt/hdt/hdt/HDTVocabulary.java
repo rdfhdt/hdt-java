@@ -88,7 +88,7 @@ public class HDTVocabulary {
 
 	// Triples types
 	public static final String TRIPLES_TYPE_TRIPLESLIST = HDT_TRIPLES_BASE+"List>";
-	public static final String TRIPLES_TYPE_TRIPLESLISTDISK = HDT_TRIPLES_BASE+"ListDisk>";
+	public static final String TRIPLES_TYPE_TRIPLESSET = HDT_TRIPLES_BASE+"Set>";
 	public static final String TRIPLES_TYPE_PLAIN = HDT_TRIPLES_BASE+"Plain>";
 	public static final String TRIPLES_TYPE_COMPACT = HDT_TRIPLES_BASE+"Compact>";
 	public static final String TRIPLES_TYPE_BITMAP = HDT_TRIPLES_BASE+"Bitmap>";

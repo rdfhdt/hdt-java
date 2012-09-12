@@ -69,7 +69,6 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 			objects = new BerkeleyDictionarySection(spec, env, "objects");
 			shared = new BerkeleyDictionarySection(spec, env, "shared");
 		} catch (Exception e){
-			//TODO something smarter??
 			cleanupEnvironment();
 			throw new RuntimeException(e);
 		}
@@ -115,7 +114,6 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 		env.close();
 		env = null;
 
-		//TODO cleanup DB folder manually like this, or not? ??
 		for (File f : envHome.listFiles()){
 			String fname = f.getName();
 			if (fname.equalsIgnoreCase("je.properties"))
@@ -138,7 +136,7 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
 		}
 
-		if (env!=null) //in some wierd case the above cleanupEnvironment() was called and the execution still came here...
+		if (env!=null)
 			cleanupEnvironment();
 
 	}

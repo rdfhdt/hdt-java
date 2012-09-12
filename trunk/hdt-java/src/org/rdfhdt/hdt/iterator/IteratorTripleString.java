@@ -38,21 +38,6 @@ import java.util.Iterator;
  */
 public interface IteratorTripleString extends Iterator<TripleString> {
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Iterator#hasNext()
-	 */
-	public boolean hasNext();
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.Iterator#next()
-	 */
-	@Override
-	public TripleString next();
-
 	public boolean hasPrevious();
 	
 	public TripleString previous();

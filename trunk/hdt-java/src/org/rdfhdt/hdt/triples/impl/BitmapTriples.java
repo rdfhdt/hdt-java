@@ -27,6 +27,14 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import org.rdfhdt.hdt.compact.array.ArrayFactory;
 import org.rdfhdt.hdt.compact.array.LogArray64;
 import org.rdfhdt.hdt.compact.array.StaticArray;
@@ -50,14 +58,6 @@ import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.BitUtil;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 /**
  * @author mario.arias
@@ -99,7 +99,8 @@ public class BitmapTriples implements Triples {
 	 */
 	@Override
 	public void load(ModifiableTriples triples, ProgressListener listener) {
-		triples.sort(order, listener);
+		triples.setOrder(order);
+		triples.sort(listener);
 		
 		LogArray64 vectorY = new LogArray64(BitUtil.log2(triples.getNumberOfElements()));
 		LogArray64 vectorZ = new LogArray64(BitUtil.log2(triples.getNumberOfElements()), triples.getNumberOfElements());
@@ -593,7 +594,7 @@ public class BitmapTriples implements Triples {
 	
 	
 	
-	public void generateIndex(ProgressListener listener) {
+	public void generateIndex(ProgressListener listener) {		
 //		createIndexPredicates();
 		createIndexObjects();
 	}

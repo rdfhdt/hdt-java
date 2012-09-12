@@ -27,7 +27,17 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.IteratorTripleID;
@@ -37,17 +47,10 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
-import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
+import org.rdfhdt.hdt.util.RDFInfo;
 
 
 /**
@@ -56,23 +59,14 @@ import java.util.Collections;
  */
 public class TriplesList implements ModifiableTriples {
 
-	ControlInformation controlInformation;
-	HDTSpecification spec;
-	
 	/** The array to hold the triples */
-	protected ArrayList<TripleID> arrayOfTriples;
-	
-	/** The order of the triples */
-	TripleComponentOrder order;
-	int numValidTriples;
+	private ArrayList<TripleID> arrayOfTriples;
 
-	/**
-	 * Basic constructor (SPO order)
-	 * 
-	 */
-	public TriplesList() {
-		this(new HDTSpecification());
-	}
+	/** The order of the triples */
+	private TripleComponentOrder order;
+	private int numValidTriples;
+	
+	private boolean sorted = false;
 
 	/**
 	 * Constructor, given an order to sort by
@@ -81,12 +75,20 @@ public class TriplesList implements ModifiableTriples {
 	 *            The order to sort by
 	 */
 	public TriplesList(HDTSpecification specification) {
-		super();
-		this.controlInformation = new ControlInformation();
-		this.arrayOfTriples = new ArrayList<TripleID>();
-		this.order = TripleComponentOrder.Unknown;
+
+		//precise allocation of the array (minimal memory wasting)
+		Long numTriples = RDFInfo.getLines(specification);
+		numTriples = (numTriples!=null)?numTriples:100;
+		this.arrayOfTriples = new ArrayList<TripleID>(numTriples.intValue());
+
+		//choosing starting(or default) component order
+		String orderStr = specification.get("triples.component.order");
+		if(orderStr==null) {
+			orderStr = "SPO";
+		}
+		this.order = TripleComponentOrder.valueOf(orderStr);
+
 		this.numValidTriples = 0;
-		this.spec = specification;
 	}
 
 	/*
@@ -103,7 +105,7 @@ public class TriplesList implements ModifiableTriples {
 			return new SequentialSearchIteratorTripleID(pattern, new TriplesListIterator(this));
 		}
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.Triples#searchAll()
 	 */
@@ -124,7 +126,7 @@ public class TriplesList implements ModifiableTriples {
 		// TODO Schedule a meeting to discuss how to do this
 		return 0;
 	}
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -142,10 +144,10 @@ public class TriplesList implements ModifiableTriples {
 	 */
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*20;
+		return this.getNumberOfElements()*24;
 	}
 
-	
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -155,12 +157,12 @@ public class TriplesList implements ModifiableTriples {
 	public void save(OutputStream output, ControlInformation controlInformation, ProgressListener listener) throws IOException {
 		controlInformation.clear();
 		controlInformation.setInt("numTriples", numValidTriples);
-        controlInformation.set("codification", HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
-        controlInformation.setInt("componentOrder", order.ordinal());
-        controlInformation.save(output);
-		
-        DataOutputStream dout = new DataOutputStream(output);
-        int count = 0;
+		controlInformation.set("codification", HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
+		controlInformation.setInt("componentOrder", order.ordinal());
+		controlInformation.save(output);
+
+		DataOutputStream dout = new DataOutputStream(output);
+		int count = 0;
 		for (TripleID triple : arrayOfTriples) {
 			if(triple.isValid()) {
 				dout.writeInt(triple.getSubject());
@@ -184,13 +186,15 @@ public class TriplesList implements ModifiableTriples {
 
 		int numRead=0;
 		DataInputStream din = new DataInputStream(input);
-		
+
 		while(numRead<totalTriples) {
 			arrayOfTriples.add(new TripleID(din.readInt(), din.readInt(), din.readInt()));
 			numRead++;
 			numValidTriples++;
 			ListenerUtil.notifyCond(listener, "Loading TriplesList", numRead, totalTriples);
 		}
+		
+		sorted = false;
 	}
 
 	/*
@@ -203,18 +207,26 @@ public class TriplesList implements ModifiableTriples {
 		IteratorTripleID iterator = input.searchAll();
 		while (iterator.hasNext()) {
 			arrayOfTriples.add(iterator.next());
+			numValidTriples++;
 		}
+		
+		sorted = false;
 	}
 
-	
-	
-	
 	/**
 	 * @param order
 	 *            the order to set
 	 */
 	public void setOrder(TripleComponentOrder order) {
+		if (this.order.equals(order))
+			return;
 		this.order = order;
+		sorted = false;
+	}
+
+	@Override
+	public TripleComponentOrder getOrder() {
+		return order;
 	}
 
 
@@ -229,10 +241,10 @@ public class TriplesList implements ModifiableTriples {
 			arrayOfTriples.add(new TripleID(triple));
 			numValidTriples++;
 		}
-
+		sorted = false;
 		return true;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.ModifiableTriples#insert(int, int, int)
 	 */
@@ -240,6 +252,17 @@ public class TriplesList implements ModifiableTriples {
 	public boolean insert(int subject, int predicate, int object) {
 		arrayOfTriples.add(new TripleID(subject,predicate,object));
 		numValidTriples++;
+		sorted = false;
+		return true;
+	}
+	
+	@Override
+	public boolean update(TripleID triple, int subj, int pred, int obj) {
+		if (triple==null)
+			return false;
+		
+		triple.setAll(subj, pred, obj);
+		sorted = false;
 		return true;
 	}
 
@@ -261,6 +284,7 @@ public class TriplesList implements ModifiableTriples {
 				}
 			}
 		}
+		
 		return removed;
 	}
 
@@ -270,42 +294,41 @@ public class TriplesList implements ModifiableTriples {
 	 * @see hdt.triples.ModifiableTriples#sort(datatypes.TripleComponentOrder)
 	 */
 	@Override
-	public void sort(TripleComponentOrder order, ProgressListener listener) {
-		if(this.order!=order) {
+	public void sort(ProgressListener listener) {
+		if(!sorted) {
 			Collections.sort(arrayOfTriples, new TripleIDComparator(order));
 		}
-		this.order = order;
+		sorted = true;
 	}
-	
-	/* (non-Javadoc)
-	 * @see hdt.triples.ModifiableTriples#removeDuplicates(hdt.ProgressListener)
+
+	/**
+	 * If called while triples not sorted nothing will happen!
 	 */
 	@Override
 	public void removeDuplicates(ProgressListener listener) {
-		if(arrayOfTriples.size()<=1) {
+		if(arrayOfTriples.size()<=1 || !sorted) {
 			return;
 		}
-		
+
 		if(order==TripleComponentOrder.Unknown) {
 			throw new IllegalArgumentException("Cannot remove duplicates unless sorted");
 		}
-		
+
 		int j = 0;
 
-        for(int i=1; i<arrayOfTriples.size(); i++) {
-                if(arrayOfTriples.get(i).compareTo(arrayOfTriples.get(j))!=0) {
-                        j++;
-                        arrayOfTriples.set(j, arrayOfTriples.get(i));
-                }
-                ListenerUtil.notifyCond(listener, "Removing duplicate triples", i, arrayOfTriples.size());
-        }
+		for(int i=1; i<arrayOfTriples.size(); i++) {
+			if(arrayOfTriples.get(i).compareTo(arrayOfTriples.get(j))!=0) {
+				j++;
+				arrayOfTriples.set(j, arrayOfTriples.get(i));
+			}
+			ListenerUtil.notifyCond(listener, "Removing duplicate triples", i, arrayOfTriples.size());
+		}
 
-        //cout << "Removed "<< arrayOfTriples.size()-j-1 << " duplicates in " << st << endl;
-        while(arrayOfTriples.size()>j+1) {
-        	arrayOfTriples.remove(arrayOfTriples.size()-1);
-        }
-        arrayOfTriples.trimToSize();
-        numValidTriples = j+1;
+		while(arrayOfTriples.size()>j+1) {
+			arrayOfTriples.remove(arrayOfTriples.size()-1);
+		}
+		arrayOfTriples.trimToSize();
+		numValidTriples = j+1;
 	}
 
 	/*
@@ -328,14 +351,6 @@ public class TriplesList implements ModifiableTriples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.ordinal() );
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.ModifiableTriples#replace(int, int, int, int)
-	 */
-	@Override
-	public void replace(int id, int subject, int predicate, int object) {
-		arrayOfTriples.get(id).setAll(subject, predicate, object);
-	}
-	
 	public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST;
 	}
@@ -343,21 +358,21 @@ public class TriplesList implements ModifiableTriples {
 	@Override
 	public void generateIndex(ProgressListener listener) {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void loadIndex(InputStream input, ControlInformation ci,
 			ProgressListener listener) throws IOException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
 	public void saveIndex(OutputStream output, ControlInformation ci,
 			ProgressListener listener) throws IOException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
 	@Override
@@ -365,6 +380,7 @@ public class TriplesList implements ModifiableTriples {
 		this.arrayOfTriples.clear();
 		this.numValidTriples=0;
 		this.order = TripleComponentOrder.Unknown;
+		sorted = false;
 	}
 
 	@Override
@@ -375,10 +391,115 @@ public class TriplesList implements ModifiableTriples {
 			TripleID triple = it.next();
 			this.insert(triple.getSubject(), triple.getPredicate(), triple.getObject());
 		}
+		sorted = false;
 	}
 
 	@Override
 	public void close() throws IOException {
-		
+
 	}
+
+	/**
+	 * Iterator implementation to iterate over a TriplesList object
+	 * 
+	 * @author mario.arias
+	 *
+	 */
+	public class TriplesListIterator implements IteratorTripleID {
+
+		private TriplesList triplesList;
+		private int pos;
+
+		public TriplesListIterator(TriplesList triplesList) {
+			this.triplesList = triplesList;
+			this.pos = 0;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#hasNext()
+		 */
+		@Override
+		public boolean hasNext() {
+			return pos<triplesList.getNumberOfElements();
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#next()
+		 */
+		@Override
+		public TripleID next() {
+			return triplesList.arrayOfTriples.get((int)pos++);
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#hasPrevious()
+		 */
+		@Override
+		public boolean hasPrevious() {
+			return pos>0;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#previous()
+		 */
+		@Override
+		public TripleID previous() {
+			return triplesList.arrayOfTriples.get((int)--pos);
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#goToStart()
+		 */
+		@Override
+		public void goToStart() {
+			pos = 0;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#estimatedNumResults()
+		 */
+		@Override
+		public long estimatedNumResults() {
+			return triplesList.getNumberOfElements();
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#numResultEstimation()
+		 */
+		@Override
+		public ResultEstimationType numResultEstimation() {
+			return ResultEstimationType.EXACT;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#canGoTo()
+		 */
+		@Override
+		public boolean canGoTo() {
+			return true;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#goTo(int)
+		 */
+		@Override
+		public void goTo(long pos) {
+			this.pos = (int)pos;
+		}
+
+		/* (non-Javadoc)
+		 * @see hdt.iterator.IteratorTripleID#getOrder()
+		 */
+		@Override
+		public TripleComponentOrder getOrder() {
+			return triplesList.getOrder();
+		}
+
+		@Override
+		public void remove() {
+			// TODO Auto-generated method stub
+			throw new NotImplementedException();
+		}
+	}
+
 }

@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.dictionary.ModifiableDictionary;
@@ -34,7 +35,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.ModHDTImporter;
+import org.rdfhdt.hdt.hdt.ModHDTLoader;
 import org.rdfhdt.hdt.hdt.ModifiableHDT;
 import org.rdfhdt.hdt.hdt.ModifiableHDT.ModeOfLoading;
 import org.rdfhdt.hdt.listener.ListenerUtil;
@@ -45,8 +46,9 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.RDFInfo;
 
-public class ModHDTImporterTwoPass implements ModHDTImporter {
+public class ModHDTLoaderTwoPass implements ModHDTLoader {
 
 	class DictionaryAppender implements RDFCallback {
 
@@ -103,22 +105,26 @@ public class ModHDTImporterTwoPass implements ModHDTImporter {
 	};
 	
 	@Override
-	public ModifiableHDT loadFromRDF(HDTSpecification spec, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
+	public ModifiableHDT loadFromRDF(HDTSpecification specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
 		
 		// Create Modifiable Instance and parser
-		/* HDTRW modHDT = new HDTRW(spec, baseUri); */
-		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(spec, baseUri,
+		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri,
 				ModeOfLoading.TWO_PASS);
 		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
 		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();
 		
         RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-		
+		DictionaryAppender appender = new DictionaryAppender(dictionary, listener);
+        
 		// Load RDF in the dictionary
 		dictionary.startProcessing();
-		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary, listener));
+		parser.doParse(filename, baseUri, notation, appender);
 		dictionary.endProcessing();
+		
+		// Fill the specs with missing properties (disregard possible preset values because these are 100% correct
+													//with no calculation overhead - unlike in one-pass mode)
+		RDFInfo.fillHDTSpecifications(new File(filename).length(), appender.count, specs);
 		
 		// Reorganize IDs before loading triples
 		modHDT.reorganizeDictionary(listener);

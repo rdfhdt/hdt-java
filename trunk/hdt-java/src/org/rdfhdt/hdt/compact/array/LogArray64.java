@@ -51,7 +51,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 public class LogArray64 implements DynamicArray { 
 	private static final byte W = 64;
 	
-	private long [] data = new long[10];
+	private long [] data;
 	private int numbits;
 	private long numentries=0;
 	private long maxvalue;

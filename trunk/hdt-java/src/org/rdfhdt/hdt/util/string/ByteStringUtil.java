@@ -213,7 +213,7 @@ public class ByteStringUtil {
 			throw new NotImplementedException();
 		}
 		out.write(bytes, start, len - start);
-		return len - start;		
+		return len - start;
 	}
 	
 	/**
