@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.dictionary;
 
 import org.rdfhdt.hdt.dictionary.impl.BerkeleyDictionary;
-import org.rdfhdt.hdt.dictionary.impl.BerkeleyNativeDictionary;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
 import org.rdfhdt.hdt.dictionary.impl.KyotoDictionary;
@@ -94,8 +93,9 @@ public class DictionaryFactory {
 				return new JDBMDictionary(spec);
 			} else if (MOD_DICT_IMPL_BERKELEY.equals(dictImpl)) {
 				return new BerkeleyDictionary(spec);
-			} else if (MOD_DICT_IMPL_BERKELEY_NATIVE.equals(dictImpl)) {
-				return new BerkeleyNativeDictionary(spec);
+			// FIXME: Disabled until we can fix it.
+			//} else if (MOD_DICT_IMPL_BERKELEY_NATIVE.equals(dictImpl)) {
+				//return new BerkeleyNativeDictionary(spec);
 			} else if (MOD_DICT_IMPL_KYOTO.equals(dictImpl)) {
 				return new KyotoDictionary(spec);
 			} else {

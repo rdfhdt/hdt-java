@@ -29,6 +29,10 @@
         <pathelement location="lib/xercesImpl-2.10.0.jar"/>
         <pathelement location="lib/xml-apis-1.4.01.jar"/>
         <pathelement location="lib/DBs/JDBM-3.0-myBuild+src.jar"/>
+        <pathelement location="lib/DBs/kyotocabinet.jar"/>
+        <pathelement location="lib/DBs/JDBM3_08092012.jar"/>
+        <pathelement location="lib/DBs/BerkeleyDB_JE_5.0.55.jar"/>
+
         <path refid="JUnit 4.libraryclasspath"/>
     </path>
     <target name="init">
