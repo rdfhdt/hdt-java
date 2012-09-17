@@ -42,7 +42,6 @@ import com.hp.hpl.jena.graph.query.QueryHandler;
 import com.hp.hpl.jena.graph.query.SimpleTreeQueryPlan;
 import com.hp.hpl.jena.graph.query.Stage;
 import com.hp.hpl.jena.graph.query.TreeQueryPlan;
-import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**

@@ -28,6 +28,7 @@
 package org.rdfhdt.hdtjena;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.iterator.IteratorTripleID;
@@ -43,6 +44,10 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.graph.TripleMatch;
 import com.hp.hpl.jena.graph.impl.GraphBase;
+import com.hp.hpl.jena.query.ARQ;
+import com.hp.hpl.jena.sparql.engine.main.StageBuilder;
+import com.hp.hpl.jena.sparql.engine.main.StageGenerator;
+import com.hp.hpl.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
@@ -53,15 +58,21 @@ public class HDTGraph extends GraphBase {
 	private HDT hdt;
 	static HDTCapabilities capabilities= new HDTCapabilities();
 	HDTStatistics hdtStatistics;
-	Dictionary dictionary;
+	QueryableDictionary dictionary;
 	long numSearches = 0;
 	
 	DictionaryCache cacheSubject, cachePredicate, cacheObject;
 	
+	static {
+		// Register Stage Generator
+//		StageGenerator orig = (StageGenerator)ARQ.getContext().get(ARQ.stageGenerator);
+//		StageBuilder.setGenerator(ARQ.getContext(), new StageGeneratorHDT(orig));
+	}
+	
 	public HDTGraph(HDT hdt) {
 		this.hdt = hdt;
 		this.hdtStatistics = new HDTStatistics(hdt);
-		this.dictionary = hdt.getDictionary();
+		this.dictionary = (QueryableDictionary) hdt.getDictionary();
 		
 //		cacheSubject = cachePredicate = cacheObject = new DictionaryNodeCacheNone();
 
@@ -159,4 +170,10 @@ public class HDTGraph extends GraphBase {
 	public Capabilities getCapabilities() {
 		return HDTGraph.capabilities;
 	}
+
+	/*
+	public ReorderTransformation getReorderTransform() {
+		//return new ReorderSt;
+		return null;
+	}*/
 }

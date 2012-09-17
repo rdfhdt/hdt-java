@@ -1,10 +1,3 @@
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
-import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.util.StopWatch;
-import org.rdfhdt.hdt.util.io.DummyOutputStream;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,9 +5,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
+import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.hdt.QueryableHDT;
+import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.io.DummyOutputStream;
 import org.rdfhdt.hdtjena.HDTGraph;
 
-import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
@@ -30,7 +28,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.rdf.model.impl.ModelCom;
-import com.hp.hpl.jena.tdb.TDBFactory;
 
 /**
  * 
@@ -133,7 +130,7 @@ public class JenaHDTTest {
 		System.out.println(label+st.stopAndShow());
 	}
 	
-	public static void iterateHDT(HDT hdt, String label) throws Exception {
+	public static void iterateHDT(QueryableHDT hdt, String label) throws Exception {
 		PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
 		
 		StopWatch st = new StopWatch();
@@ -196,20 +193,20 @@ public class JenaHDTTest {
 //		String fileRDF = "file:///Users/mck/rdf/dataset/nytimes";
 //		String fileTDB = "data/jenatdbnytimes";
 		
-//		System.out.println("HDT");
-//		HDT hdt = HDTFactory.createHDT();
-//		hdt.loadFromHDT(fileHDT, null);
-//		hdt.loadOrCreateIndex(null);
-//		HDTGraph graph = new HDTGraph(hdt);
-//		Model model = new ModelCom(graph);
+		System.out.println("HDT");
+		QueryableHDT hdt = HDTFactory.createQueryableHDT();
+		hdt.loadFromHDT(fileHDT, null);
+		hdt.loadOrCreateIndex(null);
+		HDTGraph graph = new HDTGraph(hdt);
+		Model model = new ModelCom(graph);
 			
 //		System.out.println("Jena MEM");
 //		Model model = ModelFactory.createDefaultModel();
 //		model.read(fileRDF, "N-TRIPLE");
 		
-		System.out.println("Jena TDB");
-		Dataset dataset = TDBFactory.createDataset(fileTDB);
-		Model model = dataset.getDefaultModel();
+//		System.out.println("Jena TDB");
+//		Dataset dataset = TDBFactory.createDataset(fileTDB);
+//		Model model = dataset.getDefaultModel();
 //		//FileManager.get().readModel( model, fileRDF, "N-TRIPLES" );
 		
 		System.out.println("Loaded in "+st.stopAndShow());
@@ -218,9 +215,9 @@ public class JenaHDTTest {
 //		JenaHDTTest.measureTriples(model);
 		
 		
-		JenaHDTTest.iterateTriples(model, "First time ");
-		JenaHDTTest.iterateTriples(model, "Second time ");
-		JenaHDTTest.iterateTriples(model, "Third time ");
+//		JenaHDTTest.iterateTriples(model, "First time ");
+//		JenaHDTTest.iterateTriples(model, "Second time ");
+//		JenaHDTTest.iterateTriples(model, "Third time ");
 //		JenaHDTTest.iterateTriples(model, "Fourth time ");
 //		JenaHDTTest.iterateTriples(model, "Fifth time ");
 		
@@ -239,8 +236,8 @@ public class JenaHDTTest {
 		String query2 = "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> PREFIX ub: <http://www.lehigh.edu/~zhp2/2004/0401/univ-bench.owl#>"+ 
 		"SELECT ?X WHERE {?X rdf:type ub:Publication . ?X ub:publicationAuthor <http://www.Department0.University0.edu/AssistantProfessor0>}";
 		
-//		JenaHDTTest.sparql(model, query1);
-//		JenaHDTTest.sparql(model, query2);
+		JenaHDTTest.sparql(model, query1);
+		JenaHDTTest.sparql(model, query2);
 		
 //		System.out.println("Num searches: "+graph.getNumSearches());
 	}

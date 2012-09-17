@@ -37,10 +37,10 @@ import org.rdfhdt.hdt.util.LRUCache;
  */
 public class DictionaryCacheLRU implements DictionaryCache {
 
-	LRUCache<Integer, Node> lru = new LRUCache<Integer, Node>(1024);
+	LRUCache<Integer, Node> lru;
 	
-	DictionaryCacheLRU() {
-		
+	DictionaryCacheLRU(int size) {
+		lru = new LRUCache<Integer, Node>(size);
 	}
 	
 	/* (non-Javadoc)
