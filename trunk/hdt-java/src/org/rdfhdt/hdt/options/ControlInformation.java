@@ -121,7 +121,7 @@ public class ControlInformation extends HDTOptionsBase {
 		for (Enumeration<Object> e = properties.keys(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			
-			IOUtil.writeLine(out, key+':'+properties.getProperty(key)+";\n");
+			IOUtil.writeLine(out, key+':'+properties.getProperty(key)+";");
 		}
 		IOUtil.writeLine(out, "$END\n");
 		
