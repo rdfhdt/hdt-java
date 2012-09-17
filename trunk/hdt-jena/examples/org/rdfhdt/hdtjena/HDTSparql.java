@@ -22,10 +22,12 @@ public class HDTSparql {
 		String fileHDT = "../hdt-java/data/test.hdt";
 		String sparqlQuery = "SELECT ?s ?p ?o WHERE { ?s ?p ?o . } LIMIT 100";
 	
-		// Create HDT handler and Jena Model on top.
+		// Create HDT
 		QueryableHDT hdt = HDTFactory.createQueryableHDT();
 		hdt.loadFromHDT(fileHDT, null);
 		hdt.loadOrCreateIndex(null);
+		
+		// Create Jena wrapper on top of HDT.
 		HDTGraph graph = new HDTGraph(hdt);
 		Model model = new ModelCom(graph);
 
