@@ -112,7 +112,7 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="HDTSparql">
+    <target name="HDTSparql" depends="build-project">
         <java classname="org.rdfhdt.hdtjena.HDTSparql" failonerror="true" fork="yes">
             <classpath refid="hdt-jena.classpath"/>
         </java>
