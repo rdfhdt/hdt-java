@@ -64,7 +64,7 @@
             </fileset>
         </copy>
         <copy includeemptydirs="false" todir="bin">
-            <fileset dir="examples">
+            <fileset dir="tools">
                 <exclude name="**/*.java"/>
             </fileset>
         </copy>
@@ -94,7 +94,7 @@
             <classpath refid="hdt-jena.classpath"/>
         </javac>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
-            <src path="examples"/>
+            <src path="tools"/>
             <classpath refid="hdt-jena.classpath"/>
         </javac>
     </target>
