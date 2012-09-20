@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.triples;
 
+
 /**
  * TripleID holds a triple as integers
  * 
@@ -209,6 +210,5 @@ public final class TripleID implements Comparable<TripleID> {
 		this.subject = other.subject;
 		this.predicate = other.predicate;
 		this.object = other.object;
-	}
-	
+	}	
 }

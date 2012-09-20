@@ -75,12 +75,11 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 			throw new RuntimeException("Unable to create DB folder...");
 		}
 
-		//FIXME read from specs...
-		DBMaker db = DBMaker.openFile("DB/DBfile");
+		DBMaker db = DBMaker.openFile(folder.getPath()+"/dictionary");
 		db.closeOnExit();
 		db.deleteFilesAfterClose();
 		db.disableTransactions(); //more performance
-		db.setMRUCacheSize(4096); //db.enableHardCache();
+		db.setMRUCacheSize(4096); //db.enableHardCache(); //TODO set this up
 		
 		return db.make();
 	}

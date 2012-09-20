@@ -54,7 +54,7 @@ import org.rdfhdt.hdt.util.RDFInfo;
 
 
 /**
- * Implementation of ModifiableTriples. This is a itable structure.
+ * Implementation of ModifiableTriples. This is a iterable structure.
  * 
  */
 public class TriplesList implements ModifiableTriples {

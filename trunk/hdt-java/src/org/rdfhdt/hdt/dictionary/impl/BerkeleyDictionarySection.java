@@ -100,7 +100,7 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 		dbConf.setAllowCreateVoid(true);
 		dbConf.setTransactionalVoid(false);
 		dbConf.setTemporaryVoid(true);
-		//dbConf.setBtreeComparatorVoid(new StringUnicodeComparator()); //TODO byte by byte default ok??
+		//dbConf.setBtreeComparatorVoid(new StringUnicodeComparator());
 		
 		this.db_StringToID = env.openDatabase(null, sectionID+"_map_StringToID", dbConf);
 	}
@@ -213,6 +213,9 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	public void clear() {
 		map_StringToID.clear();
 		
+		IDcounter = 0;
+		numElements = 0;
+		size = 0;
 		sorted = false;
 	}
 	

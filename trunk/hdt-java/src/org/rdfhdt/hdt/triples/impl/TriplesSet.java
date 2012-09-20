@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeSet;
 
 import org.rdfhdt.hdt.enums.ResultEstimationType;
@@ -102,24 +103,16 @@ public class TriplesSet implements ModifiableTriples {
 		this.numValidTriples = 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
-	 */
 	@Override
 	public IteratorTripleID search(TripleID pattern) {
 		String patternStr = pattern.getPatternString();
 		if(patternStr.equals("???")) {
-			return new TriplesSetIterator(this);
+			return new TriplesSetIterator(triples, order, getNumberOfElements());
 		} else {
-			return new SequentialSearchIteratorTripleID(pattern, new TriplesSetIterator(this));
+			return new SequentialSearchIteratorTripleID(pattern, new TriplesSetIterator(triples, order, getNumberOfElements()));
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#searchAll()
-	 */
 	@Override
 	public IteratorTripleID searchAll() {
 		TripleID all = new TripleID(0,0,0);
@@ -127,43 +120,22 @@ public class TriplesSet implements ModifiableTriples {
 	}
 
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#cost(hdt.triples.TripleID)
-	 */
 	@Override
 	public float cost(TripleID triple) {
 		// TODO Schedule a meeting to discuss how to do this
 		return 0;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#getNumberOfElements()
-	 */
 	@Override
 	public long getNumberOfElements() {
 		return numValidTriples;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#size()
-	 */
 	@Override
 	public long size() {
 		return this.getNumberOfElements()*24;
 	}
 
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#save(java.io.OutputStream)
-	 */
 	@Override
 	public void save(OutputStream output, ControlInformation controlInformation, ProgressListener listener) throws IOException {
 		controlInformation.clear();
@@ -185,11 +157,6 @@ public class TriplesSet implements ModifiableTriples {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#load(java.io.InputStream)
-	 */
 	@Override
 	public void load(InputStream input, ControlInformation controlInformation, ProgressListener listener) throws IOException {
 		this.setOrder(TripleComponentOrder.values()[(int)controlInformation.getInt("componentOrder")]);
@@ -207,11 +174,6 @@ public class TriplesSet implements ModifiableTriples {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#load(hdt.triples.ModifiableTriples)
-	 */
 	@Override
 	public void load(ModifiableTriples input, ProgressListener listener) {
 		IteratorTripleID iterator = input.searchAll();
@@ -239,7 +201,7 @@ public class TriplesSet implements ModifiableTriples {
 	 */
 	@Deprecated
 	public void setOrder(TripleComponentOrder order) {
-		if (this.order==order)
+		if (this.order.equals(order))
 			return;
 		//if order has changed then copy all triples with a different ordering - O(n*logn) time, 2x memory (same as would be with Collection.sort and an ArrayList)
 		TreeSet<TripleID> newTriples = new TreeSet<TripleID>(new TripleIDComparator(order));
@@ -253,12 +215,6 @@ public class TriplesSet implements ModifiableTriples {
 		return this.order;
 	}
 
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.ModifiableTriples#insert(hdt.triples.TripleID[])
-	 */
 	@Override
 	public boolean insert(TripleID... triples) {
 		for (TripleID triple : triples) {
@@ -268,9 +224,6 @@ public class TriplesSet implements ModifiableTriples {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.ModifiableTriples#insert(int, int, int)
-	 */
 	@Override
 	public boolean insert(int subject, int predicate, int object) {
 		triples.add(new TripleID(subject,predicate,object));
@@ -296,16 +249,12 @@ public class TriplesSet implements ModifiableTriples {
 		if (triple==null)
 			return false;
 
-		triples.remove(triple);
+		if (!triples.remove(triple))
+			return false;
 		triple.setAll(subj, pred, obj);
 		return triples.add(triple);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.ModifiableTriples#delete(hdt.triples.TripleID[])
-	 */
 	@Override
 	public boolean remove(TripleID... patterns) {
 		boolean removed = false;
@@ -326,37 +275,30 @@ public class TriplesSet implements ModifiableTriples {
 		return removed;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.ModifiableTriples#sort(datatypes.TripleComponentOrder)
+	/**
+	 * This method does nothing because the triples in this implementation
+	 * are always sorted by the current ordering.
+	 * To resort them (not recomended) use "setOrder".
 	 */
 	@Override
 	public void sort(ProgressListener listener) {
 		//do nothing because a TreeSet is always sorted
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.ModifiableTriples#removeDuplicates(hdt.ProgressListener)
+	/**
+	 * This method does nothing because the triples in this implementation
+	 * are always unique
 	 */
 	@Override
 	public void removeDuplicates(ProgressListener listener) {
 		//do nothing because a Set can't have duplicates anyway...
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
 	@Override
 	public String toString() {
 		return "TriplesList [" + triples + "\n order=" + order + "]";
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#populateHeader(hdt.header.Header, java.lang.String)
-	 */
 	@Override
 	public void populateHeader(Header header, String rootNode) {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_TYPE, HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
@@ -402,30 +344,30 @@ public class TriplesSet implements ModifiableTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public class TriplesSetIterator implements IteratorTripleID {
+	public static class TriplesSetIterator implements IteratorTripleID {
 
-		private TriplesSet triplesSet;
-		private Iterator<TripleID> triplesSetIterator;
+		private Set<TripleID> triples;
+		private TripleComponentOrder order;
+		private long numElem;
+		
+		private Iterator<TripleID> iterator;
 
-		public TriplesSetIterator(TriplesSet triplesSet) {
-			this.triplesSet = triplesSet;
-			this.triplesSetIterator = triplesSet.triples.iterator();
+		public TriplesSetIterator(Set<TripleID> triples, TripleComponentOrder order, long numElem) {
+			this.triples = triples;
+			this.order = order;
+			this.numElem = numElem;
+			this.iterator = triples.iterator();
 		}
+		
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#hasNext()
-		 */
 		@Override
 		public boolean hasNext() {
-			return triplesSetIterator.hasNext();
+			return iterator.hasNext();
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#next()
-		 */
 		@Override
 		public TripleID next() {
-			return triplesSetIterator.next();
+			return iterator.next();
 		}
 
 		/**
@@ -444,33 +386,21 @@ public class TriplesSet implements ModifiableTriples {
 			throw new NotImplementedException();
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#goToStart()
-		 */
 		@Override
 		public void goToStart() {
-			triplesSetIterator = triplesSet.triples.iterator();
+			iterator = triples.iterator();
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#estimatedNumResults()
-		 */
 		@Override
 		public long estimatedNumResults() {
-			return triplesSet.getNumberOfElements();
+			return numElem;
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#numResultEstimation()
-		 */
 		@Override
 		public ResultEstimationType numResultEstimation() {
 			return ResultEstimationType.EXACT;
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#canGoTo()
-		 */
 		@Override
 		public boolean canGoTo() {
 			return false;
@@ -484,20 +414,14 @@ public class TriplesSet implements ModifiableTriples {
 			throw new NotImplementedException();
 		}
 
-		/* (non-Javadoc)
-		 * @see hdt.iterator.IteratorTripleID#getOrder()
-		 */
 		@Override
 		public TripleComponentOrder getOrder() {
-			return triplesSet.getOrder();
+			return order;
 		}
 
-		/**
-		 * Not implemented in this implementation of ModifiableTriples because not available for TreeSet
-		 */
 		@Override
 		public void remove() {
-			triplesSetIterator.remove();
+			iterator.remove();
 		}
 	}
 

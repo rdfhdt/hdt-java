@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.enums;
 
+
 /**
  * Indicates the order of the triples
  */

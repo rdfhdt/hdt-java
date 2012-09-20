@@ -224,7 +224,9 @@ public class KyotoDictionarySection implements ModifiableDictionarySection {
 	public void clear() {
 		if (!map_StringToID.clear())
 			throw new RuntimeException("Clear of "+sectionID+" failed?!");
-		
+		IDcounter = 0;
+		numElements = 0;
+		size = 0;
 		changed = true;
 		sorted = false;
 	}

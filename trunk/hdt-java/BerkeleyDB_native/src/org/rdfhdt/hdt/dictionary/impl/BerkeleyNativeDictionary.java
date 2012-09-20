@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: http://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/HashDictionary.java $
+ * File: $HeadURL: http://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/DictionarySectionHash.java $
  * Revision: $Rev: 17 $
  * Last modified: $Date: 2012-07-03 21:43:15 +0100 (Tue, 03 Jul 2012) $
  * Last modified by: $Author: mario.arias@gmail.com $
@@ -37,14 +37,14 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
-import com.sleepycat.je.CacheMode;
-import com.sleepycat.je.Environment;
-import com.sleepycat.je.EnvironmentConfig;
+import com.sleepycat.db.DatabaseException;
+import com.sleepycat.db.Environment;
+import com.sleepycat.db.EnvironmentConfig;
 
 /**
  * This class is an implementation of a modifiable dictionary that
  * uses dictionary sections that store entries on disc using a
- * BerkeleyDB JE key-value database.
+ * BerkeleyDB (native, written in c++) key-value database.
  * 
  * This class is responsible for creating and cleaning up the
  * environment of the databses. All parameters of the environment
@@ -53,21 +53,21 @@ import com.sleepycat.je.EnvironmentConfig;
  * @author Eugen
  *
  */
-public class BerkeleyDictionary extends BaseModifiableDictionary {
+public class BerkeleyNativeDictionary extends BaseModifiableDictionary {
 
 	private Environment env;
 
-	public BerkeleyDictionary(HDTSpecification spec) {
+	public BerkeleyNativeDictionary(HDTSpecification spec) {
 
 		super(spec);
 		setupDBEnvironment(spec);
 
 		// FIXME: Read stuff from properties
 		try {
-			subjects = new BerkeleyDictionarySection(spec, env, "subjects");
-			predicates = new BerkeleyDictionarySection(spec, env, "predicates");
-			objects = new BerkeleyDictionarySection(spec, env, "objects");
-			shared = new BerkeleyDictionarySection(spec, env, "shared");
+			subjects = new BerkeleyNativeDictionarySection(spec, env, "subjects");
+			predicates = new BerkeleyNativeDictionarySection(spec, env, "predicates");
+			objects = new BerkeleyNativeDictionarySection(spec, env, "objects");
+			shared = new BerkeleyNativeDictionarySection(spec, env, "shared");
 		} catch (Exception e){
 			cleanupEnvironment();
 			throw new RuntimeException(e);
@@ -83,13 +83,35 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 		}
 
 		EnvironmentConfig envConf = new EnvironmentConfig();
-		envConf.setAllowCreateVoid(true);
-		envConf.setTransactionalVoid(false);
-		envConf.setCacheModeVoid(CacheMode.DEFAULT);
-		int cachePercent = 15; //TODO read from specs... ?
-		envConf.setCachePercentVoid(cachePercent);
-
-		env = new Environment(folder, envConf);
+		envConf.setAllowCreate(true);
+		envConf.setTransactional(false);
+		envConf.setTemporaryDirectory(folder);
+		envConf.setInitializeCache(true);
+		envConf.setCacheSize(calculateCache(spec));
+		
+		try {
+			env = new Environment(folder, envConf);
+		} catch (Exception e) {
+			throw new RuntimeException("Unable to open environment.", e);
+		}
+	}
+	
+	/**
+	 * Takes a parcent of the maximum possible heap size for this runtime and returns
+	 * it's nearest power of 2.
+	 * 
+	 * TODO could it be done a bit smarter?... maybe prefering the bigger power a bit...? 
+	 */
+	private long calculateCache(HDTSpecification spec){
+		
+		long Xmx = Runtime.getRuntime().maxMemory();
+		if (Xmx==Long.MAX_VALUE)
+			throw new RuntimeException("Unable to calculate cache because max heap size not specified. Please set Xmx parameter.");
+		
+		double percent = 0.25; //TODO read from specs... ??
+		int closestPowerOf2 = Math.round((float)(Math.log(Xmx*percent)/Math.log(2)));
+		
+		return (long)Math.pow(2, closestPowerOf2);
 	}
 
 	@Override
@@ -101,47 +123,47 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 	public void endProcessing() {
 		//do nothing
 	}
-
+	
 	/**
 	 * Closes the environment and cleans up the environment home folder.
-	 * 
-	 * Throws DatabaseException (runtime) if unable to close Environment (no need for explicit handling)
 	 */
 	private void cleanupEnvironment() {
+		try {
+			File envHome = env.getHome();
+			env.close();
+			env = null;
 
-		//File envHome = env.getHome();
-		env.cleanLog();
-		env.close();
-		env = null;
-/*
-		for (File f : envHome.listFiles()){
-			String fname = f.getName();
-			if (fname.equalsIgnoreCase("je.properties"))
-				continue;
-			if (fname.endsWith(".jdb") || fname.startsWith("je."))
-				f.delete();
+			//TODO cleanup DB folder manually like this, or not? ??
+			for (File f : envHome.listFiles()){
+				String fname = f.getName();
+				if (fname.equalsIgnoreCase("je.properties"))
+					continue;
+				if (fname.startsWith("__db"))
+					f.delete();
+			}
+
+		} catch (DatabaseException dbExc){
+			throw new RuntimeException("Unable to close environment (most probably files left behind in the environment home folder)", dbExc);
 		}
-		*/
 	}
 
 	@Override
 	public void close() {
 
 		try {	
-			((BerkeleyDictionarySection)subjects).cleanup();
-			((BerkeleyDictionarySection)predicates).cleanup();
-			((BerkeleyDictionarySection)objects).cleanup();
-			((BerkeleyDictionarySection)shared).cleanup();
-		} catch (Exception e){
+			((BerkeleyNativeDictionarySection)subjects).cleanup();
+			((BerkeleyNativeDictionarySection)predicates).cleanup();
+			((BerkeleyNativeDictionarySection)objects).cleanup();
+			((BerkeleyNativeDictionarySection)shared).cleanup();
+		} catch (DatabaseException e){
 			cleanupEnvironment();
 			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
 		}
-
-		if (env!=null)
+		
+		if (env!=null) //in some wierd case the above cleanupEnvironment was called and the execution still came here...
 			cleanupEnvironment();
 
 	}
-
 
 	@Override
 	public void save(OutputStream output, ControlInformation ci,

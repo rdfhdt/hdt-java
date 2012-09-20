@@ -32,6 +32,8 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
+import org.rdfhdt.hdt.triples.impl.TriplesBerkeley;
+import org.rdfhdt.hdt.triples.impl.TriplesJDBM;
 import org.rdfhdt.hdt.triples.impl.TriplesList;
 import org.rdfhdt.hdt.triples.impl.TriplesSet;
 
@@ -78,7 +80,7 @@ public class TriplesFactory {
 				spec.set("tempTriples.impl", MOD_TRIPLES_IMPL_LIST);
 				return new TriplesList(spec);
 			}
-		} /*else if (MOD_TRIPLES_TYPE_ON_DISC.equals(triplesType)) {
+		} else if (MOD_TRIPLES_TYPE_ON_DISC.equals(triplesType)) {
 			if (!HDTFactory.LOADER_TWO_PASS.equals(loaderType)){
 				String errmsg = "tempTriples.type cannot be \"on-disc\" if loader.type is not set to two-pass!";
 				System.err.println(errmsg);
@@ -88,16 +90,16 @@ public class TriplesFactory {
 				return new TriplesJDBM(spec);
 			} else if (MOD_TRIPLES_IMPL_BERKELEY.equals(triplesImpl)) {
 				return new TriplesBerkeley(spec);
-			} else if (MOD_TRIPLES_IMPL_BERKELEY_NATIVE.equals(triplesImpl)) {
+			} /*else if (MOD_TRIPLES_IMPL_BERKELEY_NATIVE.equals(triplesImpl)) {
 				return new TriplesBerkeleyNative(spec);
 			} else if (MOD_TRIPLES_IMPL_KYOTO.equals(triplesImpl)) {
 				return new TriplesKyoto(spec);
-			} else {
+			} */else {
 				System.err.println("Unknown on-disc triples implementation, using jdbm.");
 				spec.set("tempTriples.impl", MOD_TRIPLES_IMPL_JDBM);
 				return new TriplesJDBM(spec);
 			} 
-		}*/ else {
+		} else {
 			System.err.println("Unknown triples type, using in-memory list.");
 			spec.set("tempTriples.type", MOD_TRIPLES_TYPE_IN_MEM);
 			spec.set("tempTriples.impl", MOD_TRIPLES_IMPL_LIST);
