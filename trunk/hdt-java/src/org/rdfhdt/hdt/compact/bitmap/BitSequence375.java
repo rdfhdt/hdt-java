@@ -39,6 +39,12 @@ import java.io.OutputStream;
 import java.util.Arrays;
 
 /**
+ * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
+ * 
+ * index -> O(n)
+ * rank1 -> O(1)
+ * select1 -> O(log log n)
+ * 
  * @author mario.arias
  *
  */
@@ -89,22 +95,6 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 		}
 		pop = countSuperBlock+countBlock; 
 		indexUpToDate = true;
-
-/*		System.out.println("----");
-		System.out.println("Numbits: "+numbits);
-		System.out.println("Numones: "+pop);
-		for(int i=0;i<superBlocks.length;i++) {
-			System.out.println("SuperBlock: "+i + " => "+ (long)superBlocks[i]);
-			for(int j=0;j<BLOCKS_PER_SUPER;j++) {
-				int blockIdx = i*BLOCKS_PER_SUPER+j;
-				if(blockIdx<words.length) {
-					System.out.println("\tBlock: "+ blockIdx + " (" + (0xFF & blocks[blockIdx]) + ") => " + (superBlocks[i]+(0xFF & blocks[blockIdx])) + "    \t" + IOUtil.toBinaryString(words[blockIdx]));
-				}
-			}
-		}
-		System.out.println("TOTAL: "+pop);
-		//System.exit(0);
-		System.out.println("----");*/
 	}
 
 	/* (non-Javadoc)
@@ -153,9 +143,6 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 		long block = words[(int)blockIndex] << chunkIndex;
 		long chunkRank = Long.bitCount(block);
 		
-		/*System.out.print("\t\t\tSUPER: "+ superBlockIndex + " BLOCK: "+ blockIndex + " CHUNK: "+ chunkIndex );
-		System.out.println("\tSUPER: "+superBlockRank+ " BLOCK: "+ blockRank + " CHUNK: "+ chunkRank + " Total: "+ (superBlockRank + blockRank + chunkRank));
-		System.out.println();*/
 		return superBlockRank + blockRank + chunkRank;
 	}
 
@@ -210,7 +197,6 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 		
 		int countdown = (int)x-superBlocks[superBlockIndex];
 		int blockIdx = superBlockIndex * BLOCKS_PER_SUPER;
-		//System.out.println("\t\t*Found Superblock: " + superBlockIndex +" (" +superBlocks[superBlockIndex]+") First Block: "+ blockIdx + " Remaining: "+countdown);
 
 		// Search block
 		while(true) {
@@ -218,7 +204,6 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 				blockIdx--;
 				break;
 			}
-			//System.out.println("\t\tCheck Block: "+blockIdx + " => "+ (0xFF & blocks[blockIdx]));
 			if((0xFF & blocks[blockIdx])>=countdown) {
 				// We found it!
 				blockIdx--;
@@ -230,11 +215,9 @@ public class BitSequence375 extends Bitmap64 implements ModifiableBitmap {
 			blockIdx=0;
 		}
 		countdown = countdown - (0xFF & blocks[blockIdx]);
-		//System.out.println("\t\t\tFound Block: "+blockIdx + " Countdown: "+countdown+ " PartialRank: "+ ((superBlocks[superBlockIndex]+(0xFF & blocks[blockIdx])))+ " PartialSelect: "+ (blockIdx*W));
 		
 		// Search bit inside block
 		int bitpos = BitUtil.select1(words[blockIdx], countdown);
-		//System.out.println("FINAL: "+(blockIdx * W + bitpos - 1));
 		
 		return blockIdx * W + bitpos - 1;
 	}

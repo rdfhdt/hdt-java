@@ -39,15 +39,53 @@ import java.util.Iterator;
  * 
  */
 public interface IteratorTripleID extends Iterator<TripleID> {
-	public long estimatedNumResults();
-	public ResultEstimationType numResultEstimation();
-	
+
+	/**
+	 * Whether the iterator has previous elements.
+	 * @return
+	 */
 	public boolean hasPrevious();
+	
+	/**
+	 * Get the previous element. Call only if hasPrevious() returns true.
+	 * It moves the cursor of the Iterator to the previous entry.
+	 * @return
+	 */
 	public TripleID previous();
 	
+	/** 
+	 * Point the cursor to the first element of the data structure.
+	 */
 	public void goToStart();
+	
+	/**
+	 * Specifies whether the iterator can move to a random position.
+	 * @return
+	 */
 	public boolean canGoTo();
+	
+	/**
+	 * Go to the specified random position. Only use whenever canGoTo() returns true.
+	 * @param pos
+	 */
 	public void goTo(long pos);
+	
+	/** 
+	 * Returns the number of estimated results of the Iterator.
+	 * It is usually more efficient than going through all the results.
+	 * 
+	 * @return Number of estimated results.
+	 */
+	public long estimatedNumResults();
+	
+	/**
+	 * Returns the accuracy of the estimation of number of results as returned
+	 * by estimatedNumResults()
+	 * 
+	 * @return
+	 */
+	public ResultEstimationType numResultEstimation();
+	
 	
 	public TripleComponentOrder getOrder();
 }

@@ -32,8 +32,23 @@ package org.rdfhdt.hdt.enums;
  *
  */
 public enum ResultEstimationType {
+	/**
+	 * The number of results is completely unknown.
+	 */
 	UNKNOWN,
+	
+	/**
+	 * The number of results is not exact, but approximately the specified value.
+	 */
 	APPROXIMATE,
+	
+	/**
+	 * The number of results is unknown, but never bigger than the specified value.
+	 */
 	UP_TO,
+	
+	/**
+	 *  The number of results is exactly the specified value.
+	 */
 	EXACT
 }

@@ -62,15 +62,6 @@ public interface Triples {
 	public abstract IteratorTripleID search(TripleID pattern);
 	
 	/**
-	 * Calculates the cost to retrieve a specific pattern
-	 * 
-	 * @param pattern
-	 *            The pattern to match against
-	 * @return float
-	 */
-	public abstract float cost(TripleID pattern);
-
-	/**
 	 * Returns the total number of triples
 	 * 
 	 * @return int
@@ -78,7 +69,7 @@ public interface Triples {
 	public abstract long getNumberOfElements();
 
 	/**
-	 * Returns the size in bytes of the internal represenatation
+	 * Returns the size in bytes of the internal representation
 	 * 
 	 * @return int
 	 */

@@ -37,10 +37,9 @@ import org.rdfhdt.hdt.iterator.IteratorTripleString;
 public interface RDFAccess {
 	
 	/**
-	 * Search a pattern in a HDT
-	 * 
-	 * The null string acts as a wildcard. (i.e. search(null, null, null)
-	 * returns all elements)
+	 * Iterate over the triples of an RDF Set that match the specified pattern.
+	 * null and empty strings act as a wildcard. 
+	 * (e.g. search(null, null, null) returns all elements)
 	 * 
 	 * @param subject
 	 *            The subject to search

@@ -44,6 +44,9 @@ import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
+ * Keeps a bitmap as an array of long values (64 bit per word).
+ * The first bit is the lowest significative bit of word zero, and so on.
+ * 
  * @author mario.arias
  *
  */

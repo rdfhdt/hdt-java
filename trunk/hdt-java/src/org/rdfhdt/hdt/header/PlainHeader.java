@@ -53,7 +53,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  * @author mario.arias
  *
  */
-public class PlainHeader extends HeaderBase implements RDFCallback {
+public class PlainHeader implements Header, RDFCallback {
 	
 	protected HDTSpecification spec;
 	protected List<TripleString> triples= new ArrayList<TripleString>();

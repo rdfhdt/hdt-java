@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleInsert.java $
+ * Revision: $Rev: 17 $
+ * Last modified: $Date: 2012-07-03 21:43:15 +0100 (mar, 03 jul 2012) $
+ * Last modified by: $Author: mario.arias@gmail.com $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,12 +25,31 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.rdf;
+package org.rdfhdt.hdt.examples;
+
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
  * @author mario.arias
  *
  */
-public interface RDFSerializer {
+public class ExampleGenerate {
 
+	public static void main(String[] args) throws Exception {
+		// Configuration variables
+		String baseURI = "http://example.com/mydataset";
+		String rdfInput = "/path/to/dataset.nt";
+		String inputType = "ntriples";
+		String hdtOutput = "/path/to/dataset.hdt";
+		
+		// Create HDT from RDF file
+		HDTSpecification spec = new HDTSpecification();
+		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(inputType), null);
+		
+		// Save generated HDT to a file
+		hdt.saveToHDT(hdtOutput, null);
+	}
 }

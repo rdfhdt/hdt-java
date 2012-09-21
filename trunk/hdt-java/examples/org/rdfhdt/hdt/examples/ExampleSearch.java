@@ -1,8 +1,8 @@
 /**
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleInsert.java $
- * Revision: $Rev: 27 $
- * Last modified: $Date: 2012-07-19 01:22:22 +0100 (jue, 19 jul 2012) $
- * Last modified by: $Author: mario.arias $
+ * Revision: $Rev: 58 $
+ * Last modified: $Date: 2012-08-26 00:31:15 +0100 (dom, 26 ago 2012) $
+ * Last modified by: $Author: simpsonim13@gmail.com $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,41 +27,30 @@
 
 package org.rdfhdt.hdt.examples;
 
-import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.ModifiableHDT;
 import org.rdfhdt.hdt.hdt.QueryableHDT;
 import org.rdfhdt.hdt.iterator.IteratorTripleString;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.TripleString;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleModHDT {
+public class ExampleSearch {
 
 	public static void main(String[] args) throws Exception {
-		// Create instance
-		ModifiableHDT mhdt = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/", null);
-		
-		// Load data
-		mhdt.insert("uri1", "p1", "val1");
-		mhdt.insert("uri1", "p1", "val2");
-		mhdt.insert("uri1", "p2", "val3");
-		mhdt.insert("uri2", "p2", "val4");
-		
-		// Convert to HDT
-		HDT hdt = HDTFactory.createHDTFromModHDT(new HDTSpecification(), mhdt, null);
-		// Close ModifiableHDT
-		mhdt.close();
-		
-		// Load back
-		ModifiableHDT mhdt2 = HDTFactory.createModifiableHDT(new HDTSpecification(),"http://example.com/base/", null);
-		mhdt2.loadFromHDT(hdt, null);
-		
-		IteratorTripleString it = ((QueryableHDT)mhdt2).search("", "", "");
+		// Load HDT file
+		QueryableHDT hdt = HDTFactory.createQueryableHDT();
+		hdt.loadFromHDT("data/example.hdt", null);
+
+		// Recommended: Generate index to speed up ?P? ?PO and ??O queries.
+		hdt.loadOrCreateIndex(null);
+
+		// Search pattern: Empty string means "any"
+		IteratorTripleString it = hdt.search("", "", "");
 		while(it.hasNext()) {
-			System.out.println(it.next());
+			TripleString ts = it.next();
+			System.out.println(ts);
 		}
 	}
 }

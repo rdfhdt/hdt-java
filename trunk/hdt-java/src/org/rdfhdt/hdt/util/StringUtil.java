@@ -38,12 +38,8 @@ import java.util.TimeZone;
  *
  */
 public class StringUtil {
-	private static final DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+	
 	private static final DecimalFormat decimalFormat = new DecimalFormat("##.##");
-
-	static {
-		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-	}
 	
 	public static String getPercent(long v1, long max) {
 		double v = (100.0*v1)/max;
@@ -51,6 +47,8 @@ public class StringUtil {
 	}
 	
 	public static String formatDate(Date date) {
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return dateFormat.format(date);
 	}
 }

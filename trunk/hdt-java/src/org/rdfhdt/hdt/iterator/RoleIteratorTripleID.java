@@ -36,7 +36,8 @@ import java.util.Iterator;
 /**
  * Iterates over one of the components of a triple (E.g. all subjects, predicates or objects)
  * NOTE: It does not discard repetitions
- * @author grinbd
+ * 
+ * @author mario.arias
  * 
  */
 public class RoleIteratorTripleID implements Iterator<Integer> {
@@ -48,8 +49,7 @@ public class RoleIteratorTripleID implements Iterator<Integer> {
 	 * @param position
 	 * @param array
 	 */
-	public RoleIteratorTripleID(Iterator<TripleID> iterator,
-			TripleComponentRole position) {
+	public RoleIteratorTripleID(Iterator<TripleID> iterator, TripleComponentRole position) {
 		this.position = position;
 		this.iterator = iterator;
 	}

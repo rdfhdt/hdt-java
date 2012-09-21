@@ -32,6 +32,8 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.triples.TripleString;
 
 /**
+ * Parser that uses a callback to notify of each succesfully parsed triple.
+ * 
  * @author mario.arias
  *
  */

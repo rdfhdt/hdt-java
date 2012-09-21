@@ -16,7 +16,13 @@ The source package contains an Ant buildfile "build.xml".
 
 Just run 'ant' to compile or 'ant jar' to generate a jar package.
 			
-Dependencies: The HDT library itself does not have any dependency to load and search HDT files, you just need to include the generated jar. However for parsing RDF files (in NTriples, Turtle, N3, RDF-XML...) you will need Jena RIOT. The commandline tools use JCommander for parsing the arguments.
+Dependencies for searching:
+The HDT library itself does not have any dependency to load and search HDT files, you just need to include the generated jar. 
+
+Dependencies for converting:
+For parsing RDF files (in NTriples, Turtle, N3, RDF-XML...) you will need Jena RIOT.
+If you need to convert very big RDF Files, you can use BerkeleyDB, KyotoCabinet or JDBM to save intermediate data on disk. 
+The commandline tools use JCommander for parsing the arguments.
 
 Command line tools
 =================
@@ -56,10 +62,10 @@ Tool Usage example
 
 After installation, run:
 
-$ tools/rdf2hdt -c presets/bitmaplog data/test.n3 data/test.hdt
+$ tools/rdf2hdt data/test.nt data/test.hdt
 # This creates the HDT representation
 
-$ tools/hdt2rdf data/test.hdt data/test.hdtexport.n3
+$ tools/hdt2rdf data/test.hdt data/test.hdtexport.nt
 # This converts back the HDT to RDF.
 
 $ tools/hdtSearch data/test.hdt
@@ -84,7 +90,40 @@ $ tools/hdtSearch data/test.hdt
 >> exit
 
 
-
 USING THE LIBRARY
 =================
 
+Here we show how to use the library programmatically from java. This code can also be found under the examples directory.
+
+// Generate an HDT File from RDF (examples/ExampleGenerate.java)
+public static void main(String[] args) throws Exception {
+	// Configuration variables
+	String baseURI = "http://example.com/mydataset";
+	String rdfInput = "/path/to/dataset.nt";
+	String inputType = "ntriples";
+	String hdtOutput = "/path/to/dataset.hdt";
+	
+	// Create HDT from RDF file
+	HDTSpecification spec = new HDTSpecification();
+	HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(inputType), null);
+	
+	// Save generated HDT to a file
+	hdt.saveToHDT(hdtOutput, null);
+}
+
+// Load an HDT and perform a search.
+public static void main(String[] args) throws Exception {
+	// Load HDT file
+	QueryableHDT hdt = HDTFactory.createQueryableHDT();
+	hdt.loadFromHDT("data/example.hdt", null);
+
+	// Recommended: Generate index to speed up ?P? ?PO and ??O queries.
+	hdt.loadOrCreateIndex(null);
+
+	// Search pattern: Empty string means "any"
+	IteratorTripleString it = hdt.search("", "", "");
+	while(it.hasNext()) {
+		TripleString ts = it.next();
+		System.out.println(ts);
+	}
+}

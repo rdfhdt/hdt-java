@@ -62,6 +62,10 @@ public final class TripleID implements Comparable<TripleID> {
 		this.object = object;
 	}
 	
+	/**
+	 * Build a TripleID as a copy of another one.
+	 * @param other
+	 */
 	public TripleID(TripleID other) {
 		super();
 		this.subject = other.subject;
@@ -114,10 +118,29 @@ public final class TripleID implements Comparable<TripleID> {
 		this.predicate = predicate;
 	}
 
+	/**
+	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 */
 	public void setAll(int subject, int predicate, int object) {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
+	}
+	
+	public void assign(TripleID replacement) {
+		subject = replacement.getSubject();
+        object = replacement.getObject();
+        predicate = replacement.getPredicate();
+	}
+
+	/**
+	 * Set all components to zero.
+	 */
+	public void clear() {
+		subject = predicate = object = 0;
 	}
 
 	/*
@@ -134,8 +157,9 @@ public final class TripleID implements Comparable<TripleID> {
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	/**
+	 * Compare TripleID to another one using SPO Order. 
+	 * To compare using other orders use {@link TripleStringComparator} 
 	 */
 	@Override
 	public int compareTo(TripleID other) {
@@ -154,7 +178,7 @@ public final class TripleID implements Comparable<TripleID> {
 	}
 	
 	/**
-	 * Match a triple to a pattern of TripleID. 0 acts as a wildcard
+	 * Check whether this triple matches a pattern of TripleID. 0 acts as a wildcard
 	 * 
 	 * @param pattern
 	 *            The pattern to match against
@@ -178,37 +202,31 @@ public final class TripleID implements Comparable<TripleID> {
 		return false;
 	}
 	
-	public void replace(TripleID replacement) {
-		subject = replacement.getSubject();
-        object = replacement.getObject();
-        predicate = replacement.getPredicate();
-	}
-	
+	/**
+	 * Check whether all the components of the triple are empty (zero).
+	 * @return
+	 */
 	public boolean isEmpty() {
 		return !(subject != 0 || predicate != 0 || object != 0);
 	}
 
+	/**
+	 * Check whether none of the components of the triple are empty.
+	 * @return
+	 */
 	public boolean isValid() {
 		return subject!=0 && predicate!=0 && object!=0;
 	}
 	
+	/**
+	 * Get the pattern of the triple as String, such as "SP?".
+	 * @return
+	 */
 	public String getPatternString() {
 		return "" +
 			(subject==0   ? '?' : 'S') + 
 			(predicate==0 ? '?' : 'P') +
 			(object==0    ? '?' : 'O');
 	}
-	
-	public void clear() {
-		subject = predicate = object = 0;
-	}
 
-	/**
-	 * @param other
-	 */
-	public void set(TripleID other) {
-		this.subject = other.subject;
-		this.predicate = other.predicate;
-		this.object = other.object;
-	}	
 }

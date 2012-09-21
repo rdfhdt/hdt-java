@@ -122,7 +122,7 @@ public final class TripleString {
 	}
 	
 	/**
-	 * Check wether this triple matches a pattern. A pattern is just a TripleString where each empty component means <em>any</em>.
+	 * Check whether this triple matches a pattern. A pattern is just a TripleString where each empty component means <em>any</em>.
 	 * @param pattern
 	 * @return
 	 */
@@ -137,6 +137,9 @@ public final class TripleString {
         return false;
 	}
 	
+	/**
+	 * Set all components to ""
+	 */
 	public void clear() {
 		subject = predicate = object = "";
 	}
@@ -157,6 +160,10 @@ public final class TripleString {
 		return subject.length()==0 || predicate.length()==0 || object.length()==0;
 	}
 
+	/**
+	 * Read from a line, where each component is separated by space.
+	 * @param line
+	 */
 	public void read(String line) {
 		int split, posa, posb;
 		this.clear();
@@ -208,6 +215,7 @@ public final class TripleString {
 		return subject + " " + predicate + " " + object;
 	}
 	
+	/** Convert TripleString to NTriple */
 	public CharSequence asNtriple() throws IOException {
 		StringBuilder str = new StringBuilder();
 		char s0 = subject.charAt(0);

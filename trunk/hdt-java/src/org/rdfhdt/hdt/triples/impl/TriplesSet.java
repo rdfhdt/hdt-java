@@ -119,13 +119,6 @@ public class TriplesSet implements ModifiableTriples {
 		return this.search(all);
 	}
 
-
-	@Override
-	public float cost(TripleID triple) {
-		// TODO Schedule a meeting to discuss how to do this
-		return 0;
-	}
-
 	@Override
 	public long getNumberOfElements() {
 		return numValidTriples;

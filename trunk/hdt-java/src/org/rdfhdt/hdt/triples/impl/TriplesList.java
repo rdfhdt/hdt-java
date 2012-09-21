@@ -115,18 +115,6 @@ public class TriplesList implements ModifiableTriples {
 		return this.search(all);
 	}
 
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see hdt.triples.Triples#cost(hdt.triples.TripleID)
-	 */
-	@Override
-	public float cost(TripleID triple) {
-		// TODO Schedule a meeting to discuss how to do this
-		return 0;
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 

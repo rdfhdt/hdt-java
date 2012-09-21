@@ -70,7 +70,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 			if(next.match(pattern)) {
 				hasMoreTriples = true;
 				hasPreviousTriples = true;
-				nextTriple.set(next);
+				nextTriple.assign(next);
 				break;
 			}
 		}
@@ -106,7 +106,6 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	
 	private void doFetchPrevious() {
 		hasPreviousTriples = false;
-        //cout << "Seq PREV: " << iterator->hasPrevious() << ", " << iterator->hasNext() << endl;
 
         while(iterator.hasPrevious()){
                 TripleID previous = iterator.previous();
@@ -194,7 +193,6 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	 */
 	@Override
 	public void remove() {
-		//TODO
 		throw new NotImplementedException();
 	}
 	

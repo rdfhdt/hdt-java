@@ -38,13 +38,37 @@ import java.util.Iterator;
  */
 public interface IteratorTripleString extends Iterator<TripleString> {
 
+	/**
+	 * Whether the iterator has previous elements.
+	 * @return
+	 */
 	public boolean hasPrevious();
 	
+	/**
+	 * Get the previous element. Call only if hasPrevious() returns true.
+	 * It moves the cursor of the Iterator to the previous entry.
+	 * @return
+	 */
 	public TripleString previous();
 	
+	/** 
+	 * Point the cursor to the first element of the data structure.
+	 */
 	public void goToStart();
 	
+	/** 
+	 * Returns the number of estimated results of the Iterator.
+	 * It is usually more efficient than going through all the results.
+	 * 
+	 * @return Number of estimated results.
+	 */
 	public long estimatedNumResults();
 	
+	/**
+	 * Returns the accuracy of the estimation of number of results as returned
+	 * by estimatedNumResults()
+	 * 
+	 * @return
+	 */
 	public ResultEstimationType numResultEstimation();
 }

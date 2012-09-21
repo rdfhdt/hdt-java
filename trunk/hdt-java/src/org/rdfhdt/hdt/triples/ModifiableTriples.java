@@ -33,7 +33,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
 /**
- * Interface for ModifiedTriples implementation.
+ * Interface for ModifiableTriples implementation.
  * 
  * This is a dynamic interface. For static(read-only) behaviour have a look at
  * {@link Triples}

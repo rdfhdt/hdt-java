@@ -233,15 +233,6 @@ public class BitmapTriples implements Triples {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#cost(hdt.triples.TripleID)
-	 */
-	@Override
-	public float cost(TripleID pattern) {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	/* (non-Javadoc)
 	 * @see hdt.triples.Triples#getNumberOfElements()
 	 */
 	@Override
@@ -519,7 +510,7 @@ public class BitmapTriples implements Triples {
 		
 		ArrayList<List<Pair>> list=new ArrayList<List<Pair>>();
 		
-		System.out.println("Generate object lists");
+		System.out.println("Generating HDT Index for ?PO, and ??O queries.");
 		// Generate lists
 		long total=arrayZ.getNumberOfElements();
 		for(long i=0;i<total;i++) {

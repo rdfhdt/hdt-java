@@ -276,12 +276,6 @@ public class TriplesJDBM implements ModifiableTriples {
 	}
 
 	@Override
-	public float cost(TripleID triple) {
-		// TODO Schedule a meeting to discuss how to do this
-		return 0;
-	}
-
-	@Override
 	public void save(OutputStream output, ControlInformation controlInformation, ProgressListener listener) throws IOException {
 		controlInformation.clear();
 		controlInformation.setInt("numTriples", numValidTriples);

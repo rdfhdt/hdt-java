@@ -30,6 +30,8 @@ package org.rdfhdt.hdt.rdf;
 import org.rdfhdt.hdt.triples.TripleString;
 
 /**
+ * Represent an RDFStorage that can insert and remove triples in addition of searching.
+ * 
  * @author mario.arias
  *
  */

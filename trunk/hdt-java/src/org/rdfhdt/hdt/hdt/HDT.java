@@ -113,7 +113,7 @@ public interface HDT {
 	public void loadOrCreateIndex(ProgressListener listener);
 	
 	/**
-	 * Resturns the size of the Data Structure in bytes.
+	 * Returns the size of the Data Structure in bytes.
 	 * @return
 	 */
 	public long size();

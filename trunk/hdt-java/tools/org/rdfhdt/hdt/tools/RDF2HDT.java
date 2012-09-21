@@ -62,7 +62,7 @@ public class RDF2HDT implements ProgressListener {
 	@Parameter(names = "-output", description = "Output HDT file name")
 	public String hdtOutput = null;
 	
-	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, n3, rdfxml)")
+	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, nquad, n3, turtle, rdfxml)")
 	public String rdfType = "ntriples";
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
@@ -89,12 +89,12 @@ public class RDF2HDT implements ProgressListener {
 		}
 		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(rdfType), this);
 		
-		//dumping to HDT file
+		// Dump to HDT file
 		StopWatch sw = new StopWatch();
 		hdt.saveToHDT(hdtOutput, this);
 		System.out.println("HDT saved to file in: "+sw.stopAndShow());
 		
-		//generating index and dumping it to jindex file
+		// Generate index and dump it to jindex file
 		sw.reset();
 		if(generateIndex) {
 			hdt.loadOrCreateIndex(this);
@@ -111,7 +111,6 @@ public class RDF2HDT implements ProgressListener {
 	@Override
 	public void notifyProgress(float level, String message) {
 		if(progress) {
-			// TODO: Add progress notifications to the internal classes
 			System.out.println(message + "\t"+ Float.toString(level));
 		}
 	}
