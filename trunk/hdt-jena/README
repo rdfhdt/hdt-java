@@ -1,0 +1,21 @@
+HDT-Jena
+
+This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. An example on how to do this can be found at hdt-jena/examples/org/rdfhdt/hdtjena/HDTSparql.java
+
+HDT-Jena depends on the HDT-Java and Jena Libraries.
+
+Example usage:
+
+# Compile hdt-java
+hdt-java $ ant
+
+# Generate test file
+hdt-java $ ./rdf2hdt.sh data/test.nt data/test.hdt
+
+# Compile hdt-jena
+hdt-java $ cd ../hdt-jena
+hdt-java $ ant
+
+# Launch a SPARQL query against the HDT file.
+hdt-jena $ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
+
