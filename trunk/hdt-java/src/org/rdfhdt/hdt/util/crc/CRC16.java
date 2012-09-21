@@ -19,7 +19,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  *
  */
 public class CRC16 implements CRC {
-	short crc16;
+	int crc16;
 	
 	private static short crc16_table[] = {
 	    (short)0x0000, (short)0xc0c1, (short)0xc181, (short)0x0140, (short)0xc301, (short)0x03c0, (short)0x0280, (short)0xc241,
@@ -58,15 +58,12 @@ public class CRC16 implements CRC {
 
 	@Override
 	public void update(byte[] buffer, int offset, int length) {
-	    int tbl_idx;
-
 	    int len = length;
 	    int i = offset;
 
 	    while (len-->0) {
-	        tbl_idx = (crc16 ^ buffer[i]) & 0xff;
-	        crc16 = (short)((crc16_table[tbl_idx] ^ (crc16 >>> 8)) & 0xffff);
-
+	        int tbl_idx = (crc16 ^ buffer[i]) & 0xff;
+	        crc16 = (crc16_table[tbl_idx] ^ crc16 >>> 8) & 0xFFFF;
 	        i++;
 	    }	
 	}
@@ -74,17 +71,18 @@ public class CRC16 implements CRC {
 	@Override
 	public void update(byte data) {
         int tbl_idx = (crc16 ^ data) & 0xff;
-        crc16 = (short)((crc16_table[tbl_idx] ^ (crc16 >>> 8)) & 0xffff);
+        
+        crc16 = (crc16_table[tbl_idx] ^ crc16 >>> 8) & 0xFFFF;
 	}
 
 	@Override
 	public void writeCRC(OutputStream out) throws IOException {
-		IOUtil.writeShort(out, crc16);
+		IOUtil.writeShort(out, (short)crc16);
 	}
 
 	@Override
 	public boolean readAndCheck(InputStream in) throws IOException {
-		short readCRC = IOUtil.readShort(in);
+		int readCRC = IOUtil.readShort(in)&0xFFFF;
 		return (readCRC==crc16);
 	}
 
