@@ -85,6 +85,36 @@ public class HDTOptionsBase implements HDTOptions {
 		properties.setProperty(key, Long.toString(value));
 	}
 	
+	/**
+	 * A method for getting a property denoting a size in bytes (like size of cache for example)
+	 * 
+	 * If the property is not set the method returns -1, else it checks if it ends with a
+	 * k, K, m, M, g or G and multiplies the number before with the apropriate power of 2 before
+	 * returning it.
+	 */
+	public long getBytesProperty(String string) {
+		String property = properties.getProperty(string);
+		if (property==null || property.equals(""))
+			return -1;
+		
+		property = property.trim();
+		char lastChar = property.charAt(property.length()-1);
+		
+		switch(lastChar){
+		case ('k'):
+		case ('K'):
+			return Long.parseLong(property.substring(0, property.length()-1))*1024;
+		case ('m'):
+		case ('M'):
+			return Long.parseLong(property.substring(0, property.length()-1))*1024*1024;
+		case ('g'):
+		case ('G'):
+			return Long.parseLong(property.substring(0, property.length()-1))*1024*1024*1024;
+		default:
+			return Long.parseLong(property);
+		}
+	}
+	
 	public void clear() {
 		properties.clear();
 	}

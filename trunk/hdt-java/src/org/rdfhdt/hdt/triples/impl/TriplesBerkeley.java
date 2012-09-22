@@ -136,8 +136,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 		envConf.setAllowCreateVoid(true);
 		envConf.setTransactionalVoid(false);
 		envConf.setCacheModeVoid(CacheMode.DEFAULT);
-		int cachePercent = 10; //TODO set this up
-		envConf.setCachePercentVoid(cachePercent);
+		envConf.setCacheSizeVoid(specs.getBytesProperty("tempTriples.cache"));
 
 		env = new Environment(folder, envConf);
 

@@ -79,7 +79,10 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 		db.closeOnExit();
 		db.deleteFilesAfterClose();
 		db.disableTransactions(); //more performance
-		db.setMRUCacheSize(4096); //db.enableHardCache(); //TODO set this up
+		
+		long cacheInBytes = spec.getBytesProperty("tempDictionary.cache");
+		int cacheInRecords = 2048; //TODO calculate from cacheInBytes
+		db.setMRUCacheSize(cacheInRecords);
 		
 		return db.make();
 	}

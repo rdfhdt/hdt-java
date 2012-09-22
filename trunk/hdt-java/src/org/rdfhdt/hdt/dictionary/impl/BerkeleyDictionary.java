@@ -86,8 +86,7 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 		envConf.setAllowCreateVoid(true);
 		envConf.setTransactionalVoid(false);
 		envConf.setCacheModeVoid(CacheMode.DEFAULT);
-		int cachePercent = 15; //TODO read from specs... ?
-		envConf.setCachePercentVoid(cachePercent);
+		envConf.setCacheSizeVoid(spec.getBytesProperty("tempDictionary.cache"));
 
 		env = new Environment(folder, envConf);
 	}

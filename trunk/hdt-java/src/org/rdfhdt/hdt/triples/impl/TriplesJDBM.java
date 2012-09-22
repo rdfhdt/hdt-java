@@ -124,7 +124,11 @@ public class TriplesJDBM implements ModifiableTriples {
 		dbMaker.closeOnExit();
 		dbMaker.deleteFilesAfterClose();
 		dbMaker.disableTransactions(); //more performance
-		dbMaker.setMRUCacheSize(4096); //db.enableHardCache(); //TODO set this up
+		
+		long cacheInBytes = specs.getBytesProperty("tempDictionary.cache");
+		int cacheInRecords = 2048; //TODO calculate from cacheInBytes
+		dbMaker.setMRUCacheSize(cacheInRecords);
+		
 		this.db = dbMaker.make();
 
 		triplesSetName = "triplesSet";
