@@ -29,9 +29,11 @@ package org.rdfhdt.hdt.rdf.parsers;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.zip.GZIPInputStream;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
@@ -50,7 +52,13 @@ public class RDFParserSimple implements RDFParserCallback {
 	@Override
 	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(new File(fileName)));
+			BufferedReader reader; 
+		
+			if(fileName.endsWith(".nt.gz")) {
+				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))));
+			} else {
+				reader = new BufferedReader(new FileReader(new File(fileName)));
+			}
 			String line;
 			long numLine = 1;
 			TripleString triple = new TripleString();
