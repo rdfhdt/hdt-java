@@ -65,7 +65,7 @@ public class TriplesList implements ModifiableTriples {
 	/** The order of the triples */
 	private TripleComponentOrder order;
 	private int numValidTriples;
-	
+
 	private boolean sorted = false;
 
 	/**
@@ -89,6 +89,18 @@ public class TriplesList implements ModifiableTriples {
 		this.order = TripleComponentOrder.valueOf(orderStr);
 
 		this.numValidTriples = 0;
+	}
+
+	/**
+	 * A method for setting the size of the arrayList (so no reallocation occurs).
+	 * If not empty does nothing and returns false.
+	 */
+	public boolean reallocateIfEmpty(int numTriples){
+		if (arrayOfTriples.isEmpty()) {
+			arrayOfTriples = new ArrayList<TripleID>(numTriples);
+			return true;
+		} else
+			return false;
 	}
 
 	/*
@@ -132,7 +144,7 @@ public class TriplesList implements ModifiableTriples {
 	 */
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*24;
+		return this.getNumberOfElements()*TripleID.sizeOf();
 	}
 
 
@@ -181,7 +193,7 @@ public class TriplesList implements ModifiableTriples {
 			numValidTriples++;
 			ListenerUtil.notifyCond(listener, "Loading TriplesList", numRead, totalTriples);
 		}
-		
+
 		sorted = false;
 	}
 
@@ -197,7 +209,7 @@ public class TriplesList implements ModifiableTriples {
 			arrayOfTriples.add(iterator.next());
 			numValidTriples++;
 		}
-		
+
 		sorted = false;
 	}
 
@@ -243,12 +255,12 @@ public class TriplesList implements ModifiableTriples {
 		sorted = false;
 		return true;
 	}
-	
+
 	@Override
 	public boolean update(TripleID triple, int subj, int pred, int obj) {
 		if (triple==null)
 			return false;
-		
+
 		triple.setAll(subj, pred, obj);
 		sorted = false;
 		return true;
@@ -272,7 +284,7 @@ public class TriplesList implements ModifiableTriples {
 				}
 			}
 		}
-		
+
 		return removed;
 	}
 

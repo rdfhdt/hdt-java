@@ -51,6 +51,7 @@ import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.util.CacheCalculator;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.bind.tuple.TupleInput;
@@ -83,6 +84,8 @@ public class TriplesBerkeley implements ModifiableTriples {
 
 	private HDTSpecification specs;
 
+	/** home folder of the db environment */
+	private File envHome;
 	/** environment of the database */
 	private Environment env;
 	/** database suporting the set of triples */
@@ -93,7 +96,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 	private String triplesSetName;
 	/** version of the collection in db */
 	private int triplesSetVersion;
-	
+
 	private TripleIDTupleBinding binding;
 
 	/** The order of the triples */
@@ -115,7 +118,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 			orderStr = "SPO";
 		}
 		this.order = TripleComponentOrder.valueOf(orderStr);
-		
+
 		this.binding = new TripleIDTupleBinding();
 
 		setupDatabaseEnv();
@@ -127,18 +130,33 @@ public class TriplesBerkeley implements ModifiableTriples {
 	private void setupDatabaseEnv(){
 
 		//FIXME read from specs...
-		File folder = new File("DB");
-		if (!folder.exists() && !folder.mkdir()){
+		envHome = new File("DB/triples");
+		if (!envHome.exists() && !envHome.mkdir()){
 			throw new RuntimeException("Unable to create DB folder...");
 		}
 
 		EnvironmentConfig envConf = new EnvironmentConfig();
 		envConf.setAllowCreateVoid(true);
 		envConf.setTransactionalVoid(false);
+		envConf.setLockingVoid(false);
 		envConf.setCacheModeVoid(CacheMode.DEFAULT);
-		envConf.setCacheSizeVoid(specs.getBytesProperty("tempTriples.cache"));
+		envConf.setCacheSizeVoid(CacheCalculator.getTriplesCache(specs));
 
-		env = new Environment(folder, envConf);
+		env = new Environment(envHome, envConf);
+
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				TriplesBerkeley.this.close();
+				for (File f : envHome.listFiles()){
+					String fname = f.getName();
+					if (fname.equalsIgnoreCase("je.properties"))
+						continue;
+					if (fname.endsWith(".jdb") || fname.startsWith("je."))
+						f.delete();
+				}
+			}
+		}));
 
 		triplesSetName = "triples";
 		triplesSetVersion = 1;
@@ -147,7 +165,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 		this.triples = new StoredSortedKeySet<TripleID>(db, binding, true);
 
 	}
-	
+
 	/** method for creating a new DB in the environment */
 	private Database createDB(){
 		DatabaseConfig dbConf = new DatabaseConfig();
@@ -156,7 +174,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 		dbConf.setTransactionalVoid(false);
 		dbConf.setTemporaryVoid(true);
 		dbConf.setBtreeComparatorVoid(new TripleIDByteComparator(binding, new TripleIDComparator(this.order)));
-		
+
 		return env.openDatabase(null, triplesSetName+triplesSetVersion, dbConf);
 	}
 
@@ -291,22 +309,16 @@ public class TriplesBerkeley implements ModifiableTriples {
 	}
 
 	@Override
-	public void close() throws IOException {
-		db.close();
-		db = null;
-		
-		//File envHome = env.getHome();
-		env.cleanLog();
-		env.close();
-		env = null;
-/*
-		for (File f : envHome.listFiles()){
-			String fname = f.getName();
-			if (fname.equalsIgnoreCase("je.properties"))
-				continue;
-			if (fname.endsWith(".jdb") || fname.startsWith("je."))
-				f.delete();
-		}*/
+	public void close() {
+		if (db!=null){
+			try { db.close(); } catch (Exception e) {/*whatever*/}
+			db = null;
+		}
+
+		if (env!=null) {
+			try { env.close(); } catch (Exception e) {/*whatever*/}
+			env = null;
+		}
 	}
 
 	@Override
@@ -316,7 +328,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*24;
+		return this.getNumberOfElements()*TripleID.sizeOf();
 	}
 
 	@Override
@@ -403,7 +415,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 	public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESSET;
 	}
-	
+
 	/**
 	 * A class extending a class defined in Berkeley, used for serializing an object for purposes of storing on disc
 	 * (in this case object=TripleID)
@@ -412,7 +424,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 	 *
 	 */
 	private static class TripleIDTupleBinding extends TupleBinding<TripleID> implements Serializable {
-		
+
 		private static final long serialVersionUID = -3205835251920853240L;
 
 		@Override
@@ -423,7 +435,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 			triple.setObject(input.readInt());
 			return triple;
 		}
-		
+
 		@Override
 		public void objectToEntry(TripleID triple, TupleOutput output) {
 			output.writeInt(triple.getSubject());
@@ -431,7 +443,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 			output.writeInt(triple.getObject());
 		}
 	}
-	
+
 	/**
 	 * A comparator of TripleID objects while in serialized form.
 	 * @author Eugen
@@ -450,10 +462,10 @@ public class TriplesBerkeley implements ModifiableTriples {
 				throws IOException, ClassNotFoundException {
 			in.defaultReadObject();
 		}
-		
+
 		private TripleIDTupleBinding binding;
 		private TripleIDComparator comparator;
-		
+
 		public TripleIDByteComparator(TripleIDTupleBinding binding, TripleIDComparator comparator) {
 			this.binding = binding;
 			this.comparator = comparator;
@@ -467,7 +479,7 @@ public class TriplesBerkeley implements ModifiableTriples {
 			TripleID triple2 = binding.entryToObject(in2);
 			return comparator.compare(triple1, triple2);
 		}
-		
+
 	}
-	
+
 }

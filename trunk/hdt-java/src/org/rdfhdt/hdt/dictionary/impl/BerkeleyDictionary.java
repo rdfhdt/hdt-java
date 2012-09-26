@@ -36,6 +36,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.CacheCalculator;
 
 import com.sleepycat.je.CacheMode;
 import com.sleepycat.je.Environment;
@@ -55,6 +56,7 @@ import com.sleepycat.je.EnvironmentConfig;
  */
 public class BerkeleyDictionary extends BaseModifiableDictionary {
 
+	private File envHome;
 	private Environment env;
 
 	public BerkeleyDictionary(HDTSpecification spec) {
@@ -77,18 +79,33 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 	private void setupDBEnvironment(HDTSpecification spec) {
 
 		//FIXME read from specs...
-		File folder = new File("DB");
-		if (!folder.exists() && !folder.mkdir()){
+		envHome = new File("DB/dictionary");
+		if (!envHome.exists() && !envHome.mkdir()){
 			throw new RuntimeException("Unable to create DB folder...");
 		}
 
 		EnvironmentConfig envConf = new EnvironmentConfig();
 		envConf.setAllowCreateVoid(true);
 		envConf.setTransactionalVoid(false);
+		envConf.setLockingVoid(false);
 		envConf.setCacheModeVoid(CacheMode.DEFAULT);
-		envConf.setCacheSizeVoid(spec.getBytesProperty("tempDictionary.cache"));
+		envConf.setCacheSizeVoid(CacheCalculator.getDictionaryCache(spec));
 
-		env = new Environment(folder, envConf);
+		env = new Environment(envHome, envConf);
+
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				BerkeleyDictionary.this.close();
+				for (File f : envHome.listFiles()){
+					String fname = f.getName();
+					if (fname.equalsIgnoreCase("je.properties"))
+						continue;
+					if (fname.endsWith(".jdb") || fname.startsWith("je."))
+						f.delete();
+				}
+			}
+		}));
 	}
 
 	@Override
@@ -107,37 +124,22 @@ public class BerkeleyDictionary extends BaseModifiableDictionary {
 	 * Throws DatabaseException (runtime) if unable to close Environment (no need for explicit handling)
 	 */
 	private void cleanupEnvironment() {
-
-		//File envHome = env.getHome();
-		env.cleanLog();
-		env.close();
-		env = null;
-/*
-		for (File f : envHome.listFiles()){
-			String fname = f.getName();
-			if (fname.equalsIgnoreCase("je.properties"))
-				continue;
-			if (fname.endsWith(".jdb") || fname.startsWith("je."))
-				f.delete();
+		
+		if (env!=null){
+			env.close();
+			env = null;
 		}
-		*/
 	}
 
 	@Override
 	public void close() {
 
-		try {	
-			((BerkeleyDictionarySection)subjects).cleanup();
-			((BerkeleyDictionarySection)predicates).cleanup();
-			((BerkeleyDictionarySection)objects).cleanup();
-			((BerkeleyDictionarySection)shared).cleanup();
-		} catch (Exception e){
-			cleanupEnvironment();
-			throw new RuntimeException("Closing of databases failed (most probably files left behind)", e);
-		}
+		((BerkeleyDictionarySection)subjects).cleanup();
+		((BerkeleyDictionarySection)predicates).cleanup();
+		((BerkeleyDictionarySection)objects).cleanup();
+		((BerkeleyDictionarySection)shared).cleanup();
 
-		if (env!=null)
-			cleanupEnvironment();
+		cleanupEnvironment();
 
 	}
 

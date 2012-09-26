@@ -38,6 +38,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.CacheCalculator;
 
 /**
  * This class is an implementation of a modifiable dictionary that
@@ -79,10 +80,7 @@ public class JDBMDictionary extends BaseModifiableDictionary {
 		db.closeOnExit();
 		db.deleteFilesAfterClose();
 		db.disableTransactions(); //more performance
-		
-		long cacheInBytes = spec.getBytesProperty("tempDictionary.cache");
-		int cacheInRecords = 2048; //TODO calculate from cacheInBytes
-		db.setMRUCacheSize(cacheInRecords);
+		db.setMRUCacheSize(CacheCalculator.getJDBMDictionaryCache(spec));
 		
 		return db.make();
 	}

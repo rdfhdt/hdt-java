@@ -94,7 +94,7 @@ public class HDTOptionsBase implements HDTOptions {
 	 */
 	public long getBytesProperty(String string) {
 		String property = properties.getProperty(string);
-		if (property==null || property.equals(""))
+		if (property==null || property.equals("") || property.equals("auto"))
 			return -1;
 		
 		property = property.trim();

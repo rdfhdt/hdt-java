@@ -55,6 +55,7 @@ import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.util.CacheCalculator;
 
 /**
  * This is an on-disc implementation of ModifiableTriples based on a TreeMap,
@@ -124,10 +125,7 @@ public class TriplesJDBM implements ModifiableTriples {
 		dbMaker.closeOnExit();
 		dbMaker.deleteFilesAfterClose();
 		dbMaker.disableTransactions(); //more performance
-		
-		long cacheInBytes = specs.getBytesProperty("tempDictionary.cache");
-		int cacheInRecords = 2048; //TODO calculate from cacheInBytes
-		dbMaker.setMRUCacheSize(cacheInRecords);
+		dbMaker.setMRUCacheSize(CacheCalculator.getJDBMTriplesCache(specs));
 		
 		this.db = dbMaker.make();
 
@@ -276,7 +274,7 @@ public class TriplesJDBM implements ModifiableTriples {
 
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*24;
+		return this.getNumberOfElements()*TripleID.sizeOf();
 	}
 
 	@Override

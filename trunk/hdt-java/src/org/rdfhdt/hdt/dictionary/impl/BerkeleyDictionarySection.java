@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.dictionary.impl;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -44,7 +45,11 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.collections.StoredSortedMap;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
+import com.sleepycat.je.DatabaseEntry;
+import com.sleepycat.je.DiskOrderedCursor;
+import com.sleepycat.je.DiskOrderedCursorConfig;
 import com.sleepycat.je.Environment;
+import com.sleepycat.je.OperationStatus;
 
 
 /**
@@ -63,7 +68,7 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 
 	private Environment env;
 	private String sectionID;
-	
+
 	private Database db_StringToID;
 
 	private StoredSortedMap<String, Integer> map_StringToID;
@@ -72,17 +77,18 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	private int numElements;
 	private long size;
 
+	private boolean changed = false;
 	private boolean sorted = false;
 
 	public BerkeleyDictionarySection(Environment env, String sectionName) throws Exception {
 		this(new HDTSpecification(), env, sectionName);
 	}
-	
+
 	public BerkeleyDictionarySection(HDTSpecification spec, Environment env, String sectionID) throws Exception {
-		
+
 		this.env = env;
 		this.sectionID = sectionID;
-		
+
 		setupDatabases(spec);
 
 		this.map_StringToID = new StoredSortedMap<String, Integer>(db_StringToID, 
@@ -92,16 +98,16 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 		this.numElements = 0;
 		this.size = 0;
 	}
-	
+
 	private void setupDatabases(HDTSpecification spec) throws Exception {
-		
+
 		DatabaseConfig dbConf = new DatabaseConfig();
 		dbConf.setExclusiveCreateVoid(true); //so that it throws exception if already exists
 		dbConf.setAllowCreateVoid(true);
 		dbConf.setTransactionalVoid(false);
 		dbConf.setTemporaryVoid(true);
 		//dbConf.setBtreeComparatorVoid(new StringUnicodeComparator());
-		
+
 		this.db_StringToID = env.openDatabase(null, sectionID+"_map_StringToID", dbConf);
 	}
 
@@ -119,6 +125,7 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 
 		numElements++;
 		size += str.getBytes(ByteStringUtil.STRING_ENCODING).length;
+		changed = true;
 		sorted = false;
 
 		return IDcounter;
@@ -132,6 +139,7 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 
 		numElements--;
 		size -= str.getBytes(ByteStringUtil.STRING_ENCODING).length;
+		changed = true;
 		sorted = false;
 	}
 
@@ -144,9 +152,10 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 			e.setValue(IDcounter);
 		}
 
+		changed = true;
 		sorted = true;
 	}
-	
+
 	@Override
 	public boolean isSorted() {
 		return sorted;
@@ -166,15 +175,13 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	}
 
 	/**
-	 * Does the same as getSortedEntries(), so returns current strings in
-	 * lexicographical order, only it doesn't guarantee that sort was called
-	 * before and that the dictionary is sorted (order by ID's matches the 
-	 * lexicographical order).
+	 * Returns the keys in any order (no guarantee of order of any
+	 * kind) which is the fastest to retrieve the keys from the disk
+	 * (uses DiskOrderedCursor).
 	 */
 	@Override
 	public Iterator<? extends CharSequence> getEntries() {
-		//TODO DiscOrderedCursor...?
-		return map_StringToID.keySet().iterator();
+		return new DiskOrderedIterator();
 	}
 
 	@Override
@@ -200,7 +207,8 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 		while(it.hasNext()) {
 			this.add(it.next());
 		}
-		
+
+		changed = true;
 		sorted = false;
 	}
 
@@ -212,28 +220,33 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	@Override
 	public void clear() {
 		map_StringToID.clear();
-		
+
 		IDcounter = 0;
 		numElements = 0;
 		size = 0;
+		changed = true;
 		sorted = false;
 	}
-	
+
 	/**
 	 * Closes the created databases, nulls the references (and deletes the databases,
 	 * currently implicit because they are temporary).
 	 */
-	public void cleanup() throws Exception {
-		
-		db_StringToID.close();
-		db_StringToID = null;
+	public void cleanup() {
+
+		changed = true;
+
+		if (db_StringToID!=null){
+			try { db_StringToID.close(); } catch (Exception e) {/*whatever*/}
+			db_StringToID = null;
+		}
 		//env.removeDatabase(null, sectionID+"_map_StringToID"); //to delete files // no need because temporary
 	}
-	
-	
+
+
 	/*
 	private class StringUnicodeComparator implements Comparator<byte[]> {
-		
+
 		@Override
 		public int compare(byte[] str1, byte[] str2) {
 
@@ -242,5 +255,81 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	        return s1.compareTo(s2);
 	    }
 	}
-	*/
+	 */
+
+	/**
+	 * A private class for getting keys in any order that is the fastest.
+	 * 
+	 * @author Eugen Rozic
+	 *
+	 */
+	private class DiskOrderedIterator implements Iterator<String> {
+
+		private DiskOrderedCursor cursor;
+
+		private DatabaseEntry next = null;
+		private DatabaseEntry nextValue = null;
+		private TupleBinding<String> keyBinding;
+
+		private boolean loaded = false;
+
+		public DiskOrderedIterator() {
+			DiskOrderedCursorConfig cursorConfig = new DiskOrderedCursorConfig();
+			cursorConfig.setKeysOnlyVoid(true);
+			cursor = db_StringToID.openCursor(cursorConfig);
+
+			next = new DatabaseEntry();
+			nextValue = new DatabaseEntry();
+			keyBinding = TupleBinding.getPrimitiveBinding(String.class);
+
+			changed = false;
+		}
+
+		@Override
+		public boolean hasNext() {
+			if (changed)
+				throw new ConcurrentModificationException();
+
+			if (!loaded){
+				load();
+			}
+
+			if (next==null){
+				return false;
+			} else {
+				return true;
+			}
+		}
+
+		private void load(){
+			OperationStatus status = cursor.getNext(next, nextValue, null); //gets key, and advances
+			if (status!=OperationStatus.SUCCESS){
+				next = null;
+				nextValue = null;
+				keyBinding = null;
+				cursor.close();
+				cursor = null;
+			}
+			loaded = true;
+		}
+
+		@Override
+		public String next() {
+			if (changed)
+				throw new ConcurrentModificationException();
+
+			if (hasNext()) { //loads next here
+				loaded = false; //unload if next!=null and return it
+				return keyBinding.entryToObject(next);
+			} else {
+				return null; //otherwise just stay loaded (with null) and return it
+			}
+		}
+
+		@Override
+		public void remove() {
+			throw new NotImplementedException();
+		}
+
+	}
 }

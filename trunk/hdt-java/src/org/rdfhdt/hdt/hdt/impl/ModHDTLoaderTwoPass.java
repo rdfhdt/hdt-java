@@ -60,7 +60,7 @@ public class ModHDTLoaderTwoPass implements ModHDTLoader {
 			this.dict = dict;
 			this.listener = listener;
 		}
-		
+
 		@Override
 		public void processTriple(TripleString triple, long pos) {
 			dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT);
@@ -69,12 +69,12 @@ public class ModHDTLoaderTwoPass implements ModHDTLoader {
 			count++;
 			ListenerUtil.notifyCond(listener, "Generating dictionary "+count+" triples processed.", count, 0, 100);
 		}
-		
+
 		public long getCount() {
 			return count;
 		}
 	};
-	
+
 	/**
 	 * Warning: different from HDTConverterOnePass$TripleAppender
 	 * This one uses dict.stringToID, the other uses dict.insert
@@ -98,43 +98,52 @@ public class ModHDTLoaderTwoPass implements ModHDTLoader {
 					dict.stringToId(triple.getSubject(), TripleComponentRole.SUBJECT),
 					dict.stringToId(triple.getPredicate(), TripleComponentRole.PREDICATE),
 					dict.stringToId(triple.getObject(), TripleComponentRole.OBJECT)
-			);
+					);
 			count++;
 			ListenerUtil.notifyCond(listener, "Generating triples "+count+" triples processed.", count, 0, 100);
 		}
 	};
-	
+
 	@Override
 	public ModifiableHDT loadFromRDF(HDTSpecification specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
-		
+
+		if (!new File(filename).exists())
+			throw new RuntimeException("The input file does not exist!");
+		RDFInfo.setSizeInBytes(new File(filename).length(), specs);
+		//TODO setting numberOfLines costs (counting them) but saves memory... what to do??
+
 		// Create Modifiable Instance and parser
 		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri,
 				ModeOfLoading.TWO_PASS);
 		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
 		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();
-		
-        RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
+
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 		DictionaryAppender appender = new DictionaryAppender(dictionary, listener);
-        
+
 		// Load RDF in the dictionary
 		dictionary.startProcessing();
 		parser.doParse(filename, baseUri, notation, appender);
 		dictionary.endProcessing();
-		
-		// Fill the specs with missing properties (disregard possible preset values because these are 100% correct
-													//with no calculation overhead - unlike in one-pass mode)
-		RDFInfo.fillHDTSpecifications(new File(filename).length(), appender.count, specs);
-		
+
+		//no calculation overhead - unlike in one-pass mode
+		RDFInfo.setLines(appender.count, specs);
+		/*FIXME constant used here... not good practice.
+		if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(
+				specs.get("tempTriples.impl"))){
+			((TriplesList)triples).reallocateIfEmpty((int)appender.count);
+		}*/
+
 		// Reorganize IDs before loading triples
 		modHDT.reorganizeDictionary(listener);
-		
+
 		// Load triples (second pass)
 		parser.doParse(filename, baseUri, notation, new TripleAppender2(dictionary, triples, listener));
-		
+
 		//reorganize HDT
 		modHDT.reorganizeTriples(listener);
-		
+
 		return modHDT;
 	}
 

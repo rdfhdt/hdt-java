@@ -228,5 +228,10 @@ public final class TripleID implements Comparable<TripleID> {
 			(predicate==0 ? '?' : 'P') +
 			(object==0    ? '?' : 'O');
 	}
+	
+	/** size of one TripleID in memory */
+	public static int sizeOf(){
+		return 24;
+	}
 
 }

@@ -45,6 +45,7 @@ public class RDFInfo {
 
 	public static final String size_prop = "rdf.sizeInBytes";
 	public static final String lines_prop = "rdf.lines";
+	public static final String compression_prop = "rdf.expectedCompression";
 
 	/**
 	 * Convinient method that counts lines in the given file and writes the info about the
@@ -103,6 +104,13 @@ public class RDFInfo {
 	public static void setLines(long numLines, HDTSpecification specs){
 		specs.setInt(lines_prop, numLines);
 	}
+	
+	/**
+	 * Sets the "rdf.expectedCompression" property, overwrites if existing
+	 */
+	public static void setCompression(float compression, HDTSpecification specs){
+		specs.set(compression_prop, String.format("%.3f", compression));
+	}
 
 	/**
 	 * Gets the "rdf.sizeInBytes" property and returns it if set, otherwise returns null.
@@ -125,12 +133,29 @@ public class RDFInfo {
 		else
 			return null;
 	}
+	
+	/**
+	 * Gets the "rdf.expectedCompression" peoperty is it is set. If not sets it to 0.15 and returns that value.
+	 */
+	public static float getCompression(HDTSpecification specs){
+		float compression = 0;
+		try {
+			compression = Float.parseFloat(specs.get(compression_prop));
+		} catch (NumberFormatException e){
+			System.err.println(compression_prop+" improperly set, using default 0.15");
+			compression = 0.15f; //FIXME fixed default parameter here, not best of practices
+			setCompression(compression, specs);
+		} catch (NullPointerException e){
+			System.err.println(compression_prop+" missing, using default 0.15");
+			compression = 0.15f; //FIXME fixed default parameter here, not best of practices
+			setCompression(compression, specs);
+		}
+		return compression;
+	}
 
 	/**
 	 * Finds the length of file in bytes and counts the number of lines and fills
 	 * the given specs with them using "fillHDTSpecification(long, int, HDTSpecifications)" method.
-	 * 
-	 * @throws RuntimeException - when something happens during reading of the file...
 	 * 
 	 */
 	public static long countLines(File file) throws FileNotFoundException, IOException {

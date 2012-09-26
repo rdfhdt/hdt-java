@@ -52,7 +52,7 @@ public class ProfilingUtil {
 		}
 		else {
 			calcSize = size;
-			str = ""+ calcSize +"GB";
+			str = ""+ calcSize +"B";
 		}
 		return str;
 	}

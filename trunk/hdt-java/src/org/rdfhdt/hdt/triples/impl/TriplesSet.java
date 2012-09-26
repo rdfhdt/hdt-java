@@ -126,7 +126,7 @@ public class TriplesSet implements ModifiableTriples {
 
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*24;
+		return this.getNumberOfElements()*TripleID.sizeOf();
 	}
 
 	@Override

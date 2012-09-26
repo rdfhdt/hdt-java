@@ -46,6 +46,7 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.util.RDFInfo;
 
 public class ModHDTLoaderOnePass implements ModHDTLoader {
@@ -78,11 +79,18 @@ public class ModHDTLoaderOnePass implements ModHDTLoader {
 			throws IOException, ParserException {
 		
 		// Fill the specs with missing properties
-		if (RDFInfo.getLines(specs)!=null) {//if lines set by user believe them
-			RDFInfo.setSizeInBytes(new File(filename).length(), specs);
-		} else {
-			RDFInfo.fillHDTSpecifications(filename, specs); //if lines not set count them and force setting both
+		if (RDFInfo.getLines(specs)==null) {//if lines set by user believe them
+			//FIXME constant used here... not good practice.
+			//Done this way because TriplesSet does not need to know the number of
+			//triples in advance to be memory efficient (and on a billion triples in
+			//nt format it takes around 45 minutes to just count the lines xD)
+			if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(
+					specs.get("tempTriples.impl"))){
+				//count lines and set them
+				RDFInfo.setLines(RDFInfo.countLines(new File(filename)), specs);
+			}
 		}
+		RDFInfo.setSizeInBytes(new File(filename).length(), specs);
 		
 		// Create Modifiable Instance
 		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri, 
