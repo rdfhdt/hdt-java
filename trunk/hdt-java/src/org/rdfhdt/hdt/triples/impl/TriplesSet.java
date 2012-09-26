@@ -83,11 +83,18 @@ public class TriplesSet implements ModifiableTriples {
 	private int numValidTriples;
 
 	/**
-	 * Constructor, given an order to sort by
+	 * Constructor, given an order to sort by.
+	 * 
+	 * This implementation is deprected because it will probably use
+	 * more memory than TriplesList because of the tree structure supporting the
+	 * set, and won't be much more faster:
+	 *  n*O(logn) inserts vs n*O(1) inserts + O(nlogn) sort
+	 * but doesn't support a lot of things in the iterator and resorting is awful.
 	 * 
 	 * @param order
 	 *            The order to sort by
 	 */
+	@Deprecated
 	public TriplesSet(HDTSpecification specification) {
 
 		this.specs = specification;
@@ -332,7 +339,8 @@ public class TriplesSet implements ModifiableTriples {
 	}
 
 	/**
-	 * Iterator implementation to iterate over a TriplesList object
+	 * Iterator implementation to iterate over a TriplesList object.
+	 * Supports on next and hasNext
 	 * 
 	 * @author mario.arias
 	 *

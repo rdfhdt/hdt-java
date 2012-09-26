@@ -185,6 +185,10 @@ public class CacheCalculator {
 					bytes = Xmx - (sizeOfTriplesInMem + (long)(2*compression*sizeOfRDF));
 				}
 			} else if (TriplesFactory.MOD_TRIPLES_IMPL_SET.equals(triplesImpl)){
+				//FIXME - this is bad...
+				// TriplesSet takes more memory than just numTriples*sizeOf(TripleID)
+				// because of the tree structure (treeNode is maybe even bigger than TripleID)
+				System.out.println("Use of TriplesSet with on-disc dictionary DEPRECATED!! Use TriplesList");
 				bytes = Xmx - (sizeOfTriplesInMem + (long)(2*compression*sizeOfRDF));
 			} else
 				throw new RuntimeException("Unknown in-memory triples implementation...");
