@@ -181,7 +181,8 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 	 */
 	@Override
 	public Iterator<? extends CharSequence> getEntries() {
-		return new DiskOrderedIterator();
+		//return new DiskOrderedIterator(); FIXME doesn't work, don't know why, makes no sense... just stops at some random entry...
+		return map_StringToID.keySet().iterator();
 	}
 
 	@Override
@@ -278,8 +279,6 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 			cursorConfig.setKeysOnlyVoid(true);
 			cursor = db_StringToID.openCursor(cursorConfig);
 
-			next = new DatabaseEntry();
-			nextValue = new DatabaseEntry();
 			keyBinding = TupleBinding.getPrimitiveBinding(String.class);
 
 			changed = false;
@@ -302,6 +301,8 @@ public class BerkeleyDictionarySection implements ModifiableDictionarySection {
 		}
 
 		private void load(){
+			next = new DatabaseEntry();
+			nextValue = new DatabaseEntry();
 			OperationStatus status = cursor.getNext(next, nextValue, null); //gets key, and advances
 			if (status!=OperationStatus.SUCCESS){
 				next = null;
