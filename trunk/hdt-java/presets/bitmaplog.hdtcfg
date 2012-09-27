@@ -1,7 +1,7 @@
 #parameters of the input RDF file (optional, if not given can/will be calculated)
 # rdf.sizeInBytes, rdf.lines and rdf.expectedCompression available
-rdf.lines = 6148125
-rdf.expectedCompression = 0.065
+#rdf.lines =
+#rdf.expectedCompression =
 
 #parameters of the HDT
 loader.type = two-pass
@@ -13,6 +13,14 @@ stream.x = <http://purl.org/HDT/hdt#streamLog>
 stream.y = <http://purl.org/HDT/hdt#streamLog>
 stream.z = <http://purl.org/HDT/hdt#streamLog>
 
+#parameters of the temporary dictionary used for building the HDT
+	# type = in-memory|on-disc
+tempDictionary.type = on-disc
+	# impl  = hash if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
+tempDictionary.impl = jdbm
+	# percent of Xmx for cache if "on-disc" (is going to be calculated if not specified)
+tempDictionary.cache = auto
+
 #parameters of the temporary triples used for building the HDT
 	# type = in-memory|on-disc
 tempTriples.type = on-disc
@@ -20,11 +28,3 @@ tempTriples.type = on-disc
 tempTriples.impl = jdbm
 	# percent of Xmx for cache if "on-disc" (is going to be calculated if not specified)
 tempTriples.cache = auto
-
-#parameters of the temporary dictionary used for building the HDT
-	# type = in-memory|on-disc
-tempDictionary.type = on-disc
-	# impl  = hash if "in-memory", or imple = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
-tempDictionary.impl = berkeleyJE
-	# percent of Xmx for cache if "on-disc" (is going to be calculated if not specified)
-tempDictionary.cache = auto

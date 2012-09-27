@@ -89,6 +89,14 @@ public class RDF2HDT implements ProgressListener {
 		}
 		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(rdfType), this);
 		
+		//TODO debug delete from here...
+		System.out.println("triples: "+hdt.getTriples().getNumberOfElements());
+		System.out.println("subjects: "+hdt.getDictionary().getNsubjects());
+		System.out.println("predicates: "+hdt.getDictionary().getNpredicates());
+		System.out.println("objects: "+hdt.getDictionary().getNobjects());
+		System.out.println("shared: "+hdt.getDictionary().getNshared());
+		// ... to here
+		
 		// Dump to HDT file
 		StopWatch sw = new StopWatch();
 		hdt.saveToHDT(hdtOutput, this);
@@ -98,8 +106,8 @@ public class RDF2HDT implements ProgressListener {
 		sw.reset();
 		if(generateIndex) {
 			hdt.loadOrCreateIndex(this);
+			System.out.println("Index generated and saved in: "+sw.stopAndShow());
 		}
-		System.out.println("Index generated and saved in: "+sw.stopAndShow());
 		
 		// Debug all inserted triples
 		//HdtSearch.iterate(hdt, "","","");
