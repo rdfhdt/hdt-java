@@ -140,8 +140,12 @@ public class HDTFactory {
 			loader = new ModHDTLoaderOnePass();
 		} else if (LOADER_TWO_PASS.equals(loaderType)) {
 			loader = new ModHDTLoaderTwoPass();
-		} else {
+		} else if (loaderType==null){
 			System.err.println("Loader type not specified: using two-pass");
+			spec.set("loader.type", LOADER_TWO_PASS);
+			loader = new ModHDTLoaderTwoPass();
+		} else {
+			System.err.println("Unknown loader type specified: using two-pass");
 			spec.set("loader.type", LOADER_TWO_PASS);
 			loader = new ModHDTLoaderTwoPass();
 		}

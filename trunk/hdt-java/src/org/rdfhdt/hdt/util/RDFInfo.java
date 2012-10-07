@@ -27,13 +27,15 @@
 
 package org.rdfhdt.hdt.util;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.RDFParserCallback;
+import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
+import org.rdfhdt.hdt.triples.TripleString;
 
 /**
  * A class for getting basic information about a file
@@ -46,30 +48,6 @@ public class RDFInfo {
 	public static final String size_prop = "rdf.sizeInBytes";
 	public static final String lines_prop = "rdf.lines";
 	public static final String compression_prop = "rdf.expectedCompression";
-
-	/**
-	 * Convinient method that counts lines in the given file and writes the info about the
-	 * length of the file in bytes and the number of lines in the given specs, overwriting if
-	 * they were already set.
-	 * 
-	 * @throws {@link RuntimeException} if something is wrong with the file... 
-	 */
-	public static void fillHDTSpecifications(String filename, HDTSpecification specs) {
-
-		File file = new File(filename);
-		long sizeInBytes = -1;
-		long numLines = -1;
-		try {
-			sizeInBytes = file.length();
-			numLines = countLines(file);
-		} catch (FileNotFoundException e){
-			throw new RuntimeException("File "+filename+" doesn't exist or is not a file or can't be opened.",e);
-		} catch (IOException e){
-			throw new RuntimeException("Unexpected error while reading file "+filename,e);
-		}
-		fillHDTSpecifications(sizeInBytes, numLines, specs);
-
-	}
 
 	/**
 	 * Fills the given HDTSpecification object with the given information about the (RDF)
@@ -126,12 +104,18 @@ public class RDFInfo {
 	/**
 	 * Gets the "rdf.lines" property and returns it if set, otherwise returns null.
 	 */
-	public static Long getLines(HDTSpecification specs){
-		long x = specs.getInt(lines_prop);
-		if (x>0)
-			return x;
-		else
-			return null;
+	public static long getLines(HDTSpecification specs){
+		return specs.getInt(lines_prop);
+	}
+	
+	/**
+	 * Checks if "rdf.lines" property was set by the user
+	 */
+	public static boolean linesSet(HDTSpecification specs){
+		if (specs.get(lines_prop)!=null)
+			return true;
+		else 
+			return false;
 	}
 	
 	/**
@@ -158,16 +142,31 @@ public class RDFInfo {
 	 * the given specs with them using "fillHDTSpecification(long, int, HDTSpecifications)" method.
 	 * 
 	 */
-	public static long countLines(File file) throws FileNotFoundException, IOException {
+	public static long countLines(String filename, RDFParserCallback parser, RDFNotation notation)
+			throws FileNotFoundException, IOException, ParserException {
 
-		long numLines = 0;
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		while(reader.readLine()!=null) {
-			numLines++;
+		TripleCounter triplesCounter = new TripleCounter();
+		
+		parser.doParse(filename, "", notation, triplesCounter);
+
+		return triplesCounter.numTriples;
+	}
+	
+	/**
+	 * Helper class for counting triples in an RDf file using parsers
+	 */
+	public static class TripleCounter implements RDFCallback {
+		
+		public long numTriples = 0;
+		
+		/**
+		 * Overhead is constructing a TripleString object when it is not used,
+		 * but that's the least of the problems of counting triples
+		 */
+		@Override
+		public void processTriple(TripleString triple, long pos) {
+			numTriples++;
 		}
-		reader.close();
-
-		return numLines;
 	}
 
 }

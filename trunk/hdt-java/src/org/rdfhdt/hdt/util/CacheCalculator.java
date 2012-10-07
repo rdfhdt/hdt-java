@@ -160,8 +160,8 @@ public class CacheCalculator {
 		if (sizeOfRDF==null)
 			throw new RuntimeException("Cannot calculate cache if size of input RDF file in bytes is unknown");
 		long sizeOfTriplesInMem = 0;
-		Long numLines = RDFInfo.getLines(specs);
-		if (numLines==null){
+		long numLines = RDFInfo.getLines(specs);
+		if (numLines<=0){
 			sizeOfTriplesInMem = (long)(sizeOfRDF*TripleID.sizeOf()/100.0); //estimating 100 bytes per line of RDF
 		} else {
 			sizeOfTriplesInMem = numLines*TripleID.sizeOf();

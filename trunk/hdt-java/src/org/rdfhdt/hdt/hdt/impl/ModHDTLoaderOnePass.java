@@ -78,27 +78,22 @@ public class ModHDTLoaderOnePass implements ModHDTLoader {
 	public ModifiableHDT loadFromRDF(HDTSpecification specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
 		
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
+		
 		// Fill the specs with missing properties
-		if (RDFInfo.getLines(specs)==null) {//if lines set by user believe them
-			//FIXME constant used here... not good practice.
-			//Done this way because TriplesSet does not need to know the number of
-			//triples in advance to be memory efficient (and on a billion triples in
-			//nt format it takes around 45 minutes to just count the lines xD)
-			if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(
-					specs.get("tempTriples.impl"))){
-				//count lines and set them
-				RDFInfo.setLines(RDFInfo.countLines(new File(filename)), specs);
-			}
+		if (!RDFInfo.linesSet(specs) && 
+				TriplesFactory.MOD_TRIPLES_TYPE_IN_MEM.equals(specs.get("tempTriples.type"))) {
+			//count lines if not user-set and if triples in-mem (otherwise not important info)
+			RDFInfo.setLines(RDFInfo.countLines(filename, parser, notation), specs);
+			//FIXME setting numberOfLines costs (counting them) but saves memory... what to do??
 		}
-		RDFInfo.setSizeInBytes(new File(filename).length(), specs);
+		RDFInfo.setSizeInBytes(new File(filename).length(), specs); //else just get sizeOfRDF
 		
 		// Create Modifiable Instance
 		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri, 
 				ModeOfLoading.ONE_PASS);
 		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
 		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();
-		
-        RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 
         // Load RDF in the dictionary and generate triples
         dictionary.startProcessing();

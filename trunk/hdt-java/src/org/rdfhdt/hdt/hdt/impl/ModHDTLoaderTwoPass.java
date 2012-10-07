@@ -46,6 +46,7 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.util.RDFInfo;
 
 public class ModHDTLoaderTwoPass implements ModHDTLoader {
@@ -107,11 +108,19 @@ public class ModHDTLoaderTwoPass implements ModHDTLoader {
 	@Override
 	public ModifiableHDT loadFromRDF(HDTSpecification specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
+		
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 
-		if (!new File(filename).exists())
-			throw new RuntimeException("The input file does not exist!");
-		RDFInfo.setSizeInBytes(new File(filename).length(), specs);
-		//TODO setting numberOfLines costs (counting them) but saves memory... what to do??
+		// Fill the specs with missing properties
+		if (!RDFInfo.linesSet(specs) && 
+				TriplesFactory.MOD_TRIPLES_TYPE_IN_MEM.equals(specs.get("tempTriples.type"))) {
+			//count lines if not user-set and if triples in-mem (otherwise not important info)
+			RDFInfo.setLines(RDFInfo.countLines(filename, parser, notation), specs);
+			//FIXME setting numberOfLines costs (counting them) but saves memory... what to do??
+			//especially because in two-pass they are counter by DictionaryAppender (but triples object
+			//is instantiated earlier)
+		}
+		RDFInfo.setSizeInBytes(new File(filename).length(), specs); //else just get sizeOfRDF
 
 		// Create Modifiable Instance and parser
 		ModifiableHDT modHDT = HDTFactory.createModifiableHDT(specs, baseUri,
@@ -119,21 +128,10 @@ public class ModHDTLoaderTwoPass implements ModHDTLoader {
 		ModifiableDictionary dictionary = (ModifiableDictionary)modHDT.getDictionary();
 		ModifiableTriples triples = (ModifiableTriples)modHDT.getTriples();
 
-		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-		DictionaryAppender appender = new DictionaryAppender(dictionary, listener);
-
 		// Load RDF in the dictionary
 		dictionary.startProcessing();
-		parser.doParse(filename, baseUri, notation, appender);
+		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary, listener));
 		dictionary.endProcessing();
-
-		//no calculation overhead - unlike in one-pass mode
-		RDFInfo.setLines(appender.count, specs);
-		/*FIXME constant used here... not good practice.
-		if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(
-				specs.get("tempTriples.impl"))){
-			((TriplesList)triples).reallocateIfEmpty((int)appender.count);
-		}*/
 
 		// Reorganize IDs before loading triples
 		modHDT.reorganizeDictionary(listener);

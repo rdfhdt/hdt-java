@@ -77,9 +77,9 @@ public class TriplesList implements ModifiableTriples {
 	public TriplesList(HDTSpecification specification) {
 
 		//precise allocation of the array (minimal memory wasting)
-		Long numTriples = RDFInfo.getLines(specification);
-		numTriples = (numTriples!=null)?numTriples:100;
-		this.arrayOfTriples = new ArrayList<TripleID>(numTriples.intValue());
+		long numTriples = RDFInfo.getLines(specification);
+		numTriples = (numTriples>0)?numTriples:100;
+		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
 
 		//choosing starting(or default) component order
 		String orderStr = specification.get("triples.component.order");
