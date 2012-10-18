@@ -1,21 +1,35 @@
 HDT-Jena
 
-This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. An example on how to do this can be found at hdt-jena/examples/org/rdfhdt/hdtjena/HDTSparql.java
+This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. HDT-Jena depends on the HDT-Java and Jena Libraries.
 
-HDT-Jena depends on the HDT-Java and Jena Libraries.
+######### Commandline scenario example #############
 
-Example usage:
+# First make sure you compiled hdt-java
+$ cd ../hdt-java
+hdt-java $ ant jar
 
-# Compile hdt-java
-hdt-java $ ant
-
-# Generate test file
+# Generate an HDT file using the hdt-java library 
 hdt-java $ ./rdf2hdt.sh data/test.nt data/test.hdt
 
-# Compile hdt-jena
+# Now get to the hdt-jena dir and compile it
 hdt-java $ cd ../hdt-jena
-hdt-java $ ant
+hdt-java $ ant jar
 
-# Launch a SPARQL query against the HDT file.
-hdt-jena $ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
+# Execute SPARQL Query against the file.
+$ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
 
+
+########## Create Jena Model from Java #########
+# Note it needs hdt-lib.jar, hdt-jena.jar and Jena jars.
+# A full example on how to do this can be found at hdt-jena/examples/org/rdfhdt/hdtjena/HDTSparql.java
+
+// Load HDT file using the hdt-java library
+QueryableHDT hdt = HDTFactory.createQueryableHDT();
+hdt.loadFromHDT("path/to/file.hdt", null);
+hdt.loadOrCreateIndex(null);
+
+// Create Jena Model on top of HDT.
+HDTGraph graph = new HDTGraph(hdt);
+Model model = new ModelCom(graph);
+
+// Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
