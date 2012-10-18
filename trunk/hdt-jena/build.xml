@@ -7,14 +7,9 @@
 <project basedir="." default="build" name="hdt-jena">
     <property environment="env"/>
     <property name="hdt-java.location" value="../hdt-java"/>
-    <property name="ECLIPSE_HOME" value="../../../../Applications/Eclipse Indigo"/>
     <property name="debuglevel" value="source,lines,vars"/>
     <property name="target" value="1.6"/>
     <property name="source" value="1.6"/>
-    <path id="JUnit 4.libraryclasspath">
-        <pathelement location="${ECLIPSE_HOME}/plugins/org.junit_4.8.2.v4_8_2_v20110321-1705/junit.jar"/>
-        <pathelement location="${ECLIPSE_HOME}/plugins/org.hamcrest.core_1.1.0.v20090501071000.jar"/>
-    </path>
     <path id="hdt-java.classpath">
         <pathelement location="${hdt-java.location}/bin"/>
         <pathelement location="${hdt-java.location}/lib/commons-codec-1.5.jar"/>
@@ -33,7 +28,6 @@
         <pathelement location="${hdt-java.location}/lib/DBs/BerkeleyDB_JE_5.0.55.jar"/>
         <pathelement location="${hdt-java.location}/lib/DBs/kyotocabinet.jar"/>
         <pathelement location="${hdt-java.location}/lib/DBs/JDBM3_08092012.jar"/>
-        <path refid="JUnit 4.libraryclasspath"/>
     </path>
     <path id="hdt-jena.classpath">
         <pathelement location="bin"/>
@@ -72,6 +66,11 @@
     <target name="clean">
         <delete dir="bin"/>
     </target>
+    <target depends="build" name="jar">
+        <jar destfile="hdt-jena.jar">
+            <fileset dir="bin" />
+        </jar>
+    </target>
     <target depends="clean" name="cleanall">
         <ant antfile="build.xml" dir="${hdt-java.location}" inheritAll="false" target="clean"/>
     </target>
@@ -97,20 +96,6 @@
             <src path="tools"/>
             <classpath refid="hdt-jena.classpath"/>
         </javac>
-    </target>
-    <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
-    <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
-        <copy todir="${ant.library.dir}">
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </copy>
-        <unzip dest="${ant.library.dir}">
-            <patternset includes="jdtCompilerAdapter.jar"/>
-            <fileset dir="${ECLIPSE_HOME}/plugins" includes="org.eclipse.jdt.core_*.jar"/>
-        </unzip>
-    </target>
-    <target description="compile project with Eclipse compiler" name="build-eclipse-compiler">
-        <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
-        <antcall target="build"/>
     </target>
     <target name="HDTSparql" depends="build-project">
         <java classname="org.rdfhdt.hdtjena.HDTSparql" failonerror="true" fork="yes">
