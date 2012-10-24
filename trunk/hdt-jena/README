@@ -33,3 +33,20 @@ HDTGraph graph = new HDTGraph(hdt);
 Model model = new ModelCom(graph);
 
 // Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
+
+
+########## Create SPARQL Endpoing on top of one or more HDT files using Fuseki #########
+# You need to create a fuseki config file specifying which HDT files you want to publish. You need to specify one for the default graph and zero or more named graphs with additional HDT files. You also need to ask fuseki to load the HDT Assembler class:
+
+[]   ja:loadClass "org.rdfhdt.hdtjena.HDTGraphAssembler" .
+
+# An example config file is available at fuseki_example.ttl
+
+# Download Fuseki, and edit the launch script to append hdt-java.jar and hdt-jena.jar to the classpath. Please note that if you use the "java -jar" option it ignores the classpath, so you'll end up with a line like this in your fuseki-server launch script:
+exec java  $JVM_ARGS -classpath "hdt-lib.jar:hdt-jena.jar:$JAR" org.apache.jena.fuseki.FusekiCmd "$@"
+
+# Launch fuseki using:
+$ ./fuseki-server --config=fuseki_example.ttl
+
+# Try on a web browser:
+http://localhost:3030
