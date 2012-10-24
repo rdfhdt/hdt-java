@@ -73,9 +73,9 @@ public abstract class BaseQueryableDictionary extends BaseDictionary implements 
 	@Override
 	public TripleString tripleIDtoTripleString(TripleID tripleID) {
 		return new TripleString(
-				idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT).toString(), 
-				idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE).toString(), 
-				idToString(tripleID.getObject(), TripleComponentRole.OBJECT).toString()
+				idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT), 
+				idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE), 
+				idToString(tripleID.getObject(), TripleComponentRole.OBJECT)
 				);
 	}
 

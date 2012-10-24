@@ -36,9 +36,9 @@ import org.rdfhdt.hdt.util.string.UnicodeEscape;
  */
 public final class TripleString {
 
-	private String subject;
-	private String predicate;
-	private String object;
+	private CharSequence subject;
+	private CharSequence predicate;
+	private CharSequence object;
 	
 	public TripleString() {
 		this.subject = this.predicate = this.object = null; 
@@ -54,7 +54,7 @@ public final class TripleString {
 	 * @param object
 	 *            The object
 	 */
-	public TripleString(String subject, String predicate, String object) {
+	public TripleString(CharSequence subject, CharSequence predicate, CharSequence object) {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
@@ -71,7 +71,7 @@ public final class TripleString {
 	 * @param subject
 	 *            the subject to set
 	 */
-	public void setSubject(String subject) {
+	public void setSubject(CharSequence subject) {
 		this.subject = subject;
 	}
 
@@ -86,7 +86,7 @@ public final class TripleString {
 	 * @param predicate
 	 *            the predicate to set
 	 */
-	public void setPredicate(String predicate) {
+	public void setPredicate(CharSequence predicate) {
 		this.predicate = predicate;
 	}
 
@@ -101,7 +101,7 @@ public final class TripleString {
 	 * @param object
 	 *            the object to set
 	 */
-	public void setObject(String object) {
+	public void setObject(CharSequence object) {
 		this.object = object;
 	}
 	
@@ -111,7 +111,7 @@ public final class TripleString {
 	 * @param predicate
 	 * @param object
 	 */
-	public void setAll(String subject, String predicate, String object) {
+	public void setAll(CharSequence subject, CharSequence predicate, CharSequence object) {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
