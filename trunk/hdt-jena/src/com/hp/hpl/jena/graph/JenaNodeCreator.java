@@ -37,7 +37,7 @@ import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
 public class JenaNodeCreator {
 	public static Node createAnon(CharSequence x) {
 //		return new Node_Blank( AnonId.create(x.toString()) );
-		return new Node_Blank(x);
+		return new Node_Blank(x.toString() );
 	}
 	
 	public static Node createLiteral(CharSequence x) {
@@ -45,6 +45,6 @@ public class JenaNodeCreator {
 	}
 	
 	public static Node createURI(CharSequence x) {
-		return new Node_URI( x );
+		return new Node_URI( x.toString() );
 	}
 }

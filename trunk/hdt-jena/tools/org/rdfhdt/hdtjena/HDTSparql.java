@@ -7,6 +7,7 @@ import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
+import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -19,16 +20,12 @@ public class HDTSparql {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
-		String fileHDT = "";
-		String sparqlQuery = "";
-		QueryableHDT hdt = HDTFactory.createQueryableHDT();
-
-		System.out.println("Len: "+args.length);
 		if (args.length == 2) {
-			fileHDT = args[0];
-			sparqlQuery = args[1];
+			String fileHDT = args[0];
+			String sparqlQuery = args[1];
 
 			// Create HDT
+			QueryableHDT hdt = HDTFactory.createQueryableHDT();
 			hdt.loadFromHDT(fileHDT, null);
 			hdt.loadOrCreateIndex(null);
 
@@ -41,9 +38,13 @@ public class HDTSparql {
 			QueryExecution qe = QueryExecutionFactory.create(query, model);
 			ResultSet results = qe.execSelect();
 
+			/*while(results.hasNext()) {
+				QuerySolution sol = results.nextSolution();
+				System.out.println(sol.toString());
+			}*/
 			// Output query results	
-			ResultSetFormatter.out(System.out, results, query);
-
+			ResultSetFormatter.outputAsCSV(System.out, results);
+			
 			// Close
 			qe.close();
 		} else {

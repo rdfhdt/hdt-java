@@ -124,9 +124,9 @@ public class HDTGraph extends GraphBase {
 			CharSequence subjString = dictionary.idToString(triple.getSubject(), TripleComponentRole.SUBJECT);
 			char subjFirst = subjString.charAt(0); 
 			if(subjFirst=='_') {
-				s = JenaNodeCreator.createAnon(subjString.toString());
+				s = JenaNodeCreator.createAnon(subjString);
 			} else {
-				s = JenaNodeCreator.createURI(subjString.toString());
+				s = JenaNodeCreator.createURI(subjString);
 			}
 			cacheSubject.put(triple.getSubject(), s);
 		}
@@ -134,7 +134,7 @@ public class HDTGraph extends GraphBase {
 		p = cachePredicate.get(triple.getPredicate());
 		if(p==null) {
 			CharSequence subjPredicate = dictionary.idToString(triple.getPredicate(), TripleComponentRole.PREDICATE);
-			p = JenaNodeCreator.createURI(subjPredicate.toString());
+			p = JenaNodeCreator.createURI(subjPredicate);
 			cachePredicate.put(triple.getPredicate(), p);
 		}
 
@@ -143,11 +143,11 @@ public class HDTGraph extends GraphBase {
 			CharSequence subjObject = dictionary.idToString(triple.getObject(), TripleComponentRole.OBJECT);
 			char objFirst = subjObject.charAt(0); 
 			if(objFirst=='_') {
-				o = JenaNodeCreator.createAnon(subjObject.toString());
+				o = JenaNodeCreator.createAnon(subjObject);
 			} else if(objFirst=='"') {
-				o = JenaNodeCreator.createLiteral(subjObject.toString());
+				o = JenaNodeCreator.createLiteral(subjObject);
 			} else {
-				o = JenaNodeCreator.createURI(subjObject.toString());
+				o = JenaNodeCreator.createURI(subjObject);
 			}
 			cacheObject.put(triple.getObject(), o);
 		}
