@@ -238,6 +238,11 @@ public class LogArray64 implements DynamicArray {
 	public void trimToSize() {
 		resizeArray((int)numWordsFor(numbits, numentries));
 	}
+	
+	public void resize(long numentries) {
+		this.numentries = numentries;
+		resizeArray((int)numWordsFor(numbits, numentries));	
+	}
 
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#getNumberOfElements()

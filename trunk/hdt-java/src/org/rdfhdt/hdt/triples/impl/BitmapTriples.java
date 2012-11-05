@@ -58,6 +58,8 @@ import org.rdfhdt.hdt.triples.ModifiableTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -501,6 +503,150 @@ public class BitmapTriples implements Triples {
 //			}
 		}
 
+	private void createIndexObjectMemoryEfficient() {
+		StopWatch global = new StopWatch();
+		StopWatch st = new StopWatch();
+
+		// Count the number of appearances of each object
+		LogArray64 objectCount = new LogArray64(BitUtil.log2(arrayZ.getNumberOfElements()));
+		long maxCount = 0;
+		for(long i=0;i<arrayZ.getNumberOfElements(); i++) {
+			long val = arrayZ.get(i);
+			if(val==0) {
+				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
+			}
+			if(objectCount.getNumberOfElements()<val) {
+				objectCount.resize(val);
+			}
+			long count = objectCount.get(val-1)+1;
+			maxCount = count>maxCount ? count : maxCount;
+			objectCount.set(val-1, count);
+		}
+		System.out.println("Count Objects in " + st.stopAndShow() + " Max was: " + maxCount);
+		st.reset();
+
+		// Calculate bitmap that separates each object sublist.
+		BitSequence375 bitmapIndex = new BitSequence375(arrayZ.getNumberOfElements());
+		long tmpCount=0;
+		for(long i=0;i<objectCount.getNumberOfElements();i++) {
+			tmpCount += objectCount.get(i);
+			bitmapIndex.set(tmpCount-1, true);
+		}
+		bitmapIndex.set(arrayZ.getNumberOfElements()-1, true);
+		System.out.println("Bitmap in " + st.stopAndShow());
+		objectCount=null;
+		st.reset();
+
+		// Copy each object reference to its position
+		LogArray64 objectInsertedCount = new LogArray64(BitUtil.log2(maxCount), bitmapIndex.countOnes());
+		objectInsertedCount.resize(bitmapIndex.countOnes());
+
+		LogArray64 objectArray = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()), arrayZ.getNumberOfElements());
+		objectArray.resize(arrayZ.getNumberOfElements());
+
+		for(long i=0;i<arrayZ.getNumberOfElements(); i++) {
+				long objectValue = arrayZ.get(i);
+				long posY = i>0 ?  bitmapZ.rank1(i-1) : 0;
+
+				long insertBase = objectValue==1 ? 0 : bitmapIndex.select1(objectValue-1)+1;
+				long insertOffset = objectInsertedCount.get(objectValue-1);
+				objectInsertedCount.set(objectValue-1, insertOffset+1);
+
+				objectArray.set(insertBase+insertOffset, posY);
+		}
+		System.out.println("Object references in " + st.stopAndShow());
+		objectInsertedCount=null;
+		st.reset();
+
+		
+		long object=1;
+		long first = 0;
+		long last = bitmapIndex.select1(object)+1;
+		do {
+			long listLen = last-first;
+
+			// Sublists of one element do not need to be sorted.
+
+			// Hard-coded size-2 for speed (They are quite common).
+			if(listLen==2) {
+				long aPos = objectArray.get(first);
+				long a = arrayY.get(aPos);
+				long bPos = objectArray.get(last);
+				long b = arrayY.get(bPos);
+				if(a>b) {
+					objectArray.set(first, bPos);
+					objectArray.set(last, aPos);
+				}
+			} else if(listLen>2) {
+				class Pair {
+					int valueY;
+					int positionY;
+				};
+				
+				// FIXME: Sort directly without copying?
+				ArrayList<Pair> list=new ArrayList<Pair>((int)listLen);
+
+				// Create temporary list of (position, predicate)
+				for(long i=first; i<last;i++) {
+					Pair p = new Pair();
+					p.positionY=(int)objectArray.get(i);
+					p.valueY=(int)arrayY.get(p.positionY);
+					list.add(p);
+				}
+
+				// Sort
+				Collections.sort(list, new Comparator<Pair>() {
+					@Override
+					public int compare(Pair o1, Pair o2) {
+						if(o1.valueY==o2.valueY) {
+							return o1.positionY-o2.positionY;
+						}
+						return o1.valueY-o2.valueY;
+					}
+				});
+				
+				// Copy back
+				for(long i=first; i<last;i++) {
+					objectArray.set(i, list.get((int)(i-first)).positionY);
+				}
+			}
+
+			first = last;
+			last = bitmapIndex.select1(object)+1;
+			object++;
+		} while(object<=bitmapIndex.countOnes());
+
+		System.out.println("Sort object sublists in "+st.stopAndShow());
+		st.reset();
+
+		// Count predicates
+		/*LogArray64 predCount = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()));
+		for(long i=0;i<arrayY.getNumberOfElements(); i++) {
+			// Read value
+			long val = arrayY.get(i);
+
+			// Grow if necessary
+			if(predCount.getNumberOfElements()<val) {
+				predCount.resize(val);
+			}
+
+			// Increment
+			//predCount.set(val-1, predCount.get(val-1)+1);
+			predCount.increment(val-1);
+		}
+		predCount.trimToSize();
+		System.out.println("Count predicates in "+st.stopAndShow());
+		this.predicateCount = predCount;
+		st.reset();*/
+
+		// Save Object Index
+		this.indexZ = objectArray;
+		this.bitmapIndexZ = bitmapIndex;
+		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
+		
+		System.out.println("Index generated in "+global.stopAndShow());
+	}
+	
 	private void createIndexObjects() {
 		// FIXME: Very memory inefficient. Think of a better way.
 		class Pair {
@@ -587,7 +733,8 @@ public class BitmapTriples implements Triples {
 	
 	public void generateIndex(ProgressListener listener) {		
 //		createIndexPredicates();
-		createIndexObjects();
+		//createIndexObjects();
+		createIndexObjectMemoryEfficient();	
 	}
 
 	/* (non-Javadoc)
