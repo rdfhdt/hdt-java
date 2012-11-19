@@ -20,24 +20,22 @@ Dependencies for searching:
 The HDT library itself does not have any dependency to load and search HDT files, you just need to include the generated jar. 
 
 Dependencies for converting:
+The commandline tools use JCommander for parsing the arguments.
 For parsing RDF files (in NTriples, Turtle, N3, RDF-XML...) you will need Jena RIOT.
 If you need to convert very big RDF Files, you can use BerkeleyDB, KyotoCabinet or JDBM to save intermediate data on disk. 
-The commandline tools use JCommander for parsing the arguments.
 
 Command line tools
 =================
 
 The tool provides three main command line tools:
 
-** The tool rdf2hdt converts an RDF file to HDT format. The format of the input file will be NTriples by default, altough it can be set by using the "-f" flag. 
+** The tool rdf2hdt converts an RDF file to HDT format. The format of the input file will be NTriples by default, although it can be set by using the "-rdftype" flag. 
 
-$ Usage: ./rdf2hdt.sh [options] Files
+$ Usage: ./rdf2hdt.sh [options] <RDF file> <HDT file>
   Options:
     -base      Base URI for the dataset
     -config    Conversion config file
-    -input     Input RDF file name
     -options   HDT Conversion options
-    -output    Output HDT file name
     -rdftype   Type of RDF Input (ntriples, n3, rdfxml)
 
 
@@ -45,8 +43,6 @@ $ Usage: ./rdf2hdt.sh [options] Files
 
 $ hdt2rdf [options] <HDT input file> <RDF output file> 
 	-h			This help
-	-f	<format>	RDF Format of the output
-
 
 ** The tool hdtSearch allows to search triple patterns against an HDT file. For example, to list all patterns, one can use the "? ? ?" query. To search all information about <myns:subject1> one can use "<myns:subject1> ? ?"
 
