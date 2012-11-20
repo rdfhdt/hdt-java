@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
 import org.rdfhdt.hdt.util.BitUtil;
 
 @RunWith(Parameterized.class)
@@ -22,7 +23,7 @@ public class LogArray64Test {
 
 	private int numbits;
 	private static final int numentries = 10000;
-	LogArray64 array;
+	SequenceLog64 array;
 	long [] plain;
 	
 	@Parameters
@@ -48,7 +49,7 @@ public class LogArray64Test {
 		plain = new long[numentries];
 		
 		long max = BitUtil.maxVal(numbits);
-		array = new LogArray64(numbits, numentries);
+		array = new SequenceLog64(numbits, numentries);
 
 		for(int k=0;k<numentries;k++) {
 			long value = Math.abs(r.nextLong())%max;
@@ -105,7 +106,7 @@ public class LogArray64Test {
 
 			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
-			LogArray64 loaded = new LogArray64();
+			SequenceLog64 loaded = new SequenceLog64();
 			loaded.load(in, null);
 
 			assertEquals("Save/Load different number of elements", array.getNumberOfElements(), loaded.getNumberOfElements());

@@ -28,7 +28,7 @@
 package org.rdfhdt.hdt.rdf;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.rdf.parsers.RDFParserJena;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 
@@ -47,6 +47,6 @@ public class RDFParserFactory {
 			return new RDFParserRIOT();
 		}
 		
-		return new RDFParserJena();
+		throw new NotImplementedException("Parser not found for notation: "+notation);
 	}
 }

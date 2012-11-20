@@ -27,9 +27,9 @@
 
 package org.rdfhdt.hdt.examples;
 
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 /**
@@ -39,15 +39,12 @@ import org.rdfhdt.hdt.triples.TripleString;
 public class ExampleSearch {
 
 	public static void main(String[] args) throws Exception {
-		// Load HDT file
-		QueryableHDT hdt = HDTFactory.createQueryableHDT();
-		hdt.loadFromHDT("data/example.hdt", null);
-
-		// Recommended: Generate index to speed up ?P? ?PO and ??O queries.
-		hdt.loadOrCreateIndex(null);
-
+		// Load HDT file NOTE: Use loadIndexedHDT() if you are doing ?P?, ?PO, ??O queries
+		HDT hdt = HDTManager.loadHDT("data/example.hdt", null);
+		
 		// Search pattern: Empty string means "any"
 		IteratorTripleString it = hdt.search("", "", "");
+		System.out.println("Estimated number of results: "+it.estimatedNumResults());
 		while(it.hasNext()) {
 			TripleString ts = it.next();
 			System.out.println(ts);

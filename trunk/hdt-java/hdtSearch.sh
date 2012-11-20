@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -server -Xms512M -Xmx512M -classpath 'bin:lib/*' org.rdfhdt.hdt.tools.HdtSearch $*
+java -server -Xmx3500M -classpath 'bin:lib/*' org.rdfhdt.hdt.tools.HdtSearch $*

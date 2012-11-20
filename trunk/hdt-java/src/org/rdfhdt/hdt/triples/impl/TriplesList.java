@@ -40,24 +40,24 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
-import org.rdfhdt.hdt.listener.ListenerUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.ControlInformation;
-import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.ModifiableTriples;
+import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.RDFInfo;
+import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 
 /**
- * Implementation of ModifiableTriples. This is a iterable structure.
+ * Implementation of TempTriples using a List of TripleID.
  * 
  */
-public class TriplesList implements ModifiableTriples {
+public class TriplesList implements TempTriples {
 
 	/** The array to hold the triples */
 	private ArrayList<TripleID> arrayOfTriples;
@@ -74,7 +74,7 @@ public class TriplesList implements ModifiableTriples {
 	 * @param order
 	 *            The order to sort by
 	 */
-	public TriplesList(HDTSpecification specification) {
+	public TriplesList(HDTOptions specification) {
 
 		//precise allocation of the array (minimal memory wasting)
 		long numTriples = RDFInfo.getLines(specification);
@@ -99,8 +99,9 @@ public class TriplesList implements ModifiableTriples {
 		if (arrayOfTriples.isEmpty()) {
 			arrayOfTriples = new ArrayList<TripleID>(numTriples);
 			return true;
-		} else
+		} else {
 			return false;
+		}
 	}
 
 	/*
@@ -144,7 +145,7 @@ public class TriplesList implements ModifiableTriples {
 	 */
 	@Override
 	public long size() {
-		return this.getNumberOfElements()*TripleID.sizeOf();
+		return this.getNumberOfElements()*TripleID.size();
 	}
 
 
@@ -154,11 +155,11 @@ public class TriplesList implements ModifiableTriples {
 	 * @see hdt.triples.Triples#save(java.io.OutputStream)
 	 */
 	@Override
-	public void save(OutputStream output, ControlInformation controlInformation, ProgressListener listener) throws IOException {
+	public void save(OutputStream output, ControlInfo controlInformation, ProgressListener listener) throws IOException {
 		controlInformation.clear();
 		controlInformation.setInt("numTriples", numValidTriples);
-		controlInformation.set("codification", HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
-		controlInformation.setInt("componentOrder", order.ordinal());
+		controlInformation.setFormat(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST);
+		controlInformation.setInt("order", order.ordinal());
 		controlInformation.save(output);
 
 		DataOutputStream dout = new DataOutputStream(output);
@@ -180,8 +181,8 @@ public class TriplesList implements ModifiableTriples {
 	 * @see hdt.triples.Triples#load(java.io.InputStream)
 	 */
 	@Override
-	public void load(InputStream input, ControlInformation controlInformation, ProgressListener listener) throws IOException {
-		order = TripleComponentOrder.values()[(int)controlInformation.getInt("componentOrder")];
+	public void load(InputStream input, ControlInfo controlInformation, ProgressListener listener) throws IOException {
+		order = TripleComponentOrder.values()[(int)controlInformation.getInt("order")];
 		long totalTriples = controlInformation.getInt("numTriples");
 
 		int numRead=0;
@@ -200,10 +201,10 @@ public class TriplesList implements ModifiableTriples {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.Triples#load(hdt.triples.ModifiableTriples)
+	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples)
 	 */
 	@Override
-	public void load(ModifiableTriples input, ProgressListener listener) {
+	public void load(TempTriples input, ProgressListener listener) {
 		IteratorTripleID iterator = input.searchAll();
 		while (iterator.hasNext()) {
 			arrayOfTriples.add(iterator.next());
@@ -233,7 +234,7 @@ public class TriplesList implements ModifiableTriples {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.ModifiableTriples#insert(hdt.triples.TripleID[])
+	 * @see hdt.triples.TempTriples#insert(hdt.triples.TripleID[])
 	 */
 	@Override
 	public boolean insert(TripleID... triples) {
@@ -246,7 +247,7 @@ public class TriplesList implements ModifiableTriples {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.ModifiableTriples#insert(int, int, int)
+	 * @see hdt.triples.TempTriples#insert(int, int, int)
 	 */
 	@Override
 	public boolean insert(int subject, int predicate, int object) {
@@ -269,7 +270,7 @@ public class TriplesList implements ModifiableTriples {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.ModifiableTriples#delete(hdt.triples.TripleID[])
+	 * @see hdt.triples.TempTriples#delete(hdt.triples.TripleID[])
 	 */
 	@Override
 	public boolean remove(TripleID... patterns) {
@@ -291,7 +292,7 @@ public class TriplesList implements ModifiableTriples {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.ModifiableTriples#sort(datatypes.TripleComponentOrder)
+	 * @see hdt.triples.TempTriples#sort(datatypes.TripleComponentOrder)
 	 */
 	@Override
 	public void sort(ProgressListener listener) {
@@ -362,15 +363,13 @@ public class TriplesList implements ModifiableTriples {
 	}
 
 	@Override
-	public void loadIndex(InputStream input, ControlInformation ci,
-			ProgressListener listener) throws IOException {
+	public void loadIndex(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@Override
-	public void saveIndex(OutputStream output, ControlInformation ci,
-			ProgressListener listener) throws IOException {
+	public void saveIndex(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
 		// TODO Auto-generated method stub
 
 	}

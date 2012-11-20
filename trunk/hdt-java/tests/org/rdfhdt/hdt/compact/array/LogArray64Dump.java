@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.compact.array;
 
 import java.io.FileOutputStream;
 
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
 import org.rdfhdt.hdt.util.BitUtil;
 
 public class LogArray64Dump {
@@ -17,7 +18,7 @@ public class LogArray64Dump {
 	public static void main(String[] args) throws Throwable {
 		int num = 100;
 		System.out.println("Bits: "+BitUtil.log2(num)+" Num: "+num);
-		LogArray64 arr = new LogArray64(BitUtil.log2(num), num);
+		SequenceLog64 arr = new SequenceLog64(BitUtil.log2(num), num);
 		for(int i=0;i<num;i++) {
 			arr.append(i);
 		}

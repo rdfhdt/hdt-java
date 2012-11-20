@@ -27,12 +27,12 @@
 
 package org.rdfhdt.hdt.util.string;
 
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-
-import java.io.DataOutput;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
+
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
 /**
  * @author mario.arias
@@ -196,8 +196,8 @@ public class ByteStringUtil {
 		System.arraycopy(bytes, start, buffer, bufpos, len - start);
 		return len - start;		
 	}
-	
-	public static int append(DataOutput out, CharSequence str, int start) throws IOException {
+
+	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
 		byte [] bytes;
 		int len;
 		if(str instanceof String) {

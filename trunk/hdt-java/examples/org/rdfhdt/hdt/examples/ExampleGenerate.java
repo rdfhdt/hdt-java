@@ -29,7 +29,7 @@ package org.rdfhdt.hdt.examples;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
@@ -46,8 +46,7 @@ public class ExampleGenerate {
 		String hdtOutput = "/path/to/dataset.hdt";
 		
 		// Create HDT from RDF file
-		HDTSpecification spec = new HDTSpecification();
-		HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(inputType), null);
+		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
 		
 		// Save generated HDT to a file
 		hdt.saveToHDT(hdtOutput, null);

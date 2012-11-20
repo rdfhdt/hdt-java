@@ -57,15 +57,13 @@ public class HDTSpecification extends HDTOptionsBase {
 	}
 
 	public void load(String filename) throws IOException {
-		FileInputStream fin = null;
+		FileInputStream	fin = new FileInputStream(filename);
 		try {
-			fin = new FileInputStream(filename);
 			properties.load(fin);
+		} finally {
 			fin.close();
-		} catch (IOException e) {
-			try {fin.close();} catch (IOException ignorable) {/*ignorable*/}
-			throw e;
 		}
+
 	}
 
 }

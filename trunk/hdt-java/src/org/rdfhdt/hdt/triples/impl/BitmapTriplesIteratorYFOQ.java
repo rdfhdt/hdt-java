@@ -27,12 +27,12 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import org.rdfhdt.hdt.compact.array.DeflateIntegerIterator;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
+import org.rdfhdt.hdt.compact.sequence.DeflateIntegerIterator;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -40,7 +40,7 @@ import org.rdfhdt.hdt.triples.TripleID;
  * Iterates over all Y components of a BitmapTriples. 
  * i.e. In SPO it would iterate over all appearances of a predicate ?P?
  * 
- * @author mck
+ * @author mario.arias
  *
  */
 public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
@@ -66,8 +66,8 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 				throw new IllegalArgumentException("This structure is not meant to process this pattern");
 			}
 			
-			adjY = new AdjacencyList(triples.arrayY, triples.bitmapY);
-			adjZ = new AdjacencyList(triples.arrayZ, triples.bitmapZ);
+			adjY = new AdjacencyList(triples.seqY, triples.bitmapY);
+			adjZ = new AdjacencyList(triples.seqZ, triples.bitmapZ);
 			
 			index = new DeflateIntegerIterator(triples.indexYBuffers);
 					

@@ -20,18 +20,18 @@ Dependencies for searching:
 The HDT library itself does not have any dependency to load and search HDT files, you just need to include the generated jar. 
 
 Dependencies for converting:
-The commandline tools use JCommander for parsing the arguments.
 For parsing RDF files (in NTriples, Turtle, N3, RDF-XML...) you will need Jena RIOT.
-If you need to convert very big RDF Files, you can use BerkeleyDB, KyotoCabinet or JDBM to save intermediate data on disk. 
+The commandline tools use JCommander for parsing the arguments.
+
 
 Command line tools
-=================
+==================
 
 The tool provides three main command line tools:
 
-** The tool rdf2hdt converts an RDF file to HDT format. The format of the input file will be NTriples by default, although it can be set by using the "-rdftype" flag. 
-
-$ Usage: ./rdf2hdt.sh [options] <RDF file> <HDT file>
+** The tool rdf2hdt converts an RDF file to HDT format. The format of the input file will be NTriples by default, although it can be set by using the "-f" flag.
+** NOTE: rdf2hdt decompresses on the fly input files that end with ".gz".
+$ Usage: rdf2hdt [options] <Input RDF> <Output HDT>
   Options:
     -base      Base URI for the dataset
     -config    Conversion config file
@@ -40,31 +40,36 @@ $ Usage: ./rdf2hdt.sh [options] <RDF file> <HDT file>
 
 
 ** The tool hdt2rdf converts an HDT file back to RDF in NTriples format.
+$ hdt2rdf <HDT input file> <RDF output file> 
 
-$ hdt2rdf [options] <HDT input file> <RDF output file> 
-	-h			This help
 
 ** The tool hdtSearch allows to search triple patterns against an HDT file. For example, to list all patterns, one can use the "? ? ?" query. To search all information about <myns:subject1> one can use "<myns:subject1> ? ?"
+$ hdtSearch <HDT File> 
 
-$ hdtSearch [options] <hdtfile> 
-	-h			This help
-	-q	<query>	Launch query and exit.
-	-o	<output>	Save query output to file.
 
+** The tool hdtInfo extracts the header from an HDT file.
+$ hdtInfo <HDT File>
 
 
 Tool Usage example
-=================
+==================
 
 After installation, run:
 
-$ tools/rdf2hdt data/test.nt data/test.hdt
-# This creates the HDT representation
+# To convert an RDF file to HDT
+$ rdf2hdt -base "http://example.org/test" data/test.nt data/test.hdt
 
-$ tools/hdt2rdf data/test.hdt data/test.hdtexport.nt
-# This converts back the HDT to RDF.
+# To extract the Header of the generated HDT
+$ hdtInfo data/test.hdt
+<http://example.org/test> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> "<http://purl.org/HDT/hdt#Dataset>" .
+<http://example.org/test> <http://rdfs.org/ns/void#triples> "10" .
+.....
 
-$ tools/hdtSearch data/test.hdt
+# To convert back the HDT to RDF.
+$ hdt2rdf data/test.hdt data/test.hdtexport.nt
+
+# To search against an HDT file.
+$ hdtSearch data/test.hdt
 
 >> ? ? ?
 <http://example.org/uri3> <http://example.org/predicate3> <http://example.org/uri4>
@@ -100,21 +105,16 @@ public static void main(String[] args) throws Exception {
 	String hdtOutput = "/path/to/dataset.hdt";
 	
 	// Create HDT from RDF file
-	HDTSpecification spec = new HDTSpecification();
-	HDT hdt = HDTFactory.createHDTFromRDF(spec, rdfInput, baseURI, RDFNotation.parse(inputType), null);
+	HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
 	
 	// Save generated HDT to a file
 	hdt.saveToHDT(hdtOutput, null);
 }
 
-// Load an HDT and perform a search.
+// Load an HDT and perform a search. (examples/ExampleSearch.java)
 public static void main(String[] args) throws Exception {
-	// Load HDT file
-	QueryableHDT hdt = HDTFactory.createQueryableHDT();
-	hdt.loadFromHDT("data/example.hdt", null);
-
-	// Recommended: Generate index to speed up ?P? ?PO and ??O queries.
-	hdt.loadOrCreateIndex(null);
+	// Load HDT file. NOTE: Use loadIndexedHDT() if you are doing ?P?, ?PO or ??O queries
+	HDT hdt = HDTManager.loadHDT("data/example.hdt", null);
 
 	// Search pattern: Empty string means "any"
 	IteratorTripleString it = hdt.search("", "", "");

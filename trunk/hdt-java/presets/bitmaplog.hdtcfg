@@ -14,17 +14,17 @@ stream.y = <http://purl.org/HDT/hdt#streamLog>
 stream.z = <http://purl.org/HDT/hdt#streamLog>
 
 #parameters of the temporary dictionary used for building the HDT
-	# type = in-memory|on-disc
-tempDictionary.type = on-disc
-	# impl  = hash if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
+	# type = in-memory|on-disk
+tempDictionary.type = on-disk
+	# impl  = hash if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disk"
 tempDictionary.impl = jdbm
-	# memory for cache if "on-disc", can be specified as <number><K|k|M|m|G|g> (is going to be calculated if "auto" or not specified)
+	# memory for cache if "on-disk", can be specified as <number><K|k|M|m|G|g> (is going to be calculated if "auto" or not specified)
 tempDictionary.cache = auto
 
 #parameters of the temporary triples used for building the HDT
-	# type = in-memory|on-disc
-tempTriples.type = on-disc
-	# impl  = list|set if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disc"
+	# type = in-memory|on-disk
+tempTriples.type = on-disk
+	# impl  = list|set if "in-memory", or impl = jdbm|berkeleyJE|berkeley|kyoto if "on-disk"
 tempTriples.impl = jdbm
-	# memory for cache if "on-disc", can be specified as <number><K|k|M|m|G|g> (is going to be calculated if "auto" or not specified)
+	# memory for cache if "on-disk", can be specified as <number><K|k|M|m|G|g> (is going to be calculated if "auto" or not specified)
 tempTriples.cache = auto

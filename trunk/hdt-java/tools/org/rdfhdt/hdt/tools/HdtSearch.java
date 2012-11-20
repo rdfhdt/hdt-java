@@ -32,11 +32,10 @@ import java.io.InputStreamReader;
 import java.util.List;
 
 import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
 
@@ -50,16 +49,19 @@ import com.beust.jcommander.internal.Lists;
  *
  */
 public class HdtSearch implements ProgressListener {
-	@Parameter(description = "Files")
+	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names = "-input", description = "Input HDT file name")
 	public String hdtInput = null;	
 	
-	protected static void iterate(QueryableHDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
+	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
 		StopWatch iterateTime = new StopWatch();
 		try {
 			int count = 0;
+			
+			subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
+			predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
+			object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
 			
 			// Iterate over triples as Strings
 			IteratorTripleString it = hdt.search(subject,predicate,object);
@@ -71,9 +73,10 @@ public class HdtSearch implements ProgressListener {
 			}
 			
 			// Iterate over triples only as IDs
-//			IteratorTripleID it = hdt.getTriples().search(hdt.getDictionary().tripleStringtoTripleID(new TripleString(subject, predicate, object)));
-//			while(it.hasNext()) {
-//				TripleID triple = it.next();
+//			TripleID patternID = DictionaryUtil.tripleStringtoTripleID(hdt.getDictionary(), new TripleString(subject, predicate, object));
+//			IteratorTripleID it2 = hdt.getTriples().search(patternID);
+//			while(it2.hasNext()) {
+//				TripleID triple = it2.next();
 //				System.out.println(triple);
 //				count++;
 //			}
@@ -86,26 +89,23 @@ public class HdtSearch implements ProgressListener {
 	
 	public void execute() throws ParserException, IOException {
 		
-		QueryableHDT hdt = HDTFactory.createQueryableHDT(new HDTSpecification());
-		hdt.loadFromHDT(hdtInput, this);
-		hdt.loadOrCreateIndex(this);
+		HDT hdt = HDTManager.loadIndexedHDT(hdtInput, this);
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		TripleString cmd = new TripleString();
-		
-		// FIXME: Implement everything that the README says it does
 		
 		while(true) {
 			System.out.print("> ");
 			System.out.flush();
 			String line=in.readLine();
 			if(line==null || line.equals("exit") || line.equals("quit")) {
-				System.exit(0);
+				break;
 			}
 			if(line.equals("help")) {
 				System.out.println("HELP:");
 				System.out.println("Please write Triple Search Pattern, using '?' for wildcards. e.g ");
 				System.out.println("   http://www.somewhere.com/mysubject ? ?");
+				System.out.println("Use 'exit' or 'quit' to terminate interactive shell.");
 				continue;
 			}
 			
@@ -114,6 +114,8 @@ public class HdtSearch implements ProgressListener {
 			
 			iterate(hdt,cmd.getSubject(),cmd.getPredicate(),cmd.getObject());
 		}
+		
+		in.close();
 	}
 	
 	/* (non-Javadoc)
@@ -127,14 +129,14 @@ public class HdtSearch implements ProgressListener {
 	public static void main(String[] args) throws Throwable {
 		HdtSearch hdtSearch = new HdtSearch();
 		JCommander com = new JCommander(hdtSearch, args);
-		
-		try {
-			if (hdtSearch.hdtInput==null)
-				hdtSearch.hdtInput = hdtSearch.parameters.get(0);
-		} catch (Exception e){
+		com.setProgramName("hdtSearch");
+
+		if(hdtSearch.parameters.size()!=1) {
 			com.usage();
 			System.exit(1);
 		}
+		
+		hdtSearch.hdtInput = hdtSearch.parameters.get(0);
 		
 		hdtSearch.execute();
 	}

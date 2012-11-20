@@ -27,21 +27,22 @@
 
 package org.rdfhdt.hdt.rdf.parsers;
 
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.rdf.RDFParserCallback;
-import org.rdfhdt.hdt.triples.TripleString;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 import org.openjena.atlas.lib.Sink;
 import org.openjena.riot.RiotReader;
 import org.openjena.riot.lang.LangNTriples;
 import org.openjena.riot.lang.LangRDFXML;
 import org.openjena.riot.lang.LangTurtle;
+import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.rdf.RDFParserCallback;
+import org.rdfhdt.hdt.triples.TripleString;
 
 import com.hp.hpl.jena.graph.Triple;
 
@@ -60,7 +61,12 @@ public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
 	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		this.callback = callback;
 		try {
-			InputStream input = new BufferedInputStream(new FileInputStream(fileName));
+			InputStream input;
+			if(fileName.endsWith(".gz")) {
+				input = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
+			} else {
+				input = new BufferedInputStream(new FileInputStream(fileName));
+			}
 			switch(notation) {
 				case NTRIPLES:
 					LangNTriples langNtriples = RiotReader.createParserNTriples(input,this);
@@ -75,7 +81,7 @@ public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
 					langTurtle.parse();
 					break;
 				default:
-					throw new ParserException();	
+					throw new NotImplementedException("Parser not found for format "+notation);	
 			}
 		} catch (FileNotFoundException e) {
 			throw new ParserException();
@@ -106,8 +112,8 @@ public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
 	 * @see org.openjena.atlas.lib.Sink#send(java.lang.Object)
 	 */
 	@Override
-	public void send(Triple quad) {
-		triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
+	public void send(Triple parsedTriple) {
+		triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
 		callback.processTriple(triple, 0);
 	}
 

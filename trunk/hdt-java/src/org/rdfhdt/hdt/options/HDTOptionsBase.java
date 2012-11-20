@@ -60,7 +60,7 @@ public class HDTOptionsBase implements HDTOptions {
 	
 	public void setOptions(String options) {
 		for(String item : options.split(";")) {
-			int pos = item.indexOf(':');
+			int pos = item.indexOf('=');
 			if(pos!=-1) {
 				String property = item.substring(0, pos);
 				String value = item.substring(pos+1);

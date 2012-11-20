@@ -27,12 +27,29 @@
 
 package org.rdfhdt.hdt.compact.bitmap;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+
 /**
  * @author mario.arias
  *
  */
 public class BitmapFactory {
+	public static final byte TYPE_BITMAP_PLAIN = 1;
+	
 	public static Bitmap createBitmap(String type) {
-		return new BitSequence375();
+		return new Bitmap375();
+	}
+	
+	public static Bitmap createBitmap(InputStream input) throws IOException {
+		input.mark(1);
+		int value = input.read();
+		input.reset();
+		if(value==TYPE_BITMAP_PLAIN) {
+			return new Bitmap375();
+		}
+		throw new IllegalFormatException("Implementation not found for Bitmap with code "+value);
 	}
 }

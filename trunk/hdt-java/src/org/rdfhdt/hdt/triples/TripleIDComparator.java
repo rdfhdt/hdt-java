@@ -39,17 +39,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
  * 
  */
 public class TripleIDComparator implements Comparator<TripleID>, Serializable {
-	/** for the purpose of serialization... automatically generated */
 	private static final long serialVersionUID = -8322949509663015732L;
-	/** method for serialization of an instance of this class as specified by Serializable */
-	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-		out.defaultWriteObject();
-	}
-	/** method for deserialization of an instance of this class as specified by Serializable */
-	private void readObject(java.io.ObjectInputStream in) 
-			throws IOException, ClassNotFoundException {
-		in.defaultReadObject();
-	}
 	
 	/** Determines the order of comparison */
 	private TripleComponentOrder order;
@@ -166,5 +156,15 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 			// the first component is different
 			return result;
 		}
+	}
+	
+	/** method for serialization of an instance of this class as specified by Serializable */
+	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
+		out.defaultWriteObject();
+	}
+	/** method for deserialization of an instance of this class as specified by Serializable */
+	private void readObject(java.io.ObjectInputStream in) 
+			throws IOException, ClassNotFoundException {
+		in.defaultReadObject();
 	}
 }

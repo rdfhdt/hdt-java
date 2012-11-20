@@ -35,40 +35,40 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.rdfhdt.hdt.compact.array.ArrayFactory;
-import org.rdfhdt.hdt.compact.array.LogArray64;
-import org.rdfhdt.hdt.compact.array.StaticArray;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
-import org.rdfhdt.hdt.compact.bitmap.BitSequence375;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
+import org.rdfhdt.hdt.compact.sequence.Sequence;
+import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
-import org.rdfhdt.hdt.listener.IntermediateListener;
-import org.rdfhdt.hdt.listener.ListenerUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.ModifiableTriples;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
-import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.listener.IntermediateListener;
+import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 /**
  * @author mario.arias
  *
  */
-public class BitmapTriples implements Triples {
+public class BitmapTriples implements TriplesPrivate {
 	protected TripleComponentOrder order=TripleComponentOrder.SPO;
 	
-	protected StaticArray arrayY, arrayZ, indexZ;
+	protected Sequence seqY, seqZ, indexZ;
 	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 	
 	protected AdjacencyList adjY, adjZ, adjIndex;
@@ -80,34 +80,34 @@ public class BitmapTriples implements Triples {
 		this(new HDTSpecification());
 	}
 	
-	public BitmapTriples(HDTSpecification spec) {
-		String orderStr = spec.get("componentOrder");
+	public BitmapTriples(HDTOptions spec) {
+		String orderStr = spec.get("order");
 		if(orderStr!=null) {
 			order = TripleComponentOrder.valueOf(orderStr);
 		}
 
-		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.z"));
+		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.y"));
 		bitmapZ = BitmapFactory.createBitmap(spec.get("bitmap.z"));
 
-		arrayY = ArrayFactory.createStream(spec.get("array.y"));
-		arrayZ = ArrayFactory.createStream(spec.get("array.z"));
+		seqY = SequenceFactory.createStream(spec.get("seq.y"));
+		seqZ = SequenceFactory.createStream(spec.get("seq.z"));
 
-		adjY = new AdjacencyList(arrayY, bitmapY);
-		adjZ = new AdjacencyList(arrayZ, bitmapZ);
+		adjY = new AdjacencyList(seqY, bitmapY);
+		adjZ = new AdjacencyList(seqZ, bitmapZ);
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#load(hdt.triples.ModifiableTriples, hdt.ProgressListener)
+	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples, hdt.ProgressListener)
 	 */
 	@Override
-	public void load(ModifiableTriples triples, ProgressListener listener) {
+	public void load(TempTriples triples, ProgressListener listener) {
 		triples.setOrder(order);
 		triples.sort(listener);
 		
-		LogArray64 vectorY = new LogArray64(BitUtil.log2(triples.getNumberOfElements()));
-		LogArray64 vectorZ = new LogArray64(BitUtil.log2(triples.getNumberOfElements()), triples.getNumberOfElements());
-		ModifiableBitmap bitY = new BitSequence375();
-		ModifiableBitmap bitZ = new BitSequence375(triples.getNumberOfElements());
+		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(triples.getNumberOfElements()));
+		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(triples.getNumberOfElements()), triples.getNumberOfElements());
+		ModifiableBitmap bitY = new Bitmap375();
+		ModifiableBitmap bitZ = new Bitmap375(triples.getNumberOfElements());
 		
 		int lastX=0, lastY=0, lastZ=0;
 		int x, y, z;
@@ -175,13 +175,13 @@ public class BitmapTriples implements Triples {
 		vectorZ.trimToSize();
 		
 		// Assign local variables to BitmapTriples Object
-		arrayY = vectorY;
-		arrayZ = vectorZ;
+		seqY = vectorY;
+		seqZ = vectorZ;
 		bitmapY = bitY;
 		bitmapZ = bitZ;
 		
-		adjY = new AdjacencyList(arrayY, bitmapY);
-		adjZ = new AdjacencyList(arrayZ, bitmapZ);
+		adjY = new AdjacencyList(seqY, bitmapY);
+		adjZ = new AdjacencyList(seqZ, bitmapZ);
 
 		// DEBUG
 //		adjY.dump();
@@ -239,7 +239,7 @@ public class BitmapTriples implements Triples {
 	 */
 	@Override
 	public long getNumberOfElements() {
-		return arrayZ.getNumberOfElements();
+		return seqZ.getNumberOfElements();
 	}
 
 	/* (non-Javadoc)
@@ -247,57 +247,67 @@ public class BitmapTriples implements Triples {
 	 */
 	@Override
 	public long size() {
-		return arrayY.size()+arrayZ.size()+bitmapY.getSizeBytes()+bitmapZ.getSizeBytes();
+		return seqY.size()+seqZ.size()+bitmapY.getSizeBytes()+bitmapZ.getSizeBytes();
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#save(java.io.OutputStream, hdt.ControlInformation, hdt.ProgressListener)
+	 * @see hdt.triples.Triples#save(java.io.OutputStream, hdt.ControlInfo, hdt.ProgressListener)
 	 */
 	@Override
-	public void save(OutputStream output, ControlInformation ci, ProgressListener listener) throws IOException {
+	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
 		ci.clear();
-		ci.set("codification", getType());
-		ci.setInt("componentOrder", order.ordinal());
-		ci.set("array.y", arrayY.getType());
-		ci.set("array.z", arrayZ.getType());
-		ci.set("bitmap.y", bitmapY.getType());
-		ci.set("bitmap.z", bitmapZ.getType());
+		ci.setFormat(getType());
+		ci.setInt("order", order.ordinal());
+		ci.setType(ControlInfo.Type.TRIPLES);
 		ci.save(output);
 		
 		IntermediateListener iListener = new IntermediateListener(listener);
 		bitmapY.save(output, iListener);
 		bitmapZ.save(output, iListener);
-		arrayY.save(output, iListener);
-		arrayZ.save(output, iListener);
+		seqY.save(output, iListener);
+		seqZ.save(output, iListener);
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#load(java.io.InputStream, hdt.ControlInformation, hdt.ProgressListener)
+	 * @see hdt.triples.Triples#load(java.io.InputStream, hdt.ControlInfo, hdt.ProgressListener)
 	 */
 	@Override
-	public void load(InputStream input, ControlInformation ci, ProgressListener listener) throws IOException {
-		order = TripleComponentOrder.values()[(int)ci.getInt("componentOrder")];
-		arrayY = ArrayFactory.createStream(ci.get("array.y"));
-		arrayZ = ArrayFactory.createStream(ci.get("array.z"));
-		bitmapY = BitmapFactory.createBitmap(ci.get("bitmap.y"));
-		bitmapZ = BitmapFactory.createBitmap(ci.get("bitmap.z"));
+	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException {
+		
+		if(ci.getType()!=ControlInfo.Type.TRIPLES) {
+			throw new IllegalFormatException("Trying to read a triples section, but was not triples.");
+		}
+		
+		if(!ci.getFormat().equals(getType())) {
+			throw new IllegalFormatException("Trying to read BitmapTriples, but the data does not seem to be BitmapTriples");
+		}
+		
+		order = TripleComponentOrder.values()[(int)ci.getInt("order")];
 		
 		IntermediateListener iListener = new IntermediateListener(listener);
-		bitmapY.load(input, iListener);
-		bitmapZ.load(input, iListener);
-		arrayY.load(input, iListener);
-		arrayZ.load(input, iListener);
 		
-		adjY = new AdjacencyList(arrayY, bitmapY);
-		adjZ = new AdjacencyList(arrayZ, bitmapZ);
+		bitmapY = BitmapFactory.createBitmap(input);
+		bitmapY.load(input, iListener);
+		
+		bitmapZ = BitmapFactory.createBitmap(input);
+		bitmapZ.load(input, iListener);
+		
+		seqY = SequenceFactory.createStream(input);
+		seqY.load(input, iListener);
+		
+		seqZ = SequenceFactory.createStream(input);
+		seqZ.load(input, iListener);
+		
+		adjY = new AdjacencyList(seqY, bitmapY);
+		adjZ = new AdjacencyList(seqZ, bitmapZ);
 	}
 	
 	private void createIndexPredicates() {
 			ArrayList<List<Integer>> list=new ArrayList<List<Integer>>();
 			
 			// Generate lists
-			for(long i=0;i<arrayY.getNumberOfElements();i++) {
-				long pred = arrayY.get(i);
+			for(long i=0;i<seqY.getNumberOfElements();i++) {
+				long pred = seqY.get(i);
 				
 				// Grow outter list
 				if(list.size()<=(int)pred) {
@@ -324,7 +334,7 @@ public class BitmapTriples implements Triples {
 //			BitSequence375 bitmapIndexY = new BitSequence375(arrayY.getNumberOfElements());
 //			long pos=0;
 //			
-			long [] count = new long[(int)arrayY.getNumberOfElements()];
+			long [] count = new long[(int)seqY.getNumberOfElements()];
 			for(int i=0;i<list.size();i++) {
 //				//		System.out.println("List "+i);
 				List<Integer> inner = list.get(i);
@@ -362,9 +372,9 @@ public class BitmapTriples implements Triples {
 //			
 //			System.out.println("Compressed in "+st.stopAndShow());
 			//	
-//			System.out.println("Size of Y: "+arrayY.size());
+//			System.out.println("Size of Y: "+seqY.size());
 //			long size = indexY.size()/*+bitmapIndexY.getSizeBytes()*/;
-//			System.out.println("Compressed Index total: "+ size + " "+StringUtil.getPercent(size, arrayY.size()));
+//			System.out.println("Compressed Index total: "+ size + " "+StringUtil.getPercent(size, seqY.size()));
 //			
 //			for(int i=0;i<count.length;i++) {
 ////				if(count[i]>0) {
@@ -416,9 +426,9 @@ public class BitmapTriples implements Triples {
 //			}
 //			
 //			System.out.println("Huffman Stream size: "+byteOut.size());
-//			System.out.println("Size of Y: "+arrayY.size());
-//			long size = byteOut.size()+(list.size()*BitUtil.log2(arrayY.size()));
-//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, arrayY.size()));
+//			System.out.println("Size of Y: "+seqY.size());
+//			long size = byteOut.size()+(list.size()*BitUtil.log2(seqY.size()));
+//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, seqY.size()));
 //			
 			
 			// Serialize lists
@@ -465,8 +475,8 @@ public class BitmapTriples implements Triples {
 //			
 //			System.out.println("Compressed in "+st.stopAndShow());
 //			
-//			System.out.println("Size of Y: "+arrayY.size());
-//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, arrayY.size()));
+//			System.out.println("Size of Y: "+seqY.size());
+//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, seqY.size()));
 			
 		
 			
@@ -508,10 +518,10 @@ public class BitmapTriples implements Triples {
 		StopWatch st = new StopWatch();
 
 		// Count the number of appearances of each object
-		LogArray64 objectCount = new LogArray64(BitUtil.log2(arrayZ.getNumberOfElements()));
+		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()));
 		long maxCount = 0;
-		for(long i=0;i<arrayZ.getNumberOfElements(); i++) {
-			long val = arrayZ.get(i);
+		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
+			long val = seqZ.get(i);
 			if(val==0) {
 				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
 			}
@@ -526,26 +536,26 @@ public class BitmapTriples implements Triples {
 		st.reset();
 
 		// Calculate bitmap that separates each object sublist.
-		BitSequence375 bitmapIndex = new BitSequence375(arrayZ.getNumberOfElements());
+		Bitmap375 bitmapIndex = new Bitmap375(seqZ.getNumberOfElements());
 		long tmpCount=0;
 		for(long i=0;i<objectCount.getNumberOfElements();i++) {
 			tmpCount += objectCount.get(i);
 			bitmapIndex.set(tmpCount-1, true);
 		}
-		bitmapIndex.set(arrayZ.getNumberOfElements()-1, true);
+		bitmapIndex.set(seqZ.getNumberOfElements()-1, true);
 		System.out.println("Bitmap in " + st.stopAndShow());
 		objectCount=null;
 		st.reset();
 
 		// Copy each object reference to its position
-		LogArray64 objectInsertedCount = new LogArray64(BitUtil.log2(maxCount), bitmapIndex.countOnes());
+		SequenceLog64 objectInsertedCount = new SequenceLog64(BitUtil.log2(maxCount), bitmapIndex.countOnes());
 		objectInsertedCount.resize(bitmapIndex.countOnes());
 
-		LogArray64 objectArray = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()), arrayZ.getNumberOfElements());
-		objectArray.resize(arrayZ.getNumberOfElements());
+		SequenceLog64 objectArray = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
+		objectArray.resize(seqZ.getNumberOfElements());
 
-		for(long i=0;i<arrayZ.getNumberOfElements(); i++) {
-				long objectValue = arrayZ.get(i);
+		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
+				long objectValue = seqZ.get(i);
 				long posY = i>0 ?  bitmapZ.rank1(i-1) : 0;
 
 				long insertBase = objectValue==1 ? 0 : bitmapIndex.select1(objectValue-1)+1;
@@ -570,9 +580,9 @@ public class BitmapTriples implements Triples {
 			// Hard-coded size-2 for speed (They are quite common).
 			if(listLen==2) {
 				long aPos = objectArray.get(first);
-				long a = arrayY.get(aPos);
+				long a = seqY.get(aPos);
 				long bPos = objectArray.get(last);
-				long b = arrayY.get(bPos);
+				long b = seqY.get(bPos);
 				if(a>b) {
 					objectArray.set(first, bPos);
 					objectArray.set(last, aPos);
@@ -590,7 +600,7 @@ public class BitmapTriples implements Triples {
 				for(long i=first; i<last;i++) {
 					Pair p = new Pair();
 					p.positionY=(int)objectArray.get(i);
-					p.valueY=(int)arrayY.get(p.positionY);
+					p.valueY=(int)seqY.get(p.positionY);
 					list.add(p);
 				}
 
@@ -620,10 +630,10 @@ public class BitmapTriples implements Triples {
 		st.reset();
 
 		// Count predicates
-		/*LogArray64 predCount = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()));
-		for(long i=0;i<arrayY.getNumberOfElements(); i++) {
+		/*LogArray64 predCount = new LogArray64(BitUtil.log2(seqY.getNumberOfElements()));
+		for(long i=0;i<seqY.getNumberOfElements(); i++) {
 			// Read value
-			long val = arrayY.get(i);
+			long val = seqY.get(i);
 
 			// Grow if necessary
 			if(predCount.getNumberOfElements()<val) {
@@ -658,13 +668,13 @@ public class BitmapTriples implements Triples {
 		
 		System.out.println("Generating HDT Index for ?PO, and ??O queries.");
 		// Generate lists
-		long total=arrayZ.getNumberOfElements();
+		long total=seqZ.getNumberOfElements();
 		for(long i=0;i<total;i++) {
 			Pair pair = new Pair();
 			pair.positionY = (int)adjZ.findListIndex(i);
-			pair.valueY = (int) arrayY.get(pair.positionY);
+			pair.valueY = (int) seqY.get(pair.positionY);
 			
-			long valueZ = arrayZ.get(i);
+			long valueZ = seqZ.get(i);
 
 			if(list.size()<=(int)valueZ) {
 				list.ensureCapacity((int)valueZ);
@@ -688,8 +698,8 @@ public class BitmapTriples implements Triples {
 		
 		System.out.println("Serialize object lists");
 		// Serialize
-		LogArray64 indexZ = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()), list.size());
-		BitSequence375 bitmapIndexZ = new BitSequence375(arrayY.getNumberOfElements());
+		SequenceLog64 indexZ = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), list.size());
+		Bitmap375 bitmapIndexZ = new Bitmap375(seqY.getNumberOfElements());
 		long pos = 0;
 		
 		total = list.size();
@@ -745,16 +755,16 @@ public class BitmapTriples implements Triples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_TYPE, getType());
 		header.insert(rootNode, HDTVocabulary.TRIPLES_NUM_TRIPLES, getNumberOfElements() );
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.toString() );
-		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYY_TYPE, arrayY.getType() );
-		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYZ_TYPE, arrayZ.getType() );
-		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYY_SIZE, arrayY.size() );
-		header.insert(rootNode, HDTVocabulary.TRIPLES_ARRAYZ_SIZE, arrayZ.size() );
-		if(bitmapY!=null) {
-			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPY_SIZE, bitmapY.getSizeBytes() );
-		}
-		if(bitmapZ!=null) {
-			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPZ_SIZE, bitmapZ.getSizeBytes() );
-		}
+//		header.insert(rootNode, HDTVocabulary.TRIPLES_SEQY_TYPE, seqY.getType() );
+//		header.insert(rootNode, HDTVocabulary.TRIPLES_SEQZ_TYPE, seqZ.getType() );
+//		header.insert(rootNode, HDTVocabulary.TRIPLES_SEQY_SIZE, seqY.size() );
+//		header.insert(rootNode, HDTVocabulary.TRIPLES_SEQZ_SIZE, seqZ.size() );
+//		if(bitmapY!=null) {
+//			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPY_SIZE, bitmapY.getSizeBytes() );
+//		}
+//		if(bitmapZ!=null) {
+//			header.insert(rootNode, HDTVocabulary.TRIPLES_BITMAPZ_SIZE, bitmapZ.getSizeBytes() );
+//		}
 	}
 
 	/* (non-Javadoc)
@@ -766,14 +776,15 @@ public class BitmapTriples implements Triples {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#saveIndex(java.io.OutputStream, hdt.options.ControlInformation, hdt.listener.ProgressListener)
+	 * @see hdt.triples.Triples#saveIndex(java.io.OutputStream, hdt.options.ControlInfo, hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void saveIndex(OutputStream output, ControlInformation ci, ProgressListener listener) throws IOException {
+	public void saveIndex(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		
 		ci.clear();
-		ci.setIndex(true);
+		ci.setFormat("JavaIndex");
+		ci.setType(ControlInfo.Type.INDEX);
 		ci.setInt("numTriples", getNumberOfElements());
 		ci.save(output);
 		
@@ -782,11 +793,15 @@ public class BitmapTriples implements Triples {
 	}
 	
 	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#loadIndex(java.io.InputStream, hdt.options.ControlInformation, hdt.listener.ProgressListener)
+	 * @see hdt.triples.Triples#loadIndex(java.io.InputStream, hdt.options.ControlInfo, hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void loadIndex(InputStream input, ControlInformation ci,	ProgressListener listener) throws IOException {
+	public void loadIndex(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException {
 		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		if(ci.getType()!=ControlInfo.Type.INDEX) {
+			throw new IllegalFormatException("Trying to read an Index Section but it was not an Index.");
+		}
 		
 		long numTriples = ci.getInt("numTriples");
 
@@ -794,8 +809,8 @@ public class BitmapTriples implements Triples {
 			throw new IllegalArgumentException("This index is not associated to the HDT file");
 		}
 		
-		indexZ = new LogArray64();
-		bitmapIndexZ = new BitSequence375();
+		indexZ = new SequenceLog64();
+		bitmapIndexZ = new Bitmap375();
 		
 		indexZ.load(input, iListener);
 		bitmapIndexZ.load(input, iListener);

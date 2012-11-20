@@ -29,11 +29,10 @@ package org.rdfhdt.hdt.tools;
 import java.io.PrintStream;
 import java.util.List;
 
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 import com.beust.jcommander.JCommander;
@@ -64,8 +63,7 @@ public class HDT2RDF implements ProgressListener {
 			out = new PrintStream(rdfOutput, "UTF-8");
 		}
 		
-		QueryableHDT hdt = HDTFactory.createQueryableHDT(new HDTSpecification());
-		hdt.loadFromHDT(hdtInput, this);
+		HDT hdt = HDTManager.loadHDT(hdtInput, this);
 
 		IteratorTripleString it = hdt.search("","","");
 		while(it.hasNext()) {
@@ -85,6 +83,7 @@ public class HDT2RDF implements ProgressListener {
 	public static void main(String[] args) throws Throwable {
 		HDT2RDF hdt2rdf = new HDT2RDF();
 		JCommander com = new JCommander(hdt2rdf, args);
+		com.setProgramName("hdt2rdf");
 
 		if(hdt2rdf.hdtInput==null) {
 			try {

@@ -28,10 +28,6 @@
         <pathelement location="lib/slf4j-log4j12-1.6.4.jar"/>
         <pathelement location="lib/xercesImpl-2.10.0.jar"/>
         <pathelement location="lib/xml-apis-1.4.01.jar"/>
-        <pathelement location="lib/DBs/JDBM-3.0-myBuild+src.jar"/>
-        <pathelement location="lib/DBs/kyotocabinet.jar"/>
-        <pathelement location="lib/DBs/JDBM3_13092012.jar"/>
-        <pathelement location="lib/DBs/BerkeleyDB_JE_5.0.55.jar"/>
 
         <path refid="JUnit 4.libraryclasspath"/>
     </path>
@@ -69,6 +65,10 @@
     <target depends="build-project" name="build"/>
     <target depends="init" name="build-project">
         <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+            <src path="iface"/>
+            <classpath refid="hdt-java.classpath"/>
+        </javac>
         <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
             <src path="src"/>
             <classpath refid="hdt-java.classpath"/>

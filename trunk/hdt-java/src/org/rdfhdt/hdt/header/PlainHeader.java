@@ -35,17 +35,18 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -53,38 +54,29 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  * @author mario.arias
  *
  */
-public class PlainHeader implements Header, RDFCallback {
+public class PlainHeader implements HeaderPrivate, RDFCallback {
 	
-	protected HDTSpecification spec;
+	protected HDTOptions spec;
 	protected List<TripleString> triples= new ArrayList<TripleString>();
 	
 	public PlainHeader() {
 		spec = new HDTSpecification();
 	}
 	
-	public PlainHeader(HDTSpecification spec) {
+	public PlainHeader(HDTOptions spec) {
 		this.spec = spec;
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.rdf.RDFStorage#insert(hdt.triples.TripleString[])
-	 */
-	@Override
-	public void insert(TripleString... newTriples) {
-		for(TripleString triple : newTriples) {
-			this.triples.add(triple);
-		}
 	}
 
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFStorage#insert(java.lang.String, java.lang.String, java.lang.String)
 	 */
 	@Override
-	public void insert(String subject, String predicate, String object) {
-		if(object.startsWith("http://")||object.startsWith("file://")) {
+	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
+		String objStr = object.toString();
+		if(objStr.startsWith("http://")||objStr.startsWith("file://")) {
 			triples.add(new TripleString(subject, predicate, object));
 		} else {
-			triples.add(new TripleString(subject, predicate, '"'+object+'"'));
+			triples.add(new TripleString(subject, predicate, '"'+objStr+'"'));
 		}
 	}
 
@@ -92,54 +84,47 @@ public class PlainHeader implements Header, RDFCallback {
 	 * @see hdt.rdf.RDFStorage#insert(java.lang.String, java.lang.String, long)
 	 */
 	@Override
-	public void insert(String subject, String predicate, long object) {
+	public void insert(CharSequence subject, CharSequence predicate, long object) {
 		triples.add(new TripleString(subject, predicate, '"'+Long.toString(object)+'"'));
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.rdf.RDFStorage#remove(hdt.triples.TripleString[])
+	 * @see hdt.header.Header#save(java.io.OutputStream, hdt.ControlInfo, hdt.ProgressListener)
 	 */
 	@Override
-	public void remove(TripleString... removedTriples) {
-		for(TripleString triple : removedTriples) {
-			triples.remove(triple);
-		}	
-	}
+	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
 
-	/* (non-Javadoc)
-	 * @see hdt.header.Header#save(java.io.OutputStream, hdt.ControlInformation, hdt.ProgressListener)
-	 */
-	@Override
-	public void save(OutputStream output, ControlInformation ci, ProgressListener listener) throws IOException {
-		ci.clear();
-		ci.set("codification", HDTVocabulary.HEADER_PLAIN);
-		ci.save(output);
-		
+		// Dump header into an array to calculate size and have it prepared.
 		ByteArrayOutputStream headerData = new ByteArrayOutputStream();
-		
 		IteratorTripleString iterator = this.search("", "", "");
 		while(iterator.hasNext()) {
 			TripleString next = iterator.next();
-			IOUtil.writeLine(headerData, next.asNtriple().toString());
+			IOUtil.writeString(headerData, next.asNtriple().toString());
 		}
+
+		// Create ControlInfo
+		ci.clear();
+		ci.setFormat(HDTVocabulary.HEADER_NTRIPLES);
+		ci.setInt("length",headerData.size());
+		ci.save(output);
 		
-		VByte.encode(output, headerData.size());
+		// Save Data
 		output.write(headerData.toByteArray());
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.header.Header#load(java.io.InputStream, hdt.ControlInformation, hdt.ProgressListener)
+	 * @see hdt.header.Header#load(java.io.InputStream, hdt.ControlInfo, hdt.ProgressListener)
 	 */
 	@Override
-	public void load(InputStream input, ControlInformation ci, ProgressListener listener) throws IOException {
-		String codification = ci.get("codification");
-		if(!codification.equals(HDTVocabulary.HEADER_PLAIN)) {
-			throw new IllegalArgumentException("Unexpected PlainHeader format");
-		}
+	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException {
+		String format = ci.getFormat();
+		if(!format.equals(HDTVocabulary.HEADER_NTRIPLES)) {
+			// FIXME: Add support for other formats
+			throw new IllegalArgumentException("Cannot parse this Header Format");
+		}		
 		
-		int headerSize = (int)VByte.decode(input);
-		
-		byte [] headerData = IOUtil.readBuffer(input, headerSize, listener);
+		long headerSize = ci.getInt("length");
+		byte [] headerData = IOUtil.readBuffer(input, (int)headerSize, listener);
 		
 		try {
 			RDFParserSimple parser = new RDFParserSimple();
@@ -169,7 +154,12 @@ public class PlainHeader implements Header, RDFCallback {
 
 	@Override
 	public void processTriple(TripleString triple, long pos) {
-		this.insert(triple);
+		this.insert(triple.getSubject(), triple.getPredicate(), triple.getObject());
+	}
+
+	@Override
+	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
+		throw new NotImplementedException();
 	}
 
 }

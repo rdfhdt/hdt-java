@@ -32,7 +32,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -47,30 +46,34 @@ import com.beust.jcommander.internal.Lists;
  *
  */
 public class HDTInfo {
-	@Parameter(description = "Files")
+	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names = "-input", description = "Input HDT file name")
 	public String hdtInput = null;	
 	
 	public void execute() throws ParserException, IOException {
 		InputStream input = new BufferedInputStream(new FileInputStream(hdtInput));
 		ControlInformation ci = new ControlInformation();
 		
+		// Load Global ControlInformation
+		ci.load(input);
+		
 		// Load header
 		ci.load(input);
-		int headerSize = (int)VByte.decode(input);
+		int headerSize = (int)ci.getInt("length");
 		
 		byte [] headerData = IOUtil.readBuffer(input, headerSize, null);
 		input.close();	
 		
 		System.out.write(headerData);
 		
+		input.close();
 	}
 
 	public static void main(String[] args) throws Throwable {
 		HDTInfo hdtInfo = new HDTInfo();
 		JCommander com = new JCommander(hdtInfo, args);
+		com.setProgramName("hdtInfo");
 		
 		try {
 			if (hdtInfo.hdtInput==null)

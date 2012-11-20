@@ -15,14 +15,14 @@ import org.junit.Test;
 public class BitSequence375Test {
 	final static int num=100000;
 	
-	BitSequence375 bitseq;
+	Bitmap375 bitseq;
 	BitSet bitset; 
 	
 	@Before
 	public void setUp() throws Exception {
 		Random r = new Random(1);
 		
-		bitseq = new BitSequence375(num);
+		bitseq = new Bitmap375(num);
 		bitset = new BitSet();
 				
 		for(int i=0;i<num;i++) {
@@ -40,7 +40,7 @@ public class BitSequence375Test {
 			
 			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 			
-			BitSequence375 loaded = new BitSequence375();
+			Bitmap375 loaded = new Bitmap375();
 			loaded.load(in, null);
 			
 			assertEquals("Save/Load different number of elements", bitseq.getNumBits(), loaded.getNumBits());

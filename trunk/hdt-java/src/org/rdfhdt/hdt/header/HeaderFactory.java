@@ -27,19 +27,19 @@
 
 package org.rdfhdt.hdt.header;
 
-import org.rdfhdt.hdt.options.ControlInformation;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 
 /**
  * @author mario.arias
  *
  */
 public class HeaderFactory {
-	public static Header createHeader(HDTSpecification spec) {
+	public static HeaderPrivate createHeader(HDTOptions spec) {
 		return new PlainHeader(spec);
 	}
 	
-	public static Header createHeader(ControlInformation ci) {
+	public static HeaderPrivate createHeader(ControlInfo ci) {
 		return new PlainHeader();
 	}
 }

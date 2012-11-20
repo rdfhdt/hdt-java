@@ -68,8 +68,8 @@ public class IOUtil {
 		return out.toString();
 	}
 	
-	public static void writeLine(OutputStream out, String line) throws IOException {
-		out.write(line.getBytes(ByteStringUtil.STRING_ENCODING));
+	public static void writeString(OutputStream out, String str) throws IOException {
+		out.write(str.getBytes(ByteStringUtil.STRING_ENCODING));
 	}
 	
 	public static void writeBuffer(OutputStream output, byte [] buffer, int offset, int length, ProgressListener listener) throws IOException {
@@ -237,5 +237,17 @@ public class IOUtil {
 	public static void writeShort(OutputStream out, short value) throws IOException {
 		out.write(value & 0xFF);
 		out.write((value >> 8) & 0xFF);
+	}
+	
+	public static byte readByte(InputStream in) throws IOException {
+		int b = in.read();
+		if (b < 0) {
+			throw new EOFException();
+		}
+		return (byte)(b&0xFF);
+	}
+	
+	public static void writeByte(OutputStream out, byte value) throws IOException {
+		out.write(value);
 	}
 }

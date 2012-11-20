@@ -27,7 +27,7 @@
 
 package org.rdfhdt.hdt.compact.bitmap;
 
-import org.rdfhdt.hdt.compact.array.StaticArray;
+import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 
 /**
@@ -35,14 +35,14 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
  *
  */
 public class AdjacencyList {
-	private StaticArray array;
+	private Sequence array;
 	private Bitmap bitmap;
 	
 	/**
 	 * @param array
 	 * @param bitmap
 	 */
-	public AdjacencyList(StaticArray array, Bitmap bitmap) {
+	public AdjacencyList(Sequence array, Bitmap bitmap) {
 		super();
 		this.array = array;
 		this.bitmap = bitmap;
@@ -179,7 +179,7 @@ public class AdjacencyList {
 //			}
 //		}
 		
-		// Sequential approach (Sometimes faster if lists are too short.
+		// Sequential approach (Faster if lists are short due to caching).
 		long pos = oldpos;
 		long y;
 		while(pos<array.getNumberOfElements()) {
@@ -191,19 +191,6 @@ public class AdjacencyList {
 		}
 		
 		return -1;
-		
-//		long y;
-//		long numele=array.getNumberOfElements();
-//		do {
-//			y = array.get(oldpos++);
-//		} while(oldpos<array.getNumberOfElements() && y!=element);
-//		
-//		// No additional appearances of predicate
-//		if(oldpos>array.getNumberOfElements()) {
-//			return -1;
-//		}
-//		
-//		return oldpos-1;
 	}
 	
 	/**

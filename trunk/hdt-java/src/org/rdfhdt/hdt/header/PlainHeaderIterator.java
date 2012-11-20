@@ -29,7 +29,7 @@ package org.rdfhdt.hdt.header;
 
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 /**

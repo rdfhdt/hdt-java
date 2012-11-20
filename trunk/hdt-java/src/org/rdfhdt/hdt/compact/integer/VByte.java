@@ -41,7 +41,7 @@ import org.rdfhdt.hdt.util.Mutable;
  * The first bit of each byte specifies whether there are more bytes available.
  * Numbers from 0 to 126 are encoded using just one byte.
  * Numbers from 127 to 16383 are encoded using two bytes.
- * Numbers from 16384 to 2097151 are encodeng using three bytes.
+ * Numbers from 16384 to 2097151 are encoded using three bytes.
  * 
  * @author mario.arias
  *

@@ -1,1 +1,0 @@
-java -Xms1024M -Xmx1024M -XX:NewRatio=1 -XX:SurvivorRatio=9 -XX:+UseCompressedOops -classpath bin;lib/*;lib/DBs/* org.rdfhdt.hdt.tools.RDF2HDT %*

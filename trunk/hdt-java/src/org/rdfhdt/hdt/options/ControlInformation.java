@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Enumeration;
 
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.util.crc.CRC16;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
@@ -41,125 +42,94 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  * @author mario.arias
  *
  */
-public class ControlInformation extends HDTOptionsBase {
-	private short version=0;
-	private short components=0;
+public class ControlInformation extends HDTOptionsBase implements ControlInfo {
 	
-	private static byte TRIPLES_BIT = 1;
-	private static byte DICTIONARY_BIT = 2;
-	private static byte HEADER_BIT = 4;
-	private static byte INDEX_BIT = 8;
+	ControlInfo.Type type;
+	String format;
 	
 	public ControlInformation() {
 		super();
+	}	
+	
+	public ControlInfo.Type getType() {
+		return type;
 	}
 	
-	public short getVersion() {
-		return version;
+	public void setType(ControlInfo.Type type) {
+		this.type = type;
 	}
 	
-	public void setVersion(short version) {
-		this.version = version;
-	}
-	
-	public boolean getHeader() {
-		return (this.components & HEADER_BIT) != 0;
-	}
-	
-	public void setHeader(boolean head) {
-		if(head) {
-			this.components |= HEADER_BIT;
-		} else {
-			this.components &= ~HEADER_BIT;
-		}		
+	public String getFormat() {
+		return format;
 	}
 
-	public boolean getDictionary() {
-		return (this.components & DICTIONARY_BIT) != 0;
+	public void setFormat(String format) {
+		this.format = format;
 	}
 
-	public void setDictionary(boolean dict) {
-		if(dict) {
-			this.components |= DICTIONARY_BIT;
-		} else {
-			this.components &= ~DICTIONARY_BIT;
-		}	
-	}
-	
-	public boolean getTriples() {
-		return (this.components & TRIPLES_BIT) != 0;
-	}
-	
-	public void setTriples(boolean head) {
-		if(head) {
-			this.components |= TRIPLES_BIT;
-		} else {
-			this.components &= ~TRIPLES_BIT;
-		}		
-	}
-
-	public boolean getIndex() {
-		return (this.components & INDEX_BIT) != 0;
-	}
-
-	public void setIndex(boolean idx) {
-		if(idx) {
-			this.components |= INDEX_BIT;
-		} else {
-			this.components &= ~INDEX_BIT;
-		}	
-	}
-	
 	public void save(OutputStream output) throws IOException {
 		CRCOutputStream out = new CRCOutputStream(output, new CRC16());
 		
-		IOUtil.writeLine(out, "$HDT");
+		// Cookie
+		IOUtil.writeString(out, "$HDT");
 		
-		IOUtil.writeShort(out, version);
-		IOUtil.writeShort(out, components);
+		// Type
+		IOUtil.writeByte(out, (byte)type.ordinal());
 		
+		// Format
+		IOUtil.writeString(out, format);
+		out.write(0);
+		
+		// Properties
 		for (Enumeration<Object> e = properties.keys(); e.hasMoreElements();) {
 			String key = (String) e.nextElement();
 			
-			IOUtil.writeLine(out, key+':'+properties.getProperty(key)+";");
+			IOUtil.writeString(out, key+'='+properties.getProperty(key)+";");
 		}
-		IOUtil.writeLine(out, "$END\n");
+		out.write(0); // Null terminator
 		
+		// CRC
 		out.writeCRC();
 	}
 	
 	public void load(InputStream input) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC16());
        
+		// Cookie
         String magic = IOUtil.readChars(in, 4);
         if(!magic.equals("$HDT")) {
         	 throw new IOException("Non-HDT Section");
         }
- 
-        version = IOUtil.readShort(in);
-        components = IOUtil.readShort(in);
         
-        String line;
-        StringBuilder out = new StringBuilder();
-        while((line = IOUtil.readLine(in, '\n'))!=null) {
-        	out.append(line);
-        	if(line.endsWith("$END")) {
-        		break;
+        // Type
+        try {
+        	type = Type.values()[IOUtil.readByte(in)];
+        } catch (ArrayIndexOutOfBoundsException e) {
+        	throw new IllegalFormatException("The type of the ControlInformation is unknown for this implementation");
+        }
+
+        // Format
+        format = IOUtil.readLine(in, '\0');
+        
+        // Properties
+        String propertiesStr = IOUtil.readLine(in, '\0');   
+        for(String item : propertiesStr.split(";")) {
+        	int pos = item.indexOf('=');
+        	if(pos!=-1) {
+        		String property = item.substring(0, pos);
+        		String value = item.substring(pos+1);
+        		properties.put(property, value);
         	}
         }
         
-        // CUT   
-        for(String item : out.toString().split(";")) {
-        	if(!item.equals("$END")) {
-        		int pos = item.indexOf(':');
-        		if(pos!=-1) {
-        			String property = item.substring(0, pos);
-        			String value = item.substring(pos+1);
-        			properties.put(property, value);
-        		}
-        	}
-        }
-        
+        // CRC
         in.readCRCAndCheck();
+	}
+	
+	@Override
+	public void clear() {
+		type = Type.UNKNOWN;
+		format = null;
+		super.clear();
 	}
 }

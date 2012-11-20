@@ -10,11 +10,12 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.rdfhdt.hdt.compact.sequence.SequenceInt64;
 
 public class LongArrayTest {
 	
 	private static final int numentries = 10000;
-	LongArray array;
+	SequenceInt64 array;
 	long [] plain;
 		
 	@Before
@@ -22,7 +23,7 @@ public class LongArrayTest {
 		Random r = new Random(1);	
 
 		plain = new long[numentries];
-		array = new LongArray(numentries);
+		array = new SequenceInt64(numentries);
 
 		for(int k=0;k<numentries;k++) {
 			long value = Math.abs(r.nextLong());
@@ -78,7 +79,7 @@ public class LongArrayTest {
 
 			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
-			LongArray loaded = new LongArray();
+			SequenceInt64 loaded = new SequenceInt64();
 			loaded.load(in, null);
 
 			assertEquals("Save/Load different number of elements", array.getNumberOfElements(), loaded.getNumberOfElements());

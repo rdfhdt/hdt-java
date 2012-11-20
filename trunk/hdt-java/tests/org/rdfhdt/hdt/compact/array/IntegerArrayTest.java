@@ -10,11 +10,12 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.rdfhdt.hdt.compact.sequence.SequenceInt32;
 
 public class IntegerArrayTest {
 	
 	private static final int numentries = 10000;
-	IntegerArray array;
+	SequenceInt32 array;
 	int [] plain;
 		
 	@Before
@@ -23,7 +24,7 @@ public class IntegerArrayTest {
 
 		plain = new int[numentries];
 		
-		array = new IntegerArray(numentries);
+		array = new SequenceInt32(numentries);
 
 		for(int k=0;k<numentries;k++) {
 			int value = Math.abs(r.nextInt());
@@ -79,7 +80,7 @@ public class IntegerArrayTest {
 
 			ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
 
-			IntegerArray loaded = new IntegerArray();
+			SequenceInt32 loaded = new SequenceInt32();
 			loaded.load(in, null);
 
 			assertEquals("Save/Load different number of elements", array.getNumberOfElements(), loaded.getNumberOfElements());

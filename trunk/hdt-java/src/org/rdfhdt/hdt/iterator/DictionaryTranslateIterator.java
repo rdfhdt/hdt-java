@@ -27,8 +27,11 @@
 
 package org.rdfhdt.hdt.iterator;
 
-import org.rdfhdt.hdt.dictionary.QueryableDictionary;
+import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.DictionaryUtil;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
@@ -41,7 +44,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	/** The iterator of TripleID */
 	IteratorTripleID iterator;
 	/** The dictionary */
-	QueryableDictionary dictionary;
+	Dictionary dictionary;
 
 	/**
 	 * Basic constructor
@@ -51,7 +54,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	 * @param dictionary
 	 *            The dictionary to be used
 	 */
-	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, QueryableDictionary dictionary) {
+	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary) {
 		this.iterator = iteratorTripleID;
 		this.dictionary = dictionary;
 	}
@@ -75,7 +78,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	public TripleString next() {
 		TripleID triple = iterator.next();
 		// convert the tripleID to TripleString
-		return dictionary.tripleIDtoTripleString(triple);
+		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
 	}
 
 	/*
@@ -102,7 +105,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	@Override
 	public TripleString previous() {
 		TripleID triple = iterator.previous();
-		return dictionary.tripleIDtoTripleString(triple);
+		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
 	}
 
 	/* (non-Javadoc)

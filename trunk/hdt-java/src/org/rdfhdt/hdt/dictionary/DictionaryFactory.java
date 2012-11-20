@@ -27,14 +27,12 @@
 
 package org.rdfhdt.hdt.dictionary;
 
-import org.rdfhdt.hdt.dictionary.impl.BerkeleyDictionary;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
-import org.rdfhdt.hdt.dictionary.impl.JDBMDictionary;
-import org.rdfhdt.hdt.dictionary.impl.KyotoDictionary;
-import org.rdfhdt.hdt.dictionary.impl.SectionDictionary;
-import org.rdfhdt.hdt.hdt.HDTFactory;
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
@@ -42,10 +40,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * 
  */
 public class DictionaryFactory {
-	
-	public static final String MOD_DICT_TYPE_IN_MEM = "in-memory";
-	public static final String MOD_DICT_TYPE_ON_DISC = "on-disc";
-	
+
 	public static final String MOD_DICT_IMPL_HASH = "hash";
 	public static final String MOD_DICT_IMPL_JDBM = "jdbm";
 	public static final String MOD_DICT_IMPL_BERKELEY = "berkeleyJE";
@@ -59,79 +54,60 @@ public class DictionaryFactory {
 	 */
 	public static Dictionary createDefaultDictionary()
 			throws IllegalArgumentException {
-		return new SectionDictionary(new HDTSpecification());
+		return new FourSectionDictionary(new HDTSpecification());
 	}
 
+//	private static void requireTwoPass(HDTOptions spec) {
+//		String loaderType = spec.get("loader.type");
+//		if (!"two-pass".equals(loaderType)){
+//			String errmsg = "tempTriples.impl cannot be \"set\" if loader.type is not set to two-pass!";
+//			System.err.println(errmsg);
+//			throw new RuntimeException(errmsg);
+//		}
+//	}
 	/**
 	 * Creates a default dictionary (HashDictionary)
 	 * 
 	 * @return Dictionary
 	 */
-	public static ModifiableDictionary createModifiableDictionary(HDTSpecification spec)
-			throws IllegalArgumentException {
-		
-		String dictType = spec.get("tempDictionary.type");
+	public static TempDictionary createTempDictionary(HDTOptions spec) {
 		String dictImpl = spec.get("tempDictionary.impl");
-		String loaderType = spec.get("loader.type");
 		
 		//TODO switch-case can use String in 1.7 and after...
-		if (MOD_DICT_TYPE_IN_MEM.equals(dictType)){
-			if (MOD_DICT_IMPL_HASH.equals(dictImpl)){
-				return new HashDictionary(spec);
-			} else {
-				System.err.println("Unknown in-memory dictionary implementation, using hash.");
-				spec.set("tempDictionary.impl", MOD_DICT_IMPL_HASH);
-				return new HashDictionary(spec);
-			}
-		} else if (MOD_DICT_TYPE_ON_DISC.equals(dictType)) {
-			if (!HDTFactory.LOADER_TWO_PASS.equals(loaderType)){
-				String errmsg = "tempTriples.impl cannot be \"set\" if loader.type is not set to two-pass!";
-				System.err.println(errmsg);
-				throw new RuntimeException(errmsg);
-			}
-			if (MOD_DICT_IMPL_JDBM.equals(dictImpl)) {
-				return new JDBMDictionary(spec);
-			} else if (MOD_DICT_IMPL_BERKELEY.equals(dictImpl)) {
-				return new BerkeleyDictionary(spec);
-			// FIXME: Disabled until we can fix it.
-			//} else if (MOD_DICT_IMPL_BERKELEY_NATIVE.equals(dictImpl)) {
-				//return new BerkeleyNativeDictionary(spec);
-			} else if (MOD_DICT_IMPL_KYOTO.equals(dictImpl)) {
-				return new KyotoDictionary(spec);
-			} else {
-				System.err.println("Unknown on-disc dictionary implementation, using jdbm.");
-				spec.set("tempDictionary.impl", MOD_DICT_IMPL_JDBM);
-				return new JDBMDictionary(spec);
-			} 
+		if (MOD_DICT_IMPL_HASH.equals(dictImpl)){
+			return new HashDictionary(spec);
+//		} else	if (MOD_DICT_IMPL_JDBM.equals(dictImpl)) {
+//			requireTwoPass(spec);
+//			return new JDBMDictionary(spec);
+//		} else if (MOD_DICT_IMPL_BERKELEY.equals(dictImpl)) {
+//			requireTwoPass(spec);
+//			return new BerkeleyDictionary(spec);
+//			// FIXME: Disabled until we can fix it.
+//		} else if (MOD_DICT_IMPL_BERKELEY_NATIVE.equals(dictImpl)) {
+//			//return new BerkeleyNativeDictionary(spec);
+//		} else if (MOD_DICT_IMPL_KYOTO.equals(dictImpl)) {
+//			requireTwoPass(spec);
+//			return new KyotoDictionary(spec);
 		} else {
-			System.err.println("Unknown dictionary type, using in-memory hash.");
-			spec.set("tempDictionary.type", MOD_DICT_TYPE_IN_MEM);
+			//System.err.println("Dictionary type not specified, using in-memory hash.");
 			spec.set("tempDictionary.impl", MOD_DICT_IMPL_HASH);
 			return new HashDictionary(spec);
 		}
 	}
 	
-	public static QueryableDictionary createDictionary(HDTSpecification spec) {
-		return create(spec.get("dictionary.type"));
-	}
-	
-	public static QueryableDictionary createDictionary(ControlInformation ci) {
-		return create(ci.get("codification"));
-	}
-	
-	/**
-	 * Creates a Dictionary
-	 * 
-	 * @param specs Specification of the required dictionary
-	 * @return Dictionary
-	 */
-	//FIXME specs passed on...?
-	private static QueryableDictionary create(String name) {
-		if(HDTVocabulary.DICTIONARY_TYPE_PFC.equals(name)) {
-			return new SectionDictionary(new HDTSpecification());
-		} else if(HDTVocabulary.DICTIONARY_TYPE_PLAIN.equals(name)) {
-			return new HashDictionary(new HDTSpecification());
+	public static DictionaryPrivate createDictionary(HDTOptions spec) {
+		String name = spec.get("dictionary.type");
+		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
+			return new FourSectionDictionary(spec);
 		}
-		return new SectionDictionary(new HDTSpecification());
+		throw new IllegalFormatException("Implementation of ditionary not found for "+name);
+	}
+	
+	public static DictionaryPrivate createDictionary(ControlInfo ci) {
+		String name = ci.getFormat();
+		if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
+			return new FourSectionDictionary(new HDTSpecification());
+		}
+		throw new IllegalFormatException("Implementation of ditionary not found for "+name);
 	}
 }

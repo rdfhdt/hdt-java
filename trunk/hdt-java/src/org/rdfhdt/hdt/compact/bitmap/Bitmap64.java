@@ -53,8 +53,8 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 public class Bitmap64 {
 	
 	// Constants
-	public final static int LOGW = 6;
-	public final static int W = 64;
+	protected final static int LOGW = 6;
+	protected final static int W = 64;
 	
 	// Variables
 	protected long numbits;
@@ -197,7 +197,7 @@ public class Bitmap64 {
 		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
 		
 		// Write Type and Numbits
-		out.write((byte)1);
+		out.write(BitmapFactory.TYPE_BITMAP_PLAIN);
 		VByte.encode(out, numbits);
 		
 		// Write CRC
@@ -224,8 +224,8 @@ public class Bitmap64 {
 		
 		// Read type and numbits
 		int type = in.read();
-		if(type!=1) {
-			throw new IllegalArgumentException("Trying to read Bitmap64 on a section that is not Bitmap64");
+		if(type!=BitmapFactory.TYPE_BITMAP_PLAIN) {
+			throw new IllegalArgumentException("Trying to read BitmapPlain on a section that is not BitmapPlain");
 		}
 		numbits = VByte.decode(in);
 		
