@@ -1,13 +1,11 @@
 package org.rdfhdt.hdtjena;
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdtjena.HDTGraph;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
 import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -25,10 +23,8 @@ public class HDTSparql {
 			String sparqlQuery = args[1];
 
 			// Create HDT
-			QueryableHDT hdt = HDTFactory.createQueryableHDT();
-			hdt.loadFromHDT(fileHDT, null);
-			hdt.loadOrCreateIndex(null);
-
+			HDT hdt = HDTManager.loadIndexedHDT(fileHDT, null);
+			
 			// Create Jena wrapper on top of HDT.
 			HDTGraph graph = new HDTGraph(hdt);
 			Model model = new ModelCom(graph);

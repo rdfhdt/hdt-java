@@ -5,9 +5,9 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleString;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.DummyOutputStream;
@@ -130,7 +130,7 @@ public class JenaHDTTest {
 		System.out.println(label+st.stopAndShow());
 	}
 	
-	public static void iterateHDT(QueryableHDT hdt, String label) throws Exception {
+	public static void iterateHDT(HDT hdt, String label) throws Exception {
 		PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
 		
 		StopWatch st = new StopWatch();
@@ -194,9 +194,7 @@ public class JenaHDTTest {
 //		String fileTDB = "data/jenatdbnytimes";
 		
 		System.out.println("HDT");
-		QueryableHDT hdt = HDTFactory.createQueryableHDT();
-		hdt.loadFromHDT(fileHDT, null);
-		hdt.loadOrCreateIndex(null);
+		HDT hdt = HDTManager.loadIndexedHDT(fileHDT, null);
 		HDTGraph graph = new HDTGraph(hdt);
 		Model model = new ModelCom(graph);
 			

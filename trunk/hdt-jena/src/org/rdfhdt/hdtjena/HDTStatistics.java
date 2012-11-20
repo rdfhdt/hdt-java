@@ -29,7 +29,7 @@ package org.rdfhdt.hdtjena;
 
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 import com.hp.hpl.jena.graph.GraphStatisticsHandler;

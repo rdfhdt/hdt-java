@@ -27,11 +27,11 @@
 
 package org.rdfhdt.hdtjena;
 
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;

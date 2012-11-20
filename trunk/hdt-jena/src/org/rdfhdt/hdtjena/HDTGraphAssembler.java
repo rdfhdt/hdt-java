@@ -4,8 +4,9 @@ import static com.hp.hpl.jena.sparql.util.graph.GraphUtils.getStringValue;
 
 import java.io.IOException;
 
+import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTFactory;
-import org.rdfhdt.hdt.hdt.QueryableHDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 
 import com.hp.hpl.jena.assembler.Assembler;
 import com.hp.hpl.jena.assembler.Mode;
@@ -40,9 +41,7 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 	{
 		String file = getStringValue(root, pFileName) ;
 		try {
-			QueryableHDT hdt = HDTFactory.createQueryableHDT();
-			hdt.loadFromHDT(file, null);
-			hdt.loadOrCreateIndex(null);
+			HDT hdt = HDTManager.loadIndexedHDT(file, null);
 			HDTGraph graph = new HDTGraph(hdt);
 			return new ModelCom(graph);
 		} catch (IOException e) {

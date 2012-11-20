@@ -28,10 +28,9 @@
 package org.rdfhdt.hdtjena;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.QueryableDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.iterator.IteratorTripleID;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.cache.DictionaryCache;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
@@ -44,10 +43,6 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.graph.TripleMatch;
 import com.hp.hpl.jena.graph.impl.GraphBase;
-import com.hp.hpl.jena.query.ARQ;
-import com.hp.hpl.jena.sparql.engine.main.StageBuilder;
-import com.hp.hpl.jena.sparql.engine.main.StageGenerator;
-import com.hp.hpl.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
@@ -58,7 +53,7 @@ public class HDTGraph extends GraphBase {
 	private HDT hdt;
 	static HDTCapabilities capabilities= new HDTCapabilities();
 	HDTStatistics hdtStatistics;
-	QueryableDictionary dictionary;
+	Dictionary dictionary;
 	long numSearches = 0;
 	
 	DictionaryCache cacheSubject, cachePredicate, cacheObject;
@@ -72,7 +67,7 @@ public class HDTGraph extends GraphBase {
 	public HDTGraph(HDT hdt) {
 		this.hdt = hdt;
 		this.hdtStatistics = new HDTStatistics(hdt);
-		this.dictionary = (QueryableDictionary) hdt.getDictionary();
+		this.dictionary = hdt.getDictionary();
 		
 //		cacheSubject = cachePredicate = cacheObject = new DictionaryNodeCacheNone();
 
