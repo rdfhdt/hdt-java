@@ -24,16 +24,13 @@ $ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }
 # A full example on how to do this can be found at hdt-jena/examples/org/rdfhdt/hdtjena/HDTSparql.java
 
 // Load HDT file using the hdt-java library
-QueryableHDT hdt = HDTFactory.createQueryableHDT();
-hdt.loadFromHDT("path/to/file.hdt", null);
-hdt.loadOrCreateIndex(null);
+HDT hdt = HDTManager.loadIndexedHDT("path/to/file.hdt", null);
 
 // Create Jena Model on top of HDT.
 HDTGraph graph = new HDTGraph(hdt);
 Model model = new ModelCom(graph);
 
 // Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
-
 
 ########## Create SPARQL Endpoing on top of one or more HDT files using Fuseki #########
 # You need to create a fuseki config file specifying which HDT files you want to publish. You need to specify one for the default graph and zero or more named graphs with additional HDT files. You also need to ask fuseki to load the HDT Assembler class:
