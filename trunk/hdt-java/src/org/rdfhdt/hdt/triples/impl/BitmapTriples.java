@@ -526,6 +526,7 @@ public class BitmapTriples implements TriplesPrivate {
 				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
 			}
 			if(objectCount.getNumberOfElements()<val) {
+				// TODO: How to improve this?
 				objectCount.resize(val);
 			}
 			long count = objectCount.get(val-1)+1;

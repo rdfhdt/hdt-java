@@ -33,11 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -159,7 +159,23 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 
 	@Override
 	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
-		throw new NotImplementedException();
+		TripleString pattern = new TripleString(subject.toString(), predicate.toString(), object.toString());
+		Iterator<TripleString> iter = triples.iterator();
+		while(iter.hasNext()) {
+			TripleString next = iter.next();
+			if(next.match(pattern)) {
+				iter.remove();
+			}
+		}
 	}
 
+	@Override
+	public CharSequence getBaseURI() {
+		IteratorTripleString it = search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
+		if(it.hasNext()) {
+			TripleString ts = it.next();
+			return ts.getSubject();
+		}
+		return "";
+	}
 }

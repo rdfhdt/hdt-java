@@ -42,6 +42,8 @@ public interface Header extends RDFStorage {
 	
 	void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
 
+	CharSequence getBaseURI();
+	
 	/**
 	 * Returns the number of triples
 	 *

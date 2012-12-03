@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.zip.GZIPInputStream;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
@@ -54,7 +55,6 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -174,8 +174,12 @@ public class HDTImpl implements HDTPrivate {
 
 	@Override
 	public void loadFromHDT(String hdtFileName, ProgressListener listener)	throws IOException {
-//		InputStream in = new GZIPInputStream(new FileInputStream(fileName));
-		InputStream in = new BufferedInputStream(new FileInputStream(hdtFileName));
+		InputStream in;
+		if(hdtFileName.endsWith(".gz")) {
+			in = new GZIPInputStream(new FileInputStream(hdtFileName));
+		} else {
+			in = new BufferedInputStream(new FileInputStream(hdtFileName));
+		}
 		loadFromHDT(in, listener);
 		in.close();
 		

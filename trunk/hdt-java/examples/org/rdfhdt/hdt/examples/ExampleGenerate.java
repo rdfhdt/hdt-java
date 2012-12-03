@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.examples;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**
@@ -47,6 +48,10 @@ public class ExampleGenerate {
 		
 		// Create HDT from RDF file
 		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
+		
+		// Add additional domain-specific properties to the header:
+		Header header = hdt.getHeader();
+		header.insert("myResource1", "property" , "value");
 		
 		// Save generated HDT to a file
 		hdt.saveToHDT(hdtOutput, null);

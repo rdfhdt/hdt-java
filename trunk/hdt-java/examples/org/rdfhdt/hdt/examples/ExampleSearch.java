@@ -27,6 +27,8 @@
 
 package org.rdfhdt.hdt.examples;
 
+import java.util.Iterator;
+
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
@@ -42,12 +44,21 @@ public class ExampleSearch {
 		// Load HDT file NOTE: Use loadIndexedHDT() if you are doing ?P?, ?PO, ??O queries
 		HDT hdt = HDTManager.loadHDT("data/example.hdt", null);
 		
-		// Search pattern: Empty string means "any"
+		// Enumerate all triples. Empty string means "any"
 		IteratorTripleString it = hdt.search("", "", "");
 		System.out.println("Estimated number of results: "+it.estimatedNumResults());
 		while(it.hasNext()) {
 			TripleString ts = it.next();
 			System.out.println(ts);
 		}
+		
+		// List all predicates
+		System.out.println("Dataset contains "+hdt.getDictionary().getNpredicates()+" predicates:");
+		Iterator<? extends CharSequence> itPred = hdt.getDictionary().getPredicates().getSortedEntries();
+		while(itPred.hasNext()) {
+			CharSequence str = itPred.next();
+			System.out.println(str);
+		}
+			
 	}
 }

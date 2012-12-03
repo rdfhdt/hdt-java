@@ -31,6 +31,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.zip.GZIPInputStream;
 
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -52,7 +53,12 @@ public class HDTInfo {
 	public String hdtInput = null;	
 	
 	public void execute() throws ParserException, IOException {
-		InputStream input = new BufferedInputStream(new FileInputStream(hdtInput));
+		InputStream input;
+		if(hdtInput.endsWith(".gz")) {
+			input = new GZIPInputStream(new FileInputStream(hdtInput));
+		} else {
+			input = new BufferedInputStream(new FileInputStream(hdtInput));
+		}
 		ControlInformation ci = new ControlInformation();
 		
 		// Load Global ControlInformation

@@ -1,4 +1,4 @@
-package org.rdfhdt.hdt.hdt;
+	package org.rdfhdt.hdt.hdt;
 
 import java.io.IOException;
 import java.io.InputStream;
