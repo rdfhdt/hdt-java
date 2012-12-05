@@ -104,6 +104,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 
 		// Create ControlInfo
 		ci.clear();
+		ci.setType(ControlInfo.Type.HEADER);
 		ci.setFormat(HDTVocabulary.HEADER_NTRIPLES);
 		ci.setInt("length",headerData.size());
 		ci.save(output);
