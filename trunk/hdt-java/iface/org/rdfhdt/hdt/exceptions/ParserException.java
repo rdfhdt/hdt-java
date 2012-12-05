@@ -39,7 +39,7 @@ public class ParserException extends Exception {
 		super();
 	}
 	
-	ParserException(String message) {
+	public ParserException(String message) {
 		super(message);
 	}
 }

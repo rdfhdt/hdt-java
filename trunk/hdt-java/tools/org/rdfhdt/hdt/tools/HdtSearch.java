@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.List;
 
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
@@ -38,6 +39,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.UnicodeEscape;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
@@ -54,65 +56,106 @@ public class HdtSearch implements ProgressListener {
 
 	public String hdtInput = null;	
 	
-	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) {
+	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();
-		try {
-			int count = 0;
-			
-			subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
-			predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
-			object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
-			
-			// Iterate over triples as Strings
-			IteratorTripleString it = hdt.search(subject,predicate,object);
-			count = 0;
-			while(it.hasNext()) {
-				TripleString triple = it.next();
-				System.out.println(triple);
-				count++;
-			}
-			
-			// Iterate over triples only as IDs
-//			TripleID patternID = DictionaryUtil.tripleStringtoTripleID(hdt.getDictionary(), new TripleString(subject, predicate, object));
-//			IteratorTripleID it2 = hdt.getTriples().search(patternID);
-//			while(it2.hasNext()) {
-//				TripleID triple = it2.next();
-//				System.out.println(triple);
-//				count++;
-//			}
-			System.out.println("Iterated "+ count + " triples in "+iterateTime.stopAndShow());
-		} catch (Exception e) {
-			e.printStackTrace();
+		int count = 0;
+
+		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
+		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
+		object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
+
+		// Iterate over triples as Strings
+		IteratorTripleString it = hdt.search(subject,predicate,object);
+		count = 0;
+		while(it.hasNext()) {
+			TripleString triple = it.next();
+			System.out.println(triple);
+			count++;
 		}
 
+		// Iterate over triples only as IDs
+		//			TripleID patternID = DictionaryUtil.tripleStringtoTripleID(hdt.getDictionary(), new TripleString(subject, predicate, object));
+		//			IteratorTripleID it2 = hdt.getTriples().search(patternID);
+		//			while(it2.hasNext()) {
+		//				TripleID triple = it2.next();
+		//				System.out.println(triple);
+		//				count++;
+		//			}
+		System.out.println("Iterated "+ count + " triples in "+iterateTime.stopAndShow());
 	}
 	
-	public void execute() throws ParserException, IOException {
+	private void help() {
+		System.out.println("HELP:");
+		System.out.println("Please write Triple Search Pattern, using '?' for wildcards. e.g ");
+		System.out.println("   http://www.somewhere.com/mysubject ? ?");
+		System.out.println("Use 'exit' or 'quit' to terminate interactive shell.");
+	}
+	
+	/**
+	 * Read from a line, where each component is separated by space.
+	 * @param line
+	 */
+	private static void parseTriplePattern(TripleString dest, String line) throws ParserException {
+		int split, posa, posb;
+		dest.clear();
+		
+		// SET SUBJECT
+		posa = 0;
+		posb = split = line.indexOf(' ', posa);
+		
+		if(posb==-1) throw new ParserException("Make sure that you included three terms."); // Not found, error.
+		
+		dest.setSubject(line.substring(posa, posb));
+	
+		// SET PREDICATE
+		posa = split+1;
+		posb = split = line.indexOf(' ', posa);
+		
+		if(posb==-1) throw new ParserException("Make sure that you included three terms.");
+		
+		dest.setPredicate(line.substring(posa, posb));
+		
+		// SET OBJECT
+		posa = split+1;
+		posb = line.length();
+		
+		if(line.charAt(posb-1)=='.') posb--;	// Remove trailing <space> <dot> from NTRIPLES.
+		if(line.charAt(posb-1)==' ') posb--;
+				
+		dest.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+	}
+	
+	public void execute() throws IOException {
 		
 		HDT hdt = HDTManager.loadIndexedHDT(hdtInput, this);
 		
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		TripleString cmd = new TripleString();
+		TripleString triplePattern = new TripleString();
 		
 		while(true) {
-			System.out.print("> ");
+			System.out.print(">> ");
 			System.out.flush();
 			String line=in.readLine();
 			if(line==null || line.equals("exit") || line.equals("quit")) {
 				break;
 			}
 			if(line.equals("help")) {
-				System.out.println("HELP:");
-				System.out.println("Please write Triple Search Pattern, using '?' for wildcards. e.g ");
-				System.out.println("   http://www.somewhere.com/mysubject ? ?");
-				System.out.println("Use 'exit' or 'quit' to terminate interactive shell.");
+				help();
 				continue;
 			}
 			
-			cmd.read(line);
-			System.out.println("Query: |"+cmd.getSubject()+"| |"+cmd.getPredicate()+"| |" + cmd.getObject()+"|");
+			try {
+				parseTriplePattern(triplePattern, line);
+				System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"|");
+
+				iterate(hdt,triplePattern.getSubject(),triplePattern.getPredicate(),triplePattern.getObject());
+			} catch (ParserException e) {
+				System.err.println("Could not parse triple pattern: "+e.getMessage());
+				help();
+			} catch (NotFoundException e) {
+				System.err.println("No results found.");
+			}
 			
-			iterate(hdt,cmd.getSubject(),cmd.getPredicate(),cmd.getObject());
 		}
 		
 		in.close();

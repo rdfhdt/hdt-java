@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.triples;
 
 import java.io.IOException;
 
+import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.util.UnicodeEscape;
 
 /**
@@ -164,7 +165,7 @@ public final class TripleString {
 	 * Read from a line, where each component is separated by space.
 	 * @param line
 	 */
-	public void read(String line) {
+	public void read(String line) throws ParserException {
 		int split, posa, posb;
 		this.clear();
 		
