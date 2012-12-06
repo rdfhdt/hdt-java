@@ -82,7 +82,7 @@ public class TriplesList implements TempTriples {
 		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
 
 		//choosing starting(or default) component order
-		String orderStr = specification.get("triples.component.order");
+		String orderStr = specification.get("triplesOrder");
 		if(orderStr==null) {
 			orderStr = "SPO";
 		}

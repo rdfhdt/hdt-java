@@ -81,7 +81,7 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 	
 	public BitmapTriples(HDTOptions spec) {
-		String orderStr = spec.get("order");
+		String orderStr = spec.get("triplesOrder");
 		if(orderStr!=null) {
 			order = TripleComponentOrder.valueOf(orderStr);
 		}
