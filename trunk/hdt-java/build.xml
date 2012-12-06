@@ -91,6 +91,10 @@
 	    <fileset dir="bin" />
 	</jar>
     </target>
+    <target name="doc">
+	<mkdir dir="doc"/>
+        <javadoc sourcepath="iface" destdir="doc"/>
+    </target>
     <target name="test">
         <mkdir dir="${junit.output.dir}"/>
         <junit fork="yes" printsummary="withOutAndErr">
