@@ -68,7 +68,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 public class BitmapTriples implements TriplesPrivate {
 	protected TripleComponentOrder order=TripleComponentOrder.SPO;
 	
-	protected Sequence seqY, seqZ, indexZ;
+	protected Sequence seqY, seqZ, indexZ, predicateCount;
 	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 	
 	protected AdjacencyList adjY, adjZ, adjIndex;
@@ -631,7 +631,7 @@ public class BitmapTriples implements TriplesPrivate {
 		st.reset();
 
 		// Count predicates
-		/*LogArray64 predCount = new LogArray64(BitUtil.log2(seqY.getNumberOfElements()));
+		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()));
 		for(long i=0;i<seqY.getNumberOfElements(); i++) {
 			// Read value
 			long val = seqY.get(i);
@@ -642,13 +642,12 @@ public class BitmapTriples implements TriplesPrivate {
 			}
 
 			// Increment
-			//predCount.set(val-1, predCount.get(val-1)+1);
-			predCount.increment(val-1);
+			predCount.set(val-1, predCount.get(val-1)+1);
 		}
 		predCount.trimToSize();
 		System.out.println("Count predicates in "+st.stopAndShow());
 		this.predicateCount = predCount;
-		st.reset();*/
+		st.reset();
 
 		// Save Object Index
 		this.indexZ = objectArray;
@@ -735,6 +734,23 @@ public class BitmapTriples implements TriplesPrivate {
 			list.set(i, null);
 		}
 		
+		// Count predicates
+		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()));
+		for(long i=0;i<seqY.getNumberOfElements(); i++) {
+			// Read value
+			long val = seqY.get(i);
+
+			// Grow if necessary
+			if(predCount.getNumberOfElements()<val) {
+				predCount.resize(val);
+			}
+
+			// Increment
+			predCount.set(val-1, predCount.get(val-1)+1);
+		}
+		predCount.trimToSize();
+		this.predicateCount = predCount;
+		
 		this.indexZ = indexZ;
 		this.bitmapIndexZ = bitmapIndexZ;
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
@@ -784,13 +800,15 @@ public class BitmapTriples implements TriplesPrivate {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		
 		ci.clear();
-		ci.setFormat("JavaIndex");
 		ci.setType(ControlInfo.Type.INDEX);
 		ci.setInt("numTriples", getNumberOfElements());
+		ci.setInt("order", order.ordinal());
+		ci.setFormat(HDTVocabulary.INDEX_TYPE_FOQ);
 		ci.save(output);
 		
-		indexZ.save(output, iListener);
+		predicateCount.save(output, iListener);
 		bitmapIndexZ.save(output, iListener);
+		indexZ.save(output, iListener);
 	}
 	
 	/* (non-Javadoc)
@@ -804,20 +822,29 @@ public class BitmapTriples implements TriplesPrivate {
 			throw new IllegalFormatException("Trying to read an Index Section but it was not an Index.");
 		}
 		
-		long numTriples = ci.getInt("numTriples");
-
-		if(this.getNumberOfElements()!=numTriples) {
-			throw new IllegalArgumentException("This index is not associated to the HDT file");
+		if(!HDTVocabulary.INDEX_TYPE_FOQ.equals(ci.getFormat())) {
+			throw new IllegalFormatException("Trying to read wrong format of Index. Remove the .hdt.index file and let the app regenerate it.");
 		}
 		
-		indexZ = new SequenceLog64();
-		bitmapIndexZ = new Bitmap375();
+		long numTriples = ci.getInt("numTriples");
+		if(this.getNumberOfElements()!=numTriples) {
+			throw new IllegalFormatException("This index is not associated to the HDT file");
+		}
 		
-		indexZ.load(input, iListener);
+		TripleComponentOrder indexOrder = TripleComponentOrder.values()[(int)ci.getInt("order")];
+		if(indexOrder != order) {
+			throw new IllegalFormatException("The order of the triples is not the same of the index.");
+		}
+		
+		predicateCount = SequenceFactory.createStream(input);
+		predicateCount.load(input, iListener);
+
+		bitmapIndexZ = BitmapFactory.createBitmap(input);
 		bitmapIndexZ.load(input, iListener);
 		
+		indexZ = SequenceFactory.createStream(input);
+		indexZ.load(input, iListener);
+
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
-
-
 }

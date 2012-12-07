@@ -101,6 +101,9 @@ public class HDTVocabulary {
 	public static final String TRIPLES_TYPE_PLAIN = HDT_TRIPLES_BASE+"Plain>";
 	public static final String TRIPLES_TYPE_COMPACT = HDT_TRIPLES_BASE+"Compact>";
 	public static final String TRIPLES_TYPE_BITMAP = HDT_TRIPLES_BASE+"Bitmap>";
+	
+	// Index type
+	public static final String INDEX_TYPE_FOQ = HDT_BASE+"indexFoQ>";
 
 	// Sequences
 	public static final String SEQ_TYPE_INT32 = HDT_SEQ_BASE+"Int32>";

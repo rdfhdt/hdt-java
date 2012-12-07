@@ -100,7 +100,7 @@ public class RDF2HDT implements ProgressListener {
 		hdt.saveToHDT(hdtOutput, this);
 		System.out.println("HDT saved to file in: "+sw.stopAndShow());
 		
-		// Generate index and dump it to jindex file
+		// Generate index and dump it to .hdt.index file
 		sw.reset();
 		if(generateIndex) {
 			hdt = HDTManager.indexedHDT(hdt,this);

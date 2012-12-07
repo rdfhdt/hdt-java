@@ -319,15 +319,16 @@ public class HDTImpl implements HDTPrivate {
 	 */
 	@Override
 	public void loadOrCreateIndex(ProgressListener listener) {
-		String indexName = hdtFileName+".jindex";
 		ControlInfo ci = new ControlInformation();
+		String indexName = hdtFileName+".index";
+		indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
 		
 		try {
-			FileInputStream in = new FileInputStream(indexName);	
+			InputStream in = new BufferedInputStream(new FileInputStream(indexName));	
 			ci.load(in);
 			triples.loadIndex(in, ci, listener);
 			in.close();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// GENERATE
 			triples.generateIndex(listener);
 			

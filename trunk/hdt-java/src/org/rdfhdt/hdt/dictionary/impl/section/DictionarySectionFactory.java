@@ -59,7 +59,7 @@ public class DictionarySectionFactory {
 				section = new PFCDictionarySectionBig(new HDTSpecification());
 				section.load(input, listener);
 			}
-			return new DictionarySectionCache(section);
+			return new DictionarySectionCachePerThread(section);
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}
