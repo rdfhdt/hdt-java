@@ -15,7 +15,7 @@ public abstract class HDTManager {
 	private static HDTManager getInstance() {
 		if(instance==null) {
 			try {
-				Class managerImplClass = Class.forName("org.rdfhdt.hdt.hdt.HDTManagerImpl");
+				Class<?> managerImplClass = Class.forName("org.rdfhdt.hdt.hdt.HDTManagerImpl");
 				instance = (HDTManager) managerImplClass.newInstance();
 			} catch (ClassNotFoundException e) {
 				throw new RuntimeException("Class org.rdfhdt.hdt.hdt.HDTManagerImpl not found. Did you include the HDT implementation jar?");

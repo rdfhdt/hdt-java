@@ -39,6 +39,10 @@ import org.rdfhdt.hdt.triples.impl.TriplesList;
  * 
  */
 public class TriplesFactory {
+	
+	public static final String MOD_TRIPLES_TYPE_ON_DISK = "on-disk";
+	public static final String MOD_TRIPLES_TYPE_IN_MEM = "in-memory";
+	
 	public static final String MOD_TRIPLES_IMPL_LIST = "list";
 	public static final String MOD_TRIPLES_IMPL_SET = "set";
 	public static final String MOD_TRIPLES_IMPL_JDBM = "jdbm";
@@ -62,7 +66,7 @@ public class TriplesFactory {
 	 */
 	static public TempTriples createTempTriples(HDTOptions spec) {
 		
-		String triplesImpl = spec.get("tempTriples.impl");
+//		String triplesImpl = spec.get("tempTriples.impl");
 
 		// FIXME: Load Disk Implementations
 //		if (MOD_TRIPLES_IMPL_JDBM.equals(triplesImpl)) {

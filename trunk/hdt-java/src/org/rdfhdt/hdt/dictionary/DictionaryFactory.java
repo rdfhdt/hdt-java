@@ -40,6 +40,9 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * 
  */
 public class DictionaryFactory {
+	
+	public static final String MOD_DICT_TYPE_ON_DISK = "on-disk";
+	public static final String MOD_DICT_TYPE_IN_MEM = "in-memory";
 
 	public static final String MOD_DICT_IMPL_HASH = "hash";
 	public static final String MOD_DICT_IMPL_JDBM = "jdbm";

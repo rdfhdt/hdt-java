@@ -36,7 +36,6 @@ import java.io.InputStream;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 
 /**
@@ -129,11 +128,11 @@ public class RDFInfo {
 			compression = Float.parseFloat(specs.get(compression_prop));
 		} catch (NumberFormatException e){
 			System.err.println(compression_prop+" improperly set, using default 0.15");
-			compression = 0.15f; //FIXME fixed default parameter here, not best of practices
+			compression = 0.15f; //FIXME hard-coded default parameter here, not best of practices
 			setCompression(compression, specs);
 		} catch (NullPointerException e){
 			System.err.println(compression_prop+" missing, using default 0.15");
-			compression = 0.15f; //FIXME fixed default parameter here, not best of practices
+			compression = 0.15f; //FIXME hard-coded default parameter here, not best of practices
 			setCompression(compression, specs);
 		}
 		return compression;
