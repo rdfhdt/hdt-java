@@ -236,6 +236,7 @@ public class BerkeleyDictionarySection implements TempDictionarySection {
 	 * @author Eugen Rozic
 	 *
 	 */
+	@SuppressWarnings("unused")
 	private class DiskOrderedIterator implements Iterator<String> {
 
 		private DiskOrderedCursor cursor;

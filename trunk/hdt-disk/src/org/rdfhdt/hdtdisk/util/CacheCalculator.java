@@ -94,7 +94,7 @@ public class CacheCalculator {
 				bytes -= dictionaryCache;
 			} else {
 				//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
-				bytes = (long)(bytes*0.25); //FIXME fixed ratio!!
+				bytes = (long)(bytes*0.25); //FIXME hard-coded ratio!!
 			}
 		} else if (DictionaryFactory.MOD_DICT_TYPE_IN_MEM.equals(dictionaryType)){
 			//TODO what is the formula if the dictionary is in_mem and triples on_disk (little likely combination)
@@ -180,7 +180,7 @@ public class CacheCalculator {
 				bytes -= triplesCache;
 			} else {
 				//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
-				bytes = (long)(bytes*0.75); //FIXME fixed ratio!!
+				bytes = (long)(bytes*0.75); //FIXME hard-coded ratio!!
 			}
 		} else if (TriplesFactory.MOD_TRIPLES_TYPE_IN_MEM.equals(triplesType)){
 			if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(triplesImpl)){
