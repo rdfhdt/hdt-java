@@ -32,6 +32,10 @@ public class CRCInputStream extends FilterInputStream {
 		this.crc = crc;
 	}
 	
+	public CRC getCRC() {
+		return this.crc;
+	}
+	
 	/**
 	 * Read CRC from the stream itself, and check that it matches with the generated from the previous bytes.
 	 * @return True if the CRC's match, False on CRC Error.

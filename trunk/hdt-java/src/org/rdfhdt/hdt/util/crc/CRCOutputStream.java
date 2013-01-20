@@ -32,6 +32,14 @@ public class CRCOutputStream extends FilterOutputStream {
 		this.crc = crc;
 	}
 	
+	/**
+	 * Get the existing crc
+	 * @return
+	 */
+	public CRC getCRC() {
+		return this.crc;
+	}
+	
 	/** 
 	 * Write the CRC digest in the current position of the OutputStream.
 	 * @throws IOException
