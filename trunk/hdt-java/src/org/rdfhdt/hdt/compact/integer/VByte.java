@@ -31,6 +31,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import org.rdfhdt.hdt.util.Mutable;
 
@@ -71,6 +72,28 @@ public class VByte {
 			out |= (readbyte & 127) << shift;
 			
 			readbyte = in.read(); if(readbyte==-1) throw new EOFException();
+			
+			shift+=7;
+		}
+		out |= (readbyte & 127) << shift;
+		return out;
+	}
+	
+	public static long decode(ByteBuffer in) throws IOException {
+		long out = 0;
+		int shift=0;
+		if(!in.hasRemaining()) throw new EOFException();
+		byte readbyte = in.get();
+		
+		while( (readbyte & 0x80)==0) {
+			if(shift>=50) { // We read more bytes than required to load the max long
+				throw new IllegalArgumentException();
+			}
+			
+			out |= (readbyte & 127) << shift;
+			
+			if(!in.hasRemaining()) throw new EOFException();
+			readbyte = in.get();
 			
 			shift+=7;
 		}
