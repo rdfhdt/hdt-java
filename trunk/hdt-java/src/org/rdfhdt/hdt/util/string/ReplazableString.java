@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.util.string;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
@@ -98,6 +99,50 @@ public class ReplazableString implements CharSequence {
 		ensureSize(pos+len);
 		in.read(buffer, pos, len);
 		used = pos+len;
+	}
+	
+	public void replace(ByteBuffer in, int pos, int len) throws IOException {
+		ensureSize(pos+len);
+		in.get(buffer, pos, len);
+		used = pos+len;
+	}
+	
+	public void replace(InputStream in, int pos) throws IOException {
+		used = pos;
+		
+		while(true) {
+			int value = in.read();
+			if(value==-1) {
+				throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");
+			}
+			if(value==0) {
+				break;
+			}
+			if(pos>=reserved) {
+				ensureSize(reserved*2);
+			}
+			buffer[pos++] = (byte)(value&0xFF);
+			used++;
+		}
+	}
+	
+	public void replace(ByteBuffer in, int pos) throws IOException {
+		used = pos;
+		
+		while(true) {
+			if(!in.hasRemaining()) {
+				throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");				
+			}
+			int value = in.get();
+			if(value==0) {
+				break;
+			}
+			if(pos>=reserved) {
+				ensureSize(reserved*2);
+			}
+			buffer[pos++] = (byte)(value&0xFF);
+			used++;
+		}
 	}
 	
 	/* (non-Javadoc)
