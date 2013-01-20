@@ -77,7 +77,16 @@ public class IOUtil {
 		output.write(buffer, offset, length);
 	}
 	
-	private static byte writeBuffer[] = new byte[8];
+	// Copy the remaining of the Stream in, to out.
+	public static void copyStream(InputStream in, OutputStream out) throws IOException {
+		byte[] buffer = new byte[1024*1024];
+		int len;
+		while ((len = in.read(buffer)) != -1) {
+		    out.write(buffer, 0, len);
+		}
+	}
+	
+
 	
 	/**
 	 * Write long, little endian
@@ -86,6 +95,7 @@ public class IOUtil {
 	 * @throws IOException
 	 */
 	public static void writeLong(OutputStream output, long value) throws IOException {
+		byte writeBuffer[] = new byte[8];
 		writeBuffer[7] = (byte)(value >>> 56);
 		writeBuffer[6] = (byte)(value >>> 48);
 		writeBuffer[5] = (byte)(value >>> 40);
@@ -132,6 +142,7 @@ public class IOUtil {
 	 * @throws IOException
 	 */
 	public static void writeInt(OutputStream output, int value) throws IOException {
+		byte writeBuffer[] = new byte[4];
 		writeBuffer[0] = (byte) (value & 0xFF);
 		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
 		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
@@ -143,6 +154,7 @@ public class IOUtil {
 	 * Convert int to byte array, little endian
 	 */
 	public static byte[] intToByteArray(int value) {
+		byte writeBuffer[] = new byte[4];
 		writeBuffer[0] = (byte) (value & 0xFF);
 		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
 		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
@@ -216,11 +228,15 @@ public class IOUtil {
 		return str;
 	}
 	
+	public static final void printBitsln(long val, int bits) {
+		printBits(val, bits);
+		System.out.println();
+	}
+	
 	public static final void printBits(long val, int bits) {
 		while(bits-- != 0) {
 			System.out.print( ((val>>>bits) & 1) !=0 ? '1' : '0');
 		}
-		System.out.println();
 	}
 
 	public static short readShort(InputStream in) throws IOException {
@@ -249,5 +265,14 @@ public class IOUtil {
 	
 	public static void writeByte(OutputStream out, byte value) throws IOException {
 		out.write(value);
+	}
+	
+	// InputStream might not skip the specified number of bytes. This call makes multiple calls to 
+	// if needed to ensure that the desired number of bytes is actually skipped.
+	public static void skip(InputStream in, long n) throws IOException {
+		long totalSkipped = in.skip(n);
+		while(totalSkipped<n) {
+			totalSkipped += in.skip(n-totalSkipped);
+		}
 	}
 }
