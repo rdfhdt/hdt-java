@@ -59,11 +59,11 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
             char c1 = s1.charAt(k);
             char c2 = s2.charAt(k);
             if (c1 != c2) {
-                return c1 - c2;
+                return c2 - c1;
             }
             k++;
         }
-        return len1 - len2;
+        return len2 - len1;
 	}
 
 }
