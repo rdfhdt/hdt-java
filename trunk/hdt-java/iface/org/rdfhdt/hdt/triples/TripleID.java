@@ -216,7 +216,7 @@ public final class TripleID implements Comparable<TripleID> {
 	 * @return
 	 */
 	public boolean isValid() {
-		return subject!=0 && predicate!=0 && object!=0;
+		return subject>0 && predicate>0 && object>0;
 	}
 	
 	/**
