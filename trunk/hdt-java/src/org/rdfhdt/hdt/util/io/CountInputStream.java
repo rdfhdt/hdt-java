@@ -27,7 +27,6 @@
 
 package org.rdfhdt.hdt.util.io;
 
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -35,15 +34,19 @@ import java.io.InputStream;
  * @author mck
  *
  */
-public class CountInputStream extends FilterInputStream {
+public class CountInputStream extends InputStream {
 	long total;
 	long partial;
+	InputStream in;
+	
+	long markTotal;
+	long markPartial;
 	
 	/**
 	 * @param parent
 	 */
-	public CountInputStream(InputStream parent) {
-		super(parent);
+	public CountInputStream(InputStream input) {
+		this.in = input;
 		total = 0;
 		partial = 0;
 	}
@@ -62,17 +65,17 @@ public class CountInputStream extends FilterInputStream {
 	
 	@Override
 	public int read() throws IOException {
-		int value = super.read();
+		int value = in.read();
 		if(value!=-1) {
-			partial+=value;
-			total+=value;
+			partial++;
+			total++;
 		}
 		return value;
 	}
 	
 	@Override
 	public int read(byte[] b) throws IOException {
-		int value = super.read(b);
+		int value = in.read(b);
 		if(value!=-1) {
 			partial+=value;
 			total+=value;
@@ -82,11 +85,43 @@ public class CountInputStream extends FilterInputStream {
 	
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
-		int value = super.read(b, off, len);
+		int value = in.read(b, off, len);
 		if(value!=-1) {
 			partial+=value;
 			total+=value;
 		}
 		return value;
+	}
+	
+	@Override
+	public long skip(long n) throws IOException {
+		long skipped = in.skip(n);
+		partial+=skipped;
+		total+=skipped;
+		return skipped;
+	}
+	
+	@Override
+	public void close() throws IOException {
+		in.close();
+	}
+	
+	@Override
+	public void mark(int readlimit) {
+		markTotal = total;
+		markPartial = partial;
+		in.mark(readlimit);
+	}
+	
+	@Override
+	public boolean markSupported() {
+		return in.markSupported();
+	}
+	
+	@Override
+	public void reset() throws IOException {
+		total = markTotal;
+		partial = markPartial;
+		in.reset();
 	}
 }
