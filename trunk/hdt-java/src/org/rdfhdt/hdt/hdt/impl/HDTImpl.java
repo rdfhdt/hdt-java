@@ -176,7 +176,7 @@ public class HDTImpl implements HDTPrivate {
 	public void loadFromHDT(String hdtFileName, ProgressListener listener)	throws IOException {
 		InputStream in;
 		if(hdtFileName.endsWith(".gz")) {
-			in = new GZIPInputStream(new FileInputStream(hdtFileName));
+			in = new BufferedInputStream(new GZIPInputStream(new FileInputStream(hdtFileName)));
 		} else {
 			in = new BufferedInputStream(new FileInputStream(hdtFileName));
 		}
