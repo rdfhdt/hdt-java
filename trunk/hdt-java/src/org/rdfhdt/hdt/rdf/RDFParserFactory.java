@@ -43,7 +43,7 @@ public class RDFParserFactory {
 			return new RDFParserSimple();
 		}
 		
-		if(notation == RDFNotation.NTRIPLES || notation == RDFNotation.RDFXML) {
+		if(notation == RDFNotation.NTRIPLES || notation == RDFNotation.TURTLE || notation == RDFNotation.RDFXML) {
 			return new RDFParserRIOT();
 		}
 		
