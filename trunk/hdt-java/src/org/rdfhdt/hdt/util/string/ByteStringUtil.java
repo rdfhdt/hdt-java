@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.util.string;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -96,6 +97,13 @@ public class ByteStringUtil {
 			return 0;
 		}
 		
+		// Check whether one of the buffers is already at the end
+		if(p1 < buff1.length && p2==buff2.length) {
+			return 1;
+		} else if(p1==buff1.length && p2<buff2.length) {
+			return -1;
+		}
+		
 		do {
 			a = buff1[p1++];
 			b = buff2[p2++];
@@ -148,34 +156,89 @@ public class ByteStringUtil {
 		}
 		throw new NotImplementedException();
 	}
+
+	public static int strcmp(CharSequence str, ByteBuffer text, int offset) {
+		
+		text.position(offset);
+		
+		ByteBuffer a = null;
+	
+		if(str instanceof CompactString) {
+			a = ByteBuffer.wrap(((CompactString) str).getData());
+		} else if(str instanceof String) {
+			a = ByteBuffer.wrap(((String) str).getBytes(ByteStringUtil.STRING_ENCODING));
+		} else if(str instanceof ReplazableString) {
+			a = ByteBuffer.wrap(((ReplazableString) str).buffer, 0, ((ReplazableString) str).used);
+		} else{
+			throw new NotImplementedException();
+		}
+
+		return strcmp(a, text);
+	}
 	
 	public static String asString(byte [] buff, int offset) {
 		int len = strlen(buff, offset);
 		return new String(buff, offset, len);
 	}
 	
-	public static int strcmp(CharSequence str, ByteBuffer buffer) {
-		byte [] buf=null;
-		
-		if(str instanceof CompactString) {
-			buf = ((CompactString) str).getData();
-		}else if(str instanceof String) {
-			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
-		} else {
-			throw new NotImplementedException();
+	public static String asString(ByteBuffer buff) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		while(buff.hasRemaining()) {
+			byte b = buff.get();
+			if(b==0) {
+				break;
+			}
+			out.write(b);
 		}
+		return new String(out.toByteArray());
+	}
+	
+	public static int strcmp(CharSequence str, ByteBuffer buffer) {
+		String a = str.toString();
+		String b = asString(buffer);
+		return a.compareTo(b);
 		
-		return strcmp(ByteBuffer.wrap(buf), buffer);
+		// FIXME: Do the comparison directly to avoid copying, probably faster.
+//		byte [] buf=null;
+//		
+//		if(str instanceof CompactString) {
+//			buf = ((CompactString) str).getData();
+//		}else if(str instanceof String) {
+//			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
+//		} else {
+//			throw new NotImplementedException();
+//		}
+//		
+//		return strcmp(ByteBuffer.wrap(buf), buffer);
 	}
 	
 	public static final int strcmp(ByteBuffer a, ByteBuffer b) {
-		int x=1;
-		int y=1	;
-		while(a.hasRemaining() && b.hasRemaining() && x!=0 && y!=0 && x==y) {
-			x = a.get();
-			y = b.get();
-		}
-		return y-x;
+		// FIXME: Untested. May not work.
+	    int n = a.position() + Math.min(a.remaining(), a.remaining());
+	    for (int i = a.position(), j = b.position(); i < n; i++, j++) {
+	        byte v1 = a.get(i);
+	        byte v2 = b.get(j);
+	        if(v1==0) {
+	        	if(v2==0) {
+	        		return 0;
+	        	} else {
+	        		return 1;
+	        	}
+	        }
+	        if(v2==0) {
+	        	if(v1==0) {
+	        		return 0;
+	        	} else {
+	        		return -1;
+	        	}
+	        }
+	        if (v1 == v2)
+	            continue;
+	        if (v1 < v2)
+	            return -1;
+	        return +1;
+	    }
+	    return a.remaining() - b.remaining();
 	}
 	
 	public static int append(CharSequence str, int start, byte [] buffer, int bufpos) {
