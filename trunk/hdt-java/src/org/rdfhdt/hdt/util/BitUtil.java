@@ -26,6 +26,7 @@
  */
 package org.rdfhdt.hdt.util;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -54,6 +55,7 @@ public class BitUtil {
         long value = 0;
         while(bitsRead<numbits) {
                 long readByte = in.read();
+                if(readByte==-1) throw new EOFException();
                 value |= readByte<<bitsRead;
                 bitsRead+=8;
         }
@@ -72,6 +74,16 @@ public class BitUtil {
         int bitpos=0;
         while(rank>0 && value!=0) {
         	rank-= value & 1;
+        	bitpos++;
+        	value>>>=1;
+        }
+        return bitpos;
+	}
+	
+	public static final int select0(long value, int rank) {
+        int bitpos=0;
+        while(rank>0) {
+        	rank-= (value ^ 1) & 1;
         	bitpos++;
         	value>>>=1;
         }
