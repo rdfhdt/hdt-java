@@ -54,7 +54,10 @@ public class HdtSearch implements ProgressListener {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
-	public String hdtInput = null;	
+	public String hdtInput = null;
+	
+	@Parameter(names = "-memory", description = "Load the whole file into main memory. Ensures fastest querying.")
+	public boolean loadInMemory = false;
 	
 	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();
@@ -73,14 +76,14 @@ public class HdtSearch implements ProgressListener {
 			count++;
 		}
 
-		// Iterate over triples only as IDs
-		//			TripleID patternID = DictionaryUtil.tripleStringtoTripleID(hdt.getDictionary(), new TripleString(subject, predicate, object));
-		//			IteratorTripleID it2 = hdt.getTriples().search(patternID);
-		//			while(it2.hasNext()) {
-		//				TripleID triple = it2.next();
-		//				System.out.println(triple);
-		//				count++;
-		//			}
+//		Iterate over triples only as IDs
+//		TripleID patternID = DictionaryUtil.tripleStringtoTripleID(hdt.getDictionary(), new TripleString(subject, predicate, object));
+//		IteratorTripleID it2 = hdt.getTriples().search(patternID);
+//		while(it2.hasNext()) {
+//			TripleID triple = it2.next();
+//			System.out.println(triple);
+//			count++;
+//		}
 		System.out.println("Iterated "+ count + " triples in "+iterateTime.stopAndShow());
 	}
 	
@@ -126,9 +129,13 @@ public class HdtSearch implements ProgressListener {
 	}
 	
 	public void execute() throws IOException {
-		
-		HDT hdt = HDTManager.loadIndexedHDT(hdtInput, this);
-		
+		HDT hdt;
+		if(loadInMemory) {
+			hdt = HDTManager.loadIndexedHDT(hdtInput, this);
+		} else {
+			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
+		}
+
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		TripleString triplePattern = new TripleString();
 		
