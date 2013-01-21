@@ -81,10 +81,10 @@
             <src path="tools"/>
             <classpath refid="hdt-java.classpath"/>
         </javac>
-        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
+        <!-- <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}" includeantruntime="false">
             <src path="tests"/>
             <classpath refid="hdt-java.classpath"/>
-        </javac>
+        </javac> -->
     </target>
     <target depends="build" name="jar">
 	<jar destfile="hdt-lib.jar">
