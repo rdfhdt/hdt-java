@@ -41,7 +41,7 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 	{
 		String file = getStringValue(root, pFileName) ;
 		try {
-			HDT hdt = HDTManager.loadIndexedHDT(file, null);
+			HDT hdt = HDTManager.mapIndexedHDT(file, null);
 			HDTGraph graph = new HDTGraph(hdt);
 			return new ModelCom(graph);
 		} catch (IOException e) {
