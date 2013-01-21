@@ -52,8 +52,13 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	
 	BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
-		this.pattern = new TripleID(pattern);
 		this.returnTriple = new TripleID();
+		this.pattern = new TripleID();
+		newSearch(pattern);
+	}
+	
+	public void newSearch(TripleID pattern) {
+		this.pattern.assign(pattern);
 		
 		TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
 		patX = this.pattern.getSubject();
