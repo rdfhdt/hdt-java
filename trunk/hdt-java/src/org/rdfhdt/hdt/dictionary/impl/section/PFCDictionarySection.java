@@ -79,14 +79,20 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	@Override
 	public void load(TempDictionarySection other, ProgressListener listener) {
 		this.blocks = new SequenceLog64(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
+		Iterator<? extends CharSequence> it = other.getSortedEntries();
+		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
+	}
+
+	public void load(Iterator<CharSequence> it, long numentries, ProgressListener listener) {
+		this.blocks = new SequenceLog64(32, numentries/blocksize);
 		this.numstrings = 0;
+		
 		
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
 		
 		CharSequence previousStr=null;
 		
 		try {
-			Iterator<? extends CharSequence> it = other.getSortedEntries();
 			while(it.hasNext()) {
 				CharSequence str = it.next();
 
@@ -122,7 +128,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			// DEBUG
 			//dumpAll();
 		} catch (IOException e) {
-
+			e.printStackTrace();
 		}
 	}
 		
@@ -231,7 +237,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			
 		}
 
-		if(pos==text.length || idInBlock== blocksize) {
+		if(pos>=text.length || idInBlock== blocksize) {
 			idInBlock=0;
 		}
 		
@@ -330,18 +336,30 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
 		return new Iterator<CharSequence>() {
-			int pos = 0;
+			int id = 0;
+			int pos=0;
+			Mutable<Long> delta = new Mutable<Long>(0L);
+			ReplazableString tempString = new ReplazableString();
 
 			@Override
 			public boolean hasNext() {
-				return pos<getNumberOfElements();
+				return id<getNumberOfElements();
 			}
 
 			@Override
 			public CharSequence next() {
-				// FIXME: It is more efficient to go through each block, each entry.
-				pos++;
-				return extract(pos);
+				int len;
+		 		if((id%blocksize)==0) {
+		 			len = ByteStringUtil.strlen(text, pos);
+		 			tempString.replace(0,text, pos, len);
+		 		} else {				
+					pos += VByte.decode(text, pos, delta);
+					len = ByteStringUtil.strlen(text, pos);
+					tempString.replace(delta.getValue().intValue(), text, pos, len);
+				}
+		 		pos+=len+1;
+		 		id++;
+				return tempString.toString();
 			}
 
 			@Override
@@ -399,11 +417,11 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			throw new IllegalArgumentException("This class cannot process files with a packed buffer bigger than 2GB"); 
 		}
 		
-		// Write blocks
+		// Read blocks
 		blocks = new SequenceLog64();
 		blocks.load(input, listener);	// Read blocks from input, they have their own CRC check.
 		
-		// Write packed data
+		// Read packed data
 		in.setCRC(new CRC32());
 		text = IOUtil.readBuffer(in, (int) bytes, listener);
 		if(!in.readCRCAndCheck()) {
