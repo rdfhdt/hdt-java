@@ -27,11 +27,14 @@
 
 package org.rdfhdt.hdt.compact.sequence;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 
 /**
  * @author mario.arias
@@ -69,4 +72,21 @@ public class SequenceFactory {
 		}
 		throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
 	}
+	
+	public static Sequence createStream(CountInputStream input, File f) throws IOException {
+		input.mark(1);
+		int type = input.read();
+		input.reset();
+		switch (type) {
+		case TYPE_SEQLOG:
+			return new SequenceLog64Map(input, f);
+		case TYPE_SEQ32:
+//			return new SequenceInt32();
+		case TYPE_SEQ64:
+//			return new SequenceLog64();
+			throw new NotImplementedException();
+		}
+		throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
+	}
+	
 }

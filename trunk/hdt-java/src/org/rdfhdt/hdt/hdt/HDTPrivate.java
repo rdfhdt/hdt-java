@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.hdt;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -27,6 +28,8 @@ public interface HDTPrivate extends HDT {
 	 *            InputStream to read from
 	 */
 	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException;
+	
+	public void mapFromHDT(File f, long offset, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Generates any additional index needed to solve all triple patterns more efficiently

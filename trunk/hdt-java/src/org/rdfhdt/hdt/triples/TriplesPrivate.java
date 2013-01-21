@@ -1,11 +1,13 @@
 package org.rdfhdt.hdt.triples;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 
 public interface TriplesPrivate extends Triples {
 	/**
@@ -25,6 +27,8 @@ public interface TriplesPrivate extends Triples {
 	 */
 	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
 
+	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException;
+	
 	/**
 	 * Generates the associated Index
 	 * @param listener
@@ -40,6 +44,15 @@ public interface TriplesPrivate extends Triples {
 	 */
 	public void loadIndex(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
 
+	/**
+	 * Loads the associated Index from an InputStream
+	 * 
+	 * @param input
+	 *            The InputStream to load the index from
+	 * @throws IOException
+	 */
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException;
+	
 	/**
 	 * Saves the associated Index to an OutputStream
 	 * 

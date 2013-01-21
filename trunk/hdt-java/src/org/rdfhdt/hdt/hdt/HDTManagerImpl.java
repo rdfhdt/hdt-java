@@ -27,6 +27,14 @@ public class HDTManagerImpl extends HDTManager {
 		hdt.loadFromHDT(hdtFileName, listener);
 		return hdt;
 	}
+	
+	@Override
+	protected HDT doMapHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
+		return hdt;
+	}
+
 
 	@Override
 	public HDT doLoadHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
@@ -39,6 +47,16 @@ public class HDTManagerImpl extends HDTManager {
 	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
 		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.loadFromHDT(hdtFileName, listener);
+		hdt.loadOrCreateIndex(listener);
+		return hdt;
+	}
+	
+
+
+	@Override
+	protected HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
 	}
@@ -67,8 +85,8 @@ public class HDTManagerImpl extends HDTManager {
 		} else if ("two-pass".equals(loaderType)) {
 			loader = new TempHDTImporterTwoPass();
 		} else {
-			System.err.println("Loader type not specified: using two-pass");
-			spec.set("loader.type", "two-pass");
+			System.err.println("Loader type not specified: using one-pass");
+			spec.set("loader.type", "one-pass");
 			loader = new TempHDTImporterTwoPass();
 		}
 		

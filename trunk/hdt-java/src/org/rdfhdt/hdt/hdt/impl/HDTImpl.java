@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -44,6 +45,7 @@ import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
@@ -63,6 +65,7 @@ import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 
 /**
@@ -79,6 +82,7 @@ public class HDTImpl implements HDTPrivate {
 	
 	private String hdtFileName;
 	private String baseUri;
+	private boolean isMapped=false;
 	
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
@@ -178,12 +182,73 @@ public class HDTImpl implements HDTPrivate {
 		if(hdtFileName.endsWith(".gz")) {
 			in = new BufferedInputStream(new GZIPInputStream(new FileInputStream(hdtFileName)));
 		} else {
-			in = new BufferedInputStream(new FileInputStream(hdtFileName));
+			in = new CountInputStream(new BufferedInputStream(new FileInputStream(hdtFileName)));
 		}
 		loadFromHDT(in, listener);
 		in.close();
 		
 		this.hdtFileName = hdtFileName;
+	}
+
+	@Override
+	public void mapFromHDT(File f, long offset, ProgressListener listener) throws IOException {
+		this.hdtFileName = f.toString();
+		this.isMapped = true;
+		
+		CountInputStream input;
+		if(hdtFileName.endsWith(".gz")) {
+			throw new NotImplementedException("Gzipped files not supported for mapping. Decompress it first.");
+		} else {
+			input = new CountInputStream(new BufferedInputStream(new FileInputStream(hdtFileName)));
+		}
+		
+		ControlInfo ci = new ControlInformation();
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		// Load Global ControlInformation
+		ci.clear();
+		ci.load(input);
+		String hdtFormat = ci.getFormat();
+		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
+			throw new IllegalFormatException("This software cannot open this version of HDT File");
+		}
+		
+		// Load header
+		ci.clear();
+		ci.load(input);
+		iListener.setRange(0, 5);
+		header = HeaderFactory.createHeader(ci);
+		header.load(input, ci, iListener);
+		
+		// Set base URI.
+		try {
+			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
+			if(it.hasNext()) {
+				this.baseUri = it.next().getSubject().toString();
+			}
+		} catch (NotFoundException e) {
+			e.printStackTrace();
+		}
+		
+		// Load dictionary
+		ci.clear();
+		input.mark(1024);
+		ci.load(input);
+		input.reset();
+		iListener.setRange(5, 60);
+		dictionary = DictionaryFactory.createDictionary(ci);
+		dictionary.mapFromFile(input, f, iListener);
+		
+		// Load Triples
+		ci.clear();
+		input.mark(1024);
+		ci.load(input);
+		input.reset();
+		iListener.setRange(60, 100);
+		triples = TriplesFactory.createTriples(ci);
+		triples.mapFromFile(input, f, iListener);
+		
+		input.close();
 	}
 
 	/*
@@ -297,18 +362,18 @@ public class HDTImpl implements HDTPrivate {
         if(triples.getClass().equals(modifiableTriples.getClass())) {
                 triples = modifiableTriples;
         } else {
-                StopWatch tripleConvTime = new StopWatch();
+        		//StopWatch tripleConvTime = new StopWatch();
                 triples.load(modifiableTriples, listener);
-                System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow());
+                //System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow());
         }
         
         // Convert dictionary to final format
         if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
                 dictionary = (DictionaryPrivate)modifiableDictionary;
         } else {
-                StopWatch dictConvTime = new StopWatch();
+                //StopWatch dictConvTime = new StopWatch();
                 dictionary.load(modifiableDictionary, listener);
-                System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
+                //System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
         }
       
         this.baseUri = modHdt.getBaseURI();
@@ -324,9 +389,13 @@ public class HDTImpl implements HDTPrivate {
 		indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
 		
 		try {
-			InputStream in = new BufferedInputStream(new FileInputStream(indexName));	
+			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(indexName)));
 			ci.load(in);
-			triples.loadIndex(in, ci, listener);
+			if(isMapped) {
+				triples.mapIndex(in, new File(indexName), ci, listener);
+			} else {
+				triples.loadIndex(in, ci, listener);
+			}
 			in.close();
 		} catch (Exception e) {
 			// GENERATE

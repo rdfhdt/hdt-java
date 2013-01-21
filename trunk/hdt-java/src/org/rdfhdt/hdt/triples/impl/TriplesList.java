@@ -27,8 +27,8 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +50,8 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.RDFInfo;
+import org.rdfhdt.hdt.util.io.CountInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 
@@ -186,10 +188,9 @@ public class TriplesList implements TempTriples {
 		long totalTriples = controlInformation.getInt("numTriples");
 
 		int numRead=0;
-		DataInputStream din = new DataInputStream(input);
-
+		
 		while(numRead<totalTriples) {
-			arrayOfTriples.add(new TripleID(din.readInt(), din.readInt(), din.readInt()));
+			arrayOfTriples.add(new TripleID(IOUtil.readInt(input), IOUtil.readInt(input), IOUtil.readInt(input)));
 			numRead++;
 			numValidTriples++;
 			ListenerUtil.notifyCond(listener, "Loading TriplesList", numRead, totalTriples);
@@ -496,9 +497,17 @@ public class TriplesList implements TempTriples {
 
 		@Override
 		public void remove() {
-			// TODO Auto-generated method stub
 			throw new NotImplementedException();
 		}
+	}
+
+	@Override
+	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {		
 	}
 
 }

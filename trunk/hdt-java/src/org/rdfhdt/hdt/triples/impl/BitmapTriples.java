@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -50,6 +51,7 @@ import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -58,6 +60,7 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
@@ -95,25 +98,20 @@ public class BitmapTriples implements TriplesPrivate {
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
 	}
+	
+	public void load(IteratorTripleID it, ProgressListener listener) {
 
-	/* (non-Javadoc)
-	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples, hdt.ProgressListener)
-	 */
-	@Override
-	public void load(TempTriples triples, ProgressListener listener) {
-		triples.setOrder(order);
-		triples.sort(listener);
+		long number = it.estimatedNumResults();
 		
-		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(triples.getNumberOfElements()));
-		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(triples.getNumberOfElements()), triples.getNumberOfElements());
-		ModifiableBitmap bitY = new Bitmap375();
-		ModifiableBitmap bitZ = new Bitmap375(triples.getNumberOfElements());
+		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(number), number);
+		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(number), number);
+		ModifiableBitmap bitY = new Bitmap375(number);
+		ModifiableBitmap bitZ = new Bitmap375(number);
 		
 		int lastX=0, lastY=0, lastZ=0;
 		int x, y, z;
 		int numTriples=0;
 		
-		IteratorTripleID it = triples.searchAll();
 		while(it.hasNext()) {
 			TripleID triple = it.next();
 			TripleOrderConvert.swapComponentOrder(triple, TripleComponentOrder.SPO, order);
@@ -164,7 +162,7 @@ public class BitmapTriples implements TriplesPrivate {
 			lastY = y;
 			lastZ = z;
 			
-			ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, triples.getNumberOfElements());
+			ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, number);
 			numTriples++;
 		}
 		
@@ -186,6 +184,18 @@ public class BitmapTriples implements TriplesPrivate {
 		// DEBUG
 //		adjY.dump();
 //		adjZ.dump();
+	}
+
+	/* (non-Javadoc)
+	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples, hdt.ProgressListener)
+	 */
+	@Override
+	public void load(TempTriples triples, ProgressListener listener) {
+		triples.setOrder(order);
+		triples.sort(listener);
+		
+		IteratorTripleID it = triples.searchAll();
+		this.load(it, listener);
 	}
 
 
@@ -300,6 +310,38 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
+	}
+	
+
+	@Override
+	public void mapFromFile(CountInputStream input, File f,	ProgressListener listener) throws IOException {
+		
+		ControlInformation ci = new ControlInformation();
+		ci.load(input);
+		if(ci.getType()!=ControlInfo.Type.TRIPLES) {
+			throw new IllegalFormatException("Trying to read a triples section, but was not triples.");
+		}
+		
+		if(!ci.getFormat().equals(getType())) {
+			throw new IllegalFormatException("Trying to read BitmapTriples, but the data does not seem to be BitmapTriples");
+		}
+		
+		order = TripleComponentOrder.values()[(int)ci.getInt("order")];
+		
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		bitmapY = BitmapFactory.createBitmap(input);
+		bitmapY.load(input, iListener);
+		
+		bitmapZ = BitmapFactory.createBitmap(input);
+		bitmapZ.load(input, iListener);
+		
+		seqY = SequenceFactory.createStream(input, f);
+		seqZ = SequenceFactory.createStream(input, f);
+		
+		adjY = new AdjacencyList(seqY, bitmapY);
+		adjZ = new AdjacencyList(seqZ, bitmapZ);
+		
 	}
 	
 	private void createIndexPredicates() {
@@ -658,7 +700,7 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 	
 	private void createIndexObjects() {
-		// FIXME: Very memory inefficient. Think of a better way.
+		// FIXME: Fast but very memory inefficient.
 		class Pair {
 			int valueY;
 			int positionY;
@@ -844,6 +886,38 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		indexZ = SequenceFactory.createStream(input);
 		indexZ.load(input, iListener);
+
+		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
+	}
+
+	@Override
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		if(ci.getType()!=ControlInfo.Type.INDEX) {
+			throw new IllegalFormatException("Trying to read an Index Section but it was not an Index.");
+		}
+		
+		if(!HDTVocabulary.INDEX_TYPE_FOQ.equals(ci.getFormat())) {
+			throw new IllegalFormatException("Trying to read wrong format of Index. Remove the .hdt.index file and let the app regenerate it.");
+		}
+		
+		long numTriples = ci.getInt("numTriples");
+		if(this.getNumberOfElements()!=numTriples) {
+			throw new IllegalFormatException("This index is not associated to the HDT file");
+		}
+		
+		TripleComponentOrder indexOrder = TripleComponentOrder.values()[(int)ci.getInt("order")];
+		if(indexOrder != order) {
+			throw new IllegalFormatException("The order of the triples is not the same of the index.");
+		}
+		
+		predicateCount = SequenceFactory.createStream(input, f);
+
+		bitmapIndexZ = BitmapFactory.createBitmap(input);
+		bitmapIndexZ.load(input, iListener);
+		
+		indexZ = SequenceFactory.createStream(input, f);
 
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}

@@ -27,10 +27,12 @@
 
 package org.rdfhdt.hdt.dictionary.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
@@ -39,7 +41,10 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.ControlInfo.Type;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 
 
@@ -49,6 +54,15 @@ import org.rdfhdt.hdt.util.listener.IntermediateListener;
  */
 public class FourSectionDictionary extends BaseDictionary {
 
+	public FourSectionDictionary(HDTOptions spec, 
+			DictionarySectionPrivate s, DictionarySectionPrivate p, DictionarySectionPrivate o, DictionarySectionPrivate sh) {
+		super(spec);
+		this.subjects = s;
+		this.predicates = p;
+		this.objects = o;
+		this.shared = sh;
+	}
+	
 	public FourSectionDictionary(HDTOptions spec) {
 		super(spec);
 		// FIXME: Read type from spec.
@@ -75,6 +89,7 @@ public class FourSectionDictionary extends BaseDictionary {
 	 */
 	@Override
 	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
+		ci.setType(Type.DICTIONARY);
 		ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
 		ci.setInt("elements", this.getNumberOfElements());
 		ci.save(output);
@@ -102,6 +117,21 @@ public class FourSectionDictionary extends BaseDictionary {
 		subjects = DictionarySectionFactory.loadFrom(input, iListener);
 		predicates = DictionarySectionFactory.loadFrom(input, iListener);
 		objects = DictionarySectionFactory.loadFrom(input, iListener);
+	}
+	
+	@Override
+	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException {
+		ControlInformation ci = new ControlInformation();
+		ci.load(in);
+		if(ci.getType()!=ControlInfo.Type.DICTIONARY) {
+			throw new IllegalFormatException("Trying to read a dictionary section, but was not dictionary.");
+		}
+		
+		IntermediateListener iListener = new IntermediateListener(listener);
+		shared = DictionarySectionFactory.loadFrom(in, f, iListener);
+		subjects = DictionarySectionFactory.loadFrom(in, f, iListener);
+		predicates = DictionarySectionFactory.loadFrom(in, f, iListener);
+		objects = DictionarySectionFactory.loadFrom(in, f, iListener);
 	}
 
 	/* (non-Javadoc)

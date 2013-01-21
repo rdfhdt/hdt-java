@@ -76,7 +76,7 @@ public class HashDictionary extends BaseTempDictionary {
 				((TempDictionarySection)shared).add(str);
 			}
 		}
-		System.out.println("Num shared: "+shared.getNumberOfElements()+" in "+st.stopAndShow());
+		//System.out.println("Num shared: "+shared.getNumberOfElements()+" in "+st.stopAndShow());
 
 		// Generate old predicate mapping
 		st.reset();
@@ -100,7 +100,7 @@ public class HashDictionary extends BaseTempDictionary {
 			((TempDictionarySection)subjects).remove(sharedStr);
 			((TempDictionarySection)objects).remove(sharedStr);
 		}
-		System.out.println("Mapping generated in "+st.stopAndShow());
+		//System.out.println("Mapping generated in "+st.stopAndShow());
 		
 		// Sort sections individually
 		st.reset();
@@ -108,7 +108,7 @@ public class HashDictionary extends BaseTempDictionary {
 		((TempDictionarySection)predicates).sort();
 		((TempDictionarySection)objects).sort();
 		((TempDictionarySection)shared).sort();
-		System.out.println("Sections sorted in "+ st.stopAndShow());
+		//System.out.println("Sections sorted in "+ st.stopAndShow());
 		
 		// Update mappings with new IDs
 		st.reset();
@@ -126,7 +126,7 @@ public class HashDictionary extends BaseTempDictionary {
 			mapObj.setNewID(j, this.stringToId(mapObj.getString(j), TripleComponentRole.OBJECT));
 			//System.out.print("Obj Old id: "+(j+1) + " New id: "+ mapObj.getNewID(j)+ " STR: "+mapObj.getString(j));
 		}
-		System.out.println("Update mappings in "+st.stopAndShow());
+		//System.out.println("Update mappings in "+st.stopAndShow());
 		 
 		// Replace old IDs with news
 		st.reset();
@@ -139,7 +139,7 @@ public class HashDictionary extends BaseTempDictionary {
 					mapObj.getNewID(triple.getObject()-1)
 			);
 		}
-		System.out.println("Replace IDs in "+st.stopAndShow());
+		//System.out.println("Replace IDs in "+st.stopAndShow());
 		
 		isOrganized = true;
 	}

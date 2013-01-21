@@ -37,7 +37,6 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
-import org.rdfhdt.hdt.util.StopWatch;
 
 /**
  * @author mario.arias, Eugen
@@ -107,18 +106,15 @@ public class TempHDTImpl implements TempHDT {
 			return;
 
 		// Reorganize dictionary
-		StopWatch reorgStp = new StopWatch();
+//		StopWatch reorgStp = new StopWatch();
 		if (ModeOfLoading.ONE_PASS.equals(modeOfLoading)) {
 			dictionary.reorganize(triples);
 		} else if (ModeOfLoading.TWO_PASS.equals(modeOfLoading)) {
 			dictionary.reorganize();
 		} else if (modeOfLoading==null) {
-			System.err.println("WARNING! Unknown mode of loading from RDF... supposing all triples are in memory " +
-					"(meaning HDT not being loaded from RDF -OR- loaded, reorganized and then modified).");
 			dictionary.reorganize(triples);
 		}
-		System.out.println("Dictionary reorganized in "+reorgStp.stopAndShow());
-
+		//System.out.println("Dictionary reorganized in "+reorgStp.stopAndShow());
 	}
 
 	@Override
@@ -130,10 +126,10 @@ public class TempHDTImpl implements TempHDT {
 			throw new RuntimeException("Cannot reorganize triples before dictionary is reorganized!");
 
 		// Sort and remove duplicates.
-		StopWatch sortDupTime = new StopWatch();
+		//StopWatch sortDupTime = new StopWatch();
 		triples.sort(listener);
 		triples.removeDuplicates(listener);
-		System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
+		//System.out.println("Sort triples and remove duplicates: "+sortDupTime.stopAndShow());
 
 		isOrganized = true;
 	}

@@ -44,6 +44,10 @@ public class ExampleSearch {
 		// Load HDT file NOTE: Use loadIndexedHDT() if you are doing ?P?, ?PO, ??O queries
 		HDT hdt = HDTManager.loadHDT("data/example.hdt", null);
 		
+		// Use mapHDT/mapIndexedHDT to save memory. 
+		// It will load the parts on demand (possibly slower querying).
+//		HDT hdt = HDTManager.mapHDT("data/example.hdt", null);
+		
 		// Enumerate all triples. Empty string means "any"
 		IteratorTripleString it = hdt.search("", "", "");
 		System.out.println("Estimated number of results: "+it.estimatedNumResults());

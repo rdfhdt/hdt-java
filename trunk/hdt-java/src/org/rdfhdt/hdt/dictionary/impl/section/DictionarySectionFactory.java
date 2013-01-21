@@ -27,12 +27,14 @@
 
 package org.rdfhdt.hdt.dictionary.impl.section;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 
 /**
  * @author mario.arias
@@ -59,6 +61,22 @@ public class DictionarySectionFactory {
 				section = new PFCDictionarySectionBig(new HDTSpecification());
 				section.load(input, listener);
 			}
+			return new DictionarySectionCachePerThread(section);
+		}
+		throw new IOException("DictionarySection implementation not available for id "+dictType);
+	}
+	
+	public static DictionarySectionPrivate loadFrom(CountInputStream input, File f, ProgressListener listener) throws IOException {
+		input.mark(64);
+		int dictType = input.read();
+		input.reset();
+		input.mark(64);		// To allow children to reset() and try another instance.
+		
+		switch(dictType) {
+		case PFCDictionarySection.TYPE_INDEX:
+				// First try load using the standard PFC 
+			DictionarySectionPrivate section= new PFCDictionarySectionMap(input, f);
+
 			return new DictionarySectionCachePerThread(section);
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
