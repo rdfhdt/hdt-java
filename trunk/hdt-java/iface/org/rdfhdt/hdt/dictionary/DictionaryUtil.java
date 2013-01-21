@@ -14,9 +14,9 @@ public class DictionaryUtil {
 	 */
 	public static TripleString tripleIDtoTripleString(Dictionary dict, TripleID tripleID) {
 		return new TripleString(
-				dict.idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT), 
-				dict.idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE), 
-				dict.idToString(tripleID.getObject(), TripleComponentRole.OBJECT)
+				dict.idToString(tripleID.getSubject(), TripleComponentRole.SUBJECT).toString(), 
+				dict.idToString(tripleID.getPredicate(), TripleComponentRole.PREDICATE).toString(), 
+				dict.idToString(tripleID.getObject(), TripleComponentRole.OBJECT).toString()
 				);
 	}
 	
@@ -29,9 +29,9 @@ public class DictionaryUtil {
 	 */
 	public static TripleID tripleStringtoTripleID(Dictionary dict, TripleString tripleString) {
 		return new TripleID(
-				dict.stringToId(tripleString.getSubject(), TripleComponentRole.SUBJECT), 
-				dict.stringToId(tripleString.getPredicate(), TripleComponentRole.PREDICATE), 
-				dict.stringToId(tripleString.getObject(), TripleComponentRole.OBJECT)
+				dict.stringToId(tripleString.getSubject().toString(), TripleComponentRole.SUBJECT), 
+				dict.stringToId(tripleString.getPredicate().toString(), TripleComponentRole.PREDICATE), 
+				dict.stringToId(tripleString.getObject().toString(), TripleComponentRole.OBJECT)
 				);
 	}
 }
