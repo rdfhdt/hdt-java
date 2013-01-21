@@ -27,16 +27,15 @@
 
 package org.rdfhdt.hdt.compact.bitmap;
 
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.util.BitUtil;
-import org.rdfhdt.hdt.util.io.IOUtil;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Arrays;
+
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
@@ -67,10 +66,10 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	}
 	
 	public void dump() {
-		int count = numWords(this.numbits);
+		int count = (int) numWords(this.numbits);
 		for(int i=0;i<count;i++) {
 			System.out.print(i+"\t");
-			IOUtil.printBits(words[i], 64);
+			IOUtil.printBitsln(words[i], 64);
 		}
 	}
 	
@@ -95,6 +94,16 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		}
 		pop = countSuperBlock+countBlock; 
 		indexUpToDate = true;
+		
+//		for(int i=0;i<words.length;i++) {
+//			if((i%BLOCKS_PER_SUPER)==0) {
+//				int superB = i/BLOCKS_PER_SUPER;
+//				System.out.println("Super: "+superB+ " rank1: "+superBlocks[superB]+" Rank0: "+(superB*BLOCKS_PER_SUPER*W-superBlocks[superB])+" Bits: "+(superB*BLOCKS_PER_SUPER*W));
+//			}
+//			System.out.println("\tWord: "+i+ " Rank1: "+blocks[i]+ " Rank0: "+ (W*(i%BLOCKS_PER_SUPER)-blocks[i]) + " Bits: "+(W*i));
+//			System.out.print("\t\t"); IOUtil.printBits(words[i], W); System.out.println(" "+Long.bitCount(words[i]));
+//		}
+		//System.out.println("Bitmap with "+numbits+" bits. Data size: "+(words.length*8)+" Index Size: "+ (superBlocks.length*4+blocks.length));
 	}
 
 	/* (non-Javadoc)
@@ -153,13 +162,83 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	public long rank0(long pos) {
 		return pos+1-rank1(pos);
 	}
+	
+    private static int binarySearch0(int[] a, int fromIndex, int toIndex, long key) {
+        int low = fromIndex;
+        int high = toIndex - 1;
+
+        while (low <= high) {
+            int mid = (low + high) >>> 1;
+            long midVal = mid * BLOCKS_PER_SUPER * W-a[mid];
+
+            if (midVal < key)
+                low = mid + 1;
+            else if (midVal > key)
+                high = mid - 1;
+            else
+                return mid; // key found
+        }
+        return -(low + 1);  // key not found.
+    }
 
 	/* (non-Javadoc)
 	 * @see hdt.compact.bitmap.Bitmap#select0(long)
 	 */
 	@Override
 	public long select0(long x) {
-		throw new NotImplementedException();
+		//System.out.println("\t**Select0 for: "+ x);
+
+		if(x<0) {
+			return -1;
+		}
+		if(!indexUpToDate) {
+			updateIndex();
+		}
+		if(x>numbits-pop) {
+			return numbits;
+		}
+
+		// Search superblock (binary Search)
+		int superBlockIndex = binarySearch0(superBlocks, 0, superBlocks.length, x);
+		if(superBlockIndex<0) {
+			// Not found exactly, gives the position where it should be inserted
+			superBlockIndex = -superBlockIndex-2;
+		} else if(superBlockIndex>0){
+			// If found exact, we need to check previous block.
+			superBlockIndex--;
+		}
+		
+		// If there is a run of many ones, two correlative superblocks may have the same value,
+		// We need to position at the first of them.
+		while(superBlockIndex>0 && (superBlockIndex*BLOCKS_PER_SUPER*W-superBlocks[superBlockIndex]>=x)) {
+			superBlockIndex--;
+		}
+		
+		int countdown = (int)x-(superBlockIndex*BLOCKS_PER_SUPER*W-superBlocks[superBlockIndex]);
+		int blockIdx = superBlockIndex * BLOCKS_PER_SUPER;
+	
+		// Search block
+		while(true) {
+			if(blockIdx>= (superBlockIndex+1) * BLOCKS_PER_SUPER || blockIdx>=blocks.length) {
+				blockIdx--;
+				break;
+			}
+			if((0xFF & (W*(blockIdx%BLOCKS_PER_SUPER) - blocks[blockIdx]))>=countdown) {
+				// We found it!
+				blockIdx--;
+				break;
+			}
+			blockIdx++;
+		}
+		if(blockIdx<0) {
+			blockIdx=0;
+		}
+		countdown = countdown - (0xFF & ((blockIdx%BLOCKS_PER_SUPER)*W - blocks[blockIdx]));
+		
+		// Search bit inside block
+		int bitpos = BitUtil.select0(words[blockIdx], countdown);
+		
+		return blockIdx * W + bitpos - 1;
 	}
 	
 	/* (non-Javadoc)

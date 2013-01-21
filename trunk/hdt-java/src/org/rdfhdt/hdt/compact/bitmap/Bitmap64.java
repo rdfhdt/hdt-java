@@ -66,7 +66,7 @@ public class Bitmap64 {
 	
 	public Bitmap64(long nbits) {
 		this.numbits = 0;
-		this.words = new long[numWords(nbits)];
+		this.words = new long[(int)numWords(nbits)];
 	}
 	
 	public Bitmap64(Bitmap64 other) {
@@ -75,7 +75,7 @@ public class Bitmap64 {
 	
 	public Bitmap64(Bitmap64 other, long numbits) {
 		this.numbits = numbits;
-		this.words = new long[numWords(numbits)];
+		this.words = new long[(int)numWords(numbits)];
 		if(this.words.length>0) {
 			this.words[this.words.length-1] = 0;
 		}
@@ -89,12 +89,12 @@ public class Bitmap64 {
         return (int) (bitIndex >>> LOGW);
     }
     
-    protected static final int numWords(long numbits) {
-    	return (int) ((numbits-1)>>>LOGW) + 1;
+    public static final long numWords(long numbits) {
+    	return ((numbits-1)>>>LOGW) + 1;
     }
     
-    protected static final int numBytes(long numbits) {
-    	return (int) ((numbits-1)>>>3) + 1;
+    public static final long numBytes(long numbits) {
+    	return ((numbits-1)>>>3) + 1;
     }
     
     protected static final int lastWordNumBits(long numbits) {
@@ -116,8 +116,8 @@ public class Bitmap64 {
 		this.numbits = numbits;
 	}
 	
-	protected void trimToSize() {
-		int wordNum = numWords(numbits);
+	public void trimToSize() {
+		int wordNum = (int) numWords(numbits);
 		if(wordNum!=words.length) {
 			words = Arrays.copyOf(words, wordNum);
 		}
@@ -205,7 +205,7 @@ public class Bitmap64 {
 		
 		// Setup new CRC
 		out.setCRC(new CRC32());
-		int numwords = numWords(numbits);
+		int numwords = (int) numWords(numbits);
 		for(int i=0;i<numwords-1;i++) {
 			IOUtil.writeLong(out, words[i]);
 		}
@@ -238,7 +238,7 @@ public class Bitmap64 {
 		in.setCRC(new CRC32());
 		
 		// Read Words
-		int numwords = numWords(numbits);
+		int numwords = (int)numWords(numbits);
 		words = new long[numwords];
 		for(int i=0;i<numwords-1;i++) {
 			words[i] = IOUtil.readLong(in);
