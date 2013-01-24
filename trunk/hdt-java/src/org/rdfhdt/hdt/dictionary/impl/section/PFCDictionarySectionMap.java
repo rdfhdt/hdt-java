@@ -63,9 +63,10 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
-	private static final int BLOCKS_PER_BYTEBUFFER = 100000;
+	private static final int BLOCKS_PER_BYTEBUFFER = 1000000;
 	protected FileChannel ch;
 	protected ByteBuffer [] buffers; // Encoded sequence
+	long [] posFirst;	// Global byte position of the start of each buffer
 	protected int blocksize;
 	protected int numstrings;
 	protected Sequence blocks;
@@ -116,12 +117,22 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		int buffer = 0;
 		long numBlocks = blocks.getNumberOfElements();
 		long bytePos = 0;
-		buffers = new ByteBuffer[ (int)(1+numBlocks/BLOCKS_PER_BYTEBUFFER) ];
+		long numBuffers = 1+numBlocks/BLOCKS_PER_BYTEBUFFER;
+		buffers = new ByteBuffer[(int)numBuffers ];
+		posFirst = new long[(int)numBuffers];
+		
+//		System.out.println("Buffers "+buffers.length);
 		while(block<numBlocks-1) {
 			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCKS_PER_BYTEBUFFER);
 			long nextBytePos = blocks.get(nextBlock);
+			
+//			System.out.println("From block "+block+" to "+nextBlock);
+//			System.out.println("From pos "+ bytePos+" to "+nextBytePos);
+//			System.out.println("Total size: "+ (nextBytePos-bytePos));
 			buffers[buffer] = ch.map(MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
 			buffers[buffer].order(ByteOrder.LITTLE_ENDIAN);
+			
+			posFirst[buffer] = bytePos;
 			
 			bytePos = nextBytePos;
 			block+=BLOCKS_PER_BYTEBUFFER;
@@ -141,11 +152,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			int mid = (low + high) >>> 1;
 		
 			ByteBuffer buffer = cacheBuffers.get()[mid/BLOCKS_PER_BYTEBUFFER];
-			buffer.position((int)(blocks.get(mid)-blocks.get(mid-mid%BLOCKS_PER_BYTEBUFFER)));
+			buffer.position((int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
 
 			int cmp = ByteStringUtil.strcmp(str, buffer);
 			
-//			buffer.position((int)(blocks.get(mid)-blocks.get(mid-mid%BLOCKS_PER_BYTEBUFFER)));
+//			buffer.position((int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
 //			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(buffer)+ " Result: "+cmp);
 
 			if (cmp<0) {
@@ -200,12 +211,21 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		int cshared=0;
 		
 //		dumpBlock(block);
+//		
+//		System.out.println("Buff: "+ (block/BLOCKS_PER_BYTEBUFFER));
+//		System.out.println("Off: "+ (block%BLOCKS_PER_BYTEBUFFER));
+//		System.out.println("Block start: "+ blocks.get(block));
+//		System.out.println("Buffer block start: "+ posFirst[block/BLOCKS_PER_BYTEBUFFER]);
 		
 		ByteBuffer buffer = cacheBuffers.get()[block/BLOCKS_PER_BYTEBUFFER];
-		buffer.position((int) (blocks.get(block)-blocks.get(block-block%BLOCKS_PER_BYTEBUFFER)));
+		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
 		
 		// Read the first string in the block
 		try {
+			if(!buffer.hasRemaining()) {
+				return 0;
+			}
+			
 			tempString.replace(buffer, 0);
 
 			idInBlock++;
