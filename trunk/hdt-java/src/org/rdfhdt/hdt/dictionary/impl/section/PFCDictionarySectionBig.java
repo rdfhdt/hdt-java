@@ -36,20 +36,24 @@ import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
+	import org.rdfhdt.hdt.exceptions.CRCException;
+	import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.Mutable;
+import org.rdfhdt.hdt.util.crc.CRC32;
+import org.rdfhdt.hdt.util.crc.CRC8;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
- * Implementation of Plain Front Coding that stores each block in its own array, therefore
+ * Implementation of Plain Front Coding that divides the data in different arrays, therefore
  * overcoming Java's limitation of 2Gb for a single array.
  * 
- *  It allows loading much bigger files, but wastes a lot of memory in pointers to the blocks.
- *  
- *  TODO: Make it gather a few blocks in each array.
+ *  It allows loading much bigger files, but waste some memory in pointers to the blocks and 
+ *  some CPU to locate the array at search time.
  *  
  * @author mario.arias
  *
@@ -57,8 +61,11 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
 public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 32;
+	public static final int BLOCK_PER_BUFFER = 1000000;
 	
 	byte [][] data;
+	long [] posFirst;
+	protected SequenceLog64 blocks;
 	protected int blocksize;
 	protected int numstrings;
 	protected long size;
@@ -80,12 +87,12 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	private int locateBlock(CharSequence str) {	
 		int low = 0;
-		int high = data.length - 1;
+		int high = (int)blocks.getNumberOfElements() - 1;
 		
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 
-			int cmp = ByteStringUtil.strcmp(str, data[mid], 0);
+			int cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
 			//System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(data[mid], 0)+ " Result: "+cmp);
 
 			if (cmp<0) {
@@ -114,7 +121,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				int idblock = locateInBlock(data[blocknum], str);
+				int idblock = locateInBlock(blocknum, str);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -126,14 +133,16 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		return 0;
 	}
 		
-	private int locateInBlock(byte[] block, CharSequence str) {
-		
-		int pos = 0;
+	private int locateInBlock(int blockid, CharSequence str) {
+	
 		ReplazableString tempString = new ReplazableString();
 		
 		Mutable<Long> delta = new Mutable<Long>(0L);
 		int idInBlock = 0;
 		int cshared=0;
+		
+		byte [] block = data[blockid/BLOCK_PER_BUFFER];
+		int pos = (int) (blocks.get(blockid)-posFirst[blockid/BLOCK_PER_BUFFER]);
 		
 		// Read the first string in the block
 		int slen = ByteStringUtil.strlen(block, pos);
@@ -190,10 +199,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		}
 		
 		// Locate block
-		int nblock = (id-1)/blocksize;
+		int blockid = (id-1)/blocksize;
 		int nstring = (id-1)%blocksize;
-		int pos = 0;
-		byte [] block=data[nblock];
+		
+		byte [] block = data[blockid/BLOCK_PER_BUFFER];
+		int pos = (int) (blocks.get(blockid)-posFirst[blockid/BLOCK_PER_BUFFER]);
 		
 		// Copy first string
  		int len = ByteStringUtil.strlen(block, pos);
@@ -268,31 +278,60 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		numstrings = (int) VByte.decode(input);
-		this.size = VByte.decode(input);
-		blocksize = (int)VByte.decode(input);
+		CRCInputStream in = new CRCInputStream(input, new CRC8());
+		
+		// Read type
+		int type = in.read();
+		if(type!=TYPE_INDEX) {
+			throw new IllegalFormatException("Trying to read a DictionarySectionPFC from data that is not of the suitable type");
+		}
+		numstrings = (int) VByte.decode(in);
+		this.size = VByte.decode(in);
+		blocksize = (int)VByte.decode(in);
+		
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Dictionary Section Plain Front Coding Header.");
+		}
 		
 		// Load block pointers
-		SequenceLog64 blocks = new SequenceLog64();
+		blocks = new SequenceLog64();
 		blocks.load(input, listener);
 		
 		// Initialize global block array
-		int nblocks = (int)blocks.getNumberOfElements()-1;
-		data = new byte[nblocks][];
 		
 		// Read block by block
-		long previous = 0;
-		long current = 0;
-		for(int i=0;i<nblocks;i++) {
-			current = blocks.get(i+1);
-			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
-			data[i]=new byte[(int)(current-previous)];
+		// Read packed data
+		in.setCRC(new CRC32());
+
+		int block = 0;
+		int buffer = 0;
+		long bytePos = 0;
+		long numBlocks = blocks.getNumberOfElements();
+		long numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
+		data = new byte[(int)numBuffers][];
+		posFirst = new long[(int)numBuffers];
+		
+		while(block<numBlocks-1) {
+			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
+			long nextBytePos = blocks.get(nextBlock);
 			
-			int read = input.read(data[i]);
-			if(read!=data[i].length) {
+			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+			data[buffer]=new byte[(int)(nextBytePos-bytePos)];
+			
+			int read = in.read(data[buffer]);
+			if(read!=data[buffer].length) {
 				throw new IOException("Error reading from input");
 			}
-			previous=current;	
+			
+			posFirst[buffer] = bytePos;
+			
+			bytePos = nextBytePos;
+			block+=BLOCK_PER_BUFFER;
+			buffer++;
+		}
+		
+		if(!in.readCRCAndCheck()) {
+			throw new CRCException("CRC Error while reading Dictionary Section Plain Front Coding Data.");
 		}
 	}
 }
