@@ -61,7 +61,7 @@ public class DictionarySectionFactory {
 				section = new PFCDictionarySectionBig(new HDTSpecification());
 				section.load(input, listener);
 			}
-			return new DictionarySectionCachePerThread(section);
+			return section;
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}
@@ -77,7 +77,7 @@ public class DictionarySectionFactory {
 				// First try load using the standard PFC 
 			DictionarySectionPrivate section= new PFCDictionarySectionMap(input, f);
 
-			return new DictionarySectionCachePerThread(section);
+			return section;
 		}
 		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}

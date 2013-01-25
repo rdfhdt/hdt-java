@@ -72,18 +72,6 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected Sequence blocks;
 	protected long dataSize;
 	
-	private ThreadLocal<ByteBuffer[]> cacheBuffers =
-			new ThreadLocal<ByteBuffer[]>() {
-				protected ByteBuffer[] initialValue() {
-					ByteBuffer [] newBuf = new ByteBuffer[buffers.length];
-					for(int i=0;i<buffers.length;i++) {
-						newBuf[i] = buffers[i].duplicate();
-						newBuf[i].order(ByteOrder.LITTLE_ENDIAN);
-					}
-					return newBuf;
-				};
-	};
-	
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
 	
 		CRCInputStream crcin = new CRCInputStream(input, new CRC8());
@@ -151,10 +139,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 		
-			ByteBuffer buffer = cacheBuffers.get()[mid/BLOCKS_PER_BYTEBUFFER];
-			buffer.position((int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
+			ByteBuffer buffer = buffers[mid/BLOCKS_PER_BYTEBUFFER];
 
-			int cmp = ByteStringUtil.strcmp(str, buffer);
+			int cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
 			
 //			buffer.position((int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
 //			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(buffer)+ " Result: "+cmp);
@@ -211,13 +198,8 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		int cshared=0;
 		
 //		dumpBlock(block);
-//		
-//		System.out.println("Buff: "+ (block/BLOCKS_PER_BYTEBUFFER));
-//		System.out.println("Off: "+ (block%BLOCKS_PER_BYTEBUFFER));
-//		System.out.println("Block start: "+ blocks.get(block));
-//		System.out.println("Buffer block start: "+ posFirst[block/BLOCKS_PER_BYTEBUFFER]);
-		
-		ByteBuffer buffer = cacheBuffers.get()[block/BLOCKS_PER_BYTEBUFFER];
+
+		ByteBuffer buffer = buffers[block/BLOCKS_PER_BYTEBUFFER].duplicate();
 		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
 		
 		// Read the first string in the block
@@ -282,23 +264,8 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 		
 		int block = (id-1)/blocksize;
-		ByteBuffer buffer = cacheBuffers.get()[block/BLOCKS_PER_BYTEBUFFER];
-		
-		long blockPos = blocks.get(block);
-		long blockBase = blocks.get(block-block%BLOCKS_PER_BYTEBUFFER);
-		
-		int pos = (int)(blockPos-blockBase);
-		
-//		System.out.println("Block: "+block);
-//		System.out.println("Buffer: "+(block/BLOCKS_PER_BYTEBUFFER));
-//		System.out.println("Remainder: "+(block%BLOCKS_PER_BYTEBUFFER));
-//		System.out.println("Difference: "+(block-block%BLOCKS_PER_BYTEBUFFER));
-//		
-//		System.out.println("Block pos: "+blockPos);
-//		System.out.println("Block base: "+blockBase);
-//		System.out.println("Pos: "+pos);
-		
-		buffer.position(pos);
+		ByteBuffer buffer = buffers[block/BLOCKS_PER_BYTEBUFFER].duplicate();
+		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
 		
 		try {
 			ReplazableString tempString = new ReplazableString();
@@ -342,7 +309,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 
 			ReplazableString tempString = new ReplazableString();
 			int bytebufferIndex=0;
-			ByteBuffer buffer = cacheBuffers.get()[0];
+			ByteBuffer buffer = buffers[0].duplicate();
 
 			@Override
 			public boolean hasNext() {
@@ -352,7 +319,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			@Override
 			public CharSequence next() {
 				if(!buffer.hasRemaining()) {
-					buffer = cacheBuffers.get()[++bytebufferIndex];
+					buffer = buffers[bytebufferIndex].duplicate();
 					buffer.rewind();
 				}
 				try {
@@ -383,21 +350,18 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 
 	@Override
 	public void load(TempDictionarySection other, ProgressListener listener) {
-		// TODO Auto-generated method stub
-		
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public void save(OutputStream output, ProgressListener listener)
 			throws IOException {
-		// TODO Auto-generated method stub
-		
+		throw new NotImplementedException();
 	}
 
 	@Override
 	public void load(InputStream input, ProgressListener listener)
 			throws IOException {
-		// TODO Auto-generated method stub
-		
+		throw new NotImplementedException();
 	}
 }

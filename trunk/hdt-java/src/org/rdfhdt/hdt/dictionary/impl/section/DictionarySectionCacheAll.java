@@ -30,8 +30,8 @@ package org.rdfhdt.hdt.dictionary.impl.section;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
@@ -44,30 +44,32 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  * @author mario.arias
  *
  */
-public class DictionarySectionCache implements DictionarySectionPrivate {
+public class DictionarySectionCacheAll implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
 	private DictionarySectionPrivate child;
+	private boolean preload;
 	
-
-	@SuppressWarnings("serial")
-	Map<CharSequence, Integer> cacheString = new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
-					    // This method is called just after a new entry has been added
-					    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
-					        return size() > CACHE_ENTRIES;
-					    }
-					};
-					
-	@SuppressWarnings("serial")
-	Map<Integer, CharSequence> cacheID = new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
-						// This method is called just after a new entry has been added
-						public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {
-							return size() > CACHE_ENTRIES;
-						}
-					};
+	Map<CharSequence, Integer> cacheString;
+	CharSequence [] cacheID; 
 	
-	public DictionarySectionCache(DictionarySectionPrivate child) {
+	
+	public DictionarySectionCacheAll(DictionarySectionPrivate child, boolean preload) {
 		this.child = child;
+		this.preload = preload;
+		
+		cacheString = new HashMap<CharSequence, Integer>(child.getNumberOfElements()*2);
+		cacheID = new CharSequence[child.getNumberOfElements()];
+
+		if(preload) {
+			Iterator <? extends CharSequence> it = child.getSortedEntries();
+			int pos=0;
+			while(it.hasNext()) {
+				cacheID[pos] = it.next();
+				cacheString.put(cacheID[pos], pos);
+				pos++;
+			}
+		}
 	}
 
 	/* (non-Javadoc)
@@ -87,14 +89,21 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
-	public CharSequence extract(int pos) {
-		CharSequence o = cacheID.get(pos);
-		if(o==null) {
-			o = child.extract(pos);
-			cacheID.put(pos, o);
-			//cacheString.put(o, pos);
+	public final CharSequence extract(int pos) {
+		if(preload) {
+			return cacheID[pos-1];
+		} else {
+			if(pos==0) {
+				return null;
+			}
+			CharSequence o = cacheID[pos-1];
+			if(o==null) {
+				o = child.extract(pos);
+				cacheID[pos-1] = o;
+				//cacheString.put(o, pos);
+			}
+			return o;
 		}
- 		return o;
 	}
 
 	/* (non-Javadoc)

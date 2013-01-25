@@ -34,6 +34,7 @@ import java.io.OutputStream;
 
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
+import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionCacheAll;
 import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -132,6 +133,9 @@ public class FourSectionDictionary extends BaseDictionary {
 		subjects = DictionarySectionFactory.loadFrom(in, f, iListener);
 		predicates = DictionarySectionFactory.loadFrom(in, f, iListener);
 		objects = DictionarySectionFactory.loadFrom(in, f, iListener);
+		
+		// Use cache only for predicates. Preload only up to 100K predicates.
+		predicates = new DictionarySectionCacheAll(predicates, predicates.getNumberOfElements()<100000);
 	}
 
 	/* (non-Javadoc)
