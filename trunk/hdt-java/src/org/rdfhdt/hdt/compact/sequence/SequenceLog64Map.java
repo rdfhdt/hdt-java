@@ -46,8 +46,10 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -64,18 +66,6 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	private long numentries=0;
 	private long lastword;
 	private int numwords;
-	
-	private ThreadLocal<ByteBuffer[]> cacheBuffers =
-			new ThreadLocal<ByteBuffer[]>() {
-				protected ByteBuffer[] initialValue() {
-					ByteBuffer [] newBuf = new ByteBuffer[buffers.length];
-					for(int i=0;i<buffers.length;i++) {
-						newBuf[i] = buffers[i].duplicate();
-						newBuf[i].order(ByteOrder.LITTLE_ENDIAN);	// .duplicate() does not preserve endian.
-					}
-					return newBuf;
-				};
-	};
 	
 	public SequenceLog64Map(CountInputStream in, File f) throws IOException {
 		CRCInputStream crcin = new CRCInputStream(in, new CRC8());
@@ -125,14 +115,13 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		}
 	}
 	
-	private long getWord(int w) {
+	private final long getWord(int w) {
 		if(w==numwords-1) {
 			return lastword;
 		}
-		ByteBuffer buffer = cacheBuffers.get()[w/LONGS_PER_BUFFER];
-//		ByteBuffer buffer = buffers[w/LONGS_PER_BUFFER];
-		buffer.position((w%LONGS_PER_BUFFER)*8);
-		return buffer.getLong();
+
+		ByteBuffer buffer = buffers[w/LONGS_PER_BUFFER];
+		return buffer.getLong((w%LONGS_PER_BUFFER)*8);
 	}
 
 	/* (non-Javadoc)
@@ -171,30 +160,29 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-//		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
-//		
-//		out.write(SequenceFactory.TYPE_SEQLOG);
-//		out.write(numbits);
-//		VByte.encode(out, numentries);
-//		
-//		out.writeCRC();
-//		
-//		out.setCRC(new CRC32());
-//		
-//		int numwords = (int)numWordsFor(numbits, numentries);	
-//		for(int i=0;i<numwords-1;i++) {
-//			IOUtil.writeLong(out, data[i]);
-//		}
-//		
-//		if(numwords>0) {
-//			// Write only used bits from last entry (byte aligned, little endian)
-//			int lastWordUsedBits = lastWordNumBits(numbits, numentries);
-//			BitUtil.writeLowerBitsByteAligned(data[numwords-1], lastWordUsedBits, out);
-//		}
-//		
-//		out.writeCRC();
+		CRCOutputStream out = new CRCOutputStream(output, new CRC8());
+		
+		out.write(SequenceFactory.TYPE_SEQLOG);
+		out.write(numbits);
+		VByte.encode(out, numentries);
+		
+		out.writeCRC();
+		
+		out.setCRC(new CRC32());
+		
+		int numwords = (int)SequenceLog64.numWordsFor(numbits, numentries);	
+		for(int i=0;i<numwords-1;i++) {
+			IOUtil.writeLong(out, getWord(i));
+		}
+		
+		if(numwords>0) {
+			// Write only used bits from last entry (byte aligned, little endian)
+			int lastWordUsedBits = SequenceLog64.lastWordNumBits(numbits, numentries);
+			BitUtil.writeLowerBitsByteAligned(lastword, lastWordUsedBits, out);
+		}
+		
+		out.writeCRC();
 	}
-
 
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#size()
