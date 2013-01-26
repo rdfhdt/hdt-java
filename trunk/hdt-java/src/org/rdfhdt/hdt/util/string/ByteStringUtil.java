@@ -46,29 +46,52 @@ public class ByteStringUtil {
 	 */
 	public static final Charset STRING_ENCODING = Charset.forName("UTF-8");
 	
-	public static int longestCommonPrefix(byte [] buf1, int off1, byte [] buf2, int off2) {
-		int len1 = buf1.length;
-		int len2 = buf2.length;
-		int p1 = off1;
-		int p2 = off2;
-		while(
-				(p1<len1) &&
-        	    (p2<len2) &&
-        	    (buf1[p1]!=0) &&
-        	    (buf2[p2]!=0) && 
-        	    (buf1[p1] == buf2[p2])
-        	 ){
-			p1++;
-			p2++;
-		}
-		return p1-off1;
-	} 
+	public static final String asString(byte [] buff, int offset) {
+		int len = strlen(buff, offset);
+		return new String(buff, offset, len);
+	}
 	
-	public static int longestCommonPrefix(CharSequence str1, CharSequence str2) {
+	public static final String asString(ByteBuffer buff, int offset) {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int i=0;
+		int n=buff.capacity()-offset;
+		while(i<n) {
+			byte b = buff.get(offset+i);
+			if(b==0) {
+				break;
+			}
+			out.write(b);
+			i++;
+		}
+		return new String(out.toByteArray(), STRING_ENCODING);
+	}
+	
+	public static final int strlen(byte [] buff, int off) {
+		int len = buff.length;
+		int pos = off;
+		while(pos<len && buff[pos]!=0) {
+			pos++;
+		}
+		return pos-off;
+	}
+	
+	public static final int strlen(ByteBuffer buf, int base) {
+		int len=0;
+		int n=buf.capacity()-base;
+		while(len<n) {
+			if(buf.get(base+len)==0) {
+				return len;
+			}
+			len++;
+		}
+		throw new IllegalArgumentException("Buffer not Null-Terminated");
+	}
+	
+	public static final int longestCommonPrefix(CharSequence str1, CharSequence str2) {
 		return longestCommonPrefix(str1, str2, 0);
 	}
 	
-	public static int longestCommonPrefix(CharSequence str1, CharSequence str2, int from) {
+	public static final int longestCommonPrefix(CharSequence str1, CharSequence str2, int from) {
 		int len = Math.min(str1.length(), str2.length());
 		int delta = from;
 		while(delta<len && str1.charAt(delta)==str2.charAt(delta)) {
@@ -77,7 +100,7 @@ public class ByteStringUtil {
 		return delta-from;
 	}
 	
-	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2) {
+	public static final int strcmp(byte [] buff1, int off1, byte [] buff2, int off2) {
 		int len = Math.min(buff1.length-off1, buff2.length-off2);
 		
 		if(len==0) {
@@ -87,7 +110,7 @@ public class ByteStringUtil {
 		return strcmp(buff1, off1, buff2, off2, len);
 	}
 	
-	public static int strcmp(byte [] buff1, int off1, byte [] buff2, int off2, int n) {
+	public static final int strcmp(byte [] buff1, int off1, byte [] buff2, int off2, int n) {
 		byte a,b;
 		int diff;
 		int p1 = off1;
@@ -125,25 +148,6 @@ public class ByteStringUtil {
 		return diff;
 	}
 	
-	public static int strlen(byte [] buff, int off) {
-		int len = buff.length;
-		int pos = off;
-		while(pos<len && buff[pos]!=0) {
-			pos++;
-		}
-		return pos-off;
-	}
-	
-	public static int strlen(ByteBuffer pos) {
-		pos.mark();
-		int len=0;
-		while(pos.hasRemaining() && pos.get() != 0) {
-			len++;
-		}
-		pos.reset();
-		return len;
-	}
-	
 	public static int strcmp(CharSequence str, byte [] text, int offset) {
 		if(str instanceof CompactString) {
 			return strcmp(((CompactString) str).getData(), 0, text, offset);
@@ -156,92 +160,63 @@ public class ByteStringUtil {
 		}
 		throw new NotImplementedException();
 	}
-
-	public static int strcmp(CharSequence str, ByteBuffer text, int offset) {
-		
-		text.position(offset);
-		
-		ByteBuffer a = null;
 	
+	public static int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
+		byte [] buf=null;
+		int len;
+		
 		if(str instanceof CompactString) {
-			a = ByteBuffer.wrap(((CompactString) str).getData());
+			buf = ((CompactString) str).getData();
+			len = buf.length;
 		} else if(str instanceof String) {
-			a = ByteBuffer.wrap(((String) str).getBytes(ByteStringUtil.STRING_ENCODING));
+			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
+			len = buf.length;
 		} else if(str instanceof ReplazableString) {
-			a = ByteBuffer.wrap(((ReplazableString) str).buffer, 0, ((ReplazableString) str).used);
-		} else{
+			buf = ((ReplazableString) str).buffer;
+			len = ((ReplazableString) str).used;
+		} else {
 			throw new NotImplementedException();
 		}
 
-		return strcmp(a, text);
-	}
-	
-	public static String asString(byte [] buff, int offset) {
-		int len = strlen(buff, offset);
-		return new String(buff, offset, len);
-	}
-	
-	public static String asString(ByteBuffer buff) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		while(buff.hasRemaining()) {
-			byte b = buff.get();
-			if(b==0) {
-				break;
-			}
-			out.write(b);
-		}
-		return new String(out.toByteArray());
-	}
-	
-	public static int strcmp(CharSequence str, ByteBuffer buffer) {
-		String a = str.toString();
-		String b = asString(buffer);
-		return a.compareTo(b);
+		// FIXME: Some way to avoid this copy?
+		ByteBuffer bbuf = ByteBuffer.allocate(len+1);
+		bbuf.put(buf);
+		bbuf.put((byte)0);
 		
-		// FIXME: Do the comparison directly to avoid copying, probably faster.
-//		byte [] buf=null;
-//		
-//		if(str instanceof CompactString) {
-//			buf = ((CompactString) str).getData();
-//		}else if(str instanceof String) {
-//			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
-//		} else {
-//			throw new NotImplementedException();
-//		}
-//		
-//		return strcmp(ByteBuffer.wrap(buf), buffer);
+		return strcmp(bbuf, 0, buffer, offset);
 	}
 	
-	public static final int strcmp(ByteBuffer a, ByteBuffer b) {
-		// FIXME: Untested. May not work.
-	    int n = a.position() + Math.min(a.remaining(), a.remaining());
-	    for (int i = a.position(), j = b.position(); i < n; i++, j++) {
-	        byte v1 = a.get(i);
-	        byte v2 = b.get(j);
+	public static final int strcmp(ByteBuffer a, int abase, ByteBuffer b, int bbase) {
+		int i=0;
+		int n = Math.min(a.capacity()-abase, b.capacity()-bbase);
+		while(i<n) {
+			byte v1 = a.get(abase+i);
+	        byte v2 = b.get(bbase+i);
+
 	        if(v1==0) {
 	        	if(v2==0) {
-	        		return 0;
-	        	} else {
-	        		return 1;
-	        	}
-	        }
-	        if(v2==0) {
-	        	if(v1==0) {
 	        		return 0;
 	        	} else {
 	        		return -1;
 	        	}
 	        }
-	        if (v1 == v2)
-	            continue;
-	        if (v1 < v2)
-	            return -1;
-	        return +1;
+	        if(v2==0) {
+        		return +1;
+	        }
+
+	        if(v1!=v2) {
+	        	if (v1 < v2) {
+	        		return -1;
+	        	} else {
+	        		return +1;	        	
+	        	}
+	        }
+	        i++;
 	    }
-	    return a.remaining() - b.remaining();
+	    throw new IllegalArgumentException("One of the buffers not NULL-Terminated when comparing strings.");
 	}
 	
-	public static int append(CharSequence str, int start, byte [] buffer, int bufpos) {
+	public static final int append(CharSequence str, int start, byte [] buffer, int bufpos) {
 		byte [] bytes;
 		int len;
 		if(str instanceof String) {
@@ -260,7 +235,7 @@ public class ByteStringUtil {
 		return len - start;		
 	}
 
-	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
+	public static final int append(OutputStream out, CharSequence str, int start) throws IOException {
 		byte [] bytes;
 		int len;
 		if(str instanceof String) {
@@ -279,26 +254,4 @@ public class ByteStringUtil {
 		return len - start;
 	}
 	
-	/**
-	 * Add numbits of value to buffer at pos
-	 * @param buffer
-	 * @param pos Position in bits.
-	 * @param value Value to be added
-	 * @param numbits numbits of value to be added.
-	 */
-	public static void append(long [] buffer, long pos, long value, int numbits) {
-		final int W = 64;
-		
-		int i=(int)(pos/W), j=(int)(pos%W);
-		
-		// NOTE: Assumes it was empty before. 
-		// Otherwise we would need to clean the bits beforehand
-		if(numbits>(W-j)) {
-			// Two words
-			buffer[i] |= value << j >>> j;
-			buffer[i+1] |= (value<<(W-j-numbits));
-		} else {
-			buffer[i] |= (value<<(W-j-numbits));
-		}
-	}
 }
