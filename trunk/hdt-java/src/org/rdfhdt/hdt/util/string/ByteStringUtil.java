@@ -180,7 +180,7 @@ public class ByteStringUtil {
 
 		// FIXME: Some way to avoid this copy?
 		ByteBuffer bbuf = ByteBuffer.allocate(len+1);
-		bbuf.put(buf);
+		bbuf.put(buf, 0, len);
 		bbuf.put((byte)0);
 		
 		return strcmp(bbuf, 0, buffer, offset);
