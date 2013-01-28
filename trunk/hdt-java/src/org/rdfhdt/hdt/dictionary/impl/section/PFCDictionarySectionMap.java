@@ -53,6 +53,7 @@ import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
@@ -137,15 +138,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		int high = (int)blocks.getNumberOfElements()-1;
 		
 		while (low <= high) {
-			int mid = (low + high) >>> 1;
+			int mid = low + (high - low)/2;
 		
 			ByteBuffer buffer = buffers[mid/BLOCKS_PER_BYTEBUFFER];
-
 			int cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
 			
-//			buffer.position((int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
-//			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(buffer)+ " Result: "+cmp);
-
 			if (cmp<0) {
 				high = mid - 1;
 			} else if (cmp > 0) {
@@ -165,6 +162,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public int locate(CharSequence str) {
 		if(buffers==null || blocks==null) {
 			return 0;
+		}
+		
+		if(str instanceof String) {
+			// CompactString is more efficient for the binary search.
+			str = new CompactString(str);
 		}
 		
 		int blocknum = locateBlock(str);
