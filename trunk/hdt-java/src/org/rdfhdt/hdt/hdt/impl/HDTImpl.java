@@ -308,7 +308,7 @@ public class HDTImpl implements HDTPrivate {
 			throw new NotFoundException("String not found in dictionary");
 		}
 
-		return new DictionaryTranslateIterator(triples.search(triple), dictionary);
+		return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
 	}
 
 	/*

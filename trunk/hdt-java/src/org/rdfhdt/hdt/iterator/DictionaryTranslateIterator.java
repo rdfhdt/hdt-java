@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.iterator;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryUtil;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
+import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -46,6 +47,8 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	/** The dictionary */
 	Dictionary dictionary;
 
+	CharSequence s, p, o;
+	
 	/**
 	 * Basic constructor
 	 * 
@@ -57,6 +60,22 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary) {
 		this.iterator = iteratorTripleID;
 		this.dictionary = dictionary;
+	}
+	
+	/**
+	 * Basic constructor
+	 * 
+	 * @param iteratorTripleID
+	 *            Iterator of TripleID to be used
+	 * @param dictionary
+	 *            The dictionary to be used
+	 */
+	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+		this.iterator = iteratorTripleID;
+		this.dictionary = dictionary;
+		this.s = s==null ? "" : s;
+		this.p = p==null ? "" : p;
+		this.o = o==null ? "" : o;
 	}
 
 	/*
@@ -78,7 +97,12 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	public TripleString next() {
 		TripleID triple = iterator.next();
 		// convert the tripleID to TripleString
-		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
+		return new TripleString(
+				s.length()!=0 ? s : dictionary.idToString(triple.getSubject(), TripleComponentRole.SUBJECT), 
+				p.length()!=0 ? p : dictionary.idToString(triple.getPredicate(), TripleComponentRole.PREDICATE), 
+				o.length()!=0 ? o : dictionary.idToString(triple.getObject(), TripleComponentRole.OBJECT)
+				);
+//		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
 	}
 
 	/*
