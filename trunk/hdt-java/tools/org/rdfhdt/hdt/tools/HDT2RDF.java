@@ -26,8 +26,6 @@
  */
 package org.rdfhdt.hdt.tools;
 
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
