@@ -33,6 +33,7 @@ import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.string.CompactString;
 
 /**
  * 
@@ -94,6 +95,11 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		if(str==null || str.length()==0) {
 			return 0;
 		}
+				
+		if(str instanceof String) {
+			// CompactString is more efficient for the binary search.
+			str = new CompactString(str);
+		}
 
 		int ret=0;
 		switch(position) {
@@ -114,9 +120,11 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			}
 			return -1;
 		case OBJECT:
-			ret = shared.locate(str);
-			if(ret!=0) {
-				return getGlobalId(ret, DictionarySectionRole.SHARED);
+			if(str.charAt(0)!='"') {
+				ret = shared.locate(str);
+				if(ret!=0) {
+					return getGlobalId(ret, DictionarySectionRole.SHARED);
+				}
 			}
 			ret = objects.locate(str);
 			if(ret!=0) {
