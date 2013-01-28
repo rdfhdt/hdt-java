@@ -123,8 +123,8 @@ public class ByteStringUtil {
 		int p1 = off1;
 		int p2 = off2;		
 		while( n-- != 0) {
-			byte a = buff1[p1++];
-			byte b = buff2[p2++];
+			int a = buff1[p1++] & 0xFF;
+			int b = buff2[p2++] & 0xFF;
 			if(a!=b) {
 				return a-b;
 			}
@@ -170,8 +170,8 @@ public class ByteStringUtil {
 		int i=0;
 		int n = Math.min(len, buffer.capacity()-offset);
 		while(i<n) {
-			byte v1 = buf[i];
-	        byte v2 = buffer.get(offset+i);
+			int v1 = buf[i] & 0xFF;
+	        int v2 = buffer.get(offset+i) & 0xFF;
 
 	        if(v1!=v2) {
 	        	return v1-v2;
