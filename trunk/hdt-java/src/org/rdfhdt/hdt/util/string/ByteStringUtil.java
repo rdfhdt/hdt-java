@@ -27,7 +27,6 @@
 
 package org.rdfhdt.hdt.util.string;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -48,22 +47,19 @@ public class ByteStringUtil {
 	
 	public static final String asString(byte [] buff, int offset) {
 		int len = strlen(buff, offset);
-		return new String(buff, offset, len);
+		return new String(buff, offset, len, STRING_ENCODING);
 	}
 	
 	public static final String asString(ByteBuffer buff, int offset) {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		int len = strlen(buff, offset);
+		byte [] arr = new byte[len];
+		
 		int i=0;
-		int n=buff.capacity()-offset;
-		while(i<n) {
-			byte b = buff.get(offset+i);
-			if(b==0) {
-				break;
-			}
-			out.write(b);
+		while(i<len) {
+			arr[i] = buff.get(offset+i);
 			i++;
 		}
-		return new String(out.toByteArray(), STRING_ENCODING);
+		return new String(arr, STRING_ENCODING);
 	}
 	
 	public static final int strlen(byte [] buff, int off) {
@@ -100,71 +96,63 @@ public class ByteStringUtil {
 		return delta-from;
 	}
 	
-	public static final int strcmp(byte [] buff1, int off1, byte [] buff2, int off2) {
-		int len = Math.min(buff1.length-off1, buff2.length-off2);
+	public static final int strcmp(CharSequence str, byte [] buff2, int off2) {
+		byte [] buff1;
+		int off1;
+		int len1;
+		int len2=buff2.length;
 		
-		if(len==0) {
-			// Empty string is smaller than any string.
-			return (buff2.length-off2)-(buff1.length-off1);
+		if(str instanceof CompactString) {
+			buff1 = ((CompactString) str).getData();
+			off1=0;
+			len1=buff1.length;
+		} else if(str instanceof String) {
+			buff1 = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
+			off1=0;
+			len1=buff1.length;
+		} else if(str instanceof ReplazableString) {
+			buff1 = ((ReplazableString) str).buffer;
+			off1=0;
+			len1= ((ReplazableString) str).used;
+		} else {
+			throw new NotImplementedException();
 		}
-		return strcmp(buff1, off1, buff2, off2, len);
-	}
-	
-	public static final int strcmp(byte [] buff1, int off1, byte [] buff2, int off2, int n) {
-		byte a,b;
-		int diff;
+		
+		int n = Math.min(len1-off1, len2-off2);
+		
 		int p1 = off1;
-		int p2 = off2;	
-	
-		if (n == 0) {
-			return 0;
+		int p2 = off2;		
+		while( n-- != 0) {
+			byte a = buff1[p1++];
+			byte b = buff2[p2++];
+			if(a!=b) {
+				return a-b;
+			}
+			if(a==0) {
+				if(b==0) {
+					return 0;
+				} else {
+					return -1;
+				}
+			}
 		}
 		
-		// Check whether one of the buffers is already at the end
-		if(p1 < buff1.length && p2==buff2.length) {
+		if(p1-off1<len1 && buff1[p1]!=0){
+			// Still remaining in string one, second is shorter
 			return 1;
-		} else if(p1==buff1.length && p2<buff2.length) {
+		} 
+		if(p2-off2<len2 && buff2[p2]!=0){
+			// Still remaining in string two, first is shorter.
 			return -1;
 		}
-		
-		do {
-			a = buff1[p1++];
-			b = buff2[p2++];
-			diff = a-b;
-		} while ( (diff==0) && (a!=0) && (--n != 0) );
-		
-		if(n==0 && diff==0) {
-			if(buff1.length-p1!=0 && buff1[p1]!=0){
-				// Still remaining in string one, second is shorter
-				return 1;
-			} 
-			if(buff2.length-p2!=0 && buff2[p2]!=0){
-				// Still remaining in string two, first is shorter.
-				return -1;
-			}
-			return 0;
-		}
-		
-		return diff;
+		return 0;
 	}
 	
-	public static int strcmp(CharSequence str, byte [] text, int offset) {
-		if(str instanceof CompactString) {
-			return strcmp(((CompactString) str).getData(), 0, text, offset);
-		}
-		if(str instanceof String) {
-			return strcmp(((String) str).getBytes(ByteStringUtil.STRING_ENCODING), 0, text, offset);
-		}
-		if(str instanceof ReplazableString) {
-			return strcmp(((ReplazableString) str).buffer, 0, text, offset, ((ReplazableString) str).used);
-		}
-		throw new NotImplementedException();
-	}
-	
-	public static int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
+	public static final int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
 		byte [] buf=null;
 		int len;
 		
+		// Isolate array
 		if(str instanceof CompactString) {
 			buf = ((CompactString) str).getData();
 			len = buf.length;
@@ -177,43 +165,34 @@ public class ByteStringUtil {
 		} else {
 			throw new NotImplementedException();
 		}
-
-		// FIXME: Some way to avoid this copy?
-		ByteBuffer bbuf = ByteBuffer.allocate(len+1);
-		bbuf.put(buf, 0, len);
-		bbuf.put((byte)0);
 		
-		return strcmp(bbuf, 0, buffer, offset);
-	}
-	
-	public static final int strcmp(ByteBuffer a, int abase, ByteBuffer b, int bbase) {
+		// Compare
 		int i=0;
-		int n = Math.min(a.capacity()-abase, b.capacity()-bbase);
+		int n = Math.min(len, buffer.capacity()-offset);
 		while(i<n) {
-			byte v1 = a.get(abase+i);
-	        byte v2 = b.get(bbase+i);
-
-	        if(v1==0) {
-	        	if(v2==0) {
-	        		return 0;
-	        	} else {
-	        		return -1;
-	        	}
-	        }
-	        if(v2==0) {
-        		return +1;
-	        }
+			byte v1 = buf[i];
+	        byte v2 = buffer.get(offset+i);
 
 	        if(v1!=v2) {
-	        	if (v1 < v2) {
-	        		return -1;
-	        	} else {
-	        		return +1;	        	
-	        	}
+	        	return v1-v2;
+	        }
+	        if(v1==0) {
+	        	return 0;
 	        }
 	        i++;
 	    }
-	    throw new IllegalArgumentException("One of the buffers not NULL-Terminated when comparing strings.");
+		
+		// One of the buffer exhausted
+		if(buffer.capacity()-offset-i>0) {
+			byte v = buffer.get(offset+i);
+			if(v==0) {
+				return 0;
+			} else {
+				return -1;
+			}
+		} else {
+			throw new IllegalArgumentException("Buffer is not Null-Terminated");
+		}	
 	}
 	
 	public static final int append(CharSequence str, int start, byte [] buffer, int bufpos) {
