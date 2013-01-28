@@ -49,7 +49,7 @@ public class ReplazableString implements CharSequence {
 	 * 
 	 */
 	public ReplazableString() {
-		reserved = 10;
+		reserved = 100;
 		buffer = new byte[reserved];
 		used=0;
 	}
@@ -129,20 +129,18 @@ public class ReplazableString implements CharSequence {
 	public void replace(ByteBuffer in, int pos) throws IOException {
 		used = pos;
 		
-		while(true) {
-			if(!in.hasRemaining()) {
-				throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");				
-			}
-			int value = in.get();
+		int n = in.capacity()-in.position();
+		while(n-- != 0) {
+			byte value = in.get();
 			if(value==0) {
-				break;
+				return;
 			}
-			if(pos>=reserved) {
+			if(used>=reserved) {
 				ensureSize(reserved*2);
 			}
-			buffer[pos++] = (byte)(value&0xFF);
-			used++;
+			buffer[used++] = value;
 		}
+		throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");				
 	}
 	
 	/* (non-Javadoc)
