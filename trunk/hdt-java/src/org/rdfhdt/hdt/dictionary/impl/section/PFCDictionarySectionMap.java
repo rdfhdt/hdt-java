@@ -53,7 +53,6 @@ import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
-import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
@@ -93,9 +92,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 		
 		// Read blocks
-//		blocks = SequenceFactory.createStream(input, f);
-		blocks = SequenceFactory.createStream(input);
-		blocks.load(input, null);
+		blocks = SequenceFactory.createStream(input, f);
+//		blocks = SequenceFactory.createStream(input);
+//		blocks.load(input, null);
 		
 		long base = input.getTotalBytes();
 		IOUtil.skip(crcin, dataSize+4); // Including CRC32
@@ -162,11 +161,6 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public int locate(CharSequence str) {
 		if(buffers==null || blocks==null) {
 			return 0;
-		}
-		
-		if(str instanceof String) {
-			// CompactString is more efficient for the binary search.
-			str = new CompactString(str);
 		}
 		
 		int blocknum = locateBlock(str);
