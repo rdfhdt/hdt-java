@@ -49,6 +49,9 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 
 	CharSequence s, p, o;
 	
+	int lastSid, lastPid, lastOid;
+	CharSequence lastSstr, lastPstr, lastOstr;
+	
 	/**
 	 * Basic constructor
 	 * 
@@ -97,11 +100,29 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	public TripleString next() {
 		TripleID triple = iterator.next();
 		// convert the tripleID to TripleString
-		return new TripleString(
-				s.length()!=0 ? s : dictionary.idToString(triple.getSubject(), TripleComponentRole.SUBJECT), 
-				p.length()!=0 ? p : dictionary.idToString(triple.getPredicate(), TripleComponentRole.PREDICATE), 
-				o.length()!=0 ? o : dictionary.idToString(triple.getObject(), TripleComponentRole.OBJECT)
-				);
+		
+		if(s.length()!=0) {
+			lastSstr = s;
+		} else if(triple.getSubject()!=lastSid) {
+			lastSid = triple.getSubject();
+			lastSstr = dictionary.idToString(lastSid, TripleComponentRole.SUBJECT);
+		}
+		
+		if(p.length()!=0) {
+			lastPstr = p;
+		} else if(triple.getPredicate()!=lastPid) {
+			lastPstr = dictionary.idToString(triple.getPredicate(), TripleComponentRole.PREDICATE);
+			lastPid = triple.getPredicate();
+		}
+		
+		if(o.length()!=0) {
+			lastOstr = o;
+		} else if(triple.getObject()!=lastOid) {
+			lastOstr = dictionary.idToString(triple.getObject(), TripleComponentRole.OBJECT);
+			lastOid = triple.getObject();
+		}
+		
+		return new TripleString(lastSstr, lastPstr, lastOstr);
 //		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
 	}
 
