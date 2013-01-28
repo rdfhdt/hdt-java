@@ -26,6 +26,8 @@
  */
 package org.rdfhdt.hdt.tools;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.List;
 
@@ -45,13 +47,10 @@ import com.beust.jcommander.internal.Lists;
  *
  */
 public class HDT2RDF implements ProgressListener {
-	@Parameter(description = "Files")
+	@Parameter(description = "<input RDF> <output HDT>")
 	public List<String> parameters = Lists.newArrayList();
-
-	@Parameter(names = "-input", description = "Input HDT file name")
-	public String hdtInput = null;
 	
-	@Parameter(names = "-output", description = "Output RDF file name")
+	public String hdtInput = null;
 	public String rdfOutput = null;
 
 	public void execute() throws Exception {
@@ -63,13 +62,19 @@ public class HDT2RDF implements ProgressListener {
 			out = new PrintStream(rdfOutput, "UTF-8");
 		}
 		
-		HDT hdt = HDTManager.loadHDT(hdtInput, this);
+		HDT hdt = HDTManager.mapHDT(hdtInput, this);
 
 		IteratorTripleString it = hdt.search("","","");
+		StringBuilder build = new StringBuilder(1024);
 		while(it.hasNext()) {
 			TripleString triple = it.next();
-			out.print(triple.asNtriple());
-		}		
+			build.delete(0, build.length());
+			triple.dumpNtriple(build);
+			out.print(build);
+		}
+		if(!rdfOutput.equals("stdout")) {
+			out.close();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -85,18 +90,19 @@ public class HDT2RDF implements ProgressListener {
 		JCommander com = new JCommander(hdt2rdf, args);
 		com.setProgramName("hdt2rdf");
 
-		if(hdt2rdf.hdtInput==null) {
-			try {
-				hdt2rdf.hdtInput = hdt2rdf.parameters.get(0);
-			} catch (Exception e){
-				com.usage();
-				System.exit(1);
-			}
+		try {
+			hdt2rdf.hdtInput = hdt2rdf.parameters.get(0);
+		} catch (Exception e){
+			com.usage();
+			System.exit(1);
 		}
-		if (hdt2rdf.rdfOutput==null){
+
+		try {
+			hdt2rdf.rdfOutput = hdt2rdf.parameters.get(1);
+		} catch (Exception e){
 			hdt2rdf.rdfOutput = "stdout";
 		}
-		System.out.println("Converting "+hdt2rdf.hdtInput+" to RDF on "+hdt2rdf.rdfOutput);
+		System.err.println("Converting "+hdt2rdf.hdtInput+" to RDF on "+hdt2rdf.rdfOutput);
 		
 		hdt2rdf.execute();
 	}

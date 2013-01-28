@@ -219,29 +219,33 @@ public final class TripleString {
 	/** Convert TripleString to NTriple */
 	public CharSequence asNtriple() throws IOException {
 		StringBuilder str = new StringBuilder();
+		this.dumpNtriple(str);
+		return str;
+	}
+	
+	public final void dumpNtriple(Appendable out) throws IOException {
 		char s0 = subject.charAt(0);
 		if(s0=='_' || s0=='<') {
-			str.append(subject);
+			out.append(subject);
 		} else {
-			str.append('<').append(subject).append('>');
+			out.append('<').append(subject).append('>');
 		}
 		
 		char p0 = predicate.charAt(0);
 		if(p0=='<') {
-			str.append(' ').append(predicate).append(' ');	
+			out.append(' ').append(predicate).append(' ');	
 		} else {
-			str.append(" <").append(predicate).append("> ");
+			out.append(" <").append(predicate).append("> ");
 		}
 		
 		char o0 = object.charAt(0);
 		if(o0=='"') {
-			UnicodeEscape.escapeString(object.toString(), str);
-			str.append(" .\n");
+			UnicodeEscape.escapeString(object.toString(), out);
+			out.append(" .\n");
 		} else if(o0=='_' ||o0=='<' ) {
-			str.append(object).append(" .\n");
+			out.append(object).append(" .\n");
 		} else {
-			str.append('<').append(object).append("> .\n");
+			out.append('<').append(object).append("> .\n");
 		}
-		return str;
 	}
 }
