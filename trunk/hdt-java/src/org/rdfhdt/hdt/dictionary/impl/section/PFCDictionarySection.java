@@ -139,13 +139,20 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		
 		int low = 0;
 		int high = (int)blocks.getNumberOfElements()-1;
+		int max = high;
 		
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
 			
-			int cmp = ByteStringUtil.strcmp(str, text, (int)blocks.get(mid));
-//			System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(text, (int)blocks.get(mid))+ " Result: "+cmp);
-
+			int cmp;
+			if(mid==max) {
+				cmp = -1;
+			} else {
+				int pos = (int)blocks.get(mid);
+				cmp = ByteStringUtil.strcmp(str, text, pos);
+//				System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(text, pos)+ " Result: "+cmp);
+			}
+			
 			if (cmp<0) {
 				high = mid - 1;
 			} else if (cmp > 0) {

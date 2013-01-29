@@ -135,13 +135,18 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 		int low = 0;
 		int high = (int)blocks.getNumberOfElements()-1;
+		int max = high;
 		
 		while (low <= high) {
 			int mid = low + (high - low)/2;
 		
-			ByteBuffer buffer = buffers[mid/BLOCKS_PER_BYTEBUFFER];
-			int cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
-			
+			int cmp;
+			if(mid==max) {
+				cmp=-1;
+			} else {
+				ByteBuffer buffer = buffers[mid/BLOCKS_PER_BYTEBUFFER];
+				cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
+			}
 			if (cmp<0) {
 				high = mid - 1;
 			} else if (cmp > 0) {
@@ -198,12 +203,12 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		ByteBuffer buffer = buffers[block/BLOCKS_PER_BYTEBUFFER].duplicate();
 		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
 		
-		// Read the first string in the block
 		try {
 			if(!buffer.hasRemaining()) {
 				return 0;
 			}
 			
+			// Read the first string in the block
 			tempString.replace(buffer, 0);
 
 			idInBlock++;
@@ -223,23 +228,17 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 					cshared += ByteStringUtil.longestCommonPrefix(tempString, str, cshared);
 
 					if((cshared==str.length()) && (tempString.length()==str.length())) {
-						break;
+						return idInBlock;
 					}
 				} else {
 					// We have less common characters than before, 
 					// this string is bigger that what we are looking for.
 					// i.e. Not found.
-					idInBlock = 0;
-					break;
+					return 0;
 				}
 				idInBlock++;
 			}
-
-			if(!buffer.hasRemaining() || idInBlock== blocksize) {
-				idInBlock=0;
-			}
-
-			return idInBlock;
+			return 0;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return 0;

@@ -88,12 +88,18 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	private int locateBlock(CharSequence str) {	
 		int low = 0;
 		int high = (int)blocks.getNumberOfElements() - 1;
+		int max = high;
 		
 		while (low <= high) {
 			int mid = (low + high) >>> 1;
-
-			int cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
-			//System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(data[mid], 0)+ " Result: "+cmp);
+			
+			int cmp;
+			if(max==high) {
+				cmp = -1;
+			} else {
+				cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
+				//System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(data[mid], 0)+ " Result: "+cmp);
+			}
 
 			if (cmp<0) {
 				high = mid - 1;
