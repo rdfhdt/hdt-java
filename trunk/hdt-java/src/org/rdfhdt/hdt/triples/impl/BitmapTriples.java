@@ -624,11 +624,11 @@ public class BitmapTriples implements TriplesPrivate {
 			if(listLen==2) {
 				long aPos = objectArray.get(first);
 				long a = seqY.get(aPos);
-				long bPos = objectArray.get(last);
+				long bPos = objectArray.get(first+1);
 				long b = seqY.get(bPos);
 				if(a>b) {
 					objectArray.set(first, bPos);
-					objectArray.set(last, aPos);
+					objectArray.set(first+1, aPos);
 				}
 			} else if(listLen>2) {
 				class Pair {
