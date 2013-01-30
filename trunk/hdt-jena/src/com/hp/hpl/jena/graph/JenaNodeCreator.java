@@ -27,6 +27,7 @@
 
 package com.hp.hpl.jena.graph;
 
+import com.hp.hpl.jena.datatypes.TypeMapper;
 import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
 
 
@@ -41,7 +42,42 @@ public class JenaNodeCreator {
 	}
 	
 	public static Node createLiteral(CharSequence x) {
-		return new Node_Literal( LiteralLabelFactory.create( x.toString(), "", false ) );
+		String str = x.toString();
+		int len=str.length();
+	
+		String literal="";
+		String datatype="";
+		String lang="";
+		
+		char next = '\0';
+        for(int i=len-1;i>0; i--) {
+                char cur = str.charAt(i);
+
+                if(cur=='"') {
+                	if(next=='@') {
+                		literal = str.substring(1, i);
+                        lang = str.substring(i+2, len);
+                        
+                        return new Node_Literal( LiteralLabelFactory.create( literal, lang ) );
+                	} else {
+                		literal = str.substring(1, i);                		
+                		
+                		return new Node_Literal( LiteralLabelFactory.create( literal, "", false ) );
+                	}
+                } else if(cur=='^' && next=='^' && str.charAt(i-1)=='"') {
+                        literal = str.substring(1, i-1);
+                        
+                        if(str.charAt(i+2)=='<' && str.charAt(len-1)=='>') {
+                        	datatype = str.substring(i+3, len-1);
+                        } else {                        	
+                        	datatype = str.substring(i+2, len);
+                        }
+                        return new Node_Literal( LiteralLabelFactory.create( literal, "", TypeMapper.getInstance().getTypeByName(datatype) ) );
+                }
+                
+                next=cur;
+        }
+        return new Node_Literal( LiteralLabelFactory.create( str.substring(1, len-2), "", false ) );
 	}
 	
 	public static Node createURI(CharSequence x) {
