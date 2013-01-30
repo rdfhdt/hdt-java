@@ -9,7 +9,7 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.impl.ModelCom;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 
 
 public class HDTSparql {
@@ -27,7 +27,7 @@ public class HDTSparql {
 			
 			// Create Jena wrapper on top of HDT.
 			HDTGraph graph = new HDTGraph(hdt);
-			Model model = new ModelCom(graph);
+			Model model = ModelFactory.createModelForGraph(graph);
 
 			// Use Jena ARQ to execute the query.
 			Query query = QueryFactory.create(sparqlQuery);
