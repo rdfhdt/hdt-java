@@ -28,9 +28,11 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
 
 import org.openjena.atlas.lib.Sink;
@@ -62,7 +64,9 @@ public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
 		this.callback = callback;
 		try {
 			InputStream input;
-			if(fileName.endsWith(".gz")) {
+			if(fileName.equals("-")) {
+				input = new BufferedInputStream(System.in);
+			} else if(fileName.endsWith(".gz")) {
 				input = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
 			} else {
 				input = new BufferedInputStream(new FileInputStream(fileName));
