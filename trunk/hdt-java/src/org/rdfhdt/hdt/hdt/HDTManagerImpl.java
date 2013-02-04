@@ -87,7 +87,7 @@ public class HDTManagerImpl extends HDTManager {
 		} else {
 			System.err.println("Loader type not specified: using one-pass");
 			spec.set("loader.type", "one-pass");
-			loader = new TempHDTImporterTwoPass();
+			loader = new TempHDTImporterOnePass();
 		}
 		
 		StopWatch st = new StopWatch();
