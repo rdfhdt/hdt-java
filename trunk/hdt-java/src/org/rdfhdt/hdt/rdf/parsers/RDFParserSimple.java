@@ -54,7 +54,9 @@ public class RDFParserSimple implements RDFParserCallback {
 		try {
 			BufferedReader reader; 
 		
-			if(fileName.endsWith(".nt.gz")) {
+			if(fileName.equals("-")) {
+				reader = new BufferedReader(new InputStreamReader(System.in));
+			} else if(fileName.endsWith(".gz")) {
 				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))));
 			} else {
 				reader = new BufferedReader(new FileReader(new File(fileName)));

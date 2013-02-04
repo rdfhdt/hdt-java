@@ -126,13 +126,18 @@ public class RDF2HDT implements ProgressListener {
 		JCommander com = new JCommander(rdf2hdt, args);
 		com.setProgramName("rdf2hdt");
 	
-		if(rdf2hdt.parameters.size()!=2) {
+		if(rdf2hdt.parameters.size()==1) {
+			System.err.println("No input file specified, reading from standard input.");
+			rdf2hdt.rdfInput = "-";
+			rdf2hdt.hdtOutput = rdf2hdt.parameters.get(0);
+		} else if(rdf2hdt.parameters.size()==2) {
+			rdf2hdt.rdfInput = rdf2hdt.parameters.get(0);
+			rdf2hdt.hdtOutput = rdf2hdt.parameters.get(1);
+			
+		} else {
 			com.usage();
 			System.exit(1);
 		}
-		
-		rdf2hdt.rdfInput = rdf2hdt.parameters.get(0);
-		rdf2hdt.hdtOutput = rdf2hdt.parameters.get(1);
 		
 		System.out.println("Converting "+rdf2hdt.rdfInput+" to "+rdf2hdt.hdtOutput+" as "+rdf2hdt.rdfType);
 		
