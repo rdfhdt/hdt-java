@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.compact.sequence;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -67,6 +68,11 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	private long lastword;
 	private int numwords;
 	
+	public SequenceLog64Map(File f) throws IOException {
+		// Read from the beginning of the file
+		this(new CountInputStream(new BufferedInputStream(new FileInputStream(f))), f);
+	}
+	
 	public SequenceLog64Map(CountInputStream in, File f) throws IOException {
 		CRCInputStream crcin = new CRCInputStream(in, new CRC8());
 		
@@ -89,7 +95,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		
 		numwords = (int)SequenceLog64.numWordsFor(numbits, numentries);
 		if(numwords>0) {
-			IOUtil.skip(in, (numwords-1)*8);
+			IOUtil.skip(in, (numwords-1)*8L);
 			// Read only used bits from last entry (byte aligned, little endian)
 			int lastWordUsed = SequenceLog64.lastWordNumBits(numbits, numentries);
 			lastword = BitUtil.readLowerBitsByteAligned(lastWordUsed, in);
