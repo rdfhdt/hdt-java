@@ -82,14 +82,17 @@ public class SequenceInt32 implements DynamicSequence {
 	 */
 	@Override
 	public long get(long position) {
-		assert position>=0 && position<=Integer.MAX_VALUE;
-		
+		if(position<0 || position>=numelements) {
+			throw new IndexOutOfBoundsException();
+		}
+
 		return data[(int)position];
 	}
 	
 	public void set(long position, long value) {
-		assert position>=0 && position<=Integer.MAX_VALUE;
-		assert value>=0 && value<=Integer.MAX_VALUE;
+		if(position<0 || position>=data.length) {
+			throw new IndexOutOfBoundsException();
+		}
 		
 		data[(int)position] = (int)value;
 		numelements = (int) Math.max(numelements, position+1);
