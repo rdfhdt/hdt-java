@@ -266,7 +266,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 
 			@Override
 			public void remove() {
-				throw new NotImplementedException();
+				throw new UnsupportedOperationException();
 			}
 		};
 	}
