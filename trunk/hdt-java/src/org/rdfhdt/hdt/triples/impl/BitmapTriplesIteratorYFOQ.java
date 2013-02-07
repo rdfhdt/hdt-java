@@ -226,6 +226,6 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		 */
 		@Override
 		public void remove() {
-			throw new NotImplementedException();
+			throw new UnsupportedOperationException();
 		}
 }

@@ -66,7 +66,7 @@ public class TriplesList implements TempTriples {
 
 	/** The order of the triples */
 	private TripleComponentOrder order;
-	private int numValidTriples;
+	private long numValidTriples;
 
 	private boolean sorted = false;
 
@@ -312,7 +312,7 @@ public class TriplesList implements TempTriples {
 			return;
 		}
 
-		if(order==TripleComponentOrder.Unknown) {
+		if(order==TripleComponentOrder.Unknown || !sorted) {
 			throw new IllegalArgumentException("Cannot remove duplicates unless sorted");
 		}
 
@@ -497,7 +497,7 @@ public class TriplesList implements TempTriples {
 
 		@Override
 		public void remove() {
-			throw new NotImplementedException();
+			throw new UnsupportedOperationException();
 		}
 	}
 
