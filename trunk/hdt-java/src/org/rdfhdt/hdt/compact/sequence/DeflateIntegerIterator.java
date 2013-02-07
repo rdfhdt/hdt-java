@@ -113,7 +113,7 @@ public class DeflateIntegerIterator implements Iterator<Integer> {
 	 */
 	@Override
 	public void remove() {
-		
+		throw new UnsupportedOperationException();
 	}
 	
 
