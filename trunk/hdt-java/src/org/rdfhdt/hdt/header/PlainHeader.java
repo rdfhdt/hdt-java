@@ -73,7 +73,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	@Override
 	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
 		String objStr = object.toString();
-		if(objStr.startsWith("http://")||objStr.startsWith("file://")) {
+		if(objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
 			triples.add(new TripleString(subject, predicate, object));
 		} else {
 			triples.add(new TripleString(subject, predicate, '"'+objStr+'"'));
@@ -155,7 +155,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 
 	@Override
 	public void processTriple(TripleString triple, long pos) {
-		this.insert(triple.getSubject(), triple.getPredicate(), triple.getObject());
+		triples.add(new TripleString(triple));
 	}
 
 	@Override
