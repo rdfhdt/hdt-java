@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.iterator;
 
 import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.TripleID;
 
 import java.util.Iterator;
@@ -90,7 +89,7 @@ public class RoleIteratorTripleID implements Iterator<Integer> {
 	 */
 	@Override
 	public void remove() {
-		throw new NotImplementedException();
+		throw new UnsupportedOperationException();
 	}
 
 }
