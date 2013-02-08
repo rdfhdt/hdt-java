@@ -60,6 +60,15 @@ public final class TripleString {
 		this.predicate = predicate;
 		this.object = object;
 	}
+	
+	/**
+	 * Copy constructor
+	 */
+	public TripleString(TripleString other) {
+		this.subject = other.subject;
+		this.predicate = other.predicate;
+		this.object = other.object;
+	}
 
 	/**
 	 * @return the subject
