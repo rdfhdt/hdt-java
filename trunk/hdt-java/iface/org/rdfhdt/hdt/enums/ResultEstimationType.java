@@ -50,5 +50,11 @@ public enum ResultEstimationType {
 	/**
 	 *  The number of results is exactly the specified value.
 	 */
-	EXACT
+	EXACT,
+	
+	/**
+	 * The number of results is unknown, but should be more than the specified value.
+	 */
+	MORE_THAN
+	
 }
