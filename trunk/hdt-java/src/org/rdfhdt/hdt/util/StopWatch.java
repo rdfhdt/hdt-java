@@ -20,9 +20,7 @@
  *
  * Contacting the authors:
  *   Mario Arias:               mario.arias@deri.org
- *   Javier D. Fernandez:       jfergar@infor.uva.es
- *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
+ *
  */
 package org.rdfhdt.hdt.util;
 
