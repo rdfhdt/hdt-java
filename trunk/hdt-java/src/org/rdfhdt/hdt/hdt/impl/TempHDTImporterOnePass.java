@@ -34,6 +34,7 @@ import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
 import org.rdfhdt.hdt.hdt.TempHDTImporter;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -41,6 +42,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.TriplesFactory;
@@ -54,6 +56,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		TempTriples triples;
 		ProgressListener listener;
 		long num = 0;
+		long size = 0;
 
 		public TripleAppender(TempDictionary dict, TempTriples triples, ProgressListener listener) {
 			this.dict = dict;
@@ -68,6 +71,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 					dict.insert(triple.getObject(), TripleComponentRole.OBJECT)
 			);
 			num++;
+			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
 	};
@@ -89,17 +93,53 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.ONE_PASS);
 		TempDictionary dictionary = modHDT.getDictionary();
 		TempTriples triples = modHDT.getTriples();
+		TripleAppender appender = new TripleAppender(dictionary, triples, listener);
 
         // Load RDF in the dictionary and generate triples
         dictionary.startProcessing();
-        parser.doParse(filename, baseUri, notation, new TripleAppender(dictionary, triples, listener));
+        parser.doParse(filename, baseUri, notation, appender);
         dictionary.endProcessing();
 		
 		// Reorganize both the dictionary and the triples
 		modHDT.reorganizeDictionary(listener);
 		modHDT.reorganizeTriples(listener);
 		
+		modHDT.getHeader().insert( "_:statistics", HDTVocabulary.ORIGINAL_SIZE, appender.size);
+		
 		return modHDT; 
 	}
+	
+	public TempHDT loadFromTriples(HDTOptions specs, IteratorTripleString iterator, String baseUri, ProgressListener listener)
+			throws IOException {
+			
+		// Create Modifiable Instance
+		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.ONE_PASS);
+		TempDictionary dictionary = modHDT.getDictionary();
+		TempTriples triples = modHDT.getTriples();
 
+        // Load RDF in the dictionary and generate triples
+        dictionary.startProcessing();
+        long num=0;
+        long size=0;
+        while(iterator.hasNext()) {
+        	TripleString triple = iterator.next();
+        	triples.insert(
+        			dictionary.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
+        			dictionary.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
+        			dictionary.insert(triple.getObject(), TripleComponentRole.OBJECT)
+        			);
+        	num++;
+			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
+        	ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
+        }
+        dictionary.endProcessing();
+		
+		// Reorganize both the dictionary and the triples
+		modHDT.reorganizeDictionary(listener);
+		modHDT.reorganizeTriples(listener);
+		
+		modHDT.getHeader().insert( "_:statistics", HDTVocabulary.ORIGINAL_SIZE, size);
+		
+		return modHDT; 
+	}
 }

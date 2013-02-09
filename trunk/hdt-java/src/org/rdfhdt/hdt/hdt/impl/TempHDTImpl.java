@@ -33,6 +33,8 @@ import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.TempHDT;
+import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.TempTriples;
@@ -44,6 +46,7 @@ import org.rdfhdt.hdt.triples.TriplesFactory;
  */
 public class TempHDTImpl implements TempHDT {
 
+	protected Header header;
 	protected TempDictionary dictionary;
 	protected TempTriples triples;
 
@@ -57,8 +60,14 @@ public class TempHDTImpl implements TempHDT {
 		this.baseUri = baseUri;
 		this.modeOfLoading = modeOfLoading;
 
-		dictionary = DictionaryFactory.createTempDictionary(spec);
-		triples = TriplesFactory.createTempTriples(spec);
+		this.header = HeaderFactory.createHeader(spec);
+		this.dictionary = DictionaryFactory.createTempDictionary(spec);
+		this.triples = TriplesFactory.createTempTriples(spec);
+	}
+	
+	@Override
+	public Header getHeader() {
+		return header;
 	}
 
 	@Override

@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 
 public abstract class HDTManager {
 	
@@ -127,8 +128,20 @@ public abstract class HDTManager {
 	public static HDT generateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
 		return HDTManager.getInstance().doGenerateHDT(rdfFileName, baseURI, rdfNotation, hdtFormat, listener);
 	}
-
 	
+	/**
+	 * Create an HDT file from an RDF file.
+	 * @param iterator A provider of triples. Must implement hasNext(), next() and estimatedNumResults.
+	 * @param baseURI Base URI for the dataset.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return
+	 * @throws IOException  
+	 */
+	public static HDT generateHDT(IteratorTripleString iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDT(iterator, baseURI, hdtFormat, listener);
+	}
+
 	// Abstract methods for the current implementation
 	protected abstract HDTOptions doReadOptions(String file) throws IOException;
 	protected abstract HDT doLoadHDT(String hdtFileName, ProgressListener listener) throws IOException;
@@ -139,4 +152,5 @@ public abstract class HDTManager {
 	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException;
 	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener);
 	protected abstract HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doGenerateHDT(IteratorTripleString iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 }

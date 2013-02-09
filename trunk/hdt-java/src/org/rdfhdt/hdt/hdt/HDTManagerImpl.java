@@ -5,13 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.impl.HDTImpl;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterOnePass;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterTwoPass;
+import org.rdfhdt.hdt.header.HeaderUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.util.StopWatch;
 
 public class HDTManagerImpl extends HDTManager {
@@ -101,7 +104,11 @@ public class HDTManagerImpl extends HDTManager {
 		hdt.populateHeaderStructure(modHdt.getBaseURI());
 		
 		// Add file size to Header
-		hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, new File(rdfFileName).length());
+		try {
+			long originalSize = HeaderUtil.getPropertyLong(modHdt.getHeader(), "_:statistics", HDTVocabulary.ORIGINAL_SIZE);
+			hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, originalSize);
+		} catch (NotFoundException e) {
+		}
 		
 		System.out.println("File converted in: "+st.stopAndShow());
 		
@@ -110,4 +117,33 @@ public class HDTManagerImpl extends HDTManager {
 		return hdt;
 	}
 
+	@Override
+	public HDT doGenerateHDT(IteratorTripleString triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
+		//choose the importer
+		TempHDTImporterOnePass loader = new TempHDTImporterOnePass();
+		
+		StopWatch st = new StopWatch();
+		
+		// Create TempHDT
+		TempHDT modHdt = loader.loadFromTriples(spec, triples, baseURI, listener);
+		
+		// Convert to HDT
+		HDTImpl hdt = new HDTImpl(spec); 
+		hdt.loadFromModifiableHDT(modHdt, listener);
+		hdt.populateHeaderStructure(modHdt.getBaseURI());
+		
+		// Add file size to Header
+		try {
+			long originalSize = HeaderUtil.getPropertyLong(modHdt.getHeader(), "_:statistics", HDTVocabulary.ORIGINAL_SIZE);
+			hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, originalSize);
+		} catch (NotFoundException e) {
+		}
+		
+		System.out.println("File converted in: "+st.stopAndShow());
+		
+		modHdt.close();
+		
+		return hdt;
+	}
+	
 }
