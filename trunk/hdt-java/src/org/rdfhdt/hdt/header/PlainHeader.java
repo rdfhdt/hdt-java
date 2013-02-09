@@ -74,9 +74,9 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
 		String objStr = object.toString();
 		if(objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
-			triples.add(new TripleString(subject, predicate, object));
+			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), object));
 		} else {
-			triples.add(new TripleString(subject, predicate, '"'+objStr+'"'));
+			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"'));
 		}
 	}
 
@@ -85,7 +85,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	 */
 	@Override
 	public void insert(CharSequence subject, CharSequence predicate, long object) {
-		triples.add(new TripleString(subject, predicate, '"'+Long.toString(object)+'"'));
+		triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+Long.toString(object)+'"'));
 	}
 
 	/* (non-Javadoc)
