@@ -39,17 +39,19 @@ import java.util.Iterator;
 import java.util.SortedSet;
 
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdtdisk.util.CacheCalculator;
 
@@ -82,7 +84,7 @@ import com.sleepycat.je.EnvironmentConfig;
  */
 public class TriplesBerkeley implements TempTriples {
 
-	private HDTSpecification specs;
+	private HDTOptions specs;
 
 	/** home folder of the db environment */
 	private File envHome;
@@ -109,7 +111,7 @@ public class TriplesBerkeley implements TempTriples {
 	 * @param order
 	 *            The order to sort by
 	 */
-	public TriplesBerkeley(HDTSpecification specification) {
+	public TriplesBerkeley(HDTOptions specification) {
 
 		this.specs = specification;
 
@@ -478,6 +480,16 @@ public class TriplesBerkeley implements TempTriples {
 			return comparator.compare(triple1, triple2);
 		}
 
+	}
+
+	@Override
+	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
 
 }

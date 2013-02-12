@@ -38,6 +38,24 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  * 
  */
 public class HDTFactory {
+	private static TempDictTriplesFactory tempFactory=null;
+	
+	public static TempDictTriplesFactory getTempFactory() {
+		if(tempFactory==null) {
+			try {
+				Class<?> managerImplClass = Class.forName("org.rdfhdt.hdtdisk.HDTDiskFactory");
+				tempFactory = (TempDictTriplesFactory) managerImplClass.newInstance();
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException("Class org.rdfhdt.hdtdisk.HDTDiskFactory not found. Did you include the hdt-disk.jar in the classpath?");
+			} catch (InstantiationException e) {
+				throw new RuntimeException("Cannot create implementation for HDTDiskFactory. Does the class org.rdfhdt.hdtdisk.HDTDiskFactory implement TempDictTriplesFactory?");
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		return tempFactory;
+	}
+	
 	/**
 	 * Creates a default HDT
 	 * 

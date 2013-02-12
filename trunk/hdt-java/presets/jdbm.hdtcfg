@@ -1,0 +1,20 @@
+
+# Parameters of the Generated HDT
+header.type = <http://purl.org/HDT/hdt#headerSimple>
+triples.type = <http://purl.org/HDT/hdt#triplesBitmap>
+triples.component.order = SPO
+dictionary.type = <http://purl.org/HDT/hdt#dictionaryFour>
+stream.y = <http://purl.org/HDT/hdt#streamLog>
+stream.z = <http://purl.org/HDT/hdt#streamLog>
+
+# Parameters of the temporary dictionary used for building the HDT
+# impl  = hash | jdbm
+tempDictionary.impl = jdbm
+# memory for cache can be specified as <number><K|k|M|m|G|g> 
+tempDictionary.cache = 100M
+
+#parameters of the temporary triples used for building the HDT
+# impl  = list|jdbm
+#tempTriples.impl = jdbm
+# cache memory for disk-based implementations, can be specified as <number><K|k|M|m|G|g>
+#tempTriples.cache = 100M

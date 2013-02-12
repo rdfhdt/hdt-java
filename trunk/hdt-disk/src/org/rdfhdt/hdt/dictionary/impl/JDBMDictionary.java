@@ -33,8 +33,8 @@ import java.io.IOException;
 import org.apache.jdbm.DB;
 import org.apache.jdbm.DBMaker;
 import org.rdfhdt.hdt.dictionary.impl.section.JDBMDictionarySection;
-import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdtdisk.util.CacheCalculator;
+import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.ProfilingUtil;
 
 /**
  * This class is an implementation of a modifiable dictionary that
@@ -52,31 +52,40 @@ public class JDBMDictionary extends BaseTempDictionary {
 
 	private DB db;
 
-	public JDBMDictionary(HDTSpecification spec) {
+	public JDBMDictionary(HDTOptions spec) {
 
 		super(spec);
 		db = setupDB(spec);
 
-		// FIXME: Read stuff from properties
 		subjects = new JDBMDictionarySection(spec, db, "subjects");
 		predicates = new JDBMDictionarySection(spec, db, "predicates");
 		objects = new JDBMDictionarySection(spec, db, "objects");
 		shared = new JDBMDictionarySection(spec, db, "shared");
 	}
 
-	private DB setupDB(HDTSpecification spec) {
+	private int getCacheSize(HDTOptions spec) {
+		long size = (int) ProfilingUtil.parseSize(spec.get("tempDictionary.cache"));
+		if(size==-1) {
+			size = 64*1024*1024;
+		}
+		return (int) (size/5500);
+	}
+	
+	private DB setupDB(HDTOptions spec) {
 
-		//FIXME read from specs...
 		File folder = new File("DB");
 		if (!folder.exists() && !folder.mkdir()){
 			throw new RuntimeException("Unable to create DB folder...");
 		}
+		File path = new File(folder.getPath()+"/dictionary");
+		path.delete();
 
-		DBMaker db = DBMaker.openFile(folder.getPath()+"/dictionary");
+		DBMaker db = DBMaker.openFile(path.getAbsolutePath());
 		db.closeOnExit();
 		db.deleteFilesAfterClose();
 		db.disableTransactions(); //more performance
-		db.setMRUCacheSize(CacheCalculator.getJDBMDictionaryCache(spec));
+	
+		db.setMRUCacheSize(getCacheSize(spec));
 		
 		return db.make();
 	}

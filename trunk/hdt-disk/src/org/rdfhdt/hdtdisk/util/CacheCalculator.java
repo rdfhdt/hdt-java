@@ -26,11 +26,12 @@
  */
 package org.rdfhdt.hdtdisk.util;
 
-import org.rdfhdt.hdt.dictionary.DictionaryFactory;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TriplesFactory;
+import org.rdfhdt.hdt.util.ProfilingUtil;
 import org.rdfhdt.hdt.util.RDFInfo;
+import org.rdfhdt.hdtdisk.HDTDiskFactory;
 
 /**
  * This class contains methods for calculating the sizes of caches
@@ -63,8 +64,8 @@ public class CacheCalculator {
 	 * @throws NumberFormatException if the calculated cache size is negative
 	 * @return the size of the cache for modTriples in bytes
 	 */
-	public static long getTriplesCache(HDTSpecification specs){
-		long bytes = specs.getBytesProperty("tempTriples.cache");
+	public static long getTriplesCache(HDTOptions specs){
+		long bytes = ProfilingUtil.parseSize(specs.get("tempTriples.cache"));
 		if (bytes!=-1){
 			return bytes;
 		}
@@ -72,7 +73,7 @@ public class CacheCalculator {
 		System.out.println("No value set for size of triples cache -> calculating...");
 		
 		String dictionaryType = specs.get("tempDictionary.type");
-		long dictionaryCache = specs.getBytesProperty("tempDictionary.cache");
+		long dictionaryCache = ProfilingUtil.parseSize(specs.get("tempDictionary.cache"));
 		
 		long xmx = Runtime.getRuntime().maxMemory();
 		if (xmx==Long.MAX_VALUE) {
@@ -87,20 +88,13 @@ public class CacheCalculator {
 		
 		double compression = RDFInfo.getCompression(specs);
 		
-		if (DictionaryFactory.MOD_DICT_TYPE_ON_DISK.equals(dictionaryType)){
-			bytes = xmx - (long)(2*compression*sizeOfRDF);
-			if (dictionaryCache!=-1){
-				//if dictionary cache already calculated/set then just subtract
-				bytes -= dictionaryCache;
-			} else {
-				//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
-				bytes = (long)(bytes*0.25); //FIXME hard-coded ratio!!
-			}
-		} else if (DictionaryFactory.MOD_DICT_TYPE_IN_MEM.equals(dictionaryType)){
-			//TODO what is the formula if the dictionary is in_mem and triples on_disk (little likely combination)
-			bytes = (long)(xmx*0.05); //FIXME 5% of memory total guesstimation (assumption, lots of memory for in-mem dictionary)
+		bytes = xmx - (long)(2*compression*sizeOfRDF);
+		if (dictionaryCache!=-1){
+			//if dictionary cache already calculated/set then just subtract
+			bytes -= dictionaryCache;
 		} else {
-			throw new RuntimeException("Cannot calculate triples cache if type of modDictionary is unknown.");
+			//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
+			bytes = (long)(bytes*0.25); //FIXME hard-coded ratio!!
 		}
 		
 		if (bytes<0)
@@ -145,8 +139,8 @@ public class CacheCalculator {
 	 * @throws NumberFormatException if the calculated cache size is negative
 	 * @return the size of the cache for modDictionary in bytes
 	 */
-	public static long getDictionaryCache(HDTSpecification specs){
-		long bytes = specs.getBytesProperty("tempDictionary.cache");
+	public static long getDictionaryCache(HDTOptions specs){
+		long bytes = ProfilingUtil.parseSize(specs.get("tempDictionary.cache"));
 		if (bytes!=-1){
 			return bytes;
 		}
@@ -155,7 +149,7 @@ public class CacheCalculator {
 		
 		String triplesType = specs.get("tempTriples.type");
 		String triplesImpl = specs.get("tempTriples.impl");
-		long triplesCache = specs.getBytesProperty("tempTriples.cache");
+		long triplesCache = ProfilingUtil.parseSize(specs.get("tempTriples.cache"));
 		
 		long Xmx = Runtime.getRuntime().maxMemory();
 		if (Xmx==Long.MAX_VALUE)
@@ -173,32 +167,14 @@ public class CacheCalculator {
 		}
 		double compression = RDFInfo.getCompression(specs);
 		
-		if (TriplesFactory.MOD_TRIPLES_TYPE_ON_DISK.equals(triplesType)){
-			bytes = Xmx - (long)(2*compression*sizeOfRDF);
-			if (triplesCache!=-1){
-				//if dictionary cache already calculated/set then just subtract
-				bytes -= triplesCache;
-			} else {
-				//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
-				bytes = (long)(bytes*0.75); //FIXME hard-coded ratio!!
-			}
-		} else if (TriplesFactory.MOD_TRIPLES_TYPE_IN_MEM.equals(triplesType)){
-			if (TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(triplesImpl)){
-				if ((sizeOfTriplesInMem)>((long)(2*compression*sizeOfRDF))) {
-					bytes = Xmx - 2*sizeOfTriplesInMem;
-				} else {
-					bytes = Xmx - (sizeOfTriplesInMem + (long)(2*compression*sizeOfRDF));
-				}
-			} else if (TriplesFactory.MOD_TRIPLES_IMPL_SET.equals(triplesImpl)){
-				//FIXME - this is bad...
-				// TriplesSet takes more memory than just numTriples*sizeOf(TripleID)
-				// because of the tree structure (treeNode is maybe even bigger than TripleID)
-				System.out.println("Use of TriplesSet with on-disk dictionary DEPRECATED!! Use TriplesList");
-				bytes = Xmx - (sizeOfTriplesInMem + (long)(2*compression*sizeOfRDF));
-			} else
-				throw new RuntimeException("Unknown in-memory triples implementation...");
+		
+		bytes = Xmx - (long)(2*compression*sizeOfRDF);
+		if (triplesCache!=-1){
+			//if dictionary cache already calculated/set then just subtract
+			bytes -= triplesCache;
 		} else {
-			throw new RuntimeException("Cannot calculate triples cache if type of modDictionary is unknown.");
+			//else if not yet calculated then just split the cache in 1:3 ratio, 1/4 to triples, 3/4 to dictionary
+			bytes = (long)(bytes*0.75); //FIXME hard-coded ratio!!
 		}
 		
 		if (bytes<0)
@@ -222,7 +198,7 @@ public class CacheCalculator {
 	 *  because it is small enough as it is. If records<2048 when bytesPerRecord = 1500 drop linearly from
 	 *  (2048,1500) to (1024,3000) and then keep at maximum bytesPerRecord of 3000.
 	 */
-	public static int getJDBMTriplesCache(HDTSpecification specs){
+	public static int getJDBMTriplesCache(HDTOptions specs){
 		//TODO some smarter, better way of doing this... extensive testing for more precise empirical conclusion at least
 		long bytes = getTriplesCache(specs);
 		int bytesPerRecord = 1500;
@@ -249,7 +225,7 @@ public class CacheCalculator {
 	 *  because it is small enough as it is. If records<2048 when bytesPerRecord = 5500 drop linearly from
 	 *  (2048,5500) to (1024,11000) and then keep at maximum bytesPerRecord of 11000.
 	 */
-	public static int getJDBMDictionaryCache(HDTSpecification specs){
+	public static int getJDBMDictionaryCache(HDTOptions specs){
 		//TODO some smarter, better way of doing this... extensive testing for more precise empirical conclusion at least
 		long bytes = getDictionaryCache(specs);
 		int bytesPerRecord = 5500;

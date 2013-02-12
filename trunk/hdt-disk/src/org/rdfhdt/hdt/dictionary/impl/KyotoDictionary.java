@@ -31,7 +31,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.dictionary.impl.section.KyotoDictionarySection;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HDTOptions;
 
 /**
  * This class is an implementation of a modifiable dictionary that
@@ -46,7 +46,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
  */
 public class KyotoDictionary extends BaseTempDictionary {
 	
-	public KyotoDictionary(HDTSpecification spec) {
+	public KyotoDictionary(HDTOptions spec) {
 
 		super(spec);
 		

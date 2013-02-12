@@ -27,7 +27,9 @@
 
 package org.rdfhdt.hdt.triples;
 
+import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.TempDictTriplesFactory;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -39,53 +41,25 @@ import org.rdfhdt.hdt.triples.impl.TriplesList;
  * 
  */
 public class TriplesFactory {
-	
-	public static final String MOD_TRIPLES_TYPE_ON_DISK = "on-disk";
-	public static final String MOD_TRIPLES_TYPE_IN_MEM = "in-memory";
-	
-	public static final String MOD_TRIPLES_IMPL_LIST = "list";
-	public static final String MOD_TRIPLES_IMPL_SET = "set";
-	public static final String MOD_TRIPLES_IMPL_JDBM = "jdbm";
-	public static final String MOD_TRIPLES_IMPL_BERKELEY = "berkeleyJE";
-	public static final String MOD_TRIPLES_IMPL_BERKELEY_NATIVE = "berkeley";
-	public static final String MOD_TRIPLES_IMPL_KYOTO = "kyoto";
+		
+	public static final String TEMP_TRIPLES_IMPL_LIST = "list";
 
-//	private static void requireTwoPass(HDTOptions spec) {
-//		String loaderType = spec.get("loader.type");
-//		if (!HDTFactory.LOADER_TWO_PASS.equals(loaderType)){
-//			String errmsg = "tempTriples.type cannot be \"on-disk\" if loader.type is not set to two-pass!";
-//			System.err.println(errmsg);
-//			throw new RuntimeException(errmsg);
-//		}
-//	}
 	
 	/**
 	 * Creates a new TempTriples (writable triples structure)
 	 * 
 	 * @return TempTriples
 	 */
-	static public TempTriples createTempTriples(HDTOptions spec) {
-		
-//		String triplesImpl = spec.get("tempTriples.impl");
+	static public TempTriples createTempTriples(HDTOptions spec) {		
+		String triplesImpl = spec.get("tempTriples.impl");
 
-		// FIXME: Load Disk Implementations
-//		if (MOD_TRIPLES_IMPL_JDBM.equals(triplesImpl)) {
-//			requireTwoPass(spec);
-//			return new TriplesJDBM(spec);
-//		} else if (MOD_TRIPLES_IMPL_BERKELEY.equals(triplesImpl)) {
-//			requireTwoPass(spec);
-//			return new TriplesBerkeley(spec);
-//		} else if (MOD_TRIPLES_IMPL_BERKELEY_NATIVE.equals(triplesImpl)) {
-//			requireTwoPass(spec);
-//			//return new TriplesBerkeleyNative(spec);
-//			throw new NotImplementedException();
-//		} else if (MOD_TRIPLES_IMPL_KYOTO.equals(triplesImpl)) {
-//			requireTwoPass(spec);
-//			return new TriplesKyoto(spec);
-//		} else {
-			spec.set("tempTriples.impl", MOD_TRIPLES_IMPL_LIST);
+		// Implementations available in the Core
+		if (triplesImpl==null || triplesImpl.equals("") || TEMP_TRIPLES_IMPL_LIST.equals(triplesImpl)) {
 			return new TriplesList(spec);
-//		}
+		}
+		
+		// Implementations available in the HDT-Disk module.
+		return HDTFactory.getTempFactory().getTriples(spec);
 	}
 	
 	/**

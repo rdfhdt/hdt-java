@@ -34,6 +34,7 @@ import java.util.SortedMap;
 import org.apache.jdbm.DB;
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
@@ -67,7 +68,7 @@ public class JDBMDictionarySection implements TempDictionarySection {
 		this(new HDTSpecification(), db, sectionName);
 	}
 
-	public JDBMDictionarySection(HDTSpecification spec, DB db, String sectionID) {
+	public JDBMDictionarySection(HDTOptions spec, DB db, String sectionID) {
 
 		this.db = db;
 		this.sectionID = sectionID;

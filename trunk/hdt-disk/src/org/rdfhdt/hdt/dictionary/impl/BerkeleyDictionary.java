@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.dictionary.impl;
 import java.io.File;
 
 import org.rdfhdt.hdt.dictionary.impl.section.BerkeleyDictionarySection;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdtdisk.util.CacheCalculator;
 
 import com.sleepycat.je.CacheMode;
@@ -54,24 +54,24 @@ public class BerkeleyDictionary extends BaseTempDictionary {
 	private File envHome;
 	private Environment env;
 
-	public BerkeleyDictionary(HDTSpecification spec) {
+	public BerkeleyDictionary(HDTOptions options) {
 
-		super(spec);
-		setupDBEnvironment(spec);
+		super(options);
+		setupDBEnvironment(options);
 
 		// FIXME: Read stuff from properties
 		try {
-			subjects = new BerkeleyDictionarySection(spec, env, "subjects");
-			predicates = new BerkeleyDictionarySection(spec, env, "predicates");
-			objects = new BerkeleyDictionarySection(spec, env, "objects");
-			shared = new BerkeleyDictionarySection(spec, env, "shared");
+			subjects = new BerkeleyDictionarySection(options, env, "subjects");
+			predicates = new BerkeleyDictionarySection(options, env, "predicates");
+			objects = new BerkeleyDictionarySection(options, env, "objects");
+			shared = new BerkeleyDictionarySection(options, env, "shared");
 		} catch (Exception e){
 			cleanupEnvironment();
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void setupDBEnvironment(HDTSpecification spec) {
+	private void setupDBEnvironment(HDTOptions spec) {
 
 		//FIXME read from specs...
 		envHome = new File("DB/dictionary");

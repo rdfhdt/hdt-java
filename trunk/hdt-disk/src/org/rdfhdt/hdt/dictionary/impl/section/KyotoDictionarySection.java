@@ -36,6 +36,7 @@ import kyotocabinet.DB;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
@@ -72,7 +73,7 @@ public class KyotoDictionarySection implements TempDictionarySection {
 		this(new HDTSpecification(), homeDir, sectionName);
 	}
 
-	public KyotoDictionarySection(HDTSpecification spec, File homeDir, String sectionID) {
+	public KyotoDictionarySection(HDTOptions spec, File homeDir, String sectionID) {
 
 		this.homeDir = homeDir;
 		this.sectionID = sectionID;
@@ -84,7 +85,7 @@ public class KyotoDictionarySection implements TempDictionarySection {
 		this.size = 0;
 	}
 
-	private void setupDatabases(HDTSpecification spec) {
+	private void setupDatabases(HDTOptions spec) {
 		
 		//TODO read from specs...
 		//TODO catch exceptions...

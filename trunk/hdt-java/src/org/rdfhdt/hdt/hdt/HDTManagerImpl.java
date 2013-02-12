@@ -80,16 +80,20 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions spec, ProgressListener listener) throws IOException, ParserException {
+		
+		// Let implementations override the one/two pass.
+		try {
+			HDTFactory.getTempFactory().checkTwoPass(spec);
+		} catch (Exception e) {
+			
+		}
+		
 		//choose the importer
 		String loaderType = spec.get("loader.type");
 		TempHDTImporter loader;
-		if ("one-pass".equals(loaderType)){
-			loader = new TempHDTImporterOnePass();
-		} else if ("two-pass".equals(loaderType)) {
+		if ("two-pass".equals(loaderType)) {
 			loader = new TempHDTImporterTwoPass();
 		} else {
-			System.err.println("Loader type not specified: using one-pass");
-			spec.set("loader.type", "one-pass");
 			loader = new TempHDTImporterOnePass();
 		}
 		

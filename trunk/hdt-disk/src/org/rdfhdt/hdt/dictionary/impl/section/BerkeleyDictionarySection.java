@@ -33,6 +33,7 @@ import java.util.Map;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
@@ -79,7 +80,7 @@ public class BerkeleyDictionarySection implements TempDictionarySection {
 		this(new HDTSpecification(), env, sectionName);
 	}
 
-	public BerkeleyDictionarySection(HDTSpecification spec, Environment env, String sectionID) throws Exception {
+	public BerkeleyDictionarySection(HDTOptions spec, Environment env, String sectionID) throws Exception {
 
 		this.env = env;
 		this.sectionID = sectionID;
@@ -94,7 +95,7 @@ public class BerkeleyDictionarySection implements TempDictionarySection {
 		this.size = 0;
 	}
 
-	private void setupDatabases(HDTSpecification spec) throws Exception {
+	private void setupDatabases(HDTOptions spec) throws Exception {
 
 		DatabaseConfig dbConf = new DatabaseConfig();
 		dbConf.setExclusiveCreateVoid(true); //so that it throws exception if already exists

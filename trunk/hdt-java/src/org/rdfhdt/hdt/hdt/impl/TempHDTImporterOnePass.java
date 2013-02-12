@@ -83,7 +83,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 		
 		// Fill the specs with missing properties
-		if (!RDFInfo.linesSet(specs) && TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
+		if (!RDFInfo.linesSet(specs) && TriplesFactory.TEMP_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
 			//count lines if not user-set and if triples in-mem (otherwise not important info)
 			RDFInfo.setLines(RDFInfo.countLines(filename, parser, notation), specs);
 		}

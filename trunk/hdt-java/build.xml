@@ -60,6 +60,7 @@
     </target>
     <target name="clean">
         <delete dir="bin"/>
+        <delete file="hdt-lib.jar"/>
     </target>
     <target depends="clean" name="cleanall"/>
     <target depends="build-project" name="build"/>

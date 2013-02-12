@@ -43,19 +43,21 @@ import org.apache.jdbm.DB;
 import org.apache.jdbm.DBMaker;
 import org.apache.jdbm.Serializer;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.util.ProfilingUtil;
+import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
-import org.rdfhdt.hdtdisk.util.CacheCalculator;
 
 /**
  * This is an on-disc implementation of TempTriples based on a TreeMap,
@@ -76,7 +78,7 @@ import org.rdfhdt.hdtdisk.util.CacheCalculator;
  */
 public class TriplesJDBM implements TempTriples {
 
-	private HDTSpecification specs;
+	private HDTOptions specs;
 
 	/** database holding the triples */
 	private DB db;
@@ -97,9 +99,9 @@ public class TriplesJDBM implements TempTriples {
 	 * @param order
 	 *            The order to sort by
 	 */
-	public TriplesJDBM(HDTSpecification specification) {
+	public TriplesJDBM(HDTOptions spec) {
 
-		this.specs = specification;
+		this.specs = spec;
 
 		String orderStr = specs.get("triples.component.order");
 		if(orderStr==null) {
@@ -110,6 +112,15 @@ public class TriplesJDBM implements TempTriples {
 		setupDB();
 
 		this.numValidTriples = 0;
+	}
+	
+
+	private int getCacheSize(HDTOptions spec) {
+		long size = (int) ProfilingUtil.parseSize(spec.get("tempDictionary.cache"));
+		if(size==-1) {
+			size = 64*1024*1024;
+		}
+		return (int) (size/1500);
 	}
 
 	/**method for setting up the db and the db-backed treeSet*/
@@ -125,7 +136,7 @@ public class TriplesJDBM implements TempTriples {
 		dbMaker.closeOnExit();
 		dbMaker.deleteFilesAfterClose();
 		dbMaker.disableTransactions(); //more performance
-		dbMaker.setMRUCacheSize(CacheCalculator.getJDBMTriplesCache(specs));
+		dbMaker.setMRUCacheSize(getCacheSize(specs));
 		
 		this.db = dbMaker.make();
 
@@ -386,6 +397,18 @@ public class TriplesJDBM implements TempTriples {
 			triple.setObject(in.readInt());
 			return triple;
 		}
+	}
+
+	@Override
+	public void mapFromFile(CountInputStream in, File f,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci,
+			ProgressListener listener) throws IOException {
+		throw new NotImplementedException();
 	}
 
 }

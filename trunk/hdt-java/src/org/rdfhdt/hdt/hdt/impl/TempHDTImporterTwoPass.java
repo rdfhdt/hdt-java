@@ -111,7 +111,7 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 		// Fill the specs with missing properties
 		if (!RDFInfo.linesSet(specs) && 
-				TriplesFactory.MOD_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
+				TriplesFactory.TEMP_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
 			//count lines if not user-set and if triples in-mem (otherwise not important info)
 			RDFInfo.setLines(RDFInfo.countLines(filename, parser, notation), specs);
 			//FIXME setting numberOfLines costs (counting them) but saves memory... what to do??

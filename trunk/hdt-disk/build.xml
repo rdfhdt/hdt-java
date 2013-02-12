@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- WARNING: Eclipse auto-generated file.
+              Any modifications will be overwritten.
+              To include a user specific buildfile here, simply create one in the same
+              directory with the processing instruction <?eclipse.ant.import?>
+              as the first entry and export the buildfile again. -->
+<project basedir="." default="build" name="hdt-disk">
+    <property environment="env"/>
+    <property name="hdt-java.location" value="../hdt-java"/>
+    <property name="hdt-disk.location" value="."/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.6"/>
+    <property name="source" value="1.6"/>
+    <path id="hdt-java.classpath">
+        <pathelement location="${hdt-java.location}/bin"/>
+    </path>
+    <path id="hdt-disk.classpath">
+        <pathelement location="bin"/>
+        <path refid="hdt-java.classpath"/>
+        <pathelement location="${hdt-disk.location}/lib/JDBM3_13092012.jar"/>
+        <pathelement location="${hdt-disk.location}/lib/kyotocabinet.jar"/>
+        <pathelement location="${hdt-disk.location}/lib/BerkeleyDB_JE_5.0.55.jar"/>
+    </path>
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+        <delete file="hdt-disk.jar"/>
+    </target>
+    <target depends="build" name="jar">
+        <jar destfile="hdt-disk.jar">
+            <fileset dir="bin" />
+        </jar>
+    </target>
+    <target depends="clean" name="cleanall">
+        <ant antfile="build.xml" dir="${hdt-java.location}" inheritAll="false" target="clean"/>
+    </target>
+    <target depends="build-subprojects,build-project" name="build"/>
+    <target name="build-subprojects">
+        <ant antfile="build.xml" dir="${hdt-java.location}" inheritAll="false" target="build-project">
+            <propertyset>
+                <propertyref name="build.compiler"/>
+            </propertyset>
+        </ant>
+    </target>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+            <classpath refid="hdt-disk.classpath"/>
+        </javac>
+    </target>
+</project>
