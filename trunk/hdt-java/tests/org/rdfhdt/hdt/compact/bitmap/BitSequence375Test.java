@@ -18,7 +18,6 @@ public class BitSequence375Test {
 	final static int num=100000;
 	
 	Bitmap375 bitseq;
-	BitmapNew bitnew;
 	BitSet bitset; 
 	
 	@Before
@@ -26,14 +25,12 @@ public class BitSequence375Test {
 		Random r = new Random(1);
 		
 		bitseq = new Bitmap375(num);
-		bitnew = new BitmapNew(num);
 		bitset = new BitSet();
 				
 		for(int i=0;i<num;i++) {
 			boolean value =r.nextBoolean(); 
 			bitset.set(i, value);
 			bitseq.set(i, value);
-			bitnew.set(i, value);
 		}	
 	}
 	
@@ -120,10 +117,9 @@ public class BitSequence375Test {
 //				assertEquals("Wrong rank1", count, bitseq.rank1(i));
 //				assertEquals("Wrong rank new", bitseq.rank1(i), bitnew.rank1(i));
 				
-				if(bitseq.rank1(i)!=bitnew.rank1(i)) {
+				if(bitseq.rank1(i)!=count) {
 					System.out.println("Different");
 					long a= bitseq.rank1(i);
-					long b = bitnew.rank1(i);
 				}
 			}
 		}
