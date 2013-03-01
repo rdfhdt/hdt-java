@@ -63,7 +63,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
-	private static final int BLOCKS_PER_BYTEBUFFER = 100000;
+	private static final int BLOCKS_PER_BYTEBUFFER = 50000;
 	protected FileChannel ch;
 	protected ByteBuffer [] buffers; // Encoded sequence
 	long [] posFirst;	// Global byte position of the start of each buffer
