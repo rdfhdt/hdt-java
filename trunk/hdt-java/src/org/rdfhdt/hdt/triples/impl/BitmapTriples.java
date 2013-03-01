@@ -99,6 +99,10 @@ public class BitmapTriples implements TriplesPrivate {
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
 	}
 	
+	public Sequence getPredicateCount() {
+		return predicateCount;
+	}
+	
 	public void load(IteratorTripleID it, ProgressListener listener) {
 
 		long number = it.estimatedNumResults();
@@ -921,4 +925,5 @@ public class BitmapTriples implements TriplesPrivate {
 
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
+
 }
