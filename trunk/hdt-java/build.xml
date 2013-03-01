@@ -15,14 +15,14 @@
     </path>
     <path id="hdt-java.classpath">
         <pathelement location="bin"/>
-        <pathelement location="lib/commons-codec-1.5.jar"/>
-        <pathelement location="lib/httpclient-4.1.2.jar"/>
-        <pathelement location="lib/httpcore-4.1.3.jar"/>
+        <pathelement location="lib/commons-codec-1.6.jar"/>
+        <pathelement location="lib/httpclient-4.2.3.jar"/>
+        <pathelement location="lib/httpcore-4.2.2.jar"/>
         <pathelement location="lib/jcommander.jar"/>
-        <pathelement location="lib/jena-arq-2.9.4.jar"/>
-        <pathelement location="lib/jena-core-2.7.4.jar"/>
-        <pathelement location="lib/jena-iri-0.9.4.jar"/>
-        <pathelement location="lib/jena-tdb-0.9.4.jar"/>
+    	<pathelement location="lib/jcl-over-slf4j-1.6.4.jar"/>
+        <pathelement location="lib/jena-arq-2.10.0.jar"/>
+        <pathelement location="lib/jena-core-2.10.0.jar"/>
+        <pathelement location="lib/jena-iri-0.9.5.jar"/>
         <pathelement location="lib/log4j-1.2.16.jar"/>
         <pathelement location="lib/slf4j-api-1.6.4.jar"/>
         <pathelement location="lib/slf4j-log4j12-1.6.4.jar"/>

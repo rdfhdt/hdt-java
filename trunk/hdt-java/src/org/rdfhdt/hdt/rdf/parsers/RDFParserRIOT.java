@@ -28,31 +28,33 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-import org.openjena.atlas.lib.Sink;
-import org.openjena.riot.RiotReader;
-import org.openjena.riot.lang.LangNTriples;
-import org.openjena.riot.lang.LangRDFXML;
-import org.openjena.riot.lang.LangTurtle;
+import org.apache.jena.atlas.lib.Tuple;
+import org.apache.jena.riot.RiotReader;
+import org.apache.jena.riot.lang.LangNTriples;
+import org.apache.jena.riot.lang.LangRDFXML;
+import org.apache.jena.riot.lang.LangTurtle;
+import org.apache.jena.riot.system.StreamRDF;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 
+import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.sparql.core.Quad;
 
 /**
  * @author mario.arias
  *
  */
-public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
+public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	private RDFCallback callback;
 	private TripleString triple = new TripleString();
 	
@@ -94,31 +96,51 @@ public class RDFParserRIOT implements RDFParserCallback, Sink<Triple> {
 		}	
 	}
 
-	/* (non-Javadoc)
-	 * @see org.openjena.atlas.lib.Closeable#close()
-	 */
-	@Override
-	public void close() {
-		// TODO Auto-generated method stub
-		
-	}
+	 @Override
+     public void start() {
+             // TODO Auto-generated method stub
+             
+     }
 
-	/* (non-Javadoc)
-	 * @see org.openjena.atlas.lib.Sink#flush()
-	 */
-	@Override
-	public void flush() {
-		// TODO Auto-generated method stub
-		
-	}
+     @Override
+     public void triple(Triple parsedTriple) {
+             triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
+             callback.processTriple(triple, 0);              
+     }
 
-	/* (non-Javadoc)
-	 * @see org.openjena.atlas.lib.Sink#send(java.lang.Object)
-	 */
-	@Override
-	public void send(Triple parsedTriple) {
-		triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
-		callback.processTriple(triple, 0);
-	}
+     @Override
+     public void quad(Quad quad) {
+             triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
+             callback.processTriple(triple, 0);              
+     }
+
+     @Override
+     public void tuple(Tuple<Node> tuple) {
+             List<Node> l = tuple.asList();
+             if(l.size()<3) {
+                     throw new RuntimeException(new ParserException("Received tuple with less than three components"));
+             }
+             triple.setSubject(l.get(0).toString());
+             triple.setPredicate(l.get(1).toString());
+             triple.setObject(l.get(2).toString());
+             callback.processTriple(triple, 0);
+     }
+
+     @Override
+     public void base(String base) {
+//           System.out.println("Base: "+base);
+     }
+
+     @Override
+     public void prefix(String prefix, String iri) {
+//           System.out.println("Prefix: "+prefix+" iri "+iri);
+     }
+
+     @Override
+     public void finish() {
+             // TODO Auto-generated method stub
+             
+     }
+
 
 }
