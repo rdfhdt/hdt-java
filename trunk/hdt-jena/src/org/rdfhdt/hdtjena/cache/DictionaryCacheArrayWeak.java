@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,7 +22,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena.cache;
@@ -33,15 +32,16 @@ import java.lang.ref.WeakReference;
 import com.hp.hpl.jena.graph.Node;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class DictionaryCacheArrayWeak implements DictionaryCache {
 
-	Reference<Node> array[];
+	private Reference<Node> array[];
 	
-	public DictionaryCacheArrayWeak(long numentries) {
-		array = new Reference[(int)numentries];
+	@SuppressWarnings("unchecked")
+	public DictionaryCacheArrayWeak(int capacity) {
+		array = new Reference[capacity];		
 	}
 	
 	/* (non-Javadoc)
@@ -49,17 +49,29 @@ public class DictionaryCacheArrayWeak implements DictionaryCache {
 	 */
 	@Override
 	public Node get(int id) {
-		if(id>array.length) {
-			throw new IndexOutOfBoundsException();
+		Reference<Node> ref = array[id-1];
+		if(ref!=null) {
+			return ref.get();
 		}
-		if(array[id-1]!=null) {
-			return array[id-1].get();
-		}
+
 		return null;
 	}
 	
 	public void put(int id, Node node) {
 		array[id-1] = new WeakReference<Node>(node);
 	}
+
+	@Override
+	public int size() {
+		// Can't estimate. We don't know how many the GC disposed.
+		return 0;
+	}
+
+	@Override
+	public void clear() {
+		// FIXME: Implement concurrency friendly.
+	}
+	
+	
 
 }

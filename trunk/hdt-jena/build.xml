@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- WARNING: Eclipse auto-generated file.
-              Any modifications will be overwritten.
-              To include a user specific buildfile here, simply create one in the same
-              directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. -->
+
 <project basedir="." default="build" name="hdt-jena">
     <property environment="env"/>
     <property name="hdt-java.location" value="../hdt-java"/>
@@ -12,14 +8,14 @@
     <property name="source" value="1.6"/>
     <path id="hdt-java.classpath">
         <pathelement location="${hdt-java.location}/bin"/>
-        <pathelement location="${hdt-java.location}/lib/commons-codec-1.5.jar"/>
-        <pathelement location="${hdt-java.location}/lib/httpclient-4.1.2.jar"/>
-        <pathelement location="${hdt-java.location}/lib/httpcore-4.1.3.jar"/>
+        <pathelement location="${hdt-java.location}/lib/commons-codec-1.6.jar"/>
+        <pathelement location="${hdt-java.location}/lib/httpclient-4.2.3.jar"/>
+        <pathelement location="${hdt-java.location}/lib/httpcore-4.2.2.jar"/>
         <pathelement location="${hdt-java.location}/lib/jcommander.jar"/>
-        <pathelement location="${hdt-java.location}/lib/jena-arq-2.9.4.jar"/>
-        <pathelement location="${hdt-java.location}/lib/jena-core-2.7.4.jar"/>
-        <pathelement location="${hdt-java.location}/lib/jena-iri-0.9.4.jar"/>
-        <pathelement location="${hdt-java.location}/lib/jena-tdb-0.9.4.jar"/>
+        <pathelement location="${hdt-java.location}/lib/jcl-over-slf4j-1.6.4.jar"/>
+		<pathelement location="${hdt-java.location}/lib/jena-arq-2.10.0.jar"/>
+		<pathelement location="${hdt-java.location}/lib/jena-core-2.10.0.jar"/>
+        <pathelement location="${hdt-java.location}/lib/jena-iri-0.9.5.jar"/>
         <pathelement location="${hdt-java.location}/lib/log4j-1.2.16.jar"/>
         <pathelement location="${hdt-java.location}/lib/slf4j-api-1.6.4.jar"/>
         <pathelement location="${hdt-java.location}/lib/slf4j-log4j12-1.6.4.jar"/>
@@ -62,7 +58,7 @@
     </target>
     <target depends="build-subprojects,build-project" name="build"/>
     <target name="build-subprojects">
-        <ant antfile="build.xml" dir="${hdt-java.location}" inheritAll="false" target="build-project">
+        <ant antfile="build.xml" dir="${hdt-java.location}" inheritAll="false" target="jar">
             <propertyset>
                 <propertyref name="build.compiler"/>
             </propertyset>

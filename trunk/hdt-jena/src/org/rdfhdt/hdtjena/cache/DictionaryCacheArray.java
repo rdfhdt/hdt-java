@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,7 +22,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena.cache;
@@ -30,15 +29,19 @@ package org.rdfhdt.hdtjena.cache;
 import com.hp.hpl.jena.graph.Node;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class DictionaryCacheArray implements DictionaryCache {
 
-	Node array[];
+	private Node array[];
+	final int capacity;
+	int numentries=0;
 	
-	public DictionaryCacheArray(long numentries) {
-		array = new Node[(int)numentries];
+	public DictionaryCacheArray(int capacity) {
+		array = null;
+		numentries=0;
+		this.capacity=capacity;
 	}
 	
 	/* (non-Javadoc)
@@ -46,6 +49,9 @@ public class DictionaryCacheArray implements DictionaryCache {
 	 */
 	@Override
 	public Node get(int id) {
+		if(array==null) {
+			return null;
+		}
 		if(id>array.length) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -53,7 +59,23 @@ public class DictionaryCacheArray implements DictionaryCache {
 	}
 	
 	public void put(int id, Node node) {
+		if(array==null) {
+			array = new Node[(int)capacity];
+		}
+		if(array[id-1]==null) {
+			numentries++;
+		}
 		array[id-1] = node;
+	}
+
+	@Override
+	public int size() {
+		return numentries;
+	}
+
+	@Override
+	public void clear() {
+		array=null;
 	}
 
 }

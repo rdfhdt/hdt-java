@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,7 +22,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena.cache;
@@ -32,7 +31,7 @@ import com.hp.hpl.jena.graph.Node;
 import org.rdfhdt.hdt.util.LRUCache;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class DictionaryCacheLRU implements DictionaryCache {
@@ -57,6 +56,16 @@ public class DictionaryCacheLRU implements DictionaryCache {
 	@Override
 	public void put(int id, Node node) {
 		lru.put(id, node);
+	}
+
+	@Override
+	public int size() {
+		return lru.size();
+	}
+
+	@Override
+	public void clear() {
+		lru.clear();
 	}
 
 }

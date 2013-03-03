@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,26 +22,33 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package com.hp.hpl.jena.graph;
 
 import com.hp.hpl.jena.datatypes.TypeMapper;
 import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
+import com.hp.hpl.jena.rdf.model.AnonId;
 
 
 /**
- * @author mck
+ * @author mario.arias
+ * 
+ * Creates Jena Nodes from HDT CharSequences. Must be in Jena's Package to access protected methods/Constructors.
  *
  */
 public class JenaNodeCreator {
+	public static Node createAnon() {
+		return new Node_Blank( AnonId.create() );
+	}
+	
 	public static Node createAnon(CharSequence x) {
 //		return new Node_Blank( AnonId.create(x.toString()) );
 		return new Node_Blank(x.toString() );
 	}
 	
 	public static Node createLiteral(CharSequence x) {
+		// FIXME: Avoid converting to String?
 		String str = x.toString();
 		int len=str.length();
 	

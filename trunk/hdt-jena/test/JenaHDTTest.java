@@ -34,7 +34,7 @@ import com.hp.hpl.jena.rdf.model.impl.ModelCom;
  */
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class JenaHDTTest {

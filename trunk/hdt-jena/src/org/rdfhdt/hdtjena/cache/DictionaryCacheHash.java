@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,42 +22,41 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena.cache;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.hp.hpl.jena.graph.Node;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class DictionaryCacheHash implements DictionaryCache {
 
-	Map<Integer, Node> hash = new HashMap<Integer, Node>();
+	private Map<Integer, Node> hash = new ConcurrentHashMap<Integer, Node>();
 	
-	DictionaryCacheHash() {
-		
-	}
-	
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
-	 */
 	@Override
 	public Node get(int id) {
 		return hash.get(id);
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
-	 */
 	@Override
 	public void put(int id, Node node) {
 		hash.put(id, node);
+	}
+
+	@Override
+	public int size() {
+		return hash.size();
+	}
+
+	@Override
+	public void clear() {
+		hash.clear();
 	}
 
 }

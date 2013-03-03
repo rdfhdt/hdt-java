@@ -1,0 +1,5 @@
+This hdt-jena wrapper was succesuflly used with Jena Fuseki Version 0.2.6 that can be downloaded from here:  
+
+http://www.apache.org/dist/jena/binaries/jena-fuseki-0.2.6-distribution.tar.gz
+
+It might work with other versions but it is not guaranteed.

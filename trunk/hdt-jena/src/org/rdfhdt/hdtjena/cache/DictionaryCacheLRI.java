@@ -26,38 +26,64 @@
 
 package org.rdfhdt.hdtjena.cache;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import com.hp.hpl.jena.graph.Node;
 
 /**
+ * Least-Recently-Inserted Cache. Removes the oldest entries inserted.
+ * Can result in cache misses but it is very fast.
+ * It uses an array-based circular buffer to remove old entries 
+ *
  * @author mario.arias
  *
  */
-public class DictionaryCacheNone implements DictionaryCache {
+public class DictionaryCacheLRI implements DictionaryCache {
 
+	private Map<Integer, Node> cache;
+	private int [] arr;
+	private int ptr=0;
+	private final int size;
+	
+	public DictionaryCacheLRI(int size) {
+		this.size = size;
+		arr = new int[size];
+		cache = new ConcurrentHashMap<Integer, Node>(size);
+	}
+		
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#get(int)
+	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
 	public Node get(int id) {
-		return null;
+		return cache.get(id);
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#put(int, com.hp.hpl.jena.graph.Node)
+	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
 	 */
 	@Override
 	public void put(int id, Node node) {
-		
+		cache.put(id, node);
+		if(cache.size()>size) {
+			cache.remove(arr[ptr]);
+		}
+		synchronized (this) {
+			arr[ptr]=id;
+			ptr = (ptr+1)%size;	
+		}
 	}
 
 	@Override
 	public int size() {
-		return 0;
+		return cache.size();
 	}
 
 	@Override
 	public void clear() {
-
+		cache.clear();
+		// No need to clear the circular buffer.
 	}
 
 }

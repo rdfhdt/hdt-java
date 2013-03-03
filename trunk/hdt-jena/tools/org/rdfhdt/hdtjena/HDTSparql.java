@@ -11,6 +11,11 @@ import com.hp.hpl.jena.query.ResultSetFormatter;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 
+/**
+ * 
+ * @author mario.arias
+ *
+ */
 
 public class HDTSparql {
 	/**
@@ -32,6 +37,8 @@ public class HDTSparql {
 			// Use Jena ARQ to execute the query.
 			Query query = QueryFactory.create(sparqlQuery);
 			QueryExecution qe = QueryExecutionFactory.create(query, model);
+
+			// FIXME: Do ASK/DESCRIBE/CONSTRUCT 
 			ResultSet results = qe.execSelect();
 
 			/*while(results.hasNext()) {

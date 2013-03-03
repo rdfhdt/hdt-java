@@ -2,7 +2,7 @@
 
 ## Basic Fuseki configuration file for HDT files.
 ## 
-## Remember that you need hdt-java.jar and hdt-jena.jar when you launch Joseki.
+## Remember that you need hdt-java.jar and hdt-jena.jar when you launch Fuseki.
 ##
 
 @prefix :        <#> .
@@ -12,7 +12,7 @@
 @prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
 @prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
-@prefix hdt:      <http://www.rdfhdt.org/joseki#> .
+@prefix hdt:      <http://www.rdfhdt.org/fuseki#> .
 
 [] rdf:type fuseki:Server ;
    # Timeout - server-wide default: milliseconds.
@@ -28,7 +28,6 @@
    ) .
 
 # HDT Classes
-hdt:DatasetHDT rdfs:subClassOf ja:RDFDataset .
 hdt:HDTGraph rdfs:subClassOf ja:Graph .
 
 ## ---------------------------------------------------------------
@@ -52,6 +51,10 @@ hdt:HDTGraph rdfs:subClassOf ja:Graph .
 <#graph1> rdfs:label "RDF Graph1 from HDT file" ;
         rdf:type hdt:HDTGraph ;
         hdt:fileName "file1.hdt" ;
+        
+        # Optional: Keep the HDT and index in memory at all times.
+        # Uses more memory but it is potentially faster because avoids IO.
+        # hdt:keepInMemory "true" ;
     .
 
 <#graph2> rdfs:label "RDF Graph2 from HDT file" ;

@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,33 +22,38 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena;
 
+import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 
 import com.hp.hpl.jena.graph.GraphStatisticsHandler;
 import com.hp.hpl.jena.graph.Node;
 
-
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class HDTStatistics implements GraphStatisticsHandler {
 
-	HDT hdt;
+	private final NodeDictionary nodeDictionary;
+	private final Triples triples;
+	private final HDT hdt;
 	
 	/**
 	 * 
 	 */
-	public HDTStatistics(HDT hdt) {
-		this.hdt = hdt;
+	public HDTStatistics(HDTGraph graph) {
+		this.nodeDictionary = graph.getNodeDictionary();
+		this.hdt = graph.getHDT();
+		this.triples = hdt.getTriples();
 	}
 	
 	/* (non-Javadoc)
@@ -56,13 +61,23 @@ public class HDTStatistics implements GraphStatisticsHandler {
 	 */
 	@Override
 	public long getStatistic(Node subject, Node predicate, Node object) {
-		System.out.println("STATISTICS");
 		int s, p, o;
-		s = subject==null ? 0 : hdt.getDictionary().stringToId(subject.toString(), TripleComponentRole.SUBJECT);
-		p = predicate==null ? 0 : hdt.getDictionary().stringToId(predicate.toString(), TripleComponentRole.PREDICATE);
-		o = object==null ? 0 : hdt.getDictionary().stringToId(object.toString(), TripleComponentRole.OBJECT);
+		s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);
+		p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
+		o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);
 		
-		IteratorTripleID it = hdt.getTriples().search(new TripleID(s, p, o));
+		// FIMXE: No index on ?P?, avoid creating the iterator. Dirty hack.
+		if(p>0 && s==0 && o==0 && (triples instanceof BitmapTriples)) {
+			Sequence predCount = ((BitmapTriples)triples).getPredicateCount();
+			if(predCount!=null) {
+				return predCount.get(p-1);
+			} else {
+				// We don't know, rough estimation.
+				return triples.getNumberOfElements()/hdt.getDictionary().getNpredicates();
+			}	
+		}
+		
+		IteratorTripleID it = triples.search(new TripleID(s, p, o));
 		return it.estimatedNumResults();
 	}
 

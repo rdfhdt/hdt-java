@@ -24,40 +24,46 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdtjena.solver;
 
-import com.hp.hpl.jena.graph.Node;
+import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdtjena.NodeDictionary;
+
+import com.hp.hpl.jena.graph.Triple;
+import com.hp.hpl.jena.util.iterator.NiceIterator;
 
 /**
  * @author mario.arias
  *
  */
-public class DictionaryCacheNone implements DictionaryCache {
+public class HDTJenaIterator extends NiceIterator<Triple> {
 
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#get(int)
-	 */
-	@Override
-	public Node get(int id) {
-		return null;
+	private final NodeDictionary nodeDictionary;
+	private final IteratorTripleID iterator;
+
+	public HDTJenaIterator(NodeDictionary nodeDictionary, IteratorTripleID iterator) {
+		this.nodeDictionary = nodeDictionary;
+		this.iterator = iterator;
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#put(int, com.hp.hpl.jena.graph.Node)
-	 */
 	@Override
-	public void put(int id, Node node) {
+	public boolean hasNext() {
+		return iterator.hasNext();
+	}
+	
+	@Override
+	public Triple next() {
+
+		TripleID triple = iterator.next();
+		Triple t = new Triple(
+				nodeDictionary.getNode(triple.getSubject(), TripleComponentRole.SUBJECT),
+				nodeDictionary.getNode(triple.getPredicate(), TripleComponentRole.PREDICATE),
+				nodeDictionary.getNode(triple.getObject(), TripleComponentRole.OBJECT)
+			);
 		
-	}
-
-	@Override
-	public int size() {
-		return 0;
-	}
-
-	@Override
-	public void clear() {
-
+		return t;
 	}
 
 }

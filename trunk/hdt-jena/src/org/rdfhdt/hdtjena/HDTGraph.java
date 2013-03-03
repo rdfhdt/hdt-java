@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/array/ArrayFactory.java $
+ * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
  * Last modified by: $Author$
@@ -22,132 +22,76 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdtjena;
 
-import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdtjena.cache.DictionaryCache;
-import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
-import org.rdfhdt.hdtjena.cache.DictionaryCacheArrayWeak;
+import org.rdfhdt.hdtjena.solver.HDTJenaIterator;
+import org.rdfhdt.hdtjena.solver.OpExecutorHDT;
+import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
 
 import com.hp.hpl.jena.graph.Capabilities;
 import com.hp.hpl.jena.graph.GraphStatisticsHandler;
-import com.hp.hpl.jena.graph.JenaNodeCreator;
-import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.graph.TripleMatch;
 import com.hp.hpl.jena.graph.impl.GraphBase;
+import com.hp.hpl.jena.query.ARQ;
+import com.hp.hpl.jena.sparql.engine.main.QC;
+import com.hp.hpl.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
- * @author mck
+ * @author mario.arias
  *
  */
 public class HDTGraph extends GraphBase {
+	private static HDTCapabilities capabilities= new HDTCapabilities();
+
 	private HDT hdt;
-	static HDTCapabilities capabilities= new HDTCapabilities();
-	HDTStatistics hdtStatistics;
-	Dictionary dictionary;
-	long numSearches = 0;
-	
-	DictionaryCache cacheSubject, cachePredicate, cacheObject;
+	private NodeDictionary nodeDictionary;
+	private ReorderTransformation reorderTransform;
+	private HDTStatistics hdtStatistics;
+	private long numSearches = 0;
 	
 	static {
-		// Register Stage Generator
-//		StageGenerator orig = (StageGenerator)ARQ.getContext().get(ARQ.stageGenerator);
-//		StageBuilder.setGenerator(ARQ.getContext(), new StageGeneratorHDT(orig));
+		// Register OpExecutor
+		QC.setFactory(ARQ.getContext(), OpExecutorHDT.opExecFactoryHDT) ;
 	}
 	
 	public HDTGraph(HDT hdt) {
 		this.hdt = hdt;
-		this.hdtStatistics = new HDTStatistics(hdt);
-		this.dictionary = hdt.getDictionary();
-		
-//		cacheSubject = cachePredicate = cacheObject = new DictionaryNodeCacheNone();
-
-		cacheSubject = new DictionaryCacheArrayWeak(hdt.getDictionary().getNsubjects());
-		cachePredicate = new DictionaryCacheArray(hdt.getDictionary().getNpredicates());
-		cacheObject = new DictionaryCacheArrayWeak(hdt.getDictionary().getNobjects());
-	
+		this.nodeDictionary = new NodeDictionary(hdt.getDictionary());
+		this.hdtStatistics = new HDTStatistics(this);	// Must go after NodeDictionary created.
+		this.reorderTransform=new ReorderTransformationHDT(this);  // Must go after Dict and Stats
 	}
-
+	
+	public HDT getHDT() {
+		return hdt;
+	}
+	
+	public NodeDictionary getNodeDictionary() {
+		return nodeDictionary;
+	}
+	
 	/* (non-Javadoc)
 	 * @see com.hp.hpl.jena.graph.impl.GraphBase#graphBaseFind(com.hp.hpl.jena.graph.TripleMatch)
 	 */
 	@Override
 	protected ExtendedIterator<Triple> graphBaseFind(TripleMatch jenaTriple) {
-		IteratorTripleID hdtIterator;
-//		System.out.println("Triple Search: "+jenaTriple);
-		
-		Dictionary dictionary = hdt.getDictionary();
-		
-		int subject=0, predicate=0, object=0;
-		
-		if(jenaTriple.getMatchSubject()!=null) {
-			subject = dictionary.stringToId(jenaTriple.getMatchSubject().toString(), TripleComponentRole.SUBJECT);
-		}
 
-		if(jenaTriple.getMatchPredicate()!=null) {
-			predicate = dictionary.stringToId(jenaTriple.getMatchPredicate().toString(), TripleComponentRole.PREDICATE);
-		}
-
-		if(jenaTriple.getMatchObject()!=null) {
-			object = dictionary.stringToId(jenaTriple.getMatchObject().toString(), TripleComponentRole.OBJECT);
-		}
-
-		// System.out.println("Search: |"+subject+ "| |"+predicate+"| |"+ object);
-		hdtIterator = hdt.getTriples().search( new TripleID(subject, predicate, object) );
+		TripleID triplePatID = nodeDictionary.getTriplePatID(jenaTriple);
+//		System.out.println("Triple Pattern: "+jenaTriple+" as IDs: "+triplePatID);
+		
+		IteratorTripleID hdtIterator = hdt.getTriples().search( triplePatID );
 		numSearches++;
-		return new HDTJenaIterator(this, hdtIterator);
+		return new HDTJenaIterator(nodeDictionary, hdtIterator);
 	}
 	
 	public long getNumSearches() {
 		return numSearches;
-	}
-	
-	public Triple getJenaTriple(TripleID triple) {
-		Node s, p, o;		
-		
-		s = cacheSubject.get(triple.getSubject());
-		if(s==null) {
-			CharSequence subjString = dictionary.idToString(triple.getSubject(), TripleComponentRole.SUBJECT);
-			char subjFirst = subjString.charAt(0); 
-			if(subjFirst=='_') {
-				s = JenaNodeCreator.createAnon(subjString);
-			} else {
-				s = JenaNodeCreator.createURI(subjString);
-			}
-			cacheSubject.put(triple.getSubject(), s);
-		}
-
-		p = cachePredicate.get(triple.getPredicate());
-		if(p==null) {
-			CharSequence subjPredicate = dictionary.idToString(triple.getPredicate(), TripleComponentRole.PREDICATE);
-			p = JenaNodeCreator.createURI(subjPredicate);
-			cachePredicate.put(triple.getPredicate(), p);
-		}
-
-		o = cacheObject.get(triple.getObject());
-		if(o==null) {
-			CharSequence subjObject = dictionary.idToString(triple.getObject(), TripleComponentRole.OBJECT);
-			char objFirst = subjObject.charAt(0); 
-			if(objFirst=='_') {
-				o = JenaNodeCreator.createAnon(subjObject);
-			} else if(objFirst=='"') {
-				o = JenaNodeCreator.createLiteral(subjObject);
-			} else {
-				o = JenaNodeCreator.createURI(subjObject);
-			}
-			cacheObject.put(triple.getObject(), o);
-		}
-		
-		return new Triple(s, p, o);
 	}
 
 	/* (non-Javadoc)
@@ -166,9 +110,12 @@ public class HDTGraph extends GraphBase {
 		return HDTGraph.capabilities;
 	}
 
-	/*
 	public ReorderTransformation getReorderTransform() {
-		//return new ReorderSt;
-		return null;
-	}*/
+		return reorderTransform;
+	}
+	
+	@Override
+	protected int graphBaseSize() {
+		return (int)hdt.getTriples().getNumberOfElements();
+	}
 }
