@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/listener/ListenerUtil.java $
- * Revision: $Rev: 83 $
- * Last modified: $Date: 2012-10-13 17:47:34 +0100 (sáb, 13 oct 2012) $
- * Last modified by: $Author: mario.arias $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

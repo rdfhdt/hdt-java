@@ -1,9 +1,9 @@
 package org.rdfhdt.hdt.dictionary;
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/DictionarySection.java $
- * Revision: $Rev: 58 $
- * Last modified: $Date: 2012-08-26 00:31:15 +0100 (dom, 26 ago 2012) $
- * Last modified by: $Author: simpsonim13@gmail.com $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

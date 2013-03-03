@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/hdt/HDTVocabulary.java $
- * Revision: $Rev: 60 $
- * Last modified: $Date: 2012-09-12 23:33:08 +0100 (mié, 12 sep 2012) $
- * Last modified by: $Author: simpsonim13@gmail.com $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

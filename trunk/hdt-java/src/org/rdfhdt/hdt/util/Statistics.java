@@ -59,6 +59,10 @@ public class Statistics {
 	}
 	
 	public void process(double val) {
+		if(Double.isInfinite(val)||Double.isNaN(val)) {
+			return;
+		}
+		
 		number++;
 		minObservedValue = Math.min(minObservedValue, val);
 		maxObservedValue = Math.max(maxObservedValue, val);

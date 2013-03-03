@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/impl/TriplesList.java $
- * Revision: $Rev: 45 $
- * Last modified: $Date: 2012-07-31 12:00:35 +0100 (Tue, 31 Jul 2012) $
- * Last modified by: $Author: mario.arias $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

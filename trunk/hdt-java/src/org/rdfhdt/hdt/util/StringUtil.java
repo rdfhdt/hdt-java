@@ -42,7 +42,11 @@ public class StringUtil {
 	private static final DecimalFormat decimalFormat = new DecimalFormat("##.##");
 	
 	public static String getPercent(long v1, long max) {
+		if(max==0) {
+			return "%";
+		}
 		double v = (100.0*v1)/max;
+		
         return decimalFormat.format(v)+"%";
 	}
 	

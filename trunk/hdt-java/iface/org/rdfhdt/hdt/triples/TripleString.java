@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/TripleString.java $
- * Revision: $Rev: 89 $
- * Last modified: $Date: 2012-10-24 18:23:37 +0100 (mié, 24 oct 2012) $
- * Last modified by: $Author: mario.arias $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public

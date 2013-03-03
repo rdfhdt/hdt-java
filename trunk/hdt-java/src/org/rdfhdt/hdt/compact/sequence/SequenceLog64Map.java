@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceLog64.java $
- * Revision: $Rev: 94 $
- * Last modified: $Date: 2012-11-20 23:44:36 +0000 (mar, 20 nov 2012) $
- * Last modified by: $Author: mario.arias $
+ * File: $HeadURL$
+ * Revision: $Rev$
+ * Last modified: $Date$
+ * Last modified by: $Author$
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
