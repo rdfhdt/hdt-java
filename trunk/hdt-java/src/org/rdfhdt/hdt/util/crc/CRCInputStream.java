@@ -60,7 +60,7 @@ public class CRCInputStream extends FilterInputStream {
 	@Override
 	public int read(byte[] b, int off, int len) throws IOException {
 		int ret = in.read(b, off, len);
-		crc.update(b, off, len);
+		crc.update(b, off, ret);
 		return ret;
 	}
 }

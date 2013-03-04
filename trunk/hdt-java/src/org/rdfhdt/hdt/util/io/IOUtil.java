@@ -31,7 +31,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
@@ -107,18 +106,18 @@ public class IOUtil {
 		output.write(writeBuffer, 0, 8);
 	}
 	
-	private static byte readBuffer[] = new byte[8];
 	
 	/**
-	 * Read long, little endian. Warning: Dont use concurrently!!
+	 * Read long, little endian.
 	 * @param input
 	 * @return
 	 * @throws IOException
 	 */
-	public static final long readLong(InputStream input) throws IOException {	
+	public static final long readLong(InputStream input) throws IOException {
 		int n = 0;
+		byte readBuffer[] = new byte[8];
 		while (n < 8) {
-			int count = input.read(readBuffer, 0 , 8);
+			int count = input.read(readBuffer, n , 8-n);
 			if (count < 0)
 				throw new EOFException();
 			n += count;
@@ -159,7 +158,7 @@ public class IOUtil {
 		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
 		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
 		writeBuffer[3] = (byte) ((value>>24) & 0xFF);
-		return Arrays.copyOfRange(writeBuffer, 0, 4);
+		return writeBuffer;
 	}
 	
 	/**
@@ -267,7 +266,7 @@ public class IOUtil {
 		out.write(value);
 	}
 	
-	// InputStream might not skip the specified number of bytes. This call makes multiple calls to 
+	// InputStream might not skip the specified number of bytes. This call makes multiple calls
 	// if needed to ensure that the desired number of bytes is actually skipped.
 	public static void skip(InputStream in, long n) throws IOException {
 		long totalSkipped = in.skip(n);

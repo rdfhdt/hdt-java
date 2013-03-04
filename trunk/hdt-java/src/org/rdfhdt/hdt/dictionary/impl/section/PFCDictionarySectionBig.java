@@ -45,6 +45,7 @@ import org.rdfhdt.hdt.util.Mutable;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
@@ -60,7 +61,7 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
  */
 public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	public static final int TYPE_INDEX = 2;
-	public static final int DEFAULT_BLOCK_SIZE = 32;
+	public static final int DEFAULT_BLOCK_SIZE = 16;
 	public static final int BLOCK_PER_BUFFER = 1000000;
 	
 	byte [][] data;
@@ -322,12 +323,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			long nextBytePos = blocks.get(nextBlock);
 			
 			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
-			data[buffer]=new byte[(int)(nextBytePos-bytePos)];
-			
-			int read = in.read(data[buffer]);
-			if(read!=data[buffer].length) {
-				throw new IOException("Error reading from input");
-			}
+			data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
 			
 			posFirst[buffer] = bytePos;
 			
