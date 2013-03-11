@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/PFCDictionarySection.java $
+ * Revision: $Rev: 94 $
+ * Last modified: $Date: 2012-11-20 23:44:36 +0000 (mar, 20 nov 2012) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -314,7 +314,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			@Override
 			public CharSequence next() {
 				if(!buffer.hasRemaining()) {
-					buffer = buffers[bytebufferIndex].duplicate();
+					buffer = buffers[++bytebufferIndex].duplicate();
 					buffer.rewind();
 				}
 				try {
