@@ -67,7 +67,7 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
     
     public StageMatchTripleID(HDTGraph graph, Iterator<BindingHDTId> input, Triple patternTuple, ExecutionContext execCxt, Map<Var, VarAppearance> mapVar)
     {
-        super(input) ;
+        super(input);
         this.dictionary = graph.getNodeDictionary();
         this.triples = graph.getHDT().getTriples();
 		this.prefixMap = NodeDictionary.getMapping(execCxt);
@@ -106,25 +106,25 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
     {        
     	
     	numSearches++;
-    	
+    	    	
         if(var[0]!=null) {
         	HDTId id = input.get(var[0]);
         	if(id!=null) {
-        		patternID.setSubject(id.getValue());
+        		patternID.setSubject(NodeDictionary.translate(dictionary, id, TripleComponentRole.SUBJECT));
         	}
         }
         
         if(var[1]!=null) {
         	HDTId id = input.get(var[1]);
         	if(id!=null) {
-        		patternID.setPredicate(id.getValue());
+        		patternID.setPredicate(NodeDictionary.translate(dictionary, id, TripleComponentRole.PREDICATE));
         	}
         }
         
         if(var[2]!=null) {
         	HDTId id = input.get(var[2]);
         	if(id!=null) {
-        		patternID.setObject(id.getValue());
+        		patternID.setObject(NodeDictionary.translate(dictionary, id, TripleComponentRole.OBJECT));
         	}
         }
 
@@ -167,15 +167,15 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
                 BindingHDTId output = new BindingHDTId(input) ;
                 
                 if(var[0]!=null && !output.containsKey(var[0])) {
-                	output.put(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT));
+                	output.put(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT, dictionary));
                 }
                 
                 if(var[1]!=null && !output.containsKey(var[1])) {
-                	output.put(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE));
+                	output.put(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE, dictionary));
                 }
                 
                 if(var[2]!=null && !output.containsKey(var[2])) {
-                	output.put(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT));
+                	output.put(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT, dictionary));
                 }
 
                 return output;

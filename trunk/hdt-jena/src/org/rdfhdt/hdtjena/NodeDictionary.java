@@ -205,5 +205,16 @@ public class NodeDictionary {
         return null ;
     }
 
+	public static int translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
+		if(dictionary==id.getDictionary()) {
+			return id.getValue();
+		}
+		
+		NodeDictionary dict2 = id.getDictionary();
+		
+		CharSequence str = dict2.dictionary.idToString(id.getValue(), id.getRole());
+		return dictionary.getIntID(str.toString(), role);
+	}
+
 
 }

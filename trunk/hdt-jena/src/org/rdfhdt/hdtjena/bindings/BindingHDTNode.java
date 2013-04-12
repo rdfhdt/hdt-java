@@ -23,7 +23,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.jena.atlas.logging.Log;
-import org.rdfhdt.hdtjena.NodeDictionary;
 
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.sparql.core.Var;
@@ -36,14 +35,12 @@ public class BindingHDTNode extends BindingBase
 {
 
     private final BindingHDTId idBinding ;
-    private final NodeDictionary dictionary;
 
-    public BindingHDTNode(BindingHDTId idBinding, NodeDictionary dictionary)
+    public BindingHDTNode(BindingHDTId idBinding)
     {
         // BindingHDTId contains the bindings actually used  copied down when created. 
         super(idBinding.getParentBinding()) ;
         this.idBinding = idBinding ;
-        this.dictionary = dictionary;
     }
 
     @Override
@@ -115,7 +112,7 @@ public class BindingHDTNode extends BindingBase
             
             Node n = id.getNode();
             if(n==null) {
-            	n = dictionary.getNode(id);
+            	n = id.getDictionary().getNode(id);
             	id.setNode(n);
             }
             return n;

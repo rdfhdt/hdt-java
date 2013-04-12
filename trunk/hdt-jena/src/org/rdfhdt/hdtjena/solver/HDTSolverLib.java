@@ -119,17 +119,17 @@ public class HDTSolverLib
 	private static HDTId getID(Node n, NodeDictionary dict, PrefixMapping prefixMapping) {
 		int id = dict.getIntID(n, prefixMapping, TripleComponentRole.SUBJECT);
 		if(id>0) {
-			return new HDTId(id, TripleComponentRole.SUBJECT);
+			return new HDTId(id, TripleComponentRole.SUBJECT, dict);
 		}
 		
 		id = dict.getIntID(n, prefixMapping, TripleComponentRole.PREDICATE);
 		if(id>0) {
-			return new HDTId(id, TripleComponentRole.PREDICATE);
+			return new HDTId(id, TripleComponentRole.PREDICATE, dict);
 		}
 		
 		id = dict.getIntID(n, prefixMapping, TripleComponentRole.OBJECT);
 		if(id>0) {
-			return new HDTId(id, TripleComponentRole.OBJECT);
+			return new HDTId(id, TripleComponentRole.OBJECT, dict);
 		}
 		return null; // NOT FOUND
 	}
@@ -148,7 +148,7 @@ public class HDTSolverLib
             @Override
             public Binding convert(BindingHDTId bindingIds)
             {
-                return new BindingHDTNode(bindingIds, dictionary) ;
+                return new BindingHDTNode(bindingIds);
             }
         } ;
     }
