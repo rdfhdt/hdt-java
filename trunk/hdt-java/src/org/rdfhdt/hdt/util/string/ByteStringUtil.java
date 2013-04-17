@@ -210,8 +210,28 @@ public class ByteStringUtil {
 		} else {
 			throw new NotImplementedException();
 		}
-		System.arraycopy(bytes, start, buffer, bufpos, len - start);
-		return len - start;		
+//		System.arraycopy(bytes, start, buffer, bufpos, len - start);
+		
+		// Write and remove null characters
+		
+		int cur = start;
+		int ini = start;
+		int written = 0;
+		
+		while(cur<len) {
+			if(bytes[cur]==0) {
+//				out.write(bytes, ini, cur-ini);
+				System.arraycopy(bytes, ini, buffer, bufpos+written, cur-ini);
+				written += (cur-ini);
+				ini = cur+1;
+			}
+			cur++;
+		}
+		if(ini<len) {
+			System.arraycopy(bytes, ini, buffer, bufpos+written, len-ini);
+			written += (len-ini);
+		}
+		return written;
 	}
 
 	public static final int append(OutputStream out, CharSequence str, int start) throws IOException {
@@ -229,8 +249,25 @@ public class ByteStringUtil {
 		} else {
 			throw new NotImplementedException();
 		}
-		out.write(bytes, start, len - start);
-		return len - start;
+		
+		// Write and remove null characters
+		int cur = start;
+		int ini = start;
+		int written = 0;
+		
+		while(cur<len) {
+			if(bytes[cur]==0) {
+				out.write(bytes, ini, cur-ini);
+				written += (cur-ini);
+				ini = cur+1;
+			}
+			cur++;
+		}
+		if(ini<len) {
+			out.write(bytes, ini, len - ini);
+			written += (len-ini);
+		}
+		return written;
 	}
 	
 }
