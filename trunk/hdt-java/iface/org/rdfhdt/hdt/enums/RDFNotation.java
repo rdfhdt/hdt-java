@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/enums/RDFNotation.java $
+ * Revision: $Rev: 17 $
+ * Last modified: $Date: 2012-07-03 21:43:15 +0100 (mar, 03 jul 2012) $
+ * Last modified by: $Author: mario.arias@gmail.com $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -26,6 +26,8 @@
  */
 
 package org.rdfhdt.hdt.enums;
+
+import java.io.File;
 
 /**
  * Enumeration of the different valid notations for RDF data.
@@ -73,5 +75,25 @@ public enum RDFNotation {
 			return TURTLE;
 		}
 		throw new IllegalArgumentException();
+	}
+	
+	public static RDFNotation guess(File fileName) throws IllegalArgumentException {
+		String str = fileName.getName().toLowerCase();
+		if(str.endsWith(".gz")) {
+			str = str.substring(0, str.length()-3);
+		}
+		if(str.endsWith(".bz2")) {
+			str = str.substring(0, str.length()-4);
+		}
+		if(str.endsWith("nt")) {
+			return NTRIPLES;
+		} else if(str.endsWith("n3")) {
+			return N3;
+		} else if(str.endsWith("rdf")||str.endsWith("xml")||str.endsWith("owl")) {
+			return RDFXML;
+		} else if(str.endsWith("ttl")) {
+			return TURTLE;
+		}
+		throw new IllegalArgumentException("Could not guess the format for "+fileName+" Using NTriples");
 	}
 }
