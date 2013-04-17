@@ -42,6 +42,9 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
 	 */
 	@Override
 	public int compare(CharSequence s1, CharSequence s2) {
+		if(s1==s2) {
+			return 0;
+		}
 		if(s1 instanceof CompactString && s2 instanceof CompactString) {
 			CompactString cs1 = (CompactString) s1;
 			CompactString cs2 = (CompactString) s2;
