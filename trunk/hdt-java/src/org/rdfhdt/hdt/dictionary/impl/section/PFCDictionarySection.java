@@ -88,7 +88,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		this.numstrings = 0;
 		
 		
-		ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);
 		
 		CharSequence previousStr=null;
 		
