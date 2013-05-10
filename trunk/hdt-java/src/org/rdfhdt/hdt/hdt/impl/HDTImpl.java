@@ -418,4 +418,8 @@ public class HDTImpl implements HDTPrivate {
 		return baseUri;
 	}
 
+	protected void setTriples(TriplesPrivate triples) {
+		this.triples = triples;
+	}
+	
 }
