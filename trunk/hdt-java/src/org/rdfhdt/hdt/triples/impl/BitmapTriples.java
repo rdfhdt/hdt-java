@@ -564,17 +564,25 @@ public class BitmapTriples implements TriplesPrivate {
 		StopWatch st = new StopWatch();
 
 		// Count the number of appearances of each object
-		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()));
 		long maxCount = 0;
+		long numDifferentObjects = 0;
+		long numReservedObjects = 8192;
+		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects);
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
 			long val = seqZ.get(i);
 			if(val==0) {
 				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
 			}
-			if(objectCount.getNumberOfElements()<val) {
-				// TODO: How to improve this?
-				objectCount.resize(val);
+			if(numReservedObjects<val) {
+				while(numReservedObjects<val) {					
+					numReservedObjects <<=1;
+				}
+				objectCount.resize(numReservedObjects);
 			}
+			if(numDifferentObjects<val) {
+				numDifferentObjects=val;
+			}
+			
 			long count = objectCount.get(val-1)+1;
 			maxCount = count>maxCount ? count : maxCount;
 			objectCount.set(val-1, count);
@@ -585,7 +593,7 @@ public class BitmapTriples implements TriplesPrivate {
 		// Calculate bitmap that separates each object sublist.
 		Bitmap375 bitmapIndex = new Bitmap375(seqZ.getNumberOfElements());
 		long tmpCount=0;
-		for(long i=0;i<objectCount.getNumberOfElements();i++) {
+		for(long i=0;i<numDifferentObjects;i++) {
 			tmpCount += objectCount.get(i);
 			bitmapIndex.set(tmpCount-1, true);
 		}
@@ -595,8 +603,8 @@ public class BitmapTriples implements TriplesPrivate {
 		st.reset();
 
 		// Copy each object reference to its position
-		SequenceLog64 objectInsertedCount = new SequenceLog64(BitUtil.log2(maxCount), bitmapIndex.countOnes());
-		objectInsertedCount.resize(bitmapIndex.countOnes());
+		SequenceLog64 objectInsertedCount = new SequenceLog64(BitUtil.log2(maxCount), numDifferentObjects);
+		objectInsertedCount.resize(numDifferentObjects);
 
 		SequenceLog64 objectArray = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
 		objectArray.resize(seqZ.getNumberOfElements());
@@ -671,7 +679,7 @@ public class BitmapTriples implements TriplesPrivate {
 			first = last;
 			last = bitmapIndex.select1(object)+1;
 			object++;
-		} while(object<=bitmapIndex.countOnes());
+		} while(object<=numDifferentObjects);
 
 		System.out.println("Sort object sublists in "+st.stopAndShow());
 		st.reset();
@@ -927,3 +935,4 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 
 }
+
