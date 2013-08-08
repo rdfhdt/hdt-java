@@ -148,7 +148,7 @@ public class ReplazableString implements CharSequence {
 	 */
 	@Override
 	public char charAt(int index) {
-		return (char)buffer[index];
+		return (char) (buffer[index] & 0xff);
 	}
 
 	/* (non-Javadoc)
