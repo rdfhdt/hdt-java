@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/triples/Triples.java $
+ * Revision: $Rev: 191 $
+ * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,13 +27,15 @@
 
 package org.rdfhdt.hdt.triples;
 
+import java.io.Closeable;
+
 import org.rdfhdt.hdt.header.Header;
 
 /**
  * Interface for Triples implementation.
  * 
  */
-public interface Triples {
+public interface Triples extends Closeable {
 	/**
 	 * Iterates over all triples. Equivalent to this.search(new TripleID());
 	 * @return

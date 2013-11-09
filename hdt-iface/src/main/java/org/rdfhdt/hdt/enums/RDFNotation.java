@@ -77,6 +77,26 @@ public enum RDFNotation {
 		throw new IllegalArgumentException();
 	}
 	
+	public static RDFNotation guess(String fileName) throws IllegalArgumentException {
+		String str = fileName.toLowerCase();
+		if(str.endsWith(".gz")) {
+			str = str.substring(0, str.length()-3);
+		}
+		if(str.endsWith(".bz2")) {
+			str = str.substring(0, str.length()-4);
+		}
+		if(str.endsWith("nt")) {
+			return NTRIPLES;
+		} else if(str.endsWith("n3")) {
+			return N3;
+		} else if(str.endsWith("rdf")||str.endsWith("xml")||str.endsWith("owl")) {
+			return RDFXML;
+		} else if(str.endsWith("ttl")) {
+			return TURTLE;
+		}
+		throw new IllegalArgumentException("Could not guess the format for "+fileName+" Using NTriples");
+	}
+	
 	public static RDFNotation guess(File fileName) throws IllegalArgumentException {
 		String str = fileName.getName().toLowerCase();
 		if(str.endsWith(".gz")) {
