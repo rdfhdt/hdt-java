@@ -1,6 +1,9 @@
-package org.rdfhdt.hdtjena;
+package org.rdfhdt.hdtjena.cmd;
+
+
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdtjena.HDTGraph;
 
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
