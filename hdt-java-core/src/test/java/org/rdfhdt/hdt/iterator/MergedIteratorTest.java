@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.rdfhdt.hdt.iterator.utils.MergedIterator;
 
 public class MergedIteratorTest {
 	List<Integer> listA, listB;

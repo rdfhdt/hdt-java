@@ -25,7 +25,7 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.iterator;
+package org.rdfhdt.hdt.iterator.utils;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
