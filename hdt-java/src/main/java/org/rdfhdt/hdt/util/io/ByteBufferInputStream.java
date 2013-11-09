@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/io/ByteBufferInputStream.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -25,35 +25,38 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.examples;
+package org.rdfhdt.hdt.util.io;
 
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleGenerate {
-
-	public static void main(String[] args) throws Exception {
-		// Configuration variables
-		String baseURI = "http://example.com/mydataset";
-		String rdfInput = "/path/to/dataset.nt";
-		String inputType = "ntriples";
-		String hdtOutput = "/path/to/dataset.hdt";
-		
-		// Create HDT from RDF file
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-		
-		// Add additional domain-specific properties to the header:
-		Header header = hdt.getHeader();
-		header.insert("myResource1", "property" , "value");
-		
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
+public class ByteBufferInputStream extends InputStream {
+	ByteBuffer buf;
+	
+	public ByteBufferInputStream(ByteBuffer buf) {
+		this.buf = buf;
 	}
+	
+	public synchronized int read() throws IOException {
+        if (!buf.hasRemaining()) {
+            return -1;
+        }
+        return buf.get();
+    }
+
+    public synchronized int read(byte[] bytes, int off, int len) throws IOException {
+    	if (!buf.hasRemaining()) {
+            return -1;
+        }
+        // Read only what's left
+        len = Math.min(len, buf.remaining());
+        buf.get(bytes, off, len);
+        return len;
+    }
+
 }

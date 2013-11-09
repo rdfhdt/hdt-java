@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/DynamicSequence.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -25,35 +25,34 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.examples;
-
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.options.HDTSpecification;
+package org.rdfhdt.hdt.compact.sequence;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleGenerate {
-
-	public static void main(String[] args) throws Exception {
-		// Configuration variables
-		String baseURI = "http://example.com/mydataset";
-		String rdfInput = "/path/to/dataset.nt";
-		String inputType = "ntriples";
-		String hdtOutput = "/path/to/dataset.hdt";
-		
-		// Create HDT from RDF file
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-		
-		// Add additional domain-specific properties to the header:
-		Header header = hdt.getHeader();
-		header.insert("myResource1", "property" , "value");
-		
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
-	}
+public interface DynamicSequence extends Sequence {
+	/**
+	 * Set a new value at the specified position.
+	 * @param index
+	 * @param value
+	 */
+	public void set(long index, long value);
+	
+	/**
+	 * Append a new value after the last position, increasing the number of elements by one.
+	 * @param value
+	 */
+	public void append(long value);
+	
+	/**
+	 * Trim the internal data structure to fit the actual number of elements.
+	 */
+	void trimToSize();
+	
+	/**
+	 * Trim the internal data structure to fit the actual number of elements. 
+	 * Use advanced algorithm to reduce the size to the minimum, even if it is costly.
+	 */
+	void aggresiveTrimToSize();
 }

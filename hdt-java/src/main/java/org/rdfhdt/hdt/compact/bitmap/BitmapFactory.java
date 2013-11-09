@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/BitmapFactory.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -25,35 +25,31 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.examples;
+package org.rdfhdt.hdt.compact.bitmap;
 
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleGenerate {
-
-	public static void main(String[] args) throws Exception {
-		// Configuration variables
-		String baseURI = "http://example.com/mydataset";
-		String rdfInput = "/path/to/dataset.nt";
-		String inputType = "ntriples";
-		String hdtOutput = "/path/to/dataset.hdt";
-		
-		// Create HDT from RDF file
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-		
-		// Add additional domain-specific properties to the header:
-		Header header = hdt.getHeader();
-		header.insert("myResource1", "property" , "value");
-		
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
+public class BitmapFactory {
+	public static final byte TYPE_BITMAP_PLAIN = 1;
+	
+	public static Bitmap createBitmap(String type) {
+		return new Bitmap375();
+	}
+	
+	public static Bitmap createBitmap(InputStream input) throws IOException {
+		input.mark(1);
+		int value = input.read();
+		input.reset();
+		if(value==TYPE_BITMAP_PLAIN) {
+			return new Bitmap375();
+		}
+		throw new IllegalFormatException("Implementation not found for Bitmap with code "+value);
 	}
 }

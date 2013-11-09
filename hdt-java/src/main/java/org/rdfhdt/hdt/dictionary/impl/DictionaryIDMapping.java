@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/DictionaryIDMapping.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -25,35 +25,50 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.examples;
+package org.rdfhdt.hdt.dictionary.impl;
 
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleGenerate {
-
-	public static void main(String[] args) throws Exception {
-		// Configuration variables
-		String baseURI = "http://example.com/mydataset";
-		String rdfInput = "/path/to/dataset.nt";
-		String inputType = "ntriples";
-		String hdtOutput = "/path/to/dataset.hdt";
+public class DictionaryIDMapping {
+	class Entry {
+		int newid;
+		CharSequence str;
 		
-		// Create HDT from RDF file
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-		
-		// Add additional domain-specific properties to the header:
-		Header header = hdt.getHeader();
-		header.insert("myResource1", "property" , "value");
-		
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
+		Entry(CharSequence str) {
+			this.str = str;
+			this.newid = 0;
+		}
+	}
+	
+	List<Entry> list;
+	
+	public DictionaryIDMapping(int numentries) {
+		list = new ArrayList<Entry>(numentries);
+	}
+	
+	public void add(CharSequence str) {
+		list.add(new Entry(str));
+	}
+	
+	public void setNewID(int oldId, int newID) {
+		list.get(oldId).newid = newID;
+	}
+	
+	public int getNewID(int oldId) {
+		//System.out.println("GetNewID old: "+oldId+"/"+list.size());
+		return list.get(oldId).newid;
+	}
+	
+	public CharSequence getString(int oldId) {
+		return list.get(oldId).str;
+	}
+	
+	public int size() {
+		return list.size();
 	}
 }

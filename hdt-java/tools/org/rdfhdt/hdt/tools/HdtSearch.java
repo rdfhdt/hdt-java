@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/HdtSearch.java $
+ * Revision: $Rev: 191 $
+ * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -136,33 +136,37 @@ public class HdtSearch implements ProgressListener {
 			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
 		}
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-		TripleString triplePattern = new TripleString();
-		
-		while(true) {
-			System.out.print(">> ");
-			System.out.flush();
-			String line=in.readLine();
-			if(line==null || line.equals("exit") || line.equals("quit")) {
-				break;
-			}
-			if(line.equals("help")) {
-				help();
-				continue;
-			}
-			
-			try {
-				parseTriplePattern(triplePattern, line);
-				System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"|");
+		try {
+			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+			TripleString triplePattern = new TripleString();
 
-				iterate(hdt,triplePattern.getSubject(),triplePattern.getPredicate(),triplePattern.getObject());
-			} catch (ParserException e) {
-				System.err.println("Could not parse triple pattern: "+e.getMessage());
-				help();
-			} catch (NotFoundException e) {
-				System.err.println("No results found.");
+			while(true) {
+				System.out.print(">> ");
+				System.out.flush();
+				String line=in.readLine();
+				if(line==null || line.equals("exit") || line.equals("quit")) {
+					break;
+				}
+				if(line.equals("help")) {
+					help();
+					continue;
+				}
+
+				try {
+					parseTriplePattern(triplePattern, line);
+					System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"|");
+
+					iterate(hdt,triplePattern.getSubject(),triplePattern.getPredicate(),triplePattern.getObject());
+				} catch (ParserException e) {
+					System.err.println("Could not parse triple pattern: "+e.getMessage());
+					help();
+				} catch (NotFoundException e) {
+					System.err.println("No results found.");
+				}
+
 			}
-			
+		} finally {
+			if(hdt!=null) hdt.close();
 		}
 		
 		in.close();

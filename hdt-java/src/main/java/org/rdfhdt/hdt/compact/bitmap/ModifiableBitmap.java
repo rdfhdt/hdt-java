@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/ModifiableBitmap.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -25,35 +25,13 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.examples;
-
-import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.options.HDTSpecification;
+package org.rdfhdt.hdt.compact.bitmap;
 
 /**
  * @author mario.arias
  *
  */
-public class ExampleGenerate {
-
-	public static void main(String[] args) throws Exception {
-		// Configuration variables
-		String baseURI = "http://example.com/mydataset";
-		String rdfInput = "/path/to/dataset.nt";
-		String inputType = "ntriples";
-		String hdtOutput = "/path/to/dataset.hdt";
-		
-		// Create HDT from RDF file
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-		
-		// Add additional domain-specific properties to the header:
-		Header header = hdt.getHeader();
-		header.insert("myResource1", "property" , "value");
-		
-		// Save generated HDT to a file
-		hdt.saveToHDT(hdtOutput, null);
-	}
+public interface ModifiableBitmap extends Bitmap {
+	public void set(long bit, boolean value);
+	public void append(boolean value);
 }

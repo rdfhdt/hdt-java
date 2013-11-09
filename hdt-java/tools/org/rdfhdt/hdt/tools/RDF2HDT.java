@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/RDF2HDT.java $
+ * Revision: $Rev: 191 $
+ * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -84,27 +84,32 @@ public class RDF2HDT implements ProgressListener {
 		if(baseURI==null) {
 			baseURI = "file://"+rdfInput;
 		}
+		
 		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(rdfType), spec, this);
 		
-		// Show Basic stats
-		if(!quiet){
-			System.out.println("Total Triples: "+hdt.getTriples().getNumberOfElements());
-			System.out.println("Different subjects: "+hdt.getDictionary().getNsubjects());
-			System.out.println("Different predicates: "+hdt.getDictionary().getNpredicates());
-			System.out.println("Different objects: "+hdt.getDictionary().getNobjects());
-			System.out.println("Common Subject/Object:"+hdt.getDictionary().getNshared());
-		}
-		
-		// Dump to HDT file
-		StopWatch sw = new StopWatch();
-		hdt.saveToHDT(hdtOutput, this);
-		System.out.println("HDT saved to file in: "+sw.stopAndShow());
-		
-		// Generate index and dump it to .hdt.index file
-		sw.reset();
-		if(generateIndex) {
-			hdt = HDTManager.indexedHDT(hdt,this);
-			System.out.println("Index generated and saved in: "+sw.stopAndShow());
+		try {
+			// Show Basic stats
+			if(!quiet){
+				System.out.println("Total Triples: "+hdt.getTriples().getNumberOfElements());
+				System.out.println("Different subjects: "+hdt.getDictionary().getNsubjects());
+				System.out.println("Different predicates: "+hdt.getDictionary().getNpredicates());
+				System.out.println("Different objects: "+hdt.getDictionary().getNobjects());
+				System.out.println("Common Subject/Object:"+hdt.getDictionary().getNshared());
+			}
+
+			// Dump to HDT file
+			StopWatch sw = new StopWatch();
+			hdt.saveToHDT(hdtOutput, this);
+			System.out.println("HDT saved to file in: "+sw.stopAndShow());
+
+			// Generate index and dump it to .hdt.index file
+			sw.reset();
+			if(generateIndex) {
+				hdt = HDTManager.indexedHDT(hdt,this);
+				System.out.println("Index generated and saved in: "+sw.stopAndShow());
+			}
+		} finally {
+			if(hdt!=null) hdt.close();
 		}
 		
 		// Debug all inserted triples

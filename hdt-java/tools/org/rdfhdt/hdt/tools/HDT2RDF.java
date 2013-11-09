@@ -1,8 +1,8 @@
 /**
- * File: $HeadURL$
- * Revision: $Rev$
- * Last modified: $Date$
- * Last modified by: $Author$
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/HDT2RDF.java $
+ * Revision: $Rev: 191 $
+ * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
+ * Last modified by: $Author: mario.arias $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,19 +59,22 @@ public class HDT2RDF implements ProgressListener {
 		} else {
 			out = new PrintStream(rdfOutput, "UTF-8");
 		}
-		
-		HDT hdt = HDTManager.mapHDT(hdtInput, this);
 
-		IteratorTripleString it = hdt.search("","","");
-		StringBuilder build = new StringBuilder(1024);
-		while(it.hasNext()) {
-			TripleString triple = it.next();
-			build.delete(0, build.length());
-			triple.dumpNtriple(build);
-			out.print(build);
-		}
-		if(!rdfOutput.equals("stdout")) {
-			out.close();
+		HDT hdt=HDTManager.mapHDT(hdtInput, this);
+		try {
+			IteratorTripleString it = hdt.search("","","");
+			StringBuilder build = new StringBuilder(1024);
+			while(it.hasNext()) {
+				TripleString triple = it.next();
+				build.delete(0, build.length());
+				triple.dumpNtriple(build);
+				out.print(build);
+			}
+			if(!rdfOutput.equals("stdout")) {
+				out.close();
+			}
+		} finally {
+			if(hdt!=null) hdt.close();
 		}
 	}
 
