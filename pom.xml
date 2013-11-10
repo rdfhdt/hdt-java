@@ -13,13 +13,6 @@
   <url>http://www.rdfhdt.org/</url>
   <version>1.1-SNAPSHOT</version>
 
-  <licenses>
-    <license>
-      <name></name>
-      <url></url>
-    </license>
-  </licenses>
-
   <!-- <organization>
     <name>DataWeb Research</name>
     <url>http://dataweb.infor.uva.es</url>
@@ -48,24 +41,6 @@
 
   <profiles>
     <profile>
-      <!--
-        This is the dev profile, it only builds the common modules
-      -->
-      <id>dev</id>
-      <modules>
-        <module>hdt-api</module>
-        <module>hdt-java-core</module>
-        <module>hdt-jena</module>
-        <module>hdt-java-package</module>
-      </modules>
-    </profile>
-
-    <profile>
-      <!--
-        This is the complete profile, it builds everything including slow
-        building modules and the distribution packages. This profile must be enabled
-        when making a release -P complete
-      -->
       <id>complete</id>
       <activation>
         <activeByDefault>true</activeByDefault>
@@ -73,6 +48,7 @@
       <modules>
         <module>hdt-api</module>
         <module>hdt-java-core</module>
+        <module>hdt-java-cmd</module>
         <module>hdt-jena</module>
         <module>hdt-java-package</module>
       </modules>
