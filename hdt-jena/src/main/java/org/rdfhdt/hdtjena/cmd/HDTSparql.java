@@ -26,13 +26,18 @@ public class HDTSparql {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
-		if (args.length == 2) {
-			String fileHDT = args[0];
-			String sparqlQuery = args[1];
+		if (args.length != 2) {
+			System.err.println("Usage: hdtsparql <hdt input> <SPARQL Query>.");
+			System.exit(1);
+		}
 
-			// Create HDT
-			HDT hdt = HDTManager.mapIndexedHDT(fileHDT, null);
-			
+		String fileHDT = args[0];
+		String sparqlQuery = args[1];
+
+		// Create HDT
+		HDT hdt = HDTManager.mapIndexedHDT(fileHDT, null);
+
+		try {
 			// Create Jena wrapper on top of HDT.
 			HDTGraph graph = new HDTGraph(hdt);
 			Model model = ModelFactory.createModelForGraph(graph);
@@ -41,21 +46,22 @@ public class HDTSparql {
 			Query query = QueryFactory.create(sparqlQuery);
 			QueryExecution qe = QueryExecutionFactory.create(query, model);
 
-			// FIXME: Do ASK/DESCRIBE/CONSTRUCT 
-			ResultSet results = qe.execSelect();
+			try {
+				// FIXME: Do ASK/DESCRIBE/CONSTRUCT 
+				ResultSet results = qe.execSelect();
 
-			/*while(results.hasNext()) {
+				/*while(results.hasNext()) {
 				QuerySolution sol = results.nextSolution();
 				System.out.println(sol.toString());
-			}*/
-			// Output query results	
-			ResultSetFormatter.outputAsCSV(System.out, results);
-			
+				}*/
+				// Output query results	
+				ResultSetFormatter.outputAsCSV(System.out, results);
+			} finally {
+				qe.close();				
+			}
+		} finally {			
 			// Close
-			qe.close();
-		} else {
-			System.err.println("Must have two arguments, the HDT input file path and the SPARQL query string.");
-			System.exit(1);
+			hdt.close();
 		}
 	}
 }

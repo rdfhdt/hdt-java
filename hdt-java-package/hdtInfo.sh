@@ -1,3 +1,5 @@
 #!/bin/bash
 
-java -classpath 'bin:lib/*' org.rdfhdt.hdt.tools.HDTInfo $*
+DIR=`dirname $0`
+
+java -server -classpath "${DIR}/lib/*" org.rdfhdt.hdt.tools.HDTInfo $*
