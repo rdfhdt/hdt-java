@@ -56,6 +56,7 @@
         <module>hdt-api</module>
         <module>hdt-java-core</module>
         <module>hdt-jena</module>
+        <module>hdt-java-package</module>
       </modules>
     </profile>
 
@@ -73,6 +74,7 @@
         <module>hdt-api</module>
         <module>hdt-java-core</module>
         <module>hdt-jena</module>
+        <module>hdt-java-package</module>
       </modules>
     </profile>
   </profiles>

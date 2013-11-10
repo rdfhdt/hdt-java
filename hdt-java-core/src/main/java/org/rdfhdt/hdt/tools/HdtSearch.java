@@ -136,8 +136,8 @@ public class HdtSearch implements ProgressListener {
 			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
 		}
 
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		try {
-			BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 			TripleString triplePattern = new TripleString();
 
 			while(true) {
@@ -167,9 +167,8 @@ public class HdtSearch implements ProgressListener {
 			}
 		} finally {
 			if(hdt!=null) hdt.close();
+			in.close();
 		}
-		
-		in.close();
 	}
 	
 	/* (non-Javadoc)
