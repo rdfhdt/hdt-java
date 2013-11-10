@@ -1,0 +1,6 @@
+Each module has a different License:
+
+hdt-api: Apache License
+hdt-java-core: Lesser General Public License
+hdt-java-cmd: Commandline tools have an Apache License
+hdt-jena: Lesser General Public License
