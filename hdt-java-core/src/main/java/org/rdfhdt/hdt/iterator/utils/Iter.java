@@ -3,6 +3,8 @@ package org.rdfhdt.hdt.iterator.utils;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import org.rdfhdt.hdt.triples.TripleID;
+
 public class Iter {
 
 	public static <T, R> Iterable<R> mapIterable(final Iterable<T> iter1, final Transform<T, R> converter) {
@@ -86,5 +88,28 @@ public class Iter {
 		} ;
 
 		return iter ;
+	}
+
+
+	public static <T> Iterator<T> limit(final Iterator<T> it, final int limit) {
+		return new Iterator<T>() {
+			
+			int pos=0;
+
+			@Override
+			public boolean hasNext() {
+				return pos<limit && it.hasNext();
+			}
+
+			@Override
+			public T next() {
+				return it.next();
+			}
+
+			@Override
+			public void remove() {
+				it.remove();
+			}
+		};
 	}
 }
