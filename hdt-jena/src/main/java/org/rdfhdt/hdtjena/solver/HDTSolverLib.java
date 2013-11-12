@@ -116,7 +116,7 @@ public class HDTSolverLib
 
     
 	private static HDTId getID(Node n, NodeDictionary dict, PrefixMapping prefixMapping) {
-		int id = dict.getIntID(n, prefixMapping, TripleComponentRole.SUBJECT);
+		long id = dict.getIntID(n, prefixMapping, TripleComponentRole.SUBJECT);
 		if(id>0) {
 			return new HDTId(id, TripleComponentRole.SUBJECT, dict);
 		}

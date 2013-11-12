@@ -22,6 +22,7 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
+ *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.triples.impl;
@@ -33,7 +34,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 
 import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
@@ -48,7 +48,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.TripleIDComparatorInt;
+import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.RDFInfo;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -60,16 +60,16 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
  * Implementation of TempTriples using a List of TripleID.
  * 
  */
-public class TriplesList implements TempTriples {
-	
+public class TriplesListLong implements TempTriples {
+
 	/** The array to hold the triples */
-	private ArrayList<TripleIDInt> arrayOfTriples;
+	private ArrayList<TripleID> arrayOfTriples;
 
 	/** The order of the triples */
 	private TripleComponentOrder order;
 	private long numValidTriples;
 
-	private boolean sorted;
+	private boolean sorted = false;
 
 	/**
 	 * Constructor, given an order to sort by
@@ -77,12 +77,12 @@ public class TriplesList implements TempTriples {
 	 * @param order
 	 *            The order to sort by
 	 */
-	public TriplesList(HDTOptions specification) {
+	public TriplesListLong(HDTOptions specification) {
 
 		//precise allocation of the array (minimal memory wasting)
 		long numTriples = RDFInfo.getTriples(specification);
 		numTriples = (numTriples>0)?numTriples:100;
-		this.arrayOfTriples = new ArrayList<TripleIDInt>((int)numTriples);
+		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
 
 		//choosing starting(or default) component order
 		String orderStr = specification.get("triplesOrder");
@@ -100,7 +100,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public boolean reallocateIfEmpty(int numTriples){
 		if (arrayOfTriples.isEmpty()) {
-			arrayOfTriples = new ArrayList<TripleIDInt>(numTriples);
+			arrayOfTriples = new ArrayList<TripleID>(numTriples);
 			return true;
 		} else {
 			return false;
@@ -167,11 +167,12 @@ public class TriplesList implements TempTriples {
 
 		DataOutputStream dout = new DataOutputStream(output);
 		int count = 0;
-		for (TripleIDInt triple : arrayOfTriples) {
+		for (TripleID triple : arrayOfTriples) {
 			if(triple.isValid()) {
-				dout.writeInt(triple.getSubject());
-				dout.writeInt(triple.getPredicate());
-				dout.writeInt(triple.getObject());
+				// FIXME: writeLong ??
+				dout.writeInt((int) triple.getSubject());
+				dout.writeInt((int) triple.getPredicate());
+				dout.writeInt((int) triple.getObject());
 				ListenerUtil.notifyCond(listener, "Saving TriplesList", count, arrayOfTriples.size());
 			}
 			count++;
@@ -191,7 +192,7 @@ public class TriplesList implements TempTriples {
 		int numRead=0;
 		
 		while(numRead<totalTriples) {
-			arrayOfTriples.add(new TripleIDInt(IOUtil.readInt(input), IOUtil.readInt(input), IOUtil.readInt(input)));
+			arrayOfTriples.add(new TripleID(IOUtil.readLong(input), IOUtil.readLong(input), IOUtil.readLong(input)));
 			numRead++;
 			numValidTriples++;
 			ListenerUtil.notifyCond(listener, "Loading TriplesList", numRead, totalTriples);
@@ -209,7 +210,7 @@ public class TriplesList implements TempTriples {
 	public void load(TempTriples input, ProgressListener listener) {
 		IteratorTripleID iterator = input.searchAll();
 		while (iterator.hasNext()) {
-			arrayOfTriples.add(new TripleIDInt(iterator.next()));
+			arrayOfTriples.add(iterator.next());
 			numValidTriples++;
 		}
 
@@ -220,8 +221,7 @@ public class TriplesList implements TempTriples {
 	 * @param order
 	 *            the order to set
 	 */
-	@Override
-    public void setOrder(TripleComponentOrder order) {
+	public void setOrder(TripleComponentOrder order) {
 		if (this.order.equals(order))
 			return;
 		this.order = order;
@@ -242,7 +242,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public boolean insert(TripleID... triples) {
 		for (TripleID triple : triples) {
-			arrayOfTriples.add(new TripleIDInt(triple));
+			arrayOfTriples.add(new TripleID(triple));
 			numValidTriples++;
 		}
 		sorted = false;
@@ -254,11 +254,12 @@ public class TriplesList implements TempTriples {
 	 */
 	@Override
 	public boolean insert(long subject, long predicate, long object) {
-		arrayOfTriples.add(new TripleIDInt(subject,predicate,object));
+		arrayOfTriples.add(new TripleID(subject,predicate,object));
 		numValidTriples++;
 		sorted = false;
 		return true;
 	}
+
 
 	/*
 	 * (non-Javadoc)
@@ -268,7 +269,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public boolean remove(TripleID... patterns) {
 		boolean removed = false;
-		for(TripleIDInt triple : arrayOfTriples){
+		for(TripleID triple : arrayOfTriples){
 			for(TripleID pattern : patterns) {
 				if(triple.match(pattern)) {
 					triple.clear();
@@ -290,7 +291,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public void sort(ProgressListener listener) {
 		if(!sorted) {
-			Collections.sort(arrayOfTriples, TripleIDComparatorInt.getComparator(order));
+			Collections.sort(arrayOfTriples, TripleIDComparator.getComparator(order));
 		}
 		sorted = true;
 	}
@@ -345,8 +346,7 @@ public class TriplesList implements TempTriples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.ordinal() );
 	}
 
-	@Override
-    public String getType() {
+	public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST;
 	}
 
@@ -398,12 +398,12 @@ public class TriplesList implements TempTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public static class TriplesListIterator implements IteratorTripleID {
+	public class TriplesListIterator implements IteratorTripleID {
 
-		private final TriplesList triplesList;
+		private TriplesListLong triplesList;
 		private int pos;
 
-		public TriplesListIterator(TriplesList triplesList) {
+		public TriplesListIterator(TriplesListLong triplesList) {
 			this.triplesList = triplesList;
 			this.pos = 0;
 		}
@@ -421,7 +421,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get((int)pos++).asTripleID();
+			return triplesList.arrayOfTriples.get((int)pos++);
 		}
 
 		/* (non-Javadoc)
@@ -437,7 +437,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get((int)--pos).asTripleID();
+			return triplesList.arrayOfTriples.get((int)--pos);
 		}
 
 		/* (non-Javadoc)
@@ -505,12 +505,12 @@ public class TriplesList implements TempTriples {
 
 	@Override
 	public void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj) {
-		sorted=false;
-		for(TripleIDInt triple : arrayOfTriples) {
-			triple.setAll( 
-					(int)mapSubj.getNewID(triple.getSubject()-1),
-					(int)mapPred.getNewID(triple.getPredicate()-1),
-					(int)mapObj.getNewID(triple.getObject()-1)
+		sorted = false;
+		for(TripleID triple : arrayOfTriples) {
+			triple.setAll(
+					mapSubj.getNewID(triple.getSubject()-1),
+					mapPred.getNewID(triple.getPredicate()-1),
+					mapObj.getNewID(triple.getObject()-1)
 				);
 		}
 	}

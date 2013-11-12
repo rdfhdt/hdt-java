@@ -34,17 +34,17 @@ import org.rdfhdt.hdt.util.LRUCache;
  */
 public class DictionaryCacheLRU<T> implements DictionaryCache<T> {
 
-	private LRUCache<Integer, T> lru;
+	private LRUCache<Long, T> lru;
 	
 	public DictionaryCacheLRU(int size) {
-		lru = new LRUCache<Integer, T>(size);
+		lru = new LRUCache<>(size);
 	}
 	
 	/* (non-Javadoc)
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public T get(int id) {
+	public T get(long id) {
 		return lru.get(id);
 	}
 
@@ -52,7 +52,7 @@ public class DictionaryCacheLRU<T> implements DictionaryCache<T> {
 	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.T)
 	 */
 	@Override
-	public void put(int id, T node) {
+	public void put(long id, T node) {
 		lru.put(id, node);
 	}
 

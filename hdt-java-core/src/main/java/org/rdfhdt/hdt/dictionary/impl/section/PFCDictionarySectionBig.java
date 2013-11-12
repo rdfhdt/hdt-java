@@ -250,9 +250,9 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#locate(java.lang.CharSequence)
 	 */
 	@Override
-	public int locate(CharSequence str) {
+	public long locate(CharSequence str) {
 
-		int blocknum = locateBlock(str);
+		long blocknum = locateBlock(str);
 		if(blocknum>=0) {
 			// Located exactly
 			return (blocknum*blocksize)+1;
@@ -261,7 +261,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				int idblock = locateInBlock(blocknum, str);
+				long idblock = locateInBlock(blocknum, str);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -273,7 +273,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		return 0;
 	}
 		
-	protected int locateInBlock(int blockid, CharSequence str) {
+	protected int locateInBlock(long blocknum, CharSequence str) {
 	
 		ReplazableString tempString = new ReplazableString();
 		
@@ -281,8 +281,8 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		int idInBlock = 0;
 		int cshared=0;
 		
-		byte [] block = data[blockid/BLOCK_PER_BUFFER];
-		int pos = (int) (blocks.get(blockid)-posFirst[blockid/BLOCK_PER_BUFFER]);
+		byte [] block = data[(int) (blocknum/BLOCK_PER_BUFFER)];
+		int pos = (int) (blocks.get(blocknum)-posFirst[(int) (blocknum/BLOCK_PER_BUFFER)]);
 		
 		// Read the first string in the block
 		int slen = ByteStringUtil.strlen(block, pos);
@@ -332,18 +332,18 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
-	public CharSequence extract(int id) {
+	public CharSequence extract(long id) {
 		
 		if(id<1 || id>numstrings) {
 			return null;
 		}
 		
 		// Locate block
-		int blockid = (id-1)/blocksize;
-		int nstring = (id-1)%blocksize;
+		long blockid = (id-1)/blocksize;
+		long nstring = (id-1)%blocksize;
 		
-		byte [] block = data[blockid/BLOCK_PER_BUFFER];
-		int pos = (int) (blocks.get(blockid)-posFirst[blockid/BLOCK_PER_BUFFER]);
+		byte [] block = data[(int) (blockid/BLOCK_PER_BUFFER)];
+		int pos = (int) (blocks.get(blockid)-posFirst[(int) (blockid/BLOCK_PER_BUFFER)]);
 		
 		// Copy first string
  		int len = ByteStringUtil.strlen(block, pos);
@@ -374,7 +374,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#getNumberOfElements()
 	 */
 	@Override
-	public int getNumberOfElements() {
+	public long getNumberOfElements() {
 		return numstrings;
 	}
 

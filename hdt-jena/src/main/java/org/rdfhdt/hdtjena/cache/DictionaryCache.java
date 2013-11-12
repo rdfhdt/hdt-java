@@ -33,8 +33,8 @@ import org.apache.jena.graph.Node;
  *
  */
 public interface DictionaryCache {
-	Node get(int id);
-	void put(int id, Node node);
-	int size();
+	Node get(long id);
+	void put(long id, Node node);
+	long size();
 	void clear();
 }

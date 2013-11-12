@@ -73,7 +73,7 @@ public class SequenceLog64 implements DynamicSequence {
 		this.maxvalue = BitUtil.maxVal(numbits);
 		
 		long size = numWordsFor(numbits, capacity);
-		assert size>=0 && size<=Integer.MAX_VALUE;
+		assert size>=0;
 		
 		data = new long[Math.max((int)size,1)];
 	}
@@ -236,9 +236,6 @@ public class SequenceLog64 implements DynamicSequence {
 	
 	@Override
     public void append(long value) {
-
-		assert numentries<Integer.MAX_VALUE;
-		
 		if(value<0 || value>maxvalue) {
 			throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
 		}

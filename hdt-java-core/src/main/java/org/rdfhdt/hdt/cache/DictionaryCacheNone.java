@@ -37,7 +37,7 @@ public class DictionaryCacheNone<T> implements DictionaryCache<T> {
 	 * @see hdt.jena.DictionaryNodeCache#get(int)
 	 */
 	@Override
-	public T get(int id) {
+	public T get(long id) {
 		return null;
 	}
 
@@ -45,7 +45,7 @@ public class DictionaryCacheNone<T> implements DictionaryCache<T> {
 	 * @see hdt.jena.DictionaryNodeCache#put(int, com.hp.hpl.jena.graph.Node)
 	 */
 	@Override
-	public void put(int id, T node) {
+	public void put(long id, T node) {
 		
 	}
 

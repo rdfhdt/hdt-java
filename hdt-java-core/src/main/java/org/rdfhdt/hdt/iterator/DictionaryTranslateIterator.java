@@ -49,7 +49,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 
 	CharSequence s, p, o;
 	
-	int lastSid, lastPid, lastOid;
+	long lastSid, lastPid, lastOid;
 	CharSequence lastSstr, lastPstr, lastOstr;
 	
 	/**

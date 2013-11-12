@@ -59,9 +59,9 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	List<TripleID> triples;
 	Iterator<TripleID> child=Collections.emptyIterator();
 	
-	Map<Integer,CharSequence> mapSubject, mapPredicate, mapObject;
+	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject;
 
-	int lastSid, lastPid, lastOid;
+	long lastSid, lastPid, lastOid;
 	CharSequence lastSstr, lastPstr, lastOstr;
 	
 	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
@@ -94,12 +94,12 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		}
 	}
 
-	private void fill(int [] arr, int count, Map<Integer,CharSequence> map, TripleComponentRole role) {
+	private void fill(long [] arr, int count, Map<Long,CharSequence> map, TripleComponentRole role) {
 		Arrays.sort(arr, 0, count);
 		
-		int last=-1;
+		long last=-1;
 		for(int i=0;i<count;i++) {
-			int val = arr[i];
+			long val = arr[i];
 			
 			if(val!=last) {
 				CharSequence str = dictionary.idToString(val, role);
@@ -114,9 +114,9 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	private void fetchBlock() {
 		reset();		
 
-		int [] arrSubjects = new int[blockSize];
-		int [] arrPredicates = new int[blockSize];
-		int [] arrObjects = new int[blockSize];
+		long [] arrSubjects = new long[blockSize];
+		long [] arrPredicates = new long[blockSize];
+		long [] arrObjects = new long[blockSize];
 
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {

@@ -77,7 +77,7 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
 		this.numSharedSO = graph.getHDT().getDictionary().getNshared();
 
         // Convert Nodes to a TripleID
-        int subject=0, predicate=0, object=0;
+        long subject=0, predicate=0, object=0;
 		
 		Node subjectNode = patternTuple.getSubject();
         if(!subjectNode.isVariable()) {
@@ -177,7 +177,7 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         return it.map(binder).removeNulls();
     }
 
-    private static int translateBinding(BindingHDTId input, Var var, NodeDictionary dictionary, TripleComponentRole role) {
+    private static long translateBinding(BindingHDTId input, Var var, NodeDictionary dictionary, TripleComponentRole role) {
         HDTId id = input.get(var);
         if (id == null) {
             return 0;  // match all

@@ -26,9 +26,9 @@ public class PFCOptimizedExtractor {
 	long [] posFirst;
 	Sequence blocks;
 
-	int bytebufferIndex=0;
+	long bytebufferIndex=0;
 	ReplazableString tempString = new ReplazableString();
-	int id = 0;
+	long id = 0;
 
 	public PFCOptimizedExtractor(PFCDictionarySectionMap pfc) {
 		this.pfc = pfc;
@@ -50,7 +50,7 @@ public class PFCOptimizedExtractor {
 		}
 	}
 
-	public CharSequence extract(int target) {
+	public CharSequence extract(long target) {
 		if(target<1 || target>numstrings) {
 			throw new IndexOutOfBoundsException("Trying to access position "+target+ " but PFC has "+numstrings+" elements.");
 		}
@@ -60,7 +60,7 @@ public class PFCOptimizedExtractor {
 
 			while(id<target) {
 				if(!buffer.hasRemaining()) {
-					buffer = buffers[++bytebufferIndex].duplicate();
+					buffer = buffers[(int) ++bytebufferIndex].duplicate();
 					buffer.rewind();
 				}
 				try {
@@ -89,17 +89,17 @@ public class PFCOptimizedExtractor {
 
 			id = target;
 
-			int block = (target-1)/blocksize;
+			long block = (target-1)/blocksize;
 			bytebufferIndex = block/PFCDictionarySectionMap.BLOCKS_PER_BYTEBUFFER;
-			buffer = buffers[bytebufferIndex++].duplicate();
-			buffer.position((int)(blocks.get(block)-posFirst[block/PFCDictionarySectionMap.BLOCKS_PER_BYTEBUFFER]));
+			buffer = buffers[(int) bytebufferIndex++].duplicate();
+			buffer.position((int)(blocks.get(block)-posFirst[(int) (block/PFCDictionarySectionMap.BLOCKS_PER_BYTEBUFFER)]));
 
 			try {
 				tempString = new ReplazableString();
 				tempString.replace(buffer,0);
 
-				int stringid = (target-1)%blocksize;
-				for(int i=0;i<stringid;i++) {
+				long stringid = (target-1)%blocksize;
+				for(long i=0;i<stringid;i++) {
 					long delta = VByte.decode(buffer);
 					tempString.replace(buffer, (int) delta);
 				}

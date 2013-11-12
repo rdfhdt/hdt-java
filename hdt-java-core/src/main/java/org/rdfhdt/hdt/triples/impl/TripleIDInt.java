@@ -1,4 +1,4 @@
-/*
+/**
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/triples/TripleID.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -25,28 +25,24 @@
  *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
-package org.rdfhdt.hdt.triples;
+package org.rdfhdt.hdt.triples.impl;
 
-import java.io.Serializable;
-import org.rdfhdt.hdt.util.LongCompare;
-
-
+import org.rdfhdt.hdt.triples.TripleID;
 
 /**
- * TripleID holds a triple using Long IDs
+ * TripleID holds a triple as integers
  * 
  */
-public final class TripleID implements Comparable<TripleID>, Serializable {
-	private static final long serialVersionUID = -4685524566493494912L;
-	
-	private long subject;
-	private long predicate;
-	private long object;
+public final class TripleIDInt implements Comparable<TripleIDInt> {
+
+	private int subject;
+	private int predicate;
+	private int object;
 
 	/**
 	 * Basic constructor
 	 */
-	public TripleID() {
+	public TripleIDInt() {
 		super();
 	}
 
@@ -60,28 +56,41 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * @param object
 	 *            The object
 	 */
-	public TripleID(long subject, long predicate, long object) {
+	public TripleIDInt(int subject, int predicate, int object) {
 		super();
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
 	}
 	
+	public TripleIDInt(long subject, long predicate, long object) {
+		super();
+		this.subject = (int)subject;
+		this.predicate = (int)predicate;
+		this.object = (int)object;
+	}
+	
 	/**
 	 * Build a TripleID as a copy of another one.
 	 * @param other
 	 */
-	public TripleID(TripleID other) {
+	public TripleIDInt(TripleIDInt other) {
 		super();
 		this.subject = other.subject;
 		this.predicate = other.predicate;
 		this.object = other.object;
 	}
 
+	public TripleIDInt(TripleID other) {
+		this.subject = (int)other.getSubject();
+		this.predicate = (int)other.getPredicate();
+		this.object = (int)other.getObject();		
+	}
+
 	/**
 	 * @return the subject
 	 */
-	public long getSubject() {
+	public int getSubject() {
 		return subject;
 	}
 
@@ -89,14 +98,14 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * @param subject
 	 *            the subject to set
 	 */
-	public void setSubject(long subject) {
+	public void setSubject(int subject) {
 		this.subject = subject;
 	}
 
 	/**
 	 * @return the object
 	 */
-	public long getObject() {
+	public int getObject() {
 		return object;
 	}
 
@@ -104,14 +113,14 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * @param object
 	 *            the object to set
 	 */
-	public void setObject(long object) {
+	public void setObject(int object) {
 		this.object = object;
 	}
 
 	/**
 	 * @return the predicate
 	 */
-	public long getPredicate() {
+	public int getPredicate() {
 		return predicate;
 	}
 
@@ -119,7 +128,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * @param predicate
 	 *            the predicate to set
 	 */
-	public void setPredicate(long predicate) {
+	public void setPredicate(int predicate) {
 		this.predicate = predicate;
 	}
 
@@ -129,13 +138,13 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * @param predicate
 	 * @param object
 	 */
-	public void setAll(long subject, long predicate, long object) {
+	public void setAll(int subject, int predicate, int object) {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
 	}
 	
-	public void assign(TripleID replacement) {
+	public void assign(TripleIDInt replacement) {
 		subject = replacement.getSubject();
         object = replacement.getObject();
         predicate = replacement.getPredicate();
@@ -155,10 +164,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return Long.toString(subject) + " " + predicate + " " + object;
+		return "" + subject + " " + predicate + " " + object;
 	}
 	
-	public boolean equals(TripleID other) {
+	public boolean equals(TripleIDInt other) {
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
 	}
 
@@ -167,13 +176,13 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 * To compare using other orders use {@link TripleStringComparator} 
 	 */
 	@Override
-	public int compareTo(TripleID other) {
-		 int result = LongCompare.compare(this.subject, other.subject);
+	public int compareTo(TripleIDInt other) {
+		 int result = this.subject - other.subject;
 
          if(result==0) {
-                 result = LongCompare.compare(this.predicate,other.predicate);
+                 result = this.predicate - other.predicate;
                  if(result==0) {
-                         return LongCompare.compare(this.object,other.object);
+                         return this.object - other.object;
                  } else {
                          return result;
                  }
@@ -222,15 +231,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-
-	/**
-	 * Checks whether any of the components of the triple are "no match" (-1).
-	 * @return
-	 */
-	public boolean isNoMatch() {
-		return subject == -1 || predicate == -1 || object == -1;
-	}
-
+	
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
 	 * @return
@@ -242,9 +243,13 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 			(object==0    ? '?' : 'O');
 	}
 	
+	public TripleID asTripleID() {
+		return new TripleID(subject,predicate,object);
+	}
+	
 	/** size of one TripleID in memory */
 	public static int size(){
-		return 48;
+		return 24;
 	}
 
 }

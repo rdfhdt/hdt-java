@@ -33,7 +33,6 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 
 
@@ -66,8 +65,7 @@ public class HDTStatistics implements GraphStatisticsHandler {
 				return triples.getNumberOfElements();
 			}
 
-
-			int s, p, o;
+			long s, p, o;
 			s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);
 			p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
 			o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);

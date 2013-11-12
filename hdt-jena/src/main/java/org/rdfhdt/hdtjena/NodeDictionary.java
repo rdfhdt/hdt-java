@@ -28,9 +28,6 @@ package org.rdfhdt.hdtjena;
 
 import java.util.Map;
 
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -61,7 +58,7 @@ public class NodeDictionary {
 	private final DictionaryCache<Node> cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")
-	Map<String, Integer> cacheNodeToId [] = new Map[TripleComponentRole.values().length];
+	Map<String, Long> cacheNodeToId [] = new Map[TripleComponentRole.values().length];
 	
 	public NodeDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
@@ -110,10 +107,11 @@ public class NodeDictionary {
 		return getNode(hdtid.getValue(), hdtid.getRole());
 	}
 	
-	public Node getNode(int id, TripleComponentRole role) {
-		Node node = cacheIDtoNode[role.ordinal()].get(id);
+	public Node getNode(long l, TripleComponentRole role) {
+		// FIXME: This won't work for files with >2B Entries
+		Node node = cacheIDtoNode[role.ordinal()].get((int) l);
 		if(node==null) {
-			CharSequence str = dictionary.idToString(id, role);
+			CharSequence str = dictionary.idToString(l, role);
 			char firstChar = str.charAt(0);
 			
 			if(firstChar=='_') {
@@ -124,27 +122,27 @@ public class NodeDictionary {
 				node = JenaNodeCreator.createURI(str.toString());
 			}
 			
-			cacheIDtoNode[role.ordinal()].put(id, node);
+			cacheIDtoNode[role.ordinal()].put((int) l, node);
 		}
 		
 		return node;
 	}
 	
-	public int getIntID(Node node, TripleComponentRole role) {
+	public long getIntID(Node node, TripleComponentRole role) {
 		return getIntID(nodeToStr(node), role);
 	}
 	
-	public int getIntID(Node node, PrefixMapping map, TripleComponentRole role) {
+	public long getIntID(Node node, PrefixMapping map, TripleComponentRole role) {
 		return getIntID(nodeToStr(node, map), role);
 	}
 	
-	public int getIntID(String str, TripleComponentRole role) {
-		Integer intValue = cacheNodeToId[role.ordinal()].get(str);
+	public long getIntID(String str, TripleComponentRole role) {
+		Long intValue = cacheNodeToId[role.ordinal()].get(str);
 		if(intValue!=null) {
 			return intValue.intValue();
 		}
 		
-		int val = dictionary.stringToId(str, role);
+		long val = dictionary.stringToId(str, role);
 		if(val>0) {
 			cacheNodeToId[role.ordinal()].put(str, val);
 		}
@@ -176,7 +174,7 @@ public class NodeDictionary {
 	}
 	
 	public TripleID getTriplePatID(Triple jenaTriple) {
-		int subject=0, predicate=0, object=0;
+		long subject=0, predicate=0, object=0;
 		
 		if(jenaTriple.getMatchSubject()!=null) {
 			subject = getIntID(jenaTriple.getMatchSubject(), TripleComponentRole.SUBJECT);
@@ -204,7 +202,7 @@ public class NodeDictionary {
         return null ;
     }
 
-	public static int translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
+	public static long translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
 		if(dictionary==id.getDictionary()) {
 			if (role == id.getRole()) {
 			return id.getValue();

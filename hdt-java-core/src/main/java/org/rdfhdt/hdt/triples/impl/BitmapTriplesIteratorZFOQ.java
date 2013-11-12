@@ -44,10 +44,10 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	
 	AdjacencyList adjY, adjIndex;
 	long posIndex, minIndex, maxIndex;
-	int x, y, z;
+	long x, y, z;
 	
-	int patY;
-    final int patZ;
+	long patY;
+    final long patZ;
 	
 	public BitmapTriplesIteratorZFOQ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;

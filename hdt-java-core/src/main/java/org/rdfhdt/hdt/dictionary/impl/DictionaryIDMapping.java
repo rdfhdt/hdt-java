@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class DictionaryIDMapping {
 	class Entry {
-		int newid;
+		long newid;
 		final CharSequence str;
 		
 		Entry(CharSequence str) {
@@ -47,28 +47,31 @@ public class DictionaryIDMapping {
 	
 	final List<Entry> list;
 	
-	public DictionaryIDMapping(int numentries) {
-		list = new ArrayList<>(numentries);
+	public DictionaryIDMapping(long numentries) {
+		if(numentries>Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("This mapping class does not support more than 2G entries");
+		}
+		list = new ArrayList<>((int)numentries);
 	}
 	
 	public void add(CharSequence str) {
 		list.add(new Entry(str));
 	}
 	
-	public void setNewID(int oldId, int newID) {
-		list.get(oldId).newid = newID;
+	public void setNewID(long oldId, long newID) {
+		list.get((int) oldId).newid = newID;
 	}
 	
-	public int getNewID(int oldId) {
+	public long getNewID(long oldId) {
 		//System.out.println("GetNewID old: "+oldId+"/"+list.size());
-		return list.get(oldId).newid;
+		return list.get((int) oldId).newid;
 	}
 	
-	public CharSequence getString(int oldId) {
-		return list.get(oldId).str;
+	public CharSequence getString(long oldId) {
+		return list.get((int) oldId).str;
 	}
 	
-	public int size() {
+	public long size() {
 		return list.size();
 	}
 }

@@ -51,21 +51,17 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 	
 
 	@SuppressWarnings("serial")
-    final
-    Map<CharSequence, Integer> cacheString = new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
+	final Map<CharSequence, Long> cacheString = new LinkedHashMap<CharSequence,Long>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
-						@Override
-					    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
+					    public boolean removeEldestEntry(Map.Entry<CharSequence,Long> eldest) {
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
 					
 	@SuppressWarnings("serial")
-    final
-    Map<Integer, CharSequence> cacheID = new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
+	final Map<Long, CharSequence> cacheID = new LinkedHashMap<Long,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
 						// This method is called just after a new entry has been added
-						@Override
-						public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {
+						public boolean removeEldestEntry(Map.Entry<Long,CharSequence> eldest) {
 							return size() > CACHE_ENTRIES;
 						}
 					};
@@ -78,8 +74,8 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#locate(java.lang.CharSequence)
 	 */
 	@Override
-	public int locate(CharSequence s) {
-		Integer o = cacheString.get(s);
+	public long locate(CharSequence s) {
+		Long o = cacheString.get(s);
 		if(o==null) {
 			o = child.locate(s);
 			cacheString.put(s, o);
@@ -88,10 +84,10 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.dictionary.DictionarySection#extract(int)
+	 * @see hdt.dictionary.DictionarySection#extract(long)
 	 */
 	@Override
-	public CharSequence extract(int pos) {
+	public CharSequence extract(long pos) {
 		CharSequence o = cacheID.get(pos);
 		if(o==null) {
 			o = child.extract(pos);
@@ -113,7 +109,7 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 	 * @see hdt.dictionary.DictionarySection#getNumberOfElements()
 	 */
 	@Override
-	public int getNumberOfElements() {
+	public long getNumberOfElements() {
 		return child.getNumberOfElements();
 	}
 

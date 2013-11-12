@@ -15,12 +15,12 @@ public class PSFCTempDictionary implements TempDictionary {
     }
 
     @Override
-    public int stringToId(CharSequence subject, TripleComponentRole role) {
+    public long stringToId(CharSequence subject, TripleComponentRole role) {
         return delegate.stringToId(PSFCFourSectionDictionary.encode(subject), role);
     }
 
     @Override
-    public int insert(CharSequence str, TripleComponentRole position) {
+    public long insert(CharSequence str, TripleComponentRole position) {
         return delegate.insert(PSFCFourSectionDictionary.encode(str), position);
     }
 

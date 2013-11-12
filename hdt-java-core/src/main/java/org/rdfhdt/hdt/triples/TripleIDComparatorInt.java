@@ -1,4 +1,4 @@
-/*
+/**
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/TripleIDComparator.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -22,34 +22,27 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.triples;
 
-import java.io.IOException;
-import java.io.Serializable;
 import java.util.Comparator;
 
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.util.LongCompare;
+import org.rdfhdt.hdt.triples.impl.TripleIDInt;
 
 
 /**
  * Comparator between triples, based on the TripleComponentOrder
  * 
  */
-public class TripleIDComparator implements Comparator<TripleID>, Serializable {
-	private static final long serialVersionUID = -8322949509663015732L;
+public class TripleIDComparatorInt implements Comparator<TripleIDInt> {
 	
 	/** Determines the order of comparison */
-	private final TripleComponentOrder order;
+	private TripleComponentOrder order;
 	
-	public static Comparator<TripleID> getComparator(TripleComponentOrder order) {
-		if(order==TripleComponentOrder.SPO) {
-			return TripleIDComparatorSPO.getInstance();
-		}
-		return new TripleIDComparator(order);
+	public static Comparator<TripleIDInt> getComparator(TripleComponentOrder order) {
+		return new TripleIDComparatorInt(order);
 	}
 
 	/**
@@ -58,7 +51,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 	 * @param order
 	 *            The order to compare with
 	 */
-	private TripleIDComparator(TripleComponentOrder order) {
+	private TripleIDComparatorInt(TripleComponentOrder order) {
 		super();
 		this.order = order;
 	}
@@ -69,7 +62,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
 	@Override
-	public int compare(TripleID o1, TripleID o2) {
+	public int compare(TripleIDInt o1, TripleIDInt o2) {
 		/*
 		 * Returns a negative integer, zero, or a positive integer as the first
 		 * argument is less than, equal to, or greater than the second.
@@ -78,7 +71,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 		 * Components of the triple. Meaning will be given based on the order
 		 * variable, see below
 		 */
-		long x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0;
+		int x1 = 0, y1 = 0, z1 = 0, x2 = 0, y2 = 0, z2 = 0;
 
 		switch (this.order) {
 		case SPO:
@@ -149,13 +142,13 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 			break;
 		}
 
-		int result = LongCompare.compare(x1,x2);
+		int result = x1 - x2;
 
 		if (result == 0) {
-			result = LongCompare.compare(y1, y2);
+			result = y1 - y2;
 			if (result == 0) {
 				// The third component is different?
-				return LongCompare.compare(z1, z2);
+				return z1 - z2;
 			} else {
 				// the second component is different
 				return result;
@@ -164,15 +157,5 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 			// the first component is different
 			return result;
 		}
-	}
-	
-	/** method for serialization of an instance of this class as specified by Serializable */
-	private void writeObject(java.io.ObjectOutputStream out) throws IOException {
-		out.defaultWriteObject();
-	}
-	/** method for deserialization of an instance of this class as specified by Serializable */
-	private void readObject(java.io.ObjectInputStream in) 
-			throws IOException, ClassNotFoundException {
-		in.defaultReadObject();
 	}
 }

@@ -42,7 +42,7 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 	private final BitmapTriples triples;
 	private final TripleID pattern;
     private final TripleID returnTriple;
-	private final int patZ;
+	private final long patZ;
 	
 	private AdjacencyList adjY, adjZ;
 	long posZ;

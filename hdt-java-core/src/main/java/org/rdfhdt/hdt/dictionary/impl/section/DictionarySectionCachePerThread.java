@@ -50,30 +50,30 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	final int CACHE_ENTRIES = 128;
 	private final DictionarySectionPrivate child;
 	
-	private ThreadLocal<Map<CharSequence,Integer>> cacheString =
-			new ThreadLocal<Map<CharSequence,Integer>>() {
+	private ThreadLocal<Map<CharSequence,Long>> cacheString =
+			new ThreadLocal<Map<CharSequence,Long>>() {
 				@SuppressWarnings("serial")
 				@Override
-				protected java.util.Map<CharSequence,Integer> initialValue() {
-					return new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
+				protected java.util.Map<CharSequence,Long> initialValue() {
+					return new LinkedHashMap<CharSequence,Long>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
 						@Override
-					    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
+					    public boolean removeEldestEntry(Map.Entry<CharSequence,Long> eldest) {
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
 				}
             };
 	
-	private ThreadLocal<Map<Integer,CharSequence>> cacheID =
-			new ThreadLocal<Map<Integer,CharSequence>>() {
+	private ThreadLocal<Map<Long,CharSequence>> cacheID =
+			new ThreadLocal<Map<Long,CharSequence>>() {
 				@SuppressWarnings("serial")
 				@Override
-				protected java.util.Map<Integer,CharSequence> initialValue() {
-					return new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
+				protected java.util.Map<Long,CharSequence> initialValue() {
+					return new LinkedHashMap<Long,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
 						@Override
-					    public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {
+					    public boolean removeEldestEntry(Map.Entry<Long,CharSequence> eldest) {
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
@@ -88,9 +88,9 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	 * @see hdt.dictionary.DictionarySection#locate(java.lang.CharSequence)
 	 */
 	@Override
-	public int locate(CharSequence s) {
-		Map<CharSequence,Integer> map = cacheString.get();
-		Integer o = map.get(s);
+	public long locate(CharSequence s) {
+		Map<CharSequence,Long> map = cacheString.get();
+		Long o = map.get(s);
 		if(o==null) {
 			o = child.locate(s);
 			map.put(s, o);
@@ -102,8 +102,8 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
-	public CharSequence extract(int pos) {
-		Map<Integer,CharSequence> map = cacheID.get();
+	public CharSequence extract(long pos) {
+		Map<Long,CharSequence> map = cacheID.get();
 		CharSequence o = map.get(pos);
 		if(o==null) {
 			o = child.extract(pos);
@@ -125,7 +125,7 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	 * @see hdt.dictionary.DictionarySection#getNumberOfElements()
 	 */
 	@Override
-	public int getNumberOfElements() {
+	public long getNumberOfElements() {
 		return child.getNumberOfElements();
 	}
 

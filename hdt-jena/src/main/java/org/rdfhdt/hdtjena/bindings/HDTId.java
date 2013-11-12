@@ -7,12 +7,12 @@ import org.apache.jena.graph.Node;
 
 public class HDTId {
 	
-	private final int id;
+	private final long id;
 	private final TripleComponentRole role;	// SUBJECT / PREDICATE / OBJECT
 	private final NodeDictionary dict;
 	private Node node;		// Caches the associated Node
 
-	public HDTId(int id, TripleComponentRole role, NodeDictionary dict) {
+	public HDTId(long id, TripleComponentRole role, NodeDictionary dict) {
 		this.id = id;
 		this.role = role;
 		this.dict = dict;
@@ -27,8 +27,8 @@ public class HDTId {
 	public NodeDictionary getDictionary() {
 		return dict;
 	}
-
-	public int getValue() {
+	
+	public long getValue() {
 		return id;
 	}
 	

@@ -33,7 +33,7 @@ class PredicateIndexArray implements PredicateIndex {
 		this.triples = triples;
 	}
 	
-	public long getBase(int pred) {
+	public long getBase(long pred) {
 		if(pred<=1) {
 			return 0;
 		}
@@ -41,7 +41,7 @@ class PredicateIndexArray implements PredicateIndex {
 	}
 
 	@Override
-	public long getNumOcurrences(int pred) {
+	public long getNumOcurrences(long pred) {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
 	

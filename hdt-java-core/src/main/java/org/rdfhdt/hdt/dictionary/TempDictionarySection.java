@@ -41,7 +41,7 @@ public interface TempDictionarySection extends DictionarySection {
 	/**
 	 * Adds an entry to the dictionary section.
 	 */
-	int add(CharSequence str);
+	long add(CharSequence str);
 	
 	/**
 	 * Removes an entry from the dictionary section.

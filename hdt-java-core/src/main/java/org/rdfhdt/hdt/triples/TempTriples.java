@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.triples;
 
 import java.io.Closeable;
 
+import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
@@ -47,7 +48,7 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * @param object
 	 * @return
 	 */
-	boolean insert(int subject, int predicate, int object);
+	boolean insert(long subject, long predicate, long object);
 	
 	/**
 	 * Adds one or more triples
@@ -58,22 +59,6 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 */
 	boolean insert(TripleID... triples);
 	
-	/**
-	 * Updates the given TripleID with the new values.
-	 * 
-	 * The control has to be given over this method to the TempTriples
-	 * implementation instead of changing the triple manually because some
-	 * implementations might not react well to that (TriplesSet for example, changing
-	 * the triple will not trigger reordering)
-	 * 
-	 * @param triple
-	 * @param subj
-	 * @param pred
-	 * @param obj
-	 * @return
-	 */
-	boolean update(TripleID triple, int subj, int pred, int obj);
-
 	/**
 	 * Deletes one or more triples according to a pattern
 	 * 
@@ -114,4 +99,6 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * Load triples from another instance.
 	 */
 	void load(Triples triples, ProgressListener listener);
+
+	void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj);
 }

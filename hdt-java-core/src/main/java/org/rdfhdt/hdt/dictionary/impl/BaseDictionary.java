@@ -57,7 +57,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		this.spec = spec;
 	}
 	
-	protected int getGlobalId(int id, DictionarySectionRole position) {
+	protected long getGlobalId(long id, DictionarySectionRole position) {
 		switch (position) {
 		case SUBJECT:
 		case OBJECT:
@@ -71,7 +71,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		}
 	}
 
-	protected int getLocalId(int id, TripleComponentRole position) {
+	protected long getLocalId(long id, TripleComponentRole position) {
 		switch (position) {
 		case SUBJECT:
 		case OBJECT:
@@ -91,7 +91,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	 * @see hdt.dictionary.Dictionary#stringToId(java.lang.CharSequence, datatypes.TripleComponentRole)
 	 */
 	@Override
-	public int stringToId(CharSequence str, TripleComponentRole position) {
+	public long stringToId(CharSequence str, TripleComponentRole position) {
 		str = DelayedString.unwrap(str);
 
 		if(str==null || str.length()==0) {
@@ -103,7 +103,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			str = new CompactString(str);
 		}
 
-		int ret;
+		long ret=0;
 		switch(position) {
 		case SUBJECT:
 			ret = shared.locate(str);
@@ -188,7 +188,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		return shared;
 	}
 	
-	private DictionarySectionPrivate getSection(int id, TripleComponentRole role) {
+	private DictionarySectionPrivate getSection(long id, TripleComponentRole role) {
 		switch (role) {
 		case SUBJECT:
 			if(id<=shared.getNumberOfElements()) {
@@ -213,9 +213,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	 * @see hdt.dictionary.Dictionary#idToString(int, datatypes.TripleComponentRole)
 	 */
 	@Override
-	public CharSequence idToString(int id, TripleComponentRole role) {
+	public CharSequence idToString(long id, TripleComponentRole role) {
 		DictionarySectionPrivate section = getSection(id, role);
-		int localId = getLocalId(id, role);
+		long localId = getLocalId(id, role);
 		return section.extract(localId);
 	}
 	

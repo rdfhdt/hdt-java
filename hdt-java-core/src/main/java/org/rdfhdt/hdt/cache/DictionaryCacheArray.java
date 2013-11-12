@@ -52,17 +52,18 @@ public class DictionaryCacheArray<T> implements DictionaryCache<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@Override
-	public T get(int id) {
+	public T get(long id) {
 		if(array==null) {
 			return null;
 		}
 		if(id>array.length) {
 			return null; // Not found
 		}
-		return (T) array[id-1];
+		return (T) array[(int) (id-1)];
 	}
 	
-	public void put(int id, T node) {
+	@Override
+	public void put(long id, T node) {
 		if(array==null) {
 			array = new Object[(int)capacity];
 		}
@@ -70,10 +71,10 @@ public class DictionaryCacheArray<T> implements DictionaryCache<T> {
 //			System.err.println("Warning: Trying to insert a value in cache out of bounds: "+id + " / "+array.length);
 			return;
 		}
-		if(array[id-1]==null) {
+		if(array[(int) (id-1)]==null) {
 			numentries++;
 		}
-		array[id-1] = node;
+		array[(int) (id-1)] = node;
 	}
 
 	@Override
