@@ -2,7 +2,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>hdt-java-core</artifactId>
-	<name>HDT Core Library in Java</name>
+	<name>HDT Java Core</name>
+	<description>HDT Core Library Implementation in Java</description>
+	<packaging>jar</packaging>
 
 	<parent>
 		<groupId>org.rdfhdt</groupId>

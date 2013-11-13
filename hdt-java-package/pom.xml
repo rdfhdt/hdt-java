@@ -2,6 +2,8 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>hdt-java-package</artifactId>
   <name>HDT Java Package</name>
+  <description>HDT Java Package for Distribution</description>
+  <packaging>pom</packaging>
 
   <parent>
     <groupId>org.rdfhdt</groupId>
@@ -9,8 +11,6 @@
     <version>1.1-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
-  
-  <packaging>pom</packaging>
   
   <dependencies>
   	<dependency>

@@ -6,22 +6,30 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <name>RDF/HDT</name>
   <groupId>org.rdfhdt</groupId>
   <artifactId>hdt-java</artifactId>
   <packaging>pom</packaging>
-  <url>http://www.rdfhdt.org/</url>
+  <name>RDF/HDT</name>
   <version>1.1-SNAPSHOT</version>
+  <description>HDT (Header, Dictionary, Triples) is a compact data structure and binary serialization format for RDF that keeps big datasets compressed to save space while maintaining search and browse operations without prior decompression. This makes it an ideal format for storing and sharing RDF datasets on the Web.</description>
+  <url>http://www.rdfhdt.org/</url>
 
-  <!-- <organization>
-    <name>DataWeb Research</name>
-    <url>http://dataweb.infor.uva.es</url>
-  </organization> -->
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
 
   <organization>
     <name>INSIGHT Centre for Data Analytics</name>
     <url>http://www.insight-centre.org</url>
   </organization>
+  
+  <!-- Maven does not allow multiple organizations? :( 
+  <organization>
+    <name>DataWeb Research</name>
+    <url>http://dataweb.infor.uva.es</url>
+  </organization> -->
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
