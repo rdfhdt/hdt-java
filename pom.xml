@@ -23,19 +23,37 @@
     <url>http://www.insight-centre.org</url>
   </organization>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
   <scm>
-    <connection>scm:git:http://code.google.com/p/hdt-java/ </connection>
-    <developerConnection>scm:git:http://code.google.com/p/hdt-java/</developerConnection>
-    <url>http://code.google.com/p/hdt-java/</url>
+    <connection>scm:git:https://code.google.com/p/hdt-java/ </connection>
+    <developerConnection>scm:git:https://code.google.com/p/hdt-java/</developerConnection>
+    <url>http://code.google.com/p/hdt-java/source/browse</url>
   </scm>
 
 <developers>
     <developer>
-      <id/>
+      <id>mario.arias</id>
       <name>Mario Arias</name>
       <email>mario.arias@gmail.com</email>
       <organization>INSIGHT Centre for Data Analytics</organization>
       <organizationUrl>http://www.insight-centre.org</organizationUrl>
+    </developer>
+    <developer>
+      <id>jfergar83</id>
+      <name>Javier D. Fernández</name>
+      <email>jfergar83@infor.uva.es</email>
+      <organization>DataWeb Research. University of Valladolid.</organization>
+      <organizationUrl>http://dataweb.infor.uva.es</organizationUrl>
+    </developer>
+    <developer>
+      <id>migumar2</id>
+      <name>Miguel A. Martínez Prieto</name>
+      <email>migumar2@infor.uva.es</email>
+      <organization>DataWeb Research. University of Valladolid.</organization>
+      <organizationUrl>http://dataweb.infor.uva.es</organizationUrl>
     </developer>
   </developers>
 
