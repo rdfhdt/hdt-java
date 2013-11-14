@@ -7,7 +7,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.rdfhdt</groupId>
-  <artifactId>hdt-java</artifactId>
+  <artifactId>hdt-java-parent</artifactId>
   <packaging>pom</packaging>
   <name>RDF/HDT</name>
   <version>1.1-SNAPSHOT</version>
