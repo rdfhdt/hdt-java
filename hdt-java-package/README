@@ -101,6 +101,32 @@ If you use maven, you can add the dependency:
   		<version>1.1-SNAPSHOT</version>
   	</dependency>
 
+If you want to use a Snapshot version (Not Recommended), You need to add the Sonatype repository to your ~/.m2/settings.xml as follows:
+
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                          http://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+<!-- Your preferences -->
+
+<profiles>
+  <profile>
+     <id>allow-snapshots</id>
+        <activation><activeByDefault>true</activeByDefault></activation>
+     <repositories>
+       <repository>
+         <id>snapshots-repo</id>
+         <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+         <releases><enabled>false</enabled></releases>
+         <snapshots><enabled>true</enabled></snapshots>
+       </repository>
+     </repositories>
+   </profile>
+</profiles>
+
+</settings>
+
 Then, you can use the following code to generate an HDT file:
 
 // Generate an HDT File from RDF (examples/ExampleGenerate.java)
