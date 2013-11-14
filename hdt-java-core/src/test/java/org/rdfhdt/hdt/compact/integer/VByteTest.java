@@ -1,6 +1,6 @@
 package org.rdfhdt.hdt.compact.integer;
 
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -16,16 +16,18 @@ public class VByteTest {
 
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		VByte.encode(out, Long.MAX_VALUE);
-		System.out.println("Size of "+Long.MAX_VALUE+" => "+out.size());
+//		System.out.println("Size of "+Long.MAX_VALUE+" => "+out.size());
 
 		long val = VByte.decode(new ByteArrayInputStream(out.toByteArray()));
-		System.out.println("Value back: "+val);
+//		System.out.println("Value back: "+val);
+		assertEquals(Long.MAX_VALUE, val);
 
 		out = new ByteArrayOutputStream();
 		VByte.encode(out, Integer.MAX_VALUE);
-		System.out.println("Size of "+Integer.MAX_VALUE+" => "+out.size());
+//		System.out.println("Size of "+Integer.MAX_VALUE+" => "+out.size());
 		val = VByte.decode(new ByteArrayInputStream(out.toByteArray()));
-		System.out.println("Value back: "+val);
+		assertEquals(Integer.MAX_VALUE, val);
+//		System.out.println("Value back: "+val);
 
 	}
 	

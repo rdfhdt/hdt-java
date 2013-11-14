@@ -32,7 +32,8 @@ public class LongArrayTest {
 		}
 	}
 	
-	private void testArraysEqual() {
+	@Test
+	public void testArraysEqual() {
 		for(int i=0;i<numentries;i++) {
 			//				System.out.println("\t "+i+" => Value1: "+arrays.get(i) + " Value2: "+plain[i]);
 			assertEquals("Different value on position "+i, array.get(i), plain[i]);	

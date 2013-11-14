@@ -25,14 +25,17 @@ public class CRCStreamTest {
 			crcStrmOut.write(r.nextInt()&0xFF);
 		}
 		crcStrmOut.writeCRC();
-		System.out.println("CRC: "+crcStrmOut.crc);
+		crcStrmOut.close();
+//		System.out.println("CRC: "+crcStrmOut.crc);
 		
 		ByteArrayInputStream byteStrIn = new ByteArrayInputStream(byteStrOut.toByteArray());
 		CRCInputStream crcStrmIn = new CRCInputStream(byteStrIn, checker);
 		for(int i=0;i<size;i++) {
 			crcStrmIn.read();
 		}
-		return crcStrmIn.readCRCAndCheck();
+		boolean ok = crcStrmIn.readCRCAndCheck();
+		crcStrmIn.close();
+		return ok;
 	}
 	
 	@Test

@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.iterator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
@@ -9,8 +10,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.rdfhdt.hdt.iterator.utils.MergedIterator;
 
+import static org.junit.Assert.*;
+
 public class MergedIteratorTest {
-	List<Integer> listA, listB;
+	List<Integer> listA, listB, listC;
 
 	private List<Integer> getList(int[] ints) {
 	    List<Integer> intList = new ArrayList<Integer>();
@@ -26,9 +29,11 @@ public class MergedIteratorTest {
 
 		int[] intsA = {1, 4, 6};
 		int[] intsB = {3,4,5};
+		Integer[] intsExpected = {1, 3, 4, 5, 6};
 		
 		listA=getList(intsA);
 		listB=getList(intsB);
+		listC=Arrays.asList(intsExpected);
 	}
 
 	@Test
@@ -40,11 +45,19 @@ public class MergedIteratorTest {
 				return o2.compareTo(o1);
 			}
 		});
+		
+		Iterator<Integer> itE = listC.iterator();
 	
 		while(it.hasNext()) {
-			Integer val = it.next();
-			System.out.println(val);
+			assertEquals(itE.hasNext(), it.hasNext());
+			
+			int val = it.next();
+			int valE = itE.next();
+//			System.out.println(val);
+			assertEquals(val, valE);
 		}
+		
+		assertEquals(itE.hasNext(), it.hasNext());
 	}
 
 }

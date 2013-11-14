@@ -11,7 +11,7 @@ public class TarParserTest implements RDFCallback {
 	@Test
 	public void test() throws ParserException {
 		RDFParserTar parser = new RDFParserTar();
-		parser.doParse("/Users/mck/rdf/dataset/tgztest.tar.gz", "http://www.rdfhdt.org", RDFNotation.NTRIPLES, this);
+//		parser.doParse("/Users/mck/rdf/dataset/tgztest.tar.gz", "http://www.rdfhdt.org", RDFNotation.NTRIPLES, this);
 	}
 
 	@Override
