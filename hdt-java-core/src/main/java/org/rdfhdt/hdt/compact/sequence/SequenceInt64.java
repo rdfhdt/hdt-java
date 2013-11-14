@@ -91,7 +91,7 @@ public class SequenceInt64 implements DynamicSequence {
 	
 	public void set(long position, long value) {
 		assert position>=0 && position<=Integer.MAX_VALUE;
-		assert value>=0 && value<=Integer.MAX_VALUE;
+		assert value>=0 && value<=Long.MAX_VALUE;
 		
 		data[(int)position] = value;
 		numelements = (int) Math.max(numelements, position+1);
@@ -99,7 +99,7 @@ public class SequenceInt64 implements DynamicSequence {
 	
 	public void append(long value) {
 		assert value>=0 && value<=Long.MAX_VALUE;
-		assert numelements<Integer.MAX_VALUE;
+		assert numelements<Long.MAX_VALUE;
 		
 		if(data.length<numelements+1) {
 			resizeArray(data.length*2);
