@@ -11,11 +11,10 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 public class BitSequence375Test {
-	final static int num=100000;
+	final static int num=10000;
 	
 	Bitmap375 bitseq;
 	BitSet bitset; 
@@ -88,12 +87,12 @@ public class BitSequence375Test {
 		assertEquals(2, Bitmap64.numWords(65));
 		assertEquals(5, Bitmap64.numWords(257));
 		
-		for(int i=0;i<1000;i++) {
-			int words=(int) Bitmap64.numWords(i);
-			int bitsLast=Bitmap64.lastWordNumBits(i);
-			int bytes = (int) Bitmap64.numBytes(i);
-			System.out.println(i+" bits  "+bytes+" bytes  "+words+" words / "+bitsLast+" bits last.");
-		}	
+//		for(int i=0;i<1000;i++) {
+//			int words=(int) Bitmap64.numWords(i);
+//			int bitsLast=Bitmap64.lastWordNumBits(i);
+//			int bytes = (int) Bitmap64.numBytes(i);
+//			System.out.println(i+" bits  "+bytes+" bytes  "+words+" words / "+bitsLast+" bits last.");
+//		}	
 	}
 	
 	@Test 
@@ -110,8 +109,8 @@ public class BitSequence375Test {
 
 	@Test
 	public void testRank1() {
-		int count = 0;
-		for(int i=0;i<bitseq.getNumBits();i++) {
+		long count = 0;
+		for(long i=0;i<bitseq.getNumBits();i++) {
 			if(bitseq.access(i)) {
 				count++;
 //				assertEquals("Wrong rank1", count, bitseq.rank1(i));
@@ -119,8 +118,11 @@ public class BitSequence375Test {
 				
 				if(bitseq.rank1(i)!=count) {
 					System.out.println("Different");
+					
 					long a= bitseq.rank1(i);
 				}
+				
+				assertEquals(count, bitseq.rank1(i));
 			}
 		}
 	}
@@ -196,10 +198,10 @@ public class BitSequence375Test {
 
 	@Test
 	public void testBitutilSelect0() {
-		IOUtil.printBitsln(bitseq.words[0],64);
+//		IOUtil.printBitsln(bitseq.words[0],64);
 		int numbits = 64-Long.bitCount(bitseq.words[0]);
-		for(int i=1;i<=numbits;i++) {
-			System.out.println("Select0("+i+") = "+BitUtil.select0(bitseq.words[0], i));
-		}
+//		for(int i=1;i<=numbits;i++) {
+//			System.out.println("Select0("+i+") = "+BitUtil.select0(bitseq.words[0], i));
+//		}
 	}
 }
