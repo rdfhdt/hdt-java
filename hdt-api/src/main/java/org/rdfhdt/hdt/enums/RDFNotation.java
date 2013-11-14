@@ -58,7 +58,18 @@ public enum RDFNotation {
 	 * 
 	 * @see <a href="http://en.wikipedia.org/wiki/Notation_3">Wikipedia</a>
 	 */
-	N3;
+	N3,
+	
+	/**
+	 * Tar Package with multiple files in other RDF Formats
+	 */
+	TAR,
+	
+	/**
+	 * RAR Package with multiple files in other RDF Formats
+	 */
+	RAR
+	;
 	
 	public static RDFNotation parse(String str) {
 		if(str==null || str.isEmpty()) {
@@ -73,18 +84,25 @@ public enum RDFNotation {
 			return RDFXML;
 		} else if(str.equals("turtle")) {
 			return TURTLE;
+		} else if(str.equals("rar")) {
+			return RAR;
+		} else if(str.equals("tar")||str.equals("tgz")||str.equals("tbz")||str.equals("tbz2")) {
+			return TAR;
 		}
 		throw new IllegalArgumentException();
 	}
 	
 	public static RDFNotation guess(String fileName) throws IllegalArgumentException {
 		String str = fileName.toLowerCase();
-		if(str.endsWith(".gz")) {
-			str = str.substring(0, str.length()-3);
+		
+		int idx = str.lastIndexOf('.');		
+		if(idx!=-1) {
+			String ext = str.substring(idx, str.length());
+			if(ext.equals("gz") || ext.equals("bz") || ext.equals("bz2")) {
+				str = str.substring(0,idx);
+			}
 		}
-		if(str.endsWith(".bz2")) {
-			str = str.substring(0, str.length()-4);
-		}
+		
 		if(str.endsWith("nt")) {
 			return NTRIPLES;
 		} else if(str.endsWith("n3")) {
@@ -93,27 +111,15 @@ public enum RDFNotation {
 			return RDFXML;
 		} else if(str.endsWith("ttl")) {
 			return TURTLE;
-		}
+ 		} else if(str.endsWith("tar") || str.endsWith("tgz") || str.endsWith("tbz2")){
+ 			return TAR;
+ 		} else if(str.endsWith("rar")){
+  			return RAR;
+  		}
 		throw new IllegalArgumentException("Could not guess the format for "+fileName+" Using NTriples");
 	}
 	
 	public static RDFNotation guess(File fileName) throws IllegalArgumentException {
-		String str = fileName.getName().toLowerCase();
-		if(str.endsWith(".gz")) {
-			str = str.substring(0, str.length()-3);
-		}
-		if(str.endsWith(".bz2")) {
-			str = str.substring(0, str.length()-4);
-		}
-		if(str.endsWith("nt")) {
-			return NTRIPLES;
-		} else if(str.endsWith("n3")) {
-			return N3;
-		} else if(str.endsWith("rdf")||str.endsWith("xml")||str.endsWith("owl")) {
-			return RDFXML;
-		} else if(str.endsWith("ttl")) {
-			return TURTLE;
-		}
-		throw new IllegalArgumentException("Could not guess the format for "+fileName+" Using NTriples");
+		return guess(fileName.getName());
 	}
 }

@@ -27,7 +27,7 @@ import org.rdfhdt.hdt.util.io.NonCloseInputStream;
  *
  */
 
-public class TarParser implements RDFParserCallback {
+public class RDFParserTar implements RDFParserCallback {
 
 	
 	/* (non-Javadoc)

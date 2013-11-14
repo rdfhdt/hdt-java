@@ -31,6 +31,8 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserRAR;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
 
 /**
  * @author mario.arias
@@ -45,6 +47,14 @@ public class RDFParserFactory {
 		
 		if(notation == RDFNotation.NTRIPLES || notation == RDFNotation.TURTLE || notation == RDFNotation.N3 || notation == RDFNotation.RDFXML) {
 			return new RDFParserRIOT();
+		}
+		
+		if(notation==RDFNotation.TAR) {
+			return new RDFParserTar();
+		}
+		
+		if(notation == RDFNotation.RAR) {
+			return new RDFParserRAR();
 		}
 		
 		throw new NotImplementedException("Parser not found for notation: "+notation);

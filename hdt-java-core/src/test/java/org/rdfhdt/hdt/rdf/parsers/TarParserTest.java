@@ -10,7 +10,7 @@ public class TarParserTest implements RDFCallback {
 
 	@Test
 	public void test() throws ParserException {
-		TarParser parser = new TarParser();
+		RDFParserTar parser = new RDFParserTar();
 		parser.doParse("/Users/mck/rdf/dataset/tgztest.tar.gz", "http://www.rdfhdt.org", RDFNotation.NTRIPLES, this);
 	}
 

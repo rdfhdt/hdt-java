@@ -60,7 +60,7 @@ public class RDF2HDT implements ProgressListener {
 	public String configFile = null;
 	
 	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, nquad, n3, turtle, rdfxml)")
-	public String rdfType = "ntriples";
+	public String rdfType = null;
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
 	public String baseURI = null;
@@ -85,7 +85,25 @@ public class RDF2HDT implements ProgressListener {
 			baseURI = "file://"+rdfInput;
 		}
 		
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(rdfType), spec, this);
+		RDFNotation notation=null;
+		if(rdfType!=null) {
+			try {
+				notation = RDFNotation.parse(rdfType);
+			} catch (IllegalArgumentException e) {
+				System.out.println("Notation "+rdfType+" not recognised.");
+			}
+		}
+		
+		if(notation==null) {
+			try {
+				notation =  RDFNotation.guess(rdfInput);
+			} catch (IllegalArgumentException e) {
+				System.out.println("Could not guess notation for "+rdfInput+" Trying NTriples");
+				notation = RDFNotation.NTRIPLES;
+			}
+		}
+		
+		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI,notation , spec, this);
 		
 		try {
 			// Show Basic stats
