@@ -38,8 +38,8 @@
     	</fileSet>
     
         <fileSet>
-            <directory></directory>
-            <outputDirectory></outputDirectory>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
             <includes>
                 <include>*.sh</include>
             </includes>
