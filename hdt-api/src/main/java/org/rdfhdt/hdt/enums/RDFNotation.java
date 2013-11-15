@@ -97,7 +97,7 @@ public enum RDFNotation {
 		
 		int idx = str.lastIndexOf('.');		
 		if(idx!=-1) {
-			String ext = str.substring(idx, str.length());
+			String ext = str.substring(idx+1, str.length());
 			if(ext.equals("gz") || ext.equals("bz") || ext.equals("bz2")) {
 				str = str.substring(0,idx);
 			}
@@ -116,7 +116,7 @@ public enum RDFNotation {
  		} else if(str.endsWith("rar")){
   			return RAR;
   		}
-		throw new IllegalArgumentException("Could not guess the format for "+fileName+" Using NTriples");
+		throw new IllegalArgumentException("Could not guess the format for "+fileName);
 	}
 	
 	public static RDFNotation guess(File fileName) throws IllegalArgumentException {
