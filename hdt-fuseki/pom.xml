@@ -11,7 +11,7 @@
     <version>1.1-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
-
+  
   <dependencies>
   	<dependency>
   		<groupId>org.rdfhdt</groupId>
@@ -42,6 +42,29 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+
+            <!-- The configuration of maven-assembly-plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <!-- The configuration of the plugin -->
+                <configuration>
+                    <!-- Specifies the configuration file of the assembly plugin -->
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+          			<execution>
+            			<id>make-assembly</id> <!-- this is used for inheritance merges -->
+            			<phase>package</phase> <!-- bind to the packaging phase -->
+            				<goals>
+              					<goal>single</goal>
+            				</goals>
+          			</execution>
+        		</executions>
+            </plugin>    	
 		</plugins>
 	</build>
 </project>

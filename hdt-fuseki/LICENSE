@@ -1,0 +1,8 @@
+Apache Jena and Fuseki are distributed under an Apache 2.0 License. Therefore the FusekiHDTCmd launcher is also Apache 2.0:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+
+HOWEVER, HDT-java and HDT-jena libraries are distributed under Lesser General Public License LGPL:
+
+http://www.gnu.org/licenses/lgpl.html
