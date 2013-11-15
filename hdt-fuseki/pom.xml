@@ -7,7 +7,7 @@
 
   <parent>
     <groupId>org.rdfhdt</groupId>
-    <artifactId>hdt-fuseki</artifactId>
+    <artifactId>hdt-java-parent</artifactId>
     <version>1.1-SNAPSHOT</version>
     <relativePath>../</relativePath>
   </parent>
@@ -22,6 +22,7 @@
   		<groupId>org.rdfhdt</groupId>
   		<artifactId>hdt-jena</artifactId>
   		<version>1.1-SNAPSHOT</version>
+  	</dependency>
   	<dependency>
   		<groupId>org.apache.jena</groupId>
   		<artifactId>jena-fuseki</artifactId>
