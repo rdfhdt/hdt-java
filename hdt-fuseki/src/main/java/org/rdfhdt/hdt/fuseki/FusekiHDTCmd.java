@@ -20,6 +20,7 @@ package org.rdfhdt.hdt.fuseki;
 
 import static org.apache.jena.fuseki.Fuseki.serverLog;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -37,6 +38,9 @@ import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.SysRIOT;
 import org.eclipse.jetty.server.Server;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 
 import arq.cmd.CmdException;
@@ -44,13 +48,21 @@ import arq.cmdline.ArgDecl;
 import arq.cmdline.CmdARQ;
 import arq.cmdline.ModDatasetAssembler;
 
+import com.hp.hpl.jena.graph.Graph;
 import com.hp.hpl.jena.query.ARQ;
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.sparql.core.DatasetGraph;
 import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
+import com.hp.hpl.jena.sparql.core.DatasetGraphMap;
 import com.hp.hpl.jena.tdb.TDB;
 import com.hp.hpl.jena.tdb.TDBFactory;
 import com.hp.hpl.jena.tdb.transaction.TransactionManager;
+
+/**
+ * 
+ * Fork of default's FusekiCmd that adds support for loading HDT files.
+ *
+ */
 
 public class FusekiHDTCmd extends CmdARQ
 {
@@ -115,6 +127,7 @@ public class FusekiHDTCmd extends CmdARQ
     private static ArgDecl argFile          = new ArgDecl(ArgDecl.HasValue, "file") ;
     private static ArgDecl argMemTDB        = new ArgDecl(ArgDecl.NoValue,  "memtdb", "memTDB") ;
     private static ArgDecl argTDB           = new ArgDecl(ArgDecl.HasValue, "loc", "location") ;
+    private static ArgDecl argHDT           = new ArgDecl(ArgDecl.HasValue, "hdt", "HDT") ;
     private static ArgDecl argPort          = new ArgDecl(ArgDecl.HasValue, "port") ;
     private static ArgDecl argLocalhost     = new ArgDecl(ArgDecl.NoValue, "localhost", "local") ;
     private static ArgDecl argTimeout       = new ArgDecl(ArgDecl.HasValue, "timeout") ;
@@ -171,6 +184,7 @@ public class FusekiHDTCmd extends CmdARQ
         add(argMem,     "--mem",                "Create an in-memory, non-persistent dataset for the server") ;
         add(argFile,    "--file=FILE",          "Create an in-memory, non-persistent dataset for the server, initialised with the contents of the file") ;
         add(argTDB,     "--loc=DIR",            "Use an existing TDB database (or create if does not exist)") ;
+        add(argHDT,     "--hdt=HDT",            "Use an existing HDT file") ;
         add(argMemTDB,  "--memTDB",             "Create an in-memory, non-persistent dataset using TDB (testing only)") ;
         add(argPort,    "--port",               "Listen on this port number") ;
         add(argPages,   "--pages=DIR",          "Set of pages to serve as static content") ; 
@@ -215,6 +229,7 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argFile) ) x++ ;
         if ( contains(assemblerDescDecl) ) x++ ;
         if ( contains(argTDB) ) x++ ;
+        if ( contains(argHDT) ) x++ ;
         if ( contains(argMemTDB) ) x++ ;
 
         if ( fusekiConfigFile != null )
@@ -225,7 +240,7 @@ public class FusekiHDTCmd extends CmdARQ
         else
         {
             if ( x == 0 )
-                throw new CmdException("Required: either --config=FILE or one of --mem, --file, --loc or --desc") ;
+                throw new CmdException("Required: either --config=FILE or one of --mem, --file, --loc, --hdt or --desc") ;
         }
         
         if ( contains(argMem) )
@@ -266,6 +281,33 @@ public class FusekiHDTCmd extends CmdARQ
             if ( ! FileOps.exists(dir) )
                 throw new CmdException("Directory not found: "+dir) ;
             dsg = TDBFactory.createDatasetGraph(dir) ;
+        }
+        
+        if ( contains(argHDT) )
+        {
+            String hdtFile = getValue(argHDT) ;
+            log.info("HDT dataset: file="+hdtFile) ;
+            if ( ! FileOps.exists(hdtFile) )
+                throw new CmdException("HDT file does not exist: "+hdtFile) ;
+            
+            if(contains(argAllowUpdate)) {
+            	System.err.println("Warning: You specified --update but HDT is read only.");
+            }
+
+			try {
+				// Single Graph:
+				HDT hdt = HDTManager.mapIndexedHDT(hdtFile, null);
+				Graph graph = new HDTGraph(hdt);				
+				dsg = DatasetGraphFactory.createOneGraph(graph);
+				
+				// Multiple Graphs:
+//				DatasetGraphMap datasetMap = new DatasetGraphMap(defaultGraph);
+//				datasetMap.addGraph(graphName, graph);
+				
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new CmdException("Could not load HDT: "+e.getMessage());
+			}
         }
         
         // Otherwise

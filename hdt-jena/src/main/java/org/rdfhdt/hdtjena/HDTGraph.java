@@ -26,6 +26,8 @@
 
 package org.rdfhdt.hdtjena;
 
+import java.io.IOException;
+
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -55,6 +57,7 @@ public class HDTGraph extends GraphBase {
 	private ReorderTransformation reorderTransform;
 	private HDTStatistics hdtStatistics;
 	private long numSearches = 0;
+	private boolean closeAfter = false;
 	
 	static {
 		// Register OpExecutor
@@ -62,10 +65,15 @@ public class HDTGraph extends GraphBase {
 	}
 	
 	public HDTGraph(HDT hdt) {
+		this(hdt, false);
+	}
+	
+	public HDTGraph(HDT hdt, boolean close) {
 		this.hdt = hdt;
 		this.nodeDictionary = new NodeDictionary(hdt.getDictionary());
 		this.hdtStatistics = new HDTStatistics(this);	// Must go after NodeDictionary created.
 		this.reorderTransform=new ReorderTransformationHDT(this);  // Must go after Dict and Stats
+		this.closeAfter = close;
 	}
 	
 	public HDT getHDT() {
@@ -117,5 +125,18 @@ public class HDTGraph extends GraphBase {
 	@Override
 	protected int graphBaseSize() {
 		return (int)hdt.getTriples().getNumberOfElements();
+	}
+	
+	@Override
+	public void close() {
+		super.close();
+		
+		if(closeAfter) {
+			try {
+				hdt.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 }
