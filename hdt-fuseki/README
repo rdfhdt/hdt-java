@@ -1,48 +1,35 @@
-HDT-Jena
+HDT-Fuseki
 
-This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. HDT-Jena depends on the HDT-Java and Jena Libraries.
+This module sets up a Fuseki SPARQL Endpoint backed up by one or many HDT files.
 
-######### Commandline scenario example #############
+# Compiling
 
-# First make sure you compiled hdt-java
-$ cd ../hdt-java
-hdt-java $ ant jar
+mvn package dependency:copy-dependencies
 
-# Generate an HDT file using the hdt-java library 
-hdt-java $ ./rdf2hdt.sh data/test.nt data/test.hdt
+# Using
 
-# Now get to the hdt-jena dir and compile it
-hdt-java $ cd ../hdt-jena
-hdt-java $ ant jar
+$ bin/hdtEndpoint.sh --hdt path/to/dataset.hdt /dataset
 
-# Execute SPARQL Query against the file.
-$ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
-
-
-########## Create Jena Model from Java #########
-# Note it needs hdt-lib.jar, hdt-jena.jar and Jena jars.
-# A full example on how to do this can be found at hdt-jena/examples/org/rdfhdt/hdtjena/HDTSparql.java
-
-// Load HDT file using the hdt-java library
-HDT hdt = HDTManager.loadIndexedHDT("path/to/file.hdt", null);
-
-// Create Jena Model on top of HDT.
-Model model = ModelFactory.createModelForGraph(graph);
-
-// Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
-
-########## Create SPARQL Endpoing on top of one or more HDT files using Fuseki #########
-# You need to create a fuseki config file specifying which HDT files you want to publish. You need to specify one for the default graph and zero or more named graphs with additional HDT files. You also need to ask fuseki to load the HDT Assembler class:
-
-[]   ja:loadClass "org.rdfhdt.hdtjena.HDTGraphAssembler" .
-
-# An example config file is available at fuseki_example.ttl
-
-# Download Fuseki, and edit the launch script to append hdt-java.jar and hdt-jena.jar to the classpath. Please note that if you use the "java -jar" option it ignores the classpath, so you'll end up with a line like this in your fuseki-server launch script:
-exec java  $JVM_ARGS -classpath "hdt-lib.jar:hdt-jena.jar:$JAR" org.apache.jena.fuseki.FusekiCmd "$@"
-
-# Launch fuseki using:
-$ ./fuseki-server --config=fuseki_example.ttl
-
-# Try on a web browser:
+Open your Web Browser and go to:
 http://localhost:3030
+
+Select Control Panel / Dataset / myDataset and click Select
+
+Type your SPARQL Query and see the results.
+
+If you want to give access to this endpoint to any application, you can use the following uri:
+
+http://yourhostname:3030/dataset/
+
+
+# Configuring
+
+hdtEndpoint is a fork of Fuseki's fuseki-server. Therefore you can use any of Fuseki's configuration options, such as --port or --gzip
+
+# Loading more than one HDT file
+
+Passing more than one HDT in the command line is not supported. In this case you need to create a Jena assembly specification that defines how to create the dataset. A dataset is defined as a default graph, and zero to many named graphs. A fully-commented example is available at fuseki_example.ttl. As mentioned before, this is a general Fuseki config file, so you can use any of the options of Jena assemblies, for example you can load a few HDT files together with some TDB datasets in the same server.
+
+In this case, we need to launch the server using:
+
+$ bin/hdtEndpoint --config=fuseki_example.ttl

@@ -21,6 +21,7 @@
    # See java doc for ARQ.queryTimeout
    # ja:context [ ja:cxtName "arq:queryTimeout" ;  ja:cxtValue "10000" ] ;
 
+   # IMPORTANT: Import the HDT Assembler
    ja:loadClass "org.rdfhdt.hdtjena.HDTGraphAssembler" ;
 
    fuseki:services (
