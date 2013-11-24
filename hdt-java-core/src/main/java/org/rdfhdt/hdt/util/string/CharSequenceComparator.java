@@ -34,8 +34,19 @@ import java.util.Comparator;
  */
 public class CharSequenceComparator implements Comparator<CharSequence> {
 
-	public static final CharSequenceComparator instance = new CharSequenceComparator();
-	
+//	private static final Comparator<CharSequence> instance = new CharSequenceComparator();
+	private static final Comparator<CharSequence> instance = new Comparator<CharSequence>() {
+
+		@Override
+		public int compare(CharSequence o1, CharSequence o2) {
+			return o1.toString().compareTo(o2.toString());
+		}
+	};
+
+	public static Comparator<CharSequence> getInstance() {
+		return instance;
+	}
+		
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
@@ -78,4 +89,5 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
         }
         return len2 - len1;
 	}
+
 }

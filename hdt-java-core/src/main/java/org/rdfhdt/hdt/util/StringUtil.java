@@ -55,4 +55,16 @@ public class StringUtil {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return dateFormat.format(date);
 	}
+	
+	public static String toHuman(long amount) {
+		return humanReadableByteCount(amount, true);
+	}
+	
+	public static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return Long.toString(bytes);
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    char pre = "KMGTPE".charAt(exp-1);
+	    return String.format("%.1f%c", bytes / Math.pow(unit, exp), pre);
+	}
 }
