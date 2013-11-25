@@ -53,6 +53,7 @@ import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
@@ -325,7 +326,8 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 						tempString.replace(buffer, (int) delta);
 					}
 					id++;
-					return tempString.toString();
+					return new CompactString(tempString);
+//					return tempString.toString();
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}

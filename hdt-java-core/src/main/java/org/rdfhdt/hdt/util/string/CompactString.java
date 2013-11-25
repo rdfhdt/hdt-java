@@ -78,6 +78,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	}
 
 	public char charAt(int index) {
+		System.err.println("WARNING: Using charAt() on CompactString does not work on non-ascii characters");
 		int ix = index;
 		if (ix >= data.length) {
 			throw new StringIndexOutOfBoundsException("Invalid index " + index + " length " + length());
@@ -90,6 +91,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	}
 
 	public CharSequence subSequence(int start, int end) {
+		System.err.println("WARNING: Using subSequence() on CompactString does not work on non-ascii characters");
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
@@ -153,8 +155,8 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 
         int k = 0;
         while (k < n) {
-            byte c1 = this.data[k];
-            byte c2 = other.data[k];
+            int c1 = this.data[k]&0xFF;
+            int c2 = other.data[k]&0xFF;
             if (c1 != c2) {
                 return c1 - c2;
             }
