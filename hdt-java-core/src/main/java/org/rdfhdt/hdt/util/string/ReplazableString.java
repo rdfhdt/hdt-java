@@ -176,7 +176,6 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public char charAt(int index) {
-		System.err.println("WARNING: Using charAt() on ReplazableString does not work on non-ascii characters");
 		return (char)buffer[index];
 	}
 
@@ -248,7 +247,6 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public CharSequence subSequence(int start, int end) {
-		System.err.println("WARNING: Using charAt() on Replazable does not work on non-ascii characters");
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
@@ -279,5 +277,9 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
             k++;
         }
         return used - other.used;
+	}
+	
+	public CharSequence getDelayed() {
+		return new DelayedString(this);
 	}
 }

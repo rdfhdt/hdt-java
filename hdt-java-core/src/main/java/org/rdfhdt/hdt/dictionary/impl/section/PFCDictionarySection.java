@@ -49,6 +49,7 @@ import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
@@ -278,7 +279,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			len = ByteStringUtil.strlen(text, pos);
 			tempString.replace(delta.getValue().intValue(), text, pos, len);
 		}
-		return tempString;
+		return tempString.getDelayed();
 	}
 	
 //	private void dumpAll() {
@@ -365,7 +366,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 				}
 		 		pos+=len+1;
 		 		id++;
-				return tempString.toString();
+				return new CompactString(tempString).getDelayed();
 			}
 
 			@Override
