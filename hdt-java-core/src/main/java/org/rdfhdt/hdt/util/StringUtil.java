@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.util;
 
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -39,15 +38,11 @@ import java.util.TimeZone;
  */
 public class StringUtil {
 	
-	private static final DecimalFormat decimalFormat = new DecimalFormat("##.##");
-	
 	public static String getPercent(long v1, long max) {
 		if(max==0) {
 			return "%";
 		}
-		double v = (100.0*v1)/max;
-		
-        return decimalFormat.format(v)+"%";
+        return String.format("%.2f %%", (100.0*v1)/max);
 	}
 	
 	public static String formatDate(Date date) {
