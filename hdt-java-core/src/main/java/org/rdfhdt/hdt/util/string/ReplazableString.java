@@ -110,11 +110,10 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			if(value==0) {
 				break;
 			}
-			if(pos>=buffer.length) {
+			if(used>=buffer.length) {
 				buffer = Arrays.copyOf(buffer, buffer.length*2);
 			}
-			buffer[pos++] = (byte)(value&0xFF);
-			used++;
+			buffer[used++] = (byte)(value&0xFF);
 		}
 	}
 	
@@ -163,7 +162,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			if(value==0) {
 				return;
 			}
-			if(pos>=buffer.length) {
+			if(used>=buffer.length) {
 				buffer = Arrays.copyOf(buffer, buffer.length*2);
 			}
 			buffer[used++] = value;
