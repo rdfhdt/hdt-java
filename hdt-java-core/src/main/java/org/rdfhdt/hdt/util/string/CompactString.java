@@ -139,7 +139,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 			return true;
 		} else if (o instanceof CharSequence) {
 			CharSequence other = (CharSequence) o;
-			return (length()==other.length() && CharSequenceComparator.instance.compare(this, other)==0);
+			return (length()==other.length() && CharSequenceComparator.getInstance().compare(this, other)==0);
 		}
 		throw new NotImplementedException();
 	}
@@ -153,13 +153,17 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 
         int k = 0;
         while (k < n) {
-            byte c1 = this.data[k];
-            byte c2 = other.data[k];
+            int c1 = this.data[k]&0xFF;
+            int c2 = other.data[k]&0xFF;
             if (c1 != c2) {
                 return c1 - c2;
             }
             k++;
         }
         return  this.data.length - other.data.length;
+	}
+	
+	public CharSequence getDelayed() {
+		return new DelayedString(this);
 	}
 }

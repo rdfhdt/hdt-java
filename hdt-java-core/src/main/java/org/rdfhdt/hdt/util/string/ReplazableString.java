@@ -235,7 +235,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			return true;
 		} else if (o instanceof CharSequence) {
 			CharSequence other = (CharSequence) o;
-			return (length()==other.length() && CharSequenceComparator.instance.compare(this, other)==0);
+			return (length()==other.length() && CharSequenceComparator.getInstance().compare(this, other)==0);
 		}
 		throw new NotImplementedException();
 	}
@@ -268,13 +268,17 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 
         int k = 0;
         while (k < n) {
-            byte c1 = this.buffer[k];
-            byte c2 = other.buffer[k];
+            int c1 = this.buffer[k] & 0xFF;
+            int c2 = other.buffer[k] & 0xFF;
             if (c1 != c2) {
                 return c1 - c2;
             }
             k++;
         }
         return used - other.used;
+	}
+	
+	public CharSequence getDelayed() {
+		return new DelayedString(this);
 	}
 }

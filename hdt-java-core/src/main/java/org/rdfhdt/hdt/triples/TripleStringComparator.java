@@ -55,13 +55,13 @@ public class TripleStringComparator implements Comparator<TripleString> {
 	 */
 	@Override
 	public int compare(TripleString o1, TripleString o2) {
-		int result = CharSequenceComparator.instance.compare(o1.getSubject(), o2.getSubject());
+		int result = CharSequenceComparator.getInstance().compare(o1.getSubject(), o2.getSubject());
 
 		if (result == 0) {
-			result = CharSequenceComparator.instance.compare(o1.getPredicate(), o2.getPredicate());
+			result = CharSequenceComparator.getInstance().compare(o1.getPredicate(), o2.getPredicate());
 			if (result == 0) {
 				// The third component is different?
-				return CharSequenceComparator.instance.compare(o1.getObject(), o2.getObject());
+				return CharSequenceComparator.getInstance().compare(o1.getObject(), o2.getObject());
 			} else {
 				// the second component is different
 				return result;

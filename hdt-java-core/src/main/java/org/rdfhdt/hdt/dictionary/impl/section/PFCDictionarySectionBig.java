@@ -47,6 +47,7 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 /**
@@ -226,7 +227,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			len = ByteStringUtil.strlen(block, pos);
 			tempString.replace(delta.getValue().intValue(), block, pos, len);
 		}
-		return tempString;
+		return new CompactString(tempString).getDelayed();
 	}
 
 	/* (non-Javadoc)

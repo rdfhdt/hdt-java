@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.util;
 
 import java.text.DateFormat;
-import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -39,20 +38,28 @@ import java.util.TimeZone;
  */
 public class StringUtil {
 	
-	private static final DecimalFormat decimalFormat = new DecimalFormat("##.##");
-	
 	public static String getPercent(long v1, long max) {
 		if(max==0) {
 			return "%";
 		}
-		double v = (100.0*v1)/max;
-		
-        return decimalFormat.format(v)+"%";
+        return String.format("%.2f %%", (100.0*v1)/max);
 	}
 	
 	public static String formatDate(Date date) {
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
 		dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
 		return dateFormat.format(date);
+	}
+	
+	public static String toHuman(long amount) {
+		return humanReadableByteCount(amount, true);
+	}
+	
+	public static String humanReadableByteCount(long bytes, boolean si) {
+	    int unit = si ? 1000 : 1024;
+	    if (bytes < unit) return Long.toString(bytes);
+	    int exp = (int) (Math.log(bytes) / Math.log(unit));
+	    char pre = "KMGTPE".charAt(exp-1);
+	    return String.format("%.1f%c", bytes / Math.pow(unit, exp), pre);
 	}
 }

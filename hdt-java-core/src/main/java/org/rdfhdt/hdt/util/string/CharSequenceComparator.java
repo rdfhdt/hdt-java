@@ -32,10 +32,14 @@ import java.util.Comparator;
  * @author mario.arias
  *
  */
-public class CharSequenceComparator implements Comparator<CharSequence> {
+public final class CharSequenceComparator implements Comparator<CharSequence> {
 
-	public static final CharSequenceComparator instance = new CharSequenceComparator();
-	
+	private static final Comparator<CharSequence> instance = new CharSequenceComparator();
+
+	public static Comparator<CharSequence> getInstance() {
+		return instance;
+	}
+		
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
@@ -43,6 +47,14 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
 	public int compare(CharSequence s1, CharSequence s2) {
 		if(s1==s2) {
 			return 0;
+		}
+		
+		if(s1 instanceof DelayedString) {
+			s1 = ((DelayedString) s1).str;
+		}
+		
+		if(s2 instanceof DelayedString) {
+			s2 = ((DelayedString) s2).str;
 		}
 		
 		if(s1 instanceof CompactString && s2 instanceof CompactString) {
@@ -63,19 +75,24 @@ public class CharSequenceComparator implements Comparator<CharSequence> {
 			return cs1.compareTo(cs2);
 		}
 		
-		int len1 = s1.length();
-        int len2 = s2.length();
-        int n = Math.min(len1, len2);
-
-        int k = 0;
-        while (k < n) {
-            char c1 = s1.charAt(k);
-            char c2 = s2.charAt(k);
-            if (c1 != c2) {
-                return c2 - c1;
-            }
-            k++;
-        }
-        return len2 - len1;
+		// Slower but safe
+		
+		return s1.toString().compareTo(s2.toString());
+//		
+//		int len1 = s1.length();
+//        int len2 = s2.length();
+//        int n = Math.min(len1, len2);
+//
+//        int k = 0;
+//        while (k < n) {
+//            char c1 = s1.charAt(k);
+//            char c2 = s2.charAt(k);
+//            if (c1 != c2) {
+//                return c2 - c1;
+//            }
+//            k++;
+//        }
+//        return len2 - len1;
 	}
+
 }

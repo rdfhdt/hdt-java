@@ -177,6 +177,8 @@ public final class TripleString {
 	public void read(String line) throws ParserException {
 		int split, posa, posb;
 		this.clear();
+
+		line = line.replaceAll("\\t"," ");
 		
 		// SET SUBJECT
 		posa = 0;
