@@ -20,8 +20,3 @@ if [ "$JAVA_HOME" = "" ] ; then
 else
     JAVA="$JAVA_HOME/bin/java -server"
 fi
-
-# Set Java options
-if [ "$JAVA_OPTIONS" = "" ] ; then
-    JAVA_OPTIONS="-Xms32m -Xmx512m"
-fi
