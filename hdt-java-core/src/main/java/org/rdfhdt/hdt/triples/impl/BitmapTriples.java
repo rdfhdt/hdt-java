@@ -87,7 +87,7 @@ public class BitmapTriples implements TriplesPrivate {
 	protected AdjacencyList adjY, adjZ, adjIndex;
 	
 	// Index for Y
-	protected ArrayList<byte[]> indexYBuffers;
+	PredicateIndex predicateIndex;
 
 	public BitmapTriples() {
 		this(new HDTSpecification());
@@ -370,216 +370,7 @@ public class BitmapTriples implements TriplesPrivate {
 		
 	}
 	
-	private void createIndexPredicates() {
-			ArrayList<List<Integer>> list=new ArrayList<List<Integer>>();
-			
-			// Generate lists
-			for(long i=0;i<seqY.getNumberOfElements();i++) {
-				long pred = seqY.get(i);
-				
-				// Grow outter list
-				if(list.size()<=(int)pred) {
-					list.ensureCapacity((int)pred);
-					while(list.size()<pred) {
-						list.add(new ArrayList<Integer>());	
-					}
-				}
-				
-				// Create inner list
-				List<Integer> inner = list.get((int)pred-1);
-				if(inner==null) {
-					inner = new ArrayList<Integer>();
-					list.set((int)pred-1, inner);
-				}
-				
-				// Add value
-				inner.add((int)i);
-			}
-			
-			// Serialize to array incremental.
-//			StopWatch st = new StopWatch();
-//			LogArray64 indexY = new LogArray64(BitUtil.log2(arrayY.getNumberOfElements()), 0);
-//			BitSequence375 bitmapIndexY = new BitSequence375(arrayY.getNumberOfElements());
-//			long pos=0;
-//			
-			long [] count = new long[(int)seqY.getNumberOfElements()];
-			for(int i=0;i<list.size();i++) {
-//				//		System.out.println("List "+i);
-				List<Integer> inner = list.get(i);
-				long last = 0;
 
-
-				for(int j=0;j<inner.size();j++){
-					//			System.out.println("\t"+inner.get(j));
-
-					long newval = inner.get(j);
-
-					//			System.out.println((int)(newval-last));
-//					indexY.append(newval-last);
-					
-					if((newval-last)>0 && (newval-last)<=count.length) {
-						count[(int)(newval-last-1)] ++;
-					} else {
-						System.out.println("WRONG: "+ newval+ " => "+last);
-					}
-
-					last = newval;
-					
-//					if(j==inner.size()-1) {
-//						bitmapIndexY.set(pos, true);
-//					} else {
-//						bitmapIndexY.set(pos, false);
-//					}
-//					pos++;
-				}
-
-				//		System.out.println("Predicate: "+i+" Elements: "+ inner.size()+" Size: "+ compressed.length);	
-			}
-	//
-//			indexY.aggresiveTrimToSize();
-//			
-//			System.out.println("Compressed in "+st.stopAndShow());
-			//	
-//			System.out.println("Size of Y: "+seqY.size());
-//			long size = indexY.size()/*+bitmapIndexY.getSizeBytes()*/;
-//			System.out.println("Compressed Index total: "+ size + " "+StringUtil.getPercent(size, seqY.size()));
-//			
-//			for(int i=0;i<count.length;i++) {
-////				if(count[i]>0) {
-////				System.out.println(i+";"+count[i]);
-////				}
-//			}
-			
-			int p;
-			
-			for(p=count.length-1; p>=0; p--){
-				if(count[p]>0) {
-					break;
-				}
-			}
-			
-			long [] newCount = new long[p+1];
-			for(; p>0; --p){
-				newCount[p] = count[p];
-			}
-			
-			// Huffman encode
-			
-//			HuffmanCodec codec = new HuffmanCodec(newCount);
-//			
-//			ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
-//			BitOutputStream bitOut = new BitOutputStream(byteOut);
-//			
-//					
-//			for(int i=0;i<list.size();i++) {
-//				//		System.out.println("List "+i);
-//				List<Integer> inner = list.get(i);
-//				long last = 0;
-//
-//				for(int j=0;j<inner.size();j++){
-//					//			System.out.println("\t"+inner.get(j));
-//
-//					long newval = inner.get(j);
-//
-//					if((newval-last)>0 && (newval-last)<=newCount.length) {
-//					codec.encode((int)(newval-last-1), bitOut);
-//					} else {
-//						System.out.println("WRONG: "+ newval+ " => "+last);
-//					}
-//					last = newval;
-//				}
-//
-//				bitOut.flush();
-//				//		System.out.println("Predicate: "+i+" Elements: "+ inner.size()+" Size: "+ compressed.length);	
-//			}
-//			
-//			System.out.println("Huffman Stream size: "+byteOut.size());
-//			System.out.println("Size of Y: "+seqY.size());
-//			long size = byteOut.size()+(list.size()*BitUtil.log2(seqY.size()));
-//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, seqY.size()));
-//			
-			
-			// Serialize lists
-			
-//			System.out.println("Serialize");
-//			indexYBuffers = new ArrayList<byte[]>();
-//			
-//			long size = 0;
-//			StopWatch st = new StopWatch();
-//			
-//			for(int i=0;i<list.size();i++) {
-////				System.out.println("List "+i);
-//				List<Integer> inner = list.get(i);
-//				long last = 0;
-//				
-//				ByteArrayOutputStream out = new ByteArrayOutputStream();
-//				DataOutputStream datout;
-//				if(inner.size()>100) {
-//					DeflaterOutputStream dout = new DeflaterOutputStream(out, true){{def.setLevel(1);def.setStrategy(Deflater.BEST_SPEED);}};
-////					SnappyOutputStream dout = new SnappyOutputStream(out);
-//					datout = new DataOutputStream(dout);
-//					datout.writeByte(1);
-//				} else {
-//					datout = new DataOutputStream(out);
-//					datout.writeByte(2);
-//				}
-//				for(int j=0;j<inner.size();j++){
-////					System.out.println("\t"+inner.get(j));
-//					
-//					long newval = inner.get(j);
-//					
-////					System.out.println((int)(newval-last));
-//					datout.writeInt((int)(newval-last));
-//					
-//					last = newval;
-//				}
-//				datout.close();
-//				
-//				byte [] compressed = out.toByteArray(); 
-//				indexYBuffers.add(compressed);
-//				size+=1+compressed.length;
-////				System.out.println("Predicate: "+i+" Elements: "+ inner.size()+" Size: "+ compressed.length);	
-//			}
-//			
-//			System.out.println("Compressed in "+st.stopAndShow());
-//			
-//			System.out.println("Size of Y: "+seqY.size());
-//			System.out.println("Compressed Index total: "+ size+ " "+StringUtil.getPercent(size, seqY.size()));
-			
-		
-			
-//			
-//			System.out.println("Buffer: ");
-//			DataInputStream din = new DataInputStream(new InflaterInputStream(new ByteArrayInputStream(indexYBuffers.get(0))));
-////			
-//			try {
-//				int pos = 0;
-//				while(true) {
-//					int readval = din.readInt();
-////					System.out.println("\tPos="+pos+" Value: "+readval);
-//					pos+=4;
-//				}
-//			} catch (Exception e) {
-//				
-//			}
-//			
-//			System.out.println("Samples: ");
-//			for(int i=0;i<this.indexYsamples.getNumberOfElements();i++) {
-//				System.out.println("\ti= "+i + " => " +this.indexYsamples.get(i));
-//			}
-//			
-			
-//			DeflateIntegerIterator iter = new DeflateIntegerIterator(this.indexYBuffers);
-//			
-//			for(int i=0;i<3;i++) {
-//				System.out.println("Predicate "+i);
-//				iter.reset(i);
-	//
-//				while(iter.hasNext()) {
-//					System.out.println("\t"+iter.next());
-//				}
-//			}
-		}
 
 	private void createIndexObjectMemoryEfficient() {
 		StopWatch global = new StopWatch();
@@ -835,7 +626,9 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	public void generateIndex(ProgressListener listener) {		
-//		createIndexPredicates();
+		predicateIndex = new PredicateIndexArray(this);
+		predicateIndex.generate(listener);
+		
 		//createIndexObjects();
 		createIndexObjectMemoryEfficient();	
 	}
@@ -885,6 +678,8 @@ public class BitmapTriples implements TriplesPrivate {
 		predicateCount.save(output, iListener);
 		bitmapIndexZ.save(output, iListener);
 		indexZ.save(output, iListener);
+		
+		predicateIndex.save(output);
 	}
 	
 	/* (non-Javadoc)
@@ -921,6 +716,9 @@ public class BitmapTriples implements TriplesPrivate {
 		indexZ = SequenceFactory.createStream(input);
 		indexZ.load(input, iListener);
 
+		predicateIndex = new PredicateIndexArray(this);
+		predicateIndex.load(input);
+		
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
 
@@ -953,6 +751,9 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		indexZ = SequenceFactory.createStream(input, f);
 
+		predicateIndex = new PredicateIndexArray(this);
+		predicateIndex.mapIndex(input, f, iListener);
+		
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
 
