@@ -20,14 +20,8 @@ while (( "$#" )); do
   shift
 done
 
-# Check if HDT file was given
-if [ -z "$hdtfile" ]; then
-    echo "You must provide a HDT file with the '--hdt' option."
-    exit 255
-fi
-
 # Check if the HDT file needs an index file
-if [ ! -f "$hdtfile.index" ]; then
+if [ -n "$hdtfile" -a ! -f "$hdtfile.index" ]; then
     echo "One-time index file creation, please be patient ..."
     $JAVA -Xmx$INDEX_MEM -cp $CP:$CLASSPATH org.rdfhdt.hdt.fuseki.HDTGenerateIndex $hdtfile || exit $?
 fi
