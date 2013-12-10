@@ -65,8 +65,10 @@ public class IntermediateListener implements ProgressListener {
 	 */
 	@Override
 	public void notifyProgress(float level, String message) {
-		float newlevel = min + level*(max-min)/100;
-		child.notifyProgress(newlevel,message);
+		if(child!=null) {
+			float newlevel = min + level*(max-min)/100;
+			child.notifyProgress(newlevel,message);
+		}
 	}
 	
 	/**
