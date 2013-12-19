@@ -184,11 +184,11 @@ public class NodeDictionary {
 		}
 
 		if(jenaTriple.getMatchPredicate()!=null) {
-			predicate = getIntID(jenaTriple.getMatchPredicate().toString(), TripleComponentRole.PREDICATE);
+			predicate = getIntID(jenaTriple.getMatchPredicate(), TripleComponentRole.PREDICATE);
 		}
 
 		if(jenaTriple.getMatchObject()!=null) {
-			object = getIntID(jenaTriple.getMatchObject().toString(), TripleComponentRole.OBJECT);
+			object = getIntID(jenaTriple.getMatchObject(), TripleComponentRole.OBJECT);
 		}
 		return new TripleID(subject, predicate, object);
 	}

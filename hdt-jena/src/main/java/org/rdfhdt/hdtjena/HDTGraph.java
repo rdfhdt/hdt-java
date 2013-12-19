@@ -32,6 +32,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.solver.HDTJenaIterator;
+import org.rdfhdt.hdtjena.solver.HDTQueryEngine;
 import org.rdfhdt.hdtjena.solver.OpExecutorHDT;
 import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
 
@@ -61,7 +62,8 @@ public class HDTGraph extends GraphBase {
 	
 	static {
 		// Register OpExecutor
-		QC.setFactory(ARQ.getContext(), OpExecutorHDT.opExecFactoryHDT) ;
+		QC.setFactory(ARQ.getContext(), OpExecutorHDT.opExecFactoryHDT);
+		HDTQueryEngine.register();
 	}
 	
 	public HDTGraph(HDT hdt) {
