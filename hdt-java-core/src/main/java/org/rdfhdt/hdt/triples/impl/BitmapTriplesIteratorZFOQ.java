@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
@@ -48,14 +47,14 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	
 	int patY, patZ;
 	
-	BitmapTriplesIteratorZFOQ(BitmapTriples triples, TripleID pattern) {
+	public BitmapTriplesIteratorZFOQ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.pattern = new TripleID(pattern);
 		this.returnTriple = new TripleID();
 		
 		TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
 		patZ = this.pattern.getObject();
-		if(patZ==0) {
+		if(patZ==0 && (patY!=0 || this.pattern.getSubject()!=0)) {
 			throw new IllegalArgumentException("This structure is not meant to process this pattern");
 		}
 		
@@ -73,6 +72,11 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	}
 	
 	private void calculateRange() {
+		if(patZ==0) {
+			minIndex = 0;
+			maxIndex = adjIndex.getNumberOfElements();
+			return;
+		}
 		minIndex = adjIndex.find(patZ-1);
 		maxIndex = adjIndex.last(patZ-1);
 
@@ -146,7 +150,7 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	public TripleID next() {
 	    long posY = adjIndex.get(posIndex);
 
-	    z = patZ;
+	    z = patZ!=0 ? patZ : (int)adjIndex.findListIndex(posIndex)+1;
 	    y = patY!=0 ? patY : (int) adjY.get(posY);
 	    x = (int) adjY.findListIndex(posY)+1;
 
@@ -173,7 +177,7 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 
 		long posY = adjIndex.get(posIndex);
 
-		z = patZ;
+		z = patZ!=0 ? patZ : (int)adjIndex.findListIndex(posIndex)+1;
 		y = patY!=0 ? patY : (int) adjY.get(posY);
 		x = (int) adjY.findListIndex(posY)+1;
 
