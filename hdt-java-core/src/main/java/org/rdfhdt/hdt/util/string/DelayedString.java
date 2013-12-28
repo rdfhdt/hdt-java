@@ -36,5 +36,9 @@ public final class DelayedString implements CharSequence {
 		ensure();
 		return str.toString();
 	}
+	
+	public CharSequence getInternal() {
+		return str;
+	}
 
 }

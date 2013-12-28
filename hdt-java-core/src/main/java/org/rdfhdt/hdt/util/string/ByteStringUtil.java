@@ -151,6 +151,10 @@ public class ByteStringUtil {
 		byte [] buf=null;
 		int len;
 		
+		if(str instanceof DelayedString) {
+			str = ((DelayedString) str).getInternal();
+		}
+		
 		// Isolate array
 		if(str instanceof CompactString) {
 			buf = ((CompactString) str).getData();
