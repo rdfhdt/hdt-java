@@ -235,7 +235,11 @@ public class BitmapTriples implements TriplesPrivate {
 		String patternString = reorderedPat.getPatternString();
 		
 		if(patternString.equals("?P?")) {
-			return new BitmapTriplesIteratorY(this, pattern);
+			if(this.predicateIndex!=null) {
+				return new BitmapTriplesIteratorYFOQ(this, pattern);
+			} else {
+				return new BitmapTriplesIteratorY(this, pattern);
+			}
 		}
 		
 		if(indexZ!=null && bitmapIndexZ!=null) {
@@ -380,7 +384,7 @@ public class BitmapTriples implements TriplesPrivate {
 		long maxCount = 0;
 		long numDifferentObjects = 0;
 		long numReservedObjects = 8192;
-		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects);
+		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
 			long val = seqZ.get(i);
 			if(val==0) {

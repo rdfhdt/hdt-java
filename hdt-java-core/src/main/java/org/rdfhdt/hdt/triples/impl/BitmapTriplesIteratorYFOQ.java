@@ -170,7 +170,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		 */
 		@Override
 		public long estimatedNumResults() {
-			return adjZ.getNumberOfElements();
+			return triples.predicateCount.get(patY-1);
 		}
 
 		/* (non-Javadoc)
