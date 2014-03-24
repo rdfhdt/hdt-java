@@ -27,6 +27,7 @@
 
 package org.rdfhdt.hdt.dictionary.impl.section;
 
+import java.io.BufferedInputStream;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
@@ -72,9 +73,14 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected int numstrings;
 	protected Sequence blocks;
 	protected long dataSize;
-	
+
+	private File f;
+	private long startOffset, endOffset;
+
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
-	
+		this.f = f;
+		startOffset=input.getTotalBytes();
+
 		CRCInputStream crcin = new CRCInputStream(input, new CRC8());
 		
 		// Read type
@@ -99,7 +105,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 		long base = input.getTotalBytes();
 		IOUtil.skip(crcin, dataSize+4); // Including CRC32
-		
+
+		endOffset = input.getTotalBytes();
+
 		// Read packed data
 		ch = new FileInputStream(f).getChannel();
 		int block = 0;
@@ -351,9 +359,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	}
 
 	@Override
-	public void save(OutputStream output, ProgressListener listener)
-			throws IOException {
-		throw new NotImplementedException();
+	public void save(OutputStream output, ProgressListener listener) throws IOException {
+		InputStream in = new BufferedInputStream(new FileInputStream(f));
+		IOUtil.skip(in, startOffset);
+		IOUtil.copyStream(in, output, endOffset-startOffset);
+		in.close();
 	}
 
 	@Override

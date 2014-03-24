@@ -88,6 +88,20 @@ public class IOUtil {
 		}
 	}
 	
+	// Copy the remaining of the Stream in, to out. Limit to n bytes.
+	public static void copyStream(InputStream in, OutputStream out, long n) throws IOException {
+		byte[] buffer = new byte[1024*1024];
+		int len=(int) (buffer.length < n ? buffer.length : n);
+		long total=0;
+
+		while ((total<n) && (len = in.read(buffer, 0, len)) != -1 ) {
+		    out.write(buffer, 0, len );
+
+		    total+=len;
+		    len = (int) (total+buffer.length>n ? n-total : buffer.length);
+		}
+	}
+
 	public static void copyFile(File src, File dst) throws IOException {
 		FileInputStream in = new FileInputStream(src);
 		FileOutputStream out = new FileOutputStream(dst);
