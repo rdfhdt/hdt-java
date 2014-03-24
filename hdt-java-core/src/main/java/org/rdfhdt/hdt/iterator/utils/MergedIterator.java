@@ -43,11 +43,27 @@ public class MergedIterator<T> implements Iterator<T> {
 	private Iterator<T> left, right;
 	private T currentLeft, currentRight;
 	private Comparator<T> comparator;
+	private Annotator<T> annotator;
+	
+	public static enum Pos {
+		LEFT,
+		RIGHT,
+		BOTH
+	}
+	
+	public interface Annotator<T> {
+		public void annotate(T el, Pos p);
+	}
 	
 	public MergedIterator(Iterator<T> left, Iterator<T> right, Comparator<T> comparator) {
+		this(left,right,comparator,null);
+	}
+		
+	public MergedIterator(Iterator<T> left, Iterator<T> right, Comparator<T> comparator, Annotator<T> annotator) {
 		this.left = left;
 		this.right = right;
 		this.comparator = comparator;
+		this.annotator = annotator;
 		
 		advanceLeft();
 		advanceRight();
@@ -99,11 +115,14 @@ public class MergedIterator<T> implements Iterator<T> {
 		int cmp = comparator.compare(currentLeft, currentRight); 
 		if(cmp==0) {
 			// Equal, return one, advance both to discard duplicate.
+			if(annotator!=null) annotator.annotate(currentLeft, Pos.BOTH);
 			advanceRight();
 			return advanceLeft();
 		}else if(cmp>0) {
+			if(annotator!=null) annotator.annotate(currentLeft, Pos.LEFT);
 			return advanceLeft();
 		} else {
+			if(annotator!=null) annotator.annotate(currentLeft, Pos.RIGHT);
 			return advanceRight();
 		}
 	}
