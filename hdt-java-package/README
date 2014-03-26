@@ -8,7 +8,7 @@ HDT-lib is a Java Library that implements the W3C Submission (http://www.w3.org/
 It provides several components:
 - hdt-java-api: Abstract interface for dealing with HDT files.
 - hdt-java-core: Core library for accessing HDT files programmatically from java. It allows creating HDT files from RDF and converting HDT files back to RDF. It also provides a Search interface to find triples that match a specific triple pattern.
-- hdt-java-cmd: Commandline tools to convert RDF to HDT and access HDT files from a terminal.
+- hdt-java-cli: Commandline tools to convert RDF to HDT and access HDT files from a terminal.
 - hdt-jena: Jena integration. Provides a Jena Graph implementation that allows accessing HDT files as normal Jena Models. In turn, this can be used with Jena ARQ to provide more advanced searches, such as SPARQL, and even setting up SPARQL Endpoints with Fuseki.
 
 Command line tools
@@ -93,15 +93,15 @@ Here we show how to use the library programmatically from java. This code can al
 
 First you need to add the hdt jars, typically hdt-api-VERSION.jar and hdt-java-core-VERSION.jar
 
-If you use maven, you can add the dependency:
+If you use maven, you can get the packages automatically from Maven Central by adding the dependency:
 
   	<dependency>
   		<groupId>org.rdfhdt</groupId>
   		<artifactId>hdt-java-core</artifactId>
-  		<version>1.1-SNAPSHOT</version>
+  		<version>1.1.1</version>
   	</dependency>
 
-If you want to use a Snapshot version (Not Recommended), You need to add the Sonatype repository to your ~/.m2/settings.xml as follows:
+If you want to use a Snapshot version (with the most recent unstable version), You need to add the Sonatype repository to your ~/.m2/settings.xml as follows:
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -127,7 +127,8 @@ If you want to use a Snapshot version (Not Recommended), You need to add the Son
 
 </settings>
 
-Then, you can use the following code to generate an HDT file:
+
+Once that you have the HDT libraries ready, you can use the following code to generate an HDT file:
 
 // Generate an HDT File from RDF (examples/ExampleGenerate.java)
 public static void main(String[] args) throws Exception {
