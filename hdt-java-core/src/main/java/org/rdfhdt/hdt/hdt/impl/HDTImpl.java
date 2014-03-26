@@ -398,6 +398,9 @@ public class HDTImpl implements HDTPrivate {
 			}
 			in.close();
 		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Error reading .hdt.index Generating a new one: "+e);
+
 			// GENERATE
 			triples.generateIndex(listener);
 			

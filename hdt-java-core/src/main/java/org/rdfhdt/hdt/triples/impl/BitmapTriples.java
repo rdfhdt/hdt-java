@@ -679,11 +679,12 @@ public class BitmapTriples implements TriplesPrivate {
 		ci.setFormat(HDTVocabulary.INDEX_TYPE_FOQ);
 		ci.save(output);
 		
-		predicateCount.save(output, iListener);
 		bitmapIndexZ.save(output, iListener);
 		indexZ.save(output, iListener);
-		
+
 		predicateIndex.save(output);
+
+		predicateCount.save(output, iListener);
 	}
 	
 	/* (non-Javadoc)
@@ -711,8 +712,6 @@ public class BitmapTriples implements TriplesPrivate {
 			throw new IllegalFormatException("The order of the triples is not the same of the index.");
 		}
 		
-		predicateCount = SequenceFactory.createStream(input);
-		predicateCount.load(input, iListener);
 
 		bitmapIndexZ = BitmapFactory.createBitmap(input);
 		bitmapIndexZ.load(input, iListener);
@@ -723,6 +722,9 @@ public class BitmapTriples implements TriplesPrivate {
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.load(input);
 		
+		predicateCount = SequenceFactory.createStream(input);
+		predicateCount.load(input, iListener);
+
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
 
@@ -747,8 +749,6 @@ public class BitmapTriples implements TriplesPrivate {
 		if(indexOrder != order) {
 			throw new IllegalFormatException("The order of the triples is not the same of the index.");
 		}
-		
-		predicateCount = SequenceFactory.createStream(input, f);
 
 		bitmapIndexZ = BitmapFactory.createBitmap(input);
 		bitmapIndexZ.load(input, iListener);
@@ -757,6 +757,8 @@ public class BitmapTriples implements TriplesPrivate {
 
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.mapIndex(input, f, iListener);
+
+		predicateCount = SequenceFactory.createStream(input, f);
 		
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 	}
