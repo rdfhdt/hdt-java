@@ -25,7 +25,7 @@
   	</dependency>
   	<dependency>
   	<groupId>org.rdfhdt</groupId>
-  		<artifactId>hdt-java-cmd</artifactId>
+  		<artifactId>hdt-java-cli</artifactId>
   		<version>1.1-SNAPSHOT</version>
   	</dependency>
   	<dependency>
