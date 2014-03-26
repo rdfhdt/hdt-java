@@ -37,6 +37,7 @@ import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheLRI;
 import org.rdfhdt.hdtjena.cache.DummyMap;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.graph.JenaNodeCreator;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.graph.Triple;
@@ -151,10 +152,8 @@ public class NodeDictionary {
 	public static String nodeToStr(Node node, PrefixMapping map) {
 		if(node.isURI()) {
 			return map.expandPrefix(node.getURI());
-		} else if(node.isVariable()) {
-			return "";
 		} else {
-			return node.toString();
+			return nodeToStr(node);
 		}
 	}
 	
@@ -163,6 +162,12 @@ public class NodeDictionary {
 			return "";
 		}else if(node.isURI()) {
 			return node.getURI();
+		} else if(node.isLiteral()) {
+			RDFDatatype t = node.getLiteralDatatype();
+			if(t!=null) {
+				return "\""+node.getLiteralLexicalForm()+"\"^^<"+t.getURI()+">";
+			}
+			return node.toString();
 		} else {
 			return node.toString();
 		}
