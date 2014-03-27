@@ -1,1 +1,5 @@
-java -XX:NewRatio=1 -XX:SurvivorRatio=9 -Xms1024M -Xmx1024M -classpath ../hdt-disk/bin;../hdt-disk/lib/*;bin;lib/* org.rdfhdt.hdt.tools.RDF2HDT %*
+@echo off
+
+call %~dp0\javaenv.bat
+
+%JAVACMD% -XX:NewRatio=1 -XX:SurvivorRatio=9 %JAVAOPTIONS% -classpath %JAVACP% org.rdfhdt.hdt.tools.RDF2HDT %*

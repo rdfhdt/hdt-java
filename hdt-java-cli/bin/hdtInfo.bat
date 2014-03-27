@@ -1,1 +1,5 @@
-java -classpath bin;lib/* org.rdfhdt.hdt.tools.HDTInfo %*
+@echo off
+
+call %~dp0\javaenv.bat
+
+%JAVACMD% -XX:NewRatio=1 -XX:SurvivorRatio=9 %JAVAOPTIONS% -classpath %JAVACP% org.rdfhdt.hdt.tools.HDTInfo %*

@@ -1,1 +1,5 @@
-java -Xmx1024M -classpath bin;lib/* org.rdfhdt.hdt.tools.HdtSearch %*
+@echo off
+
+call %~dp0\javaenv.bat
+
+%JAVACMD% -XX:NewRatio=1 -XX:SurvivorRatio=9 %JAVAOPTIONS% -classpath %JAVACP% org.rdfhdt.hdt.tools.HdtSearch %*

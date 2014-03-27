@@ -42,6 +42,16 @@
             <lineEnding>unix</lineEnding>
       		<fileMode>0755</fileMode>
         </fileSet>
+
+        <fileSet>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.bat</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+                <fileMode>0755</fileMode>
+        </fileSet>
      
         <fileSet>
             <directory>pages</directory>

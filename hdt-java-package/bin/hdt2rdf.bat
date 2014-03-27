@@ -1,1 +1,5 @@
-java -Xms1024M -Xmx1024M -classpath bin;lib/* org.rdfhdt.hdt.tools.HDT2RDF %*
+@echo off
+
+call %~dp0\javaenv.bat
+
+%JAVACMD% %JAVAOPTIONS% -classpath %~dp0\..\lib\* org.rdfhdt.hdt.tools.HDT2RDF %*

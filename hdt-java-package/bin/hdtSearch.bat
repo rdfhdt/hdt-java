@@ -1,1 +1,5 @@
-java -Xmx1024M -classpath bin;lib/* org.rdfhdt.hdt.tools.HdtSearch %*
+@echo off
+
+call %~dp0\javaenv.bat
+
+%JAVACMD% %JAVAOPTIONS% -classpath %~dp0\..\lib\* org.rdfhdt.hdt.tools.HdtSearch %*
