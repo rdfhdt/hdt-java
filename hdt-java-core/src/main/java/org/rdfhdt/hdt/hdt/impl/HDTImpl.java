@@ -66,30 +66,31 @@ import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 
 /**
  * Basic implementation of HDT interface
- * 
+ *
  */
 public class HDTImpl implements HDTPrivate {
-	
+
 	private HDTOptions spec;
 
 	private HeaderPrivate header;
 	private DictionaryPrivate dictionary;
 	private TriplesPrivate triples;
-	
+
 	private String hdtFileName;
 	private String baseUri;
 	private boolean isMapped=false;
-	
+
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
         dictionary = DictionaryFactory.createDictionary(spec);
         triples = TriplesFactory.createTriples(spec);
 	}
-	
+
 	public void populateHeaderStructure(String baseUri) {
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.VOID_DATASET);
@@ -99,14 +100,14 @@ public class HDTImpl implements HDTPrivate {
 		header.insert(baseUri, HDTVocabulary.VOID_PROPERTIES, dictionary.getNpredicates());
 		header.insert(baseUri, HDTVocabulary.VOID_DISTINCT_SUBJECTS, dictionary.getNsubjects());
 		header.insert(baseUri, HDTVocabulary.VOID_DISTINCT_OBJECTS, dictionary.getNobjects());
-		
+
 		// Structure
 		String formatNode = "_:format";
 		String dictNode = "_:dictionary";
 		String triplesNode = "_:triples";
 		String statisticsNode = "_:statistics";
 		String publicationInfoNode = "_:publicationInformation";
-		
+
 		header.insert(baseUri, HDTVocabulary.HDT_FORMAT_INFORMATION, formatNode);
 		header.insert(formatNode, HDTVocabulary.HDT_DICTIONARY, dictNode);
 		header.insert(formatNode, HDTVocabulary.HDT_TRIPLES, triplesNode);
@@ -121,7 +122,7 @@ public class HDTImpl implements HDTPrivate {
 		// Current time
 		header.insert(publicationInfoNode, HDTVocabulary.DUBLIN_CORE_ISSUED, StringUtil.formatDate(new Date()));
 	}
-	
+
 	/**
 	 * @param spec2
 	 */
@@ -130,12 +131,12 @@ public class HDTImpl implements HDTPrivate {
 
 		createComponents();
 	}
-	
+
 	@Override
 	public void loadFromHDT(InputStream input, ProgressListener listener) throws IOException {
 		ControlInfo ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		// Load Global ControlInformation
 		ci.clear();
 		ci.load(input);
@@ -143,14 +144,14 @@ public class HDTImpl implements HDTPrivate {
 		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
 			throw new IllegalFormatException("This software cannot open this version of HDT File");
 		}
-		
+
 		// Load header
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(0, 5);
 		header = HeaderFactory.createHeader(ci);
 		header.load(input, ci, iListener);
-		
+
 		// Set base URI.
 		try {
 			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
@@ -160,14 +161,14 @@ public class HDTImpl implements HDTPrivate {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
-		
+
 		// Load dictionary
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(5, 60);
 		dictionary = DictionaryFactory.createDictionary(ci);
 		dictionary.load(input, ci, iListener);
-		
+
 		// Load Triples
 		ci.clear();
 		ci.load(input);
@@ -186,7 +187,7 @@ public class HDTImpl implements HDTPrivate {
 		}
 		loadFromHDT(in, listener);
 		in.close();
-		
+
 		this.hdtFileName = hdtFileName;
 	}
 
@@ -194,17 +195,27 @@ public class HDTImpl implements HDTPrivate {
 	public void mapFromHDT(File f, long offset, ProgressListener listener) throws IOException {
 		this.hdtFileName = f.toString();
 		this.isMapped = true;
-		
+
 		CountInputStream input;
 		if(hdtFileName.endsWith(".gz")) {
-			throw new NotImplementedException("Gzipped files not supported for mapping. Decompress it first.");
-		} else {
-			input = new CountInputStream(new BufferedInputStream(new FileInputStream(hdtFileName)));
+			File old = f;
+			hdtFileName = hdtFileName.substring(0, hdtFileName.length()-3);
+			f = new File(hdtFileName);
+
+			if(!f.exists()) {
+				System.err.println("We cannot map a gzipped HDT, decompressing into "+hdtFileName+" first.");
+				IOUtil.decompressGzip(old, f);
+				System.err.println("Gzipped HDT successfully decompressed. You might want to delete "+old.getAbsolutePath()+" to save disk space.");
+			} else {
+				System.err.println("We cannot map a gzipped HDT, using "+hdtFileName+" instead.");
+			}
 		}
-		
+
+		input = new CountInputStream(new BufferedInputStream(new FileInputStream(hdtFileName)));
+
 		ControlInfo ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		// Load Global ControlInformation
 		ci.clear();
 		ci.load(input);
@@ -212,14 +223,14 @@ public class HDTImpl implements HDTPrivate {
 		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
 			throw new IllegalFormatException("This software cannot open this version of HDT File");
 		}
-		
+
 		// Load header
 		ci.clear();
 		ci.load(input);
 		iListener.setRange(0, 5);
 		header = HeaderFactory.createHeader(ci);
 		header.load(input, ci, iListener);
-		
+
 		// Set base URI.
 		try {
 			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
@@ -229,7 +240,7 @@ public class HDTImpl implements HDTPrivate {
 		} catch (NotFoundException e) {
 			e.printStackTrace();
 		}
-		
+
 		// Load dictionary
 		ci.clear();
 		input.mark(1024);
@@ -238,7 +249,7 @@ public class HDTImpl implements HDTPrivate {
 		iListener.setRange(5, 60);
 		dictionary = DictionaryFactory.createDictionary(ci);
 		dictionary.mapFromFile(input, f, iListener);
-		
+
 		// Load Triples
 		ci.clear();
 		input.mark(1024);
@@ -247,41 +258,41 @@ public class HDTImpl implements HDTPrivate {
 		iListener.setRange(60, 100);
 		triples = TriplesFactory.createTriples(ci);
 		triples.mapFromFile(input, f, iListener);
-		
+
 		input.close();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.HDT#saveToHDT(java.io.OutputStream)
 	 */
 	@Override
 	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException {
 		ControlInfo ci = new ControlInformation();
 		IntermediateListener iListener = new IntermediateListener(listener);
-		
+
 		ci.clear();
 		ci.setType(ControlInfo.Type.GLOBAL);
 		ci.setFormat(HDTVocabulary.HDT_CONTAINER);
 		ci.save(output);
-		
+
 		ci.clear();
 		ci.setType(ControlInfo.Type.HEADER);
 		header.save(output, ci, iListener);
-		
+
 		ci.clear();
 		ci.setType(ControlInfo.Type.DICTIONARY);
 		dictionary.save(output, ci, iListener);
-		
+
 		ci.clear();
 		ci.setType(ControlInfo.Type.TRIPLES);
 		triples.save(output, ci, iListener);
 	}
-	
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.HDT#saveToHDT(java.io.OutputStream)
 	 */
 	@Override
@@ -290,7 +301,7 @@ public class HDTImpl implements HDTPrivate {
 		//OutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
 		saveToHDT(out, listener);
 		out.close();
-		
+
 		this.hdtFileName = fileName;
 	}
 
@@ -303,7 +314,7 @@ public class HDTImpl implements HDTPrivate {
 				dictionary.stringToId(predicate, TripleComponentRole.PREDICATE),
 				dictionary.stringToId(object, TripleComponentRole.OBJECT)
 			);
-		
+
 		if(triple.getSubject()==-1 || triple.getPredicate()==-1 || triple.getObject()==-1) {
 			throw new NotFoundException("String not found in dictionary");
 		}
@@ -313,7 +324,7 @@ public class HDTImpl implements HDTPrivate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.HDT#getHeader()
 	 */
 	@Override
@@ -323,7 +334,7 @@ public class HDTImpl implements HDTPrivate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.HDT#getDictionary()
 	 */
 	@Override
@@ -333,14 +344,14 @@ public class HDTImpl implements HDTPrivate {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.HDT#getTriples()
 	 */
 	@Override
 	public Triples getTriples() {
 		return triples;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.hdt.HDT#getSize()
 	 */
@@ -350,14 +361,14 @@ public class HDTImpl implements HDTPrivate {
 	}
 
 	public void loadFromModifiableHDT(TempHDT modHdt, ProgressListener listener) {
-		
+
 		modHdt.reorganizeDictionary(listener);
 		modHdt.reorganizeTriples(listener);
-		
+
         // Get parts
         TempTriples modifiableTriples = (TempTriples) modHdt.getTriples();
         TempDictionary modifiableDictionary = (TempDictionary) modHdt.getDictionary();
-        
+
         // Convert triples to final format
         if(triples.getClass().equals(modifiableTriples.getClass())) {
                 triples = modifiableTriples;
@@ -366,7 +377,7 @@ public class HDTImpl implements HDTPrivate {
                 triples.load(modifiableTriples, listener);
                 //System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow());
         }
-        
+
         // Convert dictionary to final format
         if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
                 dictionary = (DictionaryPrivate)modifiableDictionary;
@@ -375,10 +386,10 @@ public class HDTImpl implements HDTPrivate {
                 dictionary.load(modifiableDictionary, listener);
                 //System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
         }
-      
+
         this.baseUri = modHdt.getBaseURI();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.hdt.HDT#generateIndex(hdt.listener.ProgressListener)
 	 */
@@ -387,7 +398,7 @@ public class HDTImpl implements HDTPrivate {
 		ControlInfo ci = new ControlInformation();
 		String indexName = hdtFileName+".index";
 		indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
-		
+
 		try {
 			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(indexName)));
 			ci.load(in);
@@ -398,12 +409,11 @@ public class HDTImpl implements HDTPrivate {
 			}
 			in.close();
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Error reading .hdt.index Generating a new one: "+e);
+			System.out.println("Could not read .hdt.index, Generating a new one.");
 
 			// GENERATE
 			triples.generateIndex(listener);
-			
+
 			// SAVE
 			try {
 				FileOutputStream out = new FileOutputStream(indexName);
@@ -411,9 +421,9 @@ public class HDTImpl implements HDTPrivate {
 				triples.saveIndex(out, ci, listener);
 				out.close();
 			} catch (IOException e2) {
-				
+
 			}
-		} 
+		}
 	}
 
 	@Override
@@ -430,5 +440,5 @@ public class HDTImpl implements HDTPrivate {
 		dictionary.close();
 		triples.close();
 	}
-	
+
 }
