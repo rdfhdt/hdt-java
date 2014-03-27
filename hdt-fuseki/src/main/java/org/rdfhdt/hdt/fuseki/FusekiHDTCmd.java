@@ -357,7 +357,7 @@ public class FusekiHDTCmd extends CmdARQ
         if ( dsg != null )
         {
             if ( getPositional().size() == 0 )
-                throw new CmdException("No dataset path name given") ;
+                throw new CmdException("No dataset path name given. Try hdtEndpoint [options] /mydataset") ;
             if ( getPositional().size() > 1  )
                 throw new CmdException("Multiple dataset path names given") ;
             datasetPath = getPositionalArg(0) ;

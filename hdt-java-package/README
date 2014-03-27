@@ -14,7 +14,7 @@ It provides several components:
 Command line tools
 ==================
 
-NOTE: Generating and loading big HDT Datasets can take a considerable amount of memory. Adjust the JVM heap memory using -Xmx flag according to your machine's memory in the launch scripts (.sh and .bat).
+NOTE: Generating and loading big HDT Datasets can take a considerable amount of memory. In some cases you might need to increase the JVM heap memory using -Xmx flag according to your machine's memory in the bin/javaenv.{sh,bat} launch scripts.
 
 The tool provides three main command line tools:
 
@@ -29,11 +29,11 @@ $ Usage: rdf2hdt [options] <Input RDF> <Output HDT>
 
 
 ** The tool hdt2rdf converts an HDT file back to RDF in NTriples format.
-$ hdt2rdf <HDT input file> <RDF output file> 
+$ hdt2rdf <HDT input file> <RDF output file>
 
 
 ** The tool hdtSearch allows to search triple patterns against an HDT file. For example, to list all patterns, one can use the "? ? ?" query. To search all information about <myns:subject1> one can use "<myns:subject1> ? ?"
-$ hdtSearch <HDT File> 
+$ hdtSearch <HDT File>
 
 ** You can also search SPARQL queries as
 $ hdtsparql <HDT File> <SPARQL Query>
@@ -85,6 +85,8 @@ http://example.org/uri3 http://example.org/predicate3 http://example.org/uri5
 # Execute SPARQL Query against the file.
 $ ./hdtsparql.sh data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
 
+NOTE: Searching requires an additional .hdt.index that is automatically created in the same directory as your original HDT file. The first time you load an HDT it will take a while to generate it, the next times it will load much faster. If you are not using an HDT, you can safely delete its .hdt.index without losing any information. It will be automatically regenerated next time you use it.
+
 
 USING THE LIBRARY
 =================
@@ -98,10 +100,10 @@ If you use maven, you can get the packages automatically from Maven Central by a
   	<dependency>
   		<groupId>org.rdfhdt</groupId>
   		<artifactId>hdt-java-core</artifactId>
-  		<version>1.1.1</version>
+  		<version>1.1</version>
   	</dependency>
 
-If you want to use a Snapshot version (with the most recent unstable version), You need to add the Sonatype repository to your ~/.m2/settings.xml as follows:
+If you want to use a Snapshot version (with the most recent unstable version), You need to add the Sonatype snapshot repository to your ~/.m2/settings.xml as follows:
 
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -128,7 +130,7 @@ If you want to use a Snapshot version (with the most recent unstable version), Y
 </settings>
 
 
-Once that you have the HDT libraries ready, you can use the following code to generate an HDT file:
+Once that you have the HDT libraries ready, you can use the following Java code to generate an HDT file:
 
 // Generate an HDT File from RDF (examples/ExampleGenerate.java)
 public static void main(String[] args) throws Exception {
@@ -137,10 +139,10 @@ public static void main(String[] args) throws Exception {
 	String rdfInput = "/path/to/dataset.nt";
 	String inputType = "ntriples";
 	String hdtOutput = "/path/to/dataset.hdt";
-	
+
 	// Create HDT from RDF file
 	HDT hdt = HDTManager.generateHDT(rdfInput, baseURI, RDFNotation.parse(inputType), new HDTSpecification(), null);
-	
+
 	try {
 		// Save generated HDT to a file
 		hdt.saveToHDT(hdtOutput, null);
@@ -180,3 +182,10 @@ HDT hdt = HDTManager.loadIndexedHDT("path/to/file.hdt", null);
 Model model = ModelFactory.createModelForGraph(graph);
 
 // Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
+
+
+Getting the Sources
+=================
+
+The sources for the implementation are available in our Google Code repository: http://code.google.com/p/hdt-java
+
