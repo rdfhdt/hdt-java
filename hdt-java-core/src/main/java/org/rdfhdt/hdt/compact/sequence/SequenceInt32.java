@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
