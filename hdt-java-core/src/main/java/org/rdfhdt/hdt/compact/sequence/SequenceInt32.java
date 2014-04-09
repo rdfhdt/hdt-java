@@ -169,6 +169,13 @@ public class SequenceInt32 implements DynamicSequence {
 		}
 	}
 
+	public void addIntegers(ArrayList<Integer> elements) {
+		for (int i=0;i<elements.size();i++){
+			long value = elements.get(i).longValue();
+			append(value);
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 

@@ -186,6 +186,32 @@ public class SequenceLog64 implements DynamicSequence {
         }
 	}
 
+	public void addIntegers(ArrayList<Integer> elements) {
+		long max = 0;
+		numentries = 0;
+		
+		// Count and calculate number of bits needed per element.
+		for (int i=0;i<elements.size();i++){
+			long val = elements.get(i).longValue();
+			max = val>max ? val : max;
+			numentries++;
+		}
+		
+        // Prepare array
+        numbits = BitUtil.log2(max);
+        int size = (int) numWordsFor(numbits, numentries);
+        data = new long[size];
+
+        // Save
+        int count = 0;
+    	for (int i=0;i<elements.size();i++){
+        	long element = elements.get(i).longValue();
+        	assert element<=maxvalue;
+        	setField(data, numbits, count, element);
+        	count++;
+        }
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#get(int)
 	 */
