@@ -26,6 +26,9 @@
 
 package com.hp.hpl.jena.graph;
 
+import org.rdfhdt.hdtjena.CustomDatatype;
+
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.TypeMapper;
 import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
 import com.hp.hpl.jena.rdf.model.AnonId;
@@ -79,7 +82,12 @@ public class JenaNodeCreator {
                         } else {                        	
                         	datatype = str.substring(i+2, len);
                         }
-                        return new Node_Literal( LiteralLabelFactory.create( literal, "", TypeMapper.getInstance().getTypeByName(datatype) ) );
+                        RDFDatatype rdfDataType = TypeMapper.getInstance().getTypeByName(datatype);
+                        if(rdfDataType==null) {
+                        	rdfDataType = new CustomDatatype(datatype);
+                        	TypeMapper.getInstance().registerDatatype(rdfDataType);
+                        }
+                        return new Node_Literal( LiteralLabelFactory.create( literal, "", rdfDataType ) );
                 }
                 
                 next=cur;
