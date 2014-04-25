@@ -1,5 +1,5 @@
 @echo off
 
-call %~dp0\javaenv.bat
+call "%~dp0\javaenv.bat"
 
-%JAVACMD% -XX:NewRatio=1 -XX:SurvivorRatio=9 %JAVAOPTIONS% -classpath %JAVACP% org.rdfhdt.hdt.tools.HDT2RDF %*
+"%JAVACMD%" -XX:NewRatio=1 -XX:SurvivorRatio=9 %JAVAOPTIONS% -classpath %JAVACP% org.rdfhdt.hdt.tools.HDT2RDF %*
