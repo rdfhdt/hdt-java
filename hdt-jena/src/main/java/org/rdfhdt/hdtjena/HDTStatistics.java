@@ -66,6 +66,11 @@ public class HDTStatistics implements GraphStatisticsHandler {
 		p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
 		o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);
 		
+		if(s<0||p<0||o<0) {
+			// Not in dataset
+			return 0;
+		}
+		
 		// FIMXE: No index on ?P?, avoid creating the iterator. Dirty hack.
 		if(p>0 && s==0 && o==0 && (triples instanceof BitmapTriples)) {
 			Sequence predCount = ((BitmapTriples)triples).getPredicateCount();
