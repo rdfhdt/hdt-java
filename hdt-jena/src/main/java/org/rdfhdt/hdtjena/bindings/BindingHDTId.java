@@ -32,8 +32,8 @@ import java.util.Map;
 
 import org.apache.jena.atlas.lib.Map2;
 
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.binding.Binding;
 
 
 /** Class for a Binding-like structure except it works on HDT IDs, not on Nodes */  

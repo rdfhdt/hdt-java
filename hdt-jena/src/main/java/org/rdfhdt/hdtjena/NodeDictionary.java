@@ -28,6 +28,17 @@ package org.rdfhdt.hdtjena;
 
 import java.util.Map;
 
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.impl.RDFLangString;
+import org.apache.jena.graph.JenaNodeCreator;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.Query;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.ARQConstants;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.ExecutionContext;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -36,17 +47,6 @@ import org.rdfhdt.hdtjena.cache.DictionaryCache;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheLRI;
 import org.rdfhdt.hdtjena.cache.DummyMap;
-
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.graph.JenaNodeCreator;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.graph.TripleMatch;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.ARQConstants;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext;
 
 /**
  * Wraps all operations from ids to Nodes and vice versa using an HDT Dictionary.
@@ -164,10 +164,17 @@ public class NodeDictionary {
 			return node.getURI();
 		} else if(node.isLiteral()) {
 			RDFDatatype t = node.getLiteralDatatype();
-			if(t!=null) {
+			
+			if(t==null || XSDDatatype.XSDstring.getURI().equals(t.getURI())) {
+				// String
+				return "\""+node.getLiteralLexicalForm()+"\"";
+			} else if(RDFLangString.rdfLangString.equals(t)) {
+				// Lang
+				return "\""+node.getLiteralLexicalForm()+"\"@"+node.getLiteralLanguage();
+			} else {
+				// Typed
 				return "\""+node.getLiteralLexicalForm()+"\"^^<"+t.getURI()+">";
 			}
-			return node.toString();
 		} else {
 			return node.toString();
 		}
@@ -181,7 +188,7 @@ public class NodeDictionary {
 				);
 	}
 	
-	public TripleID getTriplePatID(TripleMatch jenaTriple) {
+	public TripleID getTriplePatID(Triple jenaTriple) {
 		int subject=0, predicate=0, object=0;
 		
 		if(jenaTriple.getMatchSubject()!=null) {

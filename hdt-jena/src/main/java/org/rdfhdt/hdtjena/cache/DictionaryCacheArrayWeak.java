@@ -29,7 +29,7 @@ package org.rdfhdt.hdtjena.cache;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 
-import com.hp.hpl.jena.graph.Node;
+import org.apache.jena.graph.Node;
 
 /**
  * @author mario.arias

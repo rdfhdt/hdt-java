@@ -29,7 +29,7 @@ package org.rdfhdt.hdtjena.cache;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.hp.hpl.jena.graph.Node;
+import org.apache.jena.graph.Node;
 
 /**
  * Least-Recently-Inserted Cache. Removes the oldest entries inserted.

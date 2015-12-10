@@ -24,15 +24,12 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package com.hp.hpl.jena.graph;
+package org.apache.jena.graph;
 
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.TypeMapper;
+import org.apache.jena.graph.impl.LiteralLabelFactory;
 import org.rdfhdt.hdtjena.CustomDatatype;
-
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.datatypes.TypeMapper;
-import com.hp.hpl.jena.graph.impl.LiteralLabelFactory;
-import com.hp.hpl.jena.rdf.model.AnonId;
-
 
 /**
  * @author mario.arias
@@ -42,12 +39,11 @@ import com.hp.hpl.jena.rdf.model.AnonId;
  */
 public class JenaNodeCreator {
 	public static Node createAnon() {
-		return new Node_Blank( AnonId.create() );
+		return new Node_Blank( BlankNodeId.create() );
 	}
 	
 	public static Node createAnon(CharSequence x) {
-//		return new Node_Blank( AnonId.create(x.toString()) );
-		return new Node_Blank(x.toString() );
+		return new Node_Blank( BlankNodeId.create(x.toString()));
 	}
 	
 	public static Node createLiteral(CharSequence x) {
@@ -87,7 +83,7 @@ public class JenaNodeCreator {
                         	rdfDataType = new CustomDatatype(datatype);
                         	TypeMapper.getInstance().registerDatatype(rdfDataType);
                         }
-                        return new Node_Literal( LiteralLabelFactory.create( literal, "", rdfDataType ) );
+                        return new Node_Literal( LiteralLabelFactory.create( literal, rdfDataType ) );
                 }
                 
                 next=cur;

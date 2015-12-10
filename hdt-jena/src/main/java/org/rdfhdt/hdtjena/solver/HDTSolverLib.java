@@ -31,10 +31,20 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.atlas.iterator.Transform;
 import org.apache.jena.atlas.lib.Tuple;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.BasicPattern;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.util.iterator.Filter;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.rdfhdt.hdtjena.NodeDictionary;
@@ -45,23 +55,13 @@ import org.rdfhdt.hdtjena.util.Abortable;
 import org.rdfhdt.hdtjena.util.IterAbortable;
 import org.rdfhdt.hdtjena.util.VarAppearance;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.core.BasicPattern;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext;
-import com.hp.hpl.jena.sparql.engine.QueryIterator;
-import com.hp.hpl.jena.sparql.engine.binding.Binding;
-import com.hp.hpl.jena.util.iterator.Filter;
-
 /** Utilities used within the HDT BGP solver : local HDT store */
 public class HDTSolverLib
 {
 	public static long numBGPs = 0;
 	
     protected static QueryIterator execute(HDTGraph graph, BasicPattern pattern, QueryIterator input,
-    										Filter<Tuple<HDTId>> filter, ExecutionContext execCxt)
+    										Predicate<Tuple<HDTId>> filter, ExecutionContext execCxt)
     {
     	numBGPs++;
     	
@@ -108,7 +108,7 @@ public class HDTSolverLib
 
     
     private static Iterator<BindingHDTId> solve(HDTGraph graph, Triple tuple, Iterator<BindingHDTId> chain, 
-    											Filter<Tuple<HDTId>> filter, Map<Var, VarAppearance> mapVar,
+    											Predicate<Tuple<HDTId>> filter, Map<Var, VarAppearance> mapVar,
                                                  ExecutionContext execCxt)
     {
         return new StageMatchTripleID(graph, chain, tuple, execCxt, mapVar) ;
@@ -141,12 +141,12 @@ public class HDTSolverLib
     }
     
     // Transform : BindingHDTId ==> Binding
-    private static Transform<BindingHDTId, Binding> convToBinding(final NodeDictionary dictionary)
+    private static Function<BindingHDTId, Binding> convToBinding(final NodeDictionary dictionary)
     {
-        return new Transform<BindingHDTId, Binding>()
+        return new Function<BindingHDTId, Binding>()
         {
             @Override
-            public Binding convert(BindingHDTId bindingIds)
+            public Binding apply(BindingHDTId bindingIds)
             {
                 return new BindingHDTNode(bindingIds);
             }
@@ -172,14 +172,14 @@ public class HDTSolverLib
     }
     
     // Transform : Binding ==> BindingHDTId
-    public static Transform<Binding, BindingHDTId> convFromBinding(final NodeDictionary dictionary, final ExecutionContext ctx)
+    public static Function<Binding, BindingHDTId> convFromBinding(final NodeDictionary dictionary, final ExecutionContext ctx)
     {
-        return new Transform<Binding, BindingHDTId>()
+        return new Function<Binding, BindingHDTId>()
         {
         	PrefixMapping mapping = NodeDictionary.getMapping(ctx);
         	
             @Override
-            public BindingHDTId convert(Binding binding)
+            public BindingHDTId apply(Binding binding)
             {
                 if ( binding instanceof BindingHDTNode )
                     return ((BindingHDTNode)binding).getBindingId() ;

@@ -26,13 +26,12 @@
 
 package org.rdfhdt.hdtjena.solver;
 
+import org.apache.jena.graph.Triple;
+import org.apache.jena.util.iterator.NiceIterator;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.NodeDictionary;
-
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.util.iterator.NiceIterator;
 
 /**
  * @author mario.arias

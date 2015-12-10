@@ -26,20 +26,19 @@
 
 package org.rdfhdt.hdtjena;
 
-import static com.hp.hpl.jena.sparql.util.graph.GraphUtils.getStringValue;
-
 import java.io.IOException;
 
+import org.apache.jena.assembler.Assembler;
+import org.apache.jena.assembler.Mode;
+import org.apache.jena.assembler.assemblers.AssemblerBase;
+import org.apache.jena.assembler.exceptions.AssemblerException;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 
-import com.hp.hpl.jena.assembler.Assembler;
-import com.hp.hpl.jena.assembler.Mode;
-import com.hp.hpl.jena.assembler.assemblers.AssemblerBase;
-import com.hp.hpl.jena.assembler.exceptions.AssemblerException;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
 
 public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 
@@ -58,8 +57,8 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 	@Override
 	public Model open(Assembler a, Resource root, Mode mode)
 	{
-		String file = getStringValue(root, HDTJenaConstants.pFileName) ;
-		boolean loadInMemory = Boolean.parseBoolean(getStringValue(root, HDTJenaConstants.pKeepInMemory));
+		String file = GraphUtils.getStringValue(root, HDTJenaConstants.pFileName) ;
+		boolean loadInMemory = Boolean.parseBoolean(GraphUtils.getStringValue(root, HDTJenaConstants.pKeepInMemory));
 		try {
 			// FIXME: Read more properties. Cache config?
 			HDT hdt;

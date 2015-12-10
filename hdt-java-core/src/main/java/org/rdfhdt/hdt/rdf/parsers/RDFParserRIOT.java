@@ -22,7 +22,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.rdf.parsers;
@@ -35,20 +34,20 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.jena.atlas.lib.Tuple;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Node_Literal;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.RiotReader;
 import org.apache.jena.riot.lang.LangNTriples;
 import org.apache.jena.riot.lang.LangRDFXML;
 import org.apache.jena.riot.lang.LangTurtle;
 import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.sparql.core.Quad;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
-
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.sparql.core.Quad;
 
 /**
  * @author mario.arias
@@ -138,18 +137,6 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
      public void quad(Quad quad) {
              triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
              callback.processTriple(triple, 0);              
-     }
-
-     @Override
-     public void tuple(Tuple<Node> tuple) {
-             List<Node> l = tuple.asList();
-             if(l.size()<3) {
-                     throw new RuntimeException(new ParserException("Received tuple with less than three components"));
-             }
-             triple.setSubject(l.get(0).toString());
-             triple.setPredicate(l.get(1).toString());
-             triple.setObject(l.get(2).toString());
-             callback.processTriple(triple, 0);
      }
 
      @Override

@@ -26,20 +26,20 @@
 
 package org.rdfhdt.hdtjena.solver;
 
-import static com.hp.hpl.jena.sparql.engine.optimizer.reorder.PatternElements.TERM;
-import static com.hp.hpl.jena.sparql.engine.optimizer.reorder.PatternElements.VAR;
 
+import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.TERM;
+import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.VAR;
+
+import org.apache.jena.graph.GraphStatisticsHandler;
+import org.apache.jena.graph.Node;
+import org.apache.jena.sparql.engine.optimizer.Pattern;
+import org.apache.jena.sparql.engine.optimizer.StatsMatcher;
+import org.apache.jena.sparql.engine.optimizer.reorder.PatternTriple;
+import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformationSubstitution;
+import org.apache.jena.sparql.graph.NodeConst;
+import org.apache.jena.sparql.sse.Item;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdtjena.HDTGraph;
-
-import com.hp.hpl.jena.graph.GraphStatisticsHandler;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.sparql.engine.optimizer.Pattern;
-import com.hp.hpl.jena.sparql.engine.optimizer.StatsMatcher;
-import com.hp.hpl.jena.sparql.engine.optimizer.reorder.PatternTriple;
-import com.hp.hpl.jena.sparql.engine.optimizer.reorder.ReorderTransformationBase;
-import com.hp.hpl.jena.sparql.graph.NodeConst;
-import com.hp.hpl.jena.sparql.sse.Item;
 
 /**
  * Reorders the Triple Patterns of a BGP by using statistics directly fetched from
@@ -51,7 +51,7 @@ import com.hp.hpl.jena.sparql.sse.Item;
  * @author mario.arias
  *
  */
-public class ReorderTransformationHDT extends ReorderTransformationBase {
+public class ReorderTransformationHDT extends ReorderTransformationSubstitution {
 	
     /** Maximum value for a match involving two terms. */
     public static final int MultiTermMax = 100;
@@ -82,7 +82,7 @@ public class ReorderTransformationHDT extends ReorderTransformationBase {
 		TERM_O = dict.getNobjects()/numTriples;
 	}
 
-    private void initializeMatcher () { 
+    private void initializeMatcher () {
     	Item type = Item.createNode(NodeConst.nodeRDFType);
         
         //matcher.addPattern(new Pattern(1,   TERM, TERM, TERM)) ;     // SPO - built-in - not needed as a rule

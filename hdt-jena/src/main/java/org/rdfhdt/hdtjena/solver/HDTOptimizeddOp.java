@@ -1,10 +1,10 @@
 package org.rdfhdt.hdtjena.solver;
 
-import com.hp.hpl.jena.sparql.algebra.Op;
-import com.hp.hpl.jena.sparql.algebra.OpVisitor;
-import com.hp.hpl.jena.sparql.algebra.Transform;
-import com.hp.hpl.jena.sparql.algebra.op.Op0;
-import com.hp.hpl.jena.sparql.util.NodeIsomorphismMap;
+import org.apache.jena.sparql.algebra.Op;
+import org.apache.jena.sparql.algebra.OpVisitor;
+import org.apache.jena.sparql.algebra.Transform;
+import org.apache.jena.sparql.algebra.op.Op0;
+import org.apache.jena.sparql.util.NodeIsomorphismMap;
 
 public class HDTOptimizeddOp extends Op0 {
 
