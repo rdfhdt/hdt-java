@@ -47,6 +47,11 @@
         <artifactId>commons-compress</artifactId>
         <version>1.6</version>
       </dependency>
+         <dependency>
+        <groupId>pl.edu.icm</groupId>
+        <artifactId>JLargeArrays</artifactId>
+        <version>1.6</version>
+        </dependency>
 	</dependencies>
 
 	<build>
@@ -60,6 +65,14 @@
 					<target>1.7</target>
 				</configuration>
 			</plugin>
+                        <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <configuration>
+                        <mainClass>org.rdfhdt.hdt.example.ExampleGenerate</mainClass>
+                        </configuration>
+                       </plugin>
 		</plugins>
 	</build>
 </project>
