@@ -3,7 +3,7 @@ package org.rdfhdt.hdtjena.bindings;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdtjena.NodeDictionary;
 
-import com.hp.hpl.jena.graph.Node;
+import org.apache.jena.graph.Node;
 
 public class HDTId {
 	

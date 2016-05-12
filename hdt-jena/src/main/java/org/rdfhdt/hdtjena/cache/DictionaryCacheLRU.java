@@ -26,7 +26,7 @@
 
 package org.rdfhdt.hdtjena.cache;
 
-import com.hp.hpl.jena.graph.Node;
+import org.apache.jena.graph.Node;
 
 import org.rdfhdt.hdt.util.LRUCache;
 

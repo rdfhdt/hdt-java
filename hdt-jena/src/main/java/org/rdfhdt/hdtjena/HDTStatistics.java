@@ -26,6 +26,8 @@
 
 package org.rdfhdt.hdtjena;
 
+import org.apache.jena.graph.GraphStatisticsHandler;
+import org.apache.jena.graph.Node;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -34,8 +36,6 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 
-import com.hp.hpl.jena.graph.GraphStatisticsHandler;
-import com.hp.hpl.jena.graph.Node;
 
 /**
  * @author mario.arias

@@ -28,11 +28,16 @@ package org.rdfhdt.hdtjena.solver;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
-import org.apache.jena.atlas.iterator.Filter;
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.atlas.iterator.RepeatApplyIterator;
-import org.apache.jena.atlas.iterator.Transform;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.shared.PrefixMapping;
+import org.apache.jena.sparql.core.Var;
+import org.apache.jena.sparql.engine.ExecutionContext;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -43,11 +48,7 @@ import org.rdfhdt.hdtjena.bindings.BindingHDTId;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 import org.rdfhdt.hdtjena.util.VarAppearance;
 
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.shared.PrefixMapping;
-import com.hp.hpl.jena.sparql.core.Var;
-import com.hp.hpl.jena.sparql.engine.ExecutionContext;
+
 
 public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
 {
@@ -143,9 +144,9 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         
         // Filter triples where S or O need to be shared.
         if(varIsSO[0] || varIsSO[2]) {
-           	it = it.filter(new Filter<TripleID>() {
+           	it = it.filter(new Predicate<TripleID>() {
 				@Override
-				public boolean accept(TripleID t) {
+				public boolean test(TripleID t) {
     				if(varIsSO[0] && t.getSubject()>numSharedSO) {
     					return false;
     				}
@@ -159,10 +160,10 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         
         
         // Map TripleID to BindingHDTId
-        Transform<TripleID, BindingHDTId> binder = new Transform<TripleID, BindingHDTId>()
+        Function<TripleID, BindingHDTId> binder = new Function<TripleID, BindingHDTId>()
         {
             @Override
-            public BindingHDTId convert(TripleID triple)
+            public BindingHDTId apply(TripleID triple)
             {
                 BindingHDTId output = new BindingHDTId(input) ;
                 

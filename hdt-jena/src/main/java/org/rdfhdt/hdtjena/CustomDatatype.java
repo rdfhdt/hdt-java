@@ -1,6 +1,6 @@
 package org.rdfhdt.hdtjena;
 
-import com.hp.hpl.jena.datatypes.BaseDatatype;
+import org.apache.jena.datatypes.BaseDatatype;
 
 public class CustomDatatype extends BaseDatatype {
 

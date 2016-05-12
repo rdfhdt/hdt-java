@@ -25,7 +25,7 @@ import java.util.List;
 
 import org.apache.jena.atlas.iterator.IteratorWrapper;
 
-import com.hp.hpl.jena.query.QueryCancelledException;
+import org.apache.jena.query.QueryCancelledException;
 
 public class IterAbortable<T> extends IteratorWrapper<T> implements Abortable {
 	

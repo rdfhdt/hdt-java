@@ -29,12 +29,12 @@ package org.rdfhdt.hdtjena.solver;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.QueryIterator;
+import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.rdfhdt.hdtjena.util.Abortable;
 
-import com.hp.hpl.jena.sparql.engine.ExecutionContext;
-import com.hp.hpl.jena.sparql.engine.QueryIterator;
-import com.hp.hpl.jena.sparql.engine.binding.Binding;
-import com.hp.hpl.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 
 public class QueryIterHDT extends QueryIterPlainWrapper
 {

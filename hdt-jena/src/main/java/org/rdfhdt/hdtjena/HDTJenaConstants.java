@@ -26,10 +26,10 @@
 
 package org.rdfhdt.hdtjena;
 
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.sparql.util.Symbol;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.sparql.util.Symbol;
 
 public class HDTJenaConstants {
 	private static final String HDTJENA_NS     = "http://www.rdfhdt.org/fuseki#" ;

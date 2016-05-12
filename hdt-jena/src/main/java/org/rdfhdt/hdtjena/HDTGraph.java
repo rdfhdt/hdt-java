@@ -28,6 +28,14 @@ package org.rdfhdt.hdtjena;
 
 import java.io.IOException;
 
+import org.apache.jena.graph.Capabilities;
+import org.apache.jena.graph.GraphStatisticsHandler;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.GraphBase;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.sparql.engine.main.QC;
+import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
+import org.apache.jena.util.iterator.ExtendedIterator;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -36,15 +44,6 @@ import org.rdfhdt.hdtjena.solver.HDTQueryEngine;
 import org.rdfhdt.hdtjena.solver.OpExecutorHDT;
 import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
 
-import com.hp.hpl.jena.graph.Capabilities;
-import com.hp.hpl.jena.graph.GraphStatisticsHandler;
-import com.hp.hpl.jena.graph.Triple;
-import com.hp.hpl.jena.graph.TripleMatch;
-import com.hp.hpl.jena.graph.impl.GraphBase;
-import com.hp.hpl.jena.query.ARQ;
-import com.hp.hpl.jena.sparql.engine.main.QC;
-import com.hp.hpl.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 
 /**
  * @author mario.arias
@@ -90,7 +89,7 @@ public class HDTGraph extends GraphBase {
 	 * @see com.hp.hpl.jena.graph.impl.GraphBase#graphBaseFind(com.hp.hpl.jena.graph.TripleMatch)
 	 */
 	@Override
-	protected ExtendedIterator<Triple> graphBaseFind(TripleMatch jenaTriple) {
+	protected ExtendedIterator<Triple> graphBaseFind(Triple jenaTriple) {
 
 		TripleID triplePatID = nodeDictionary.getTriplePatID(jenaTriple);
 //		System.out.println("Triple Pattern: "+jenaTriple+" as IDs: "+triplePatID);

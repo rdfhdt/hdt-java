@@ -26,7 +26,7 @@
 
 package org.rdfhdt.hdtjena;
 
-import com.hp.hpl.jena.graph.Capabilities;
+import org.apache.jena.graph.Capabilities;
 
 /**
  * @author mario.arias

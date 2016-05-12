@@ -14,8 +14,6 @@ import org.rdfhdt.hdt.iterator.utils.MultiMerge;
 import org.rdfhdt.hdt.iterator.utils.ReducerLeft;
 import org.rdfhdt.hdt.iterator.utils.SortedReduceIterator;
 
-import com.hp.hpl.jena.sparql.resultset.SortedResultSet;
-
 public class MultiMergeTest {
 	List<Integer> listA, listB, listC, listOut, listOutB;
 
