@@ -37,10 +37,10 @@ import org.apache.jena.atlas.lib.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_Literal;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.RiotReader;
 import org.apache.jena.riot.lang.LangNTriples;
 import org.apache.jena.riot.lang.LangRDFXML;
 import org.apache.jena.riot.lang.LangTurtle;
+import org.apache.jena.riot.lang.RiotParsers;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -74,15 +74,15 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 			}
 			switch(notation) {
 				case NTRIPLES:
-					LangNTriples langNtriples = RiotReader.createParserNTriples(input,this);
+					LangNTriples langNtriples = RiotParsers.createParserNTriples(input,this);
 					langNtriples.parse();
 					break;
 				case RDFXML:
-					LangRDFXML langRdfxml = RiotReader.createParserRDFXML(input, baseUri, this);
+					LangRDFXML langRdfxml = RiotParsers.createParserRDFXML(input, baseUri, this);
 					langRdfxml.parse();
 					break;
 				case TURTLE:
-					LangTurtle langTurtle = RiotReader.createParserTurtle(input, baseUri, this);
+					LangTurtle langTurtle = RiotParsers.createParserTurtle(input, baseUri, this);
 					langTurtle.parse();
 					break;
 				default:
@@ -100,16 +100,16 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 		try {
 			switch(notation) {
 				case NTRIPLES:
-					LangNTriples langNtriples = RiotReader.createParserNTriples(input,this);
+					LangNTriples langNtriples = RiotParsers.createParserNTriples(input,this);
 					langNtriples.parse();
 					break;
 				case RDFXML:
-					LangRDFXML langRdfxml = RiotReader.createParserRDFXML(input, baseUri, this);
+					LangRDFXML langRdfxml = RiotParsers.createParserRDFXML(input, baseUri, this);
 					langRdfxml.parse();
 					break;
 				case N3:
 				case TURTLE:
-					LangTurtle langTurtle = RiotReader.createParserTurtle(input, baseUri, this);
+					LangTurtle langTurtle = RiotParsers.createParserTurtle(input, baseUri, this);
 					langTurtle.parse();
 					break;
 				default:
