@@ -27,7 +27,7 @@ import java.util.List;
 import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
-import org.apache.jena.atlas.logging.Log;
+import org.apache.jena.atlas.logging.LogCtl;
 import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.mgt.ManagementServer;
 import org.apache.jena.fuseki.server.FusekiConfig;
@@ -43,20 +43,20 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 
-import arq.cmd.CmdException;
-import arq.cmdline.ArgDecl;
+import jena.cmd.CmdException;
+import jena.cmd.ArgDecl;
 import arq.cmdline.CmdARQ;
 import arq.cmdline.ModDatasetAssembler;
 
-import com.hp.hpl.jena.graph.Graph;
-import com.hp.hpl.jena.query.ARQ;
-import com.hp.hpl.jena.query.Dataset;
-import com.hp.hpl.jena.sparql.core.DatasetGraph;
-import com.hp.hpl.jena.sparql.core.DatasetGraphFactory;
-import com.hp.hpl.jena.sparql.core.DatasetGraphMap;
-import com.hp.hpl.jena.tdb.TDB;
-import com.hp.hpl.jena.tdb.TDBFactory;
-import com.hp.hpl.jena.tdb.transaction.TransactionManager;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.sparql.core.DatasetGraphMap;
+import org.apache.jena.tdb.TDB;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb.transaction.TransactionManager;
 
 /**
  * 
@@ -101,7 +101,7 @@ public class FusekiHDTCmd extends CmdARQ
     static {
         // Check if default command logging.
         if ( "set".equals(System.getProperty("log4j.configuration", "set") ) )
-            Log.resetLogging(log4Jsetup) ; 
+            LogCtl.resetLogging(log4Jsetup) ;
     }
     
     // Arguments:
