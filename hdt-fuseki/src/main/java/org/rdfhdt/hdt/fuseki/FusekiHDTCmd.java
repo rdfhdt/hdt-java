@@ -27,7 +27,7 @@ import java.util.List;
 import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
-import org.apache.jena.atlas.logging.LogCtl;
+import org.apache.jena.atlas.logging.LogCtl ;
 import org.apache.jena.fuseki.Fuseki;
 import org.apache.jena.fuseki.mgt.ManagementServer;
 import org.apache.jena.fuseki.server.FusekiConfig;
@@ -43,10 +43,10 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.slf4j.Logger;
 
-import jena.cmd.CmdException;
-import jena.cmd.ArgDecl;
 import arq.cmdline.CmdARQ;
 import arq.cmdline.ModDatasetAssembler;
+import jena.cmd.ArgDecl ;
+import jena.cmd.CmdException ;
 
 import org.apache.jena.graph.Graph;
 import org.apache.jena.query.ARQ;
@@ -101,7 +101,7 @@ public class FusekiHDTCmd extends CmdARQ
     static {
         // Check if default command logging.
         if ( "set".equals(System.getProperty("log4j.configuration", "set") ) )
-            LogCtl.resetLogging(log4Jsetup) ;
+            LogCtl.resetLogging(log4Jsetup) ; 
     }
     
     // Arguments:
@@ -149,9 +149,9 @@ public class FusekiHDTCmd extends CmdARQ
 
     static public void main(String...argv)
     {
-        // Just to make sure ...
-        ARQ.init() ;
-        TDB.init() ;
+        // // Just to make sure ...
+        // ARQ.init() ;
+        // TDB.init() ;
         Fuseki.init() ;
         new FusekiHDTCmd(argv).mainRun() ;
     }
@@ -160,7 +160,7 @@ public class FusekiHDTCmd extends CmdARQ
     private int mgtPort                 = -1 ;
     private boolean listenLocal         = false ;
 
-    private DatasetGraph dsg            = null ; 
+    protected DatasetGraph dsg            = null ; 
     private String datasetPath          = null ;
     private boolean allowUpdate         = false ;
     
@@ -463,8 +463,9 @@ public class FusekiHDTCmd extends CmdARQ
             serverConfig = FusekiConfig.configure(fusekiConfigFile) ;
         }
         else
-            serverConfig = FusekiConfig.defaultConfiguration(datasetPath, dsg, allowUpdate, listenLocal) ;
-        
+			serverConfig = FusekiConfig.defaultConfiguration(datasetPath, dsg, allowUpdate, listenLocal) ;
+		
+            
         // TODO Get from parsing config file.
         serverConfig.port = port ;
         serverConfig.pages = staticContentDir ;
