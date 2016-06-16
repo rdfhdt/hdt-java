@@ -3,7 +3,7 @@ source `dirname $0`/javaenv.sh
 
 # Memory default settings
 INDEX_MEM=8g
-SERVER_MEM=1g
+SERVER_MEM=16g
 
 # Save given arguments
 orig_args=$*

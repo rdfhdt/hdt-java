@@ -1,0 +1,105 @@
+# Licensed under the terms of http://www.apache.org/licenses/LICENSE-2.0
+
+## Basic Fuseki configuration file for HDT files.
+## 
+## Remember that you need hdt-java.jar and hdt-jena.jar when you launch Fuseki.
+##
+
+@prefix :        <#> .
+@prefix fuseki:  <http://jena.apache.org/fuseki#> .
+@prefix rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+
+@prefix rdfs:   <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix tdb:     <http://jena.hpl.hp.com/2008/tdb#> .
+@prefix ja:      <http://jena.hpl.hp.com/2005/11/Assembler#> .
+@prefix hdt:      <http://www.rdfhdt.org/fuseki#> .
+
+[] rdf:type fuseki:Server ;
+   ja:loadClass "org.rdfhdt.hdtjena.HDTGraphAssembler" ;
+
+   fuseki:services (
+     <#service_pubchemrdf>  
+   ) .
+
+# HDT Classes
+hdt:HDTGraph rdfs:subClassOf ja:Graph .
+
+## ---------------------------------------------------------------
+## Create a Read-Only Dataset composed by many RDF Graphs, each from an HDT File.
+
+<#service_pubchemrdf> rdf:type fuseki:Service ;
+    fuseki:name                     "pubchemrdf" ;
+    fuseki:serviceQuery             "query" ;
+    fuseki:serviceReadGraphStore    "get" ;
+    fuseki:dataset                   <#dataset_pubchemrdf> ;
+    .
+
+
+<#dataset_pubchemrdf> rdf:type ja:RDFDataset ;
+    ja:namedGraph 
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/compound> ;
+          ja:graph      <#graph_compound> ] ,
+	    [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/substance> ;
+          ja:graph      <#graph_substance> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/reference> ;
+          ja:graph      <#graph_reference> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/synonym> ;
+          ja:graph      <#graph_synonym> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/measuregroup> ;
+          ja:graph      <#graph_measuregroup> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/bioassay> ;
+          ja:graph      <#graph_bioassay> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/endpoint> ;
+          ja:graph      <#graph_endpoint> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/protein> ;
+          ja:graph      <#graph_protein> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/gene> ;
+          ja:graph      <#graph_gene> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/biosystem> ;
+          ja:graph      <#graph_biosystem> ] , 
+		[ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/concept> ;
+          ja:graph      <#graph_concept> ] ,
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/source> ;
+          ja:graph      <#graph_source> ] , 		  
+        [ ja:graphName  <http://rdf.ncbi.nlm.nih.gov/pubchem/conserveddomain> ;
+          ja:graph      <#graph_conserveddomain> ]
+    .
+
+<#graph_compound> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/compound.hdt" .
+
+<#graph_substance> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/substance.hdt" .
+
+<#graph_reference> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/reference.hdt" .
+
+<#graph_synonym> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/synonym.hdt" .
+
+<#graph_measuregroup> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/measuregroup.hdt" .
+
+<#graph_endpoint> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/endpoint.hdt" .
+
+<#graph_bioassay> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/bioassay.hdt" .
+
+<#graph_protein> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/protein.hdt" .
+
+<#graph_gene> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/gene.hdt" .
+
+<#graph_conserveddomain> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/conserveddomain.hdt" .
+
+<#graph_biosystem> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/biosystem.hdt" .
+
+<#graph_concept> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/concept.hdt" .
+
+<#graph_source> rdf:type hdt:HDTGraph ;
+    hdt:fileName "/export/home/fug2/hdtrdf/source.hdt" .

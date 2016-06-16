@@ -37,10 +37,8 @@ import org.apache.jena.atlas.lib.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_Literal;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.lang.LangNTriples;
-import org.apache.jena.riot.lang.LangRDFXML;
-import org.apache.jena.riot.lang.LangTurtle;
-import org.apache.jena.riot.lang.RiotParsers;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -74,16 +72,13 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 			}
 			switch(notation) {
 				case NTRIPLES:
-					LangNTriples langNtriples = RiotParsers.createParserNTriples(input,this);
-					langNtriples.parse();
+					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
 					break;
 				case RDFXML:
-					LangRDFXML langRdfxml = RiotParsers.createParserRDFXML(input, baseUri, this);
-					langRdfxml.parse();
+					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
 					break;
 				case TURTLE:
-					LangTurtle langTurtle = RiotParsers.createParserTurtle(input, baseUri, this);
-					langTurtle.parse();
+					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
 					break;
 				default:
 					throw new NotImplementedException("Parser not found for format "+notation);	
@@ -100,17 +95,14 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 		try {
 			switch(notation) {
 				case NTRIPLES:
-					LangNTriples langNtriples = RiotParsers.createParserNTriples(input,this);
-					langNtriples.parse();
+					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
 					break;
 				case RDFXML:
-					LangRDFXML langRdfxml = RiotParsers.createParserRDFXML(input, baseUri, this);
-					langRdfxml.parse();
+					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
 					break;
 				case N3:
 				case TURTLE:
-					LangTurtle langTurtle = RiotParsers.createParserTurtle(input, baseUri, this);
-					langTurtle.parse();
+					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
 					break;
 				default:
 					throw new NotImplementedException("Parser not found for format "+notation);	
