@@ -77,9 +77,9 @@ public class HDTImpl implements HDTPrivate {
 
 	private HDTOptions spec;
 
-	private HeaderPrivate header;
-	private DictionaryPrivate dictionary;
-	private TriplesPrivate triples;
+	protected HeaderPrivate header;
+	protected DictionaryPrivate dictionary;
+	protected TriplesPrivate triples;
 
 	private String hdtFileName;
 	private String baseUri;

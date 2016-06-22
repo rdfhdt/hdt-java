@@ -35,7 +35,7 @@ import org.rdfhdt.hdt.util.UnicodeEscape;
 /**
  * TripleString holds a triple as Strings
  */
-public final class TripleString {
+public class TripleString {
 
 	private CharSequence subject;
 	private CharSequence predicate;

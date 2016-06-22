@@ -87,7 +87,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	/**
 	 * Locate the block of a string doing binary search.
 	 */
-	private int locateBlock(CharSequence str) {	
+	protected int locateBlock(CharSequence str) {	
 		int low = 0;
 		int high = (int)blocks.getNumberOfElements() - 1;
 		int max = high;
@@ -141,7 +141,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		return 0;
 	}
 		
-	private int locateInBlock(int blockid, CharSequence str) {
+	protected int locateInBlock(int blockid, CharSequence str) {
 	
 		ReplazableString tempString = new ReplazableString();
 		
