@@ -51,12 +51,12 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  *
  */
 public class SequenceLog64 implements DynamicSequence { 
-	private static final byte W = 64;
+	protected static final byte W = 64;
 	
-	private long [] data;
-	private int numbits;
-	private long numentries=0;
-	private long maxvalue;
+	protected long [] data;
+	protected int numbits;
+	protected long numentries=0;
+	protected long maxvalue;
 	
 	public SequenceLog64() {
 		this(W);

@@ -137,7 +137,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 	}
 
-	private int locateBlock(CharSequence str) {
+	protected int locateBlock(CharSequence str) {
 		if(blocks.getNumberOfElements()==0) {
 			return -1;
 		}
