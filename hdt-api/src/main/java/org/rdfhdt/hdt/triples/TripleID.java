@@ -151,7 +151,7 @@ public final class TripleID implements Comparable<TripleID> {
 	 */
 	@Override
 	public String toString() {
-		return "" + subject + " " + predicate + " " + object;
+		return Integer.toString(subject) + " " + predicate + " " + object;
 	}
 	
 	public boolean equals(TripleID other) {
