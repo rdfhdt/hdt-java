@@ -43,28 +43,28 @@ public interface DictionarySection extends Closeable {
 	 * @param s
 	 * @return
 	 */
-	public int locate(CharSequence s);
+	int locate(CharSequence s);
 	
 	/**
 	 * Find the String associated to a given ID
 	 * @param pos
 	 * @return
 	 */
-	public CharSequence extract(int pos);
+	CharSequence extract(int pos);
 	
 	/**
 	 * Size in bytes of the strings held in the dictionary section.
 	 */
-	public long size();
+	long size();
 	
 	/**
 	 * Number of entries in the dictionary section.
 	 */
-	public int getNumberOfElements();
+	int getNumberOfElements();
 	
 	/**
 	 * Iterator over all entries in the dictionary, sorted lexicographically.
 	 */
-	public Iterator<? extends CharSequence> getSortedEntries();
+	Iterator<? extends CharSequence> getSortedEntries();
 	
 }

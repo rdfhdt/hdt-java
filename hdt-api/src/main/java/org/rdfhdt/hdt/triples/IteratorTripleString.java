@@ -42,19 +42,19 @@ public interface IteratorTripleString extends Iterator<TripleString> {
 	 * Whether the iterator has previous elements.
 	 * @return
 	 */
-	public boolean hasPrevious();
+	boolean hasPrevious();
 	
 	/**
 	 * Get the previous element. Call only if hasPrevious() returns true.
 	 * It moves the cursor of the Iterator to the previous entry.
 	 * @return
 	 */
-	public TripleString previous();
+	TripleString previous();
 	
 	/** 
 	 * Point the cursor to the first element of the data structure.
 	 */
-	public void goToStart();
+	void goToStart();
 	
 	/** 
 	 * Returns the number of estimated results of the Iterator.
@@ -62,7 +62,7 @@ public interface IteratorTripleString extends Iterator<TripleString> {
 	 * 
 	 * @return Number of estimated results.
 	 */
-	public long estimatedNumResults();
+	long estimatedNumResults();
 	
 	/**
 	 * Returns the accuracy of the estimation of number of results as returned
@@ -70,5 +70,5 @@ public interface IteratorTripleString extends Iterator<TripleString> {
 	 * 
 	 * @return
 	 */
-	public ResultEstimationType numResultEstimation();
+	ResultEstimationType numResultEstimation();
 }

@@ -51,7 +51,7 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the id in the dictionary
 	 * @return String
 	 */
-	public CharSequence idToString(int id, TripleComponentRole position);
+	CharSequence idToString(int id, TripleComponentRole position);
 	
 	/**
 	 * Returns the id for a given string
@@ -62,54 +62,54 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the string in the dictionary
 	 * @return int
 	 */
-	public int stringToId(CharSequence str, TripleComponentRole position);
+	int stringToId(CharSequence str, TripleComponentRole position);
 
 	/**
 	 * Returns the number of elements in the dictionary
 	 */
-	public long getNumberOfElements();
+	long getNumberOfElements();
 
 	/**
 	 * Return the combined size of the sections of the dictionary (in bytes)
 	 */
-	public long size();
+	long size();
 	
 	/**
 	 * Returns the number of subjects in the dictionary.
 	 */
-	public long getNsubjects();
+	long getNsubjects();
 	
 	/**
 	 * Returns the number of predicates in the dictionary.
 	 */
-	public long getNpredicates();
+	long getNpredicates();
 	
 	/**
 	 * Returns the number of objects in the dictionary.
 	 */
-	public long getNobjects();
+	long getNobjects();
 	
 	/**
 	 * Returns the number of subjects/objects in the dictionary.
 	 */
-	public long getNshared();
+	long getNshared();
 		
-	public DictionarySection getSubjects();
+	DictionarySection getSubjects();
 	
-	public DictionarySection getPredicates();
+	DictionarySection getPredicates();
 	
-	public DictionarySection getObjects();
+	DictionarySection getObjects();
 	
-	public DictionarySection getShared();
+	DictionarySection getShared();
 	
 	/**
 	 * Fills the header with information from the dictionary
 	 */
-	public void populateHeader(Header header, String rootNode);
+	void populateHeader(Header header, String rootNode);
 	
 	/**
 	 * Returns the type of the dictionary (the way it is written onto file/held in memory)
 	 * @return
 	 */
-	public String getType();
+	String getType();
 }

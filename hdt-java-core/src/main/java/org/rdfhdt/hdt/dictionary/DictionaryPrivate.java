@@ -17,18 +17,18 @@ public interface DictionaryPrivate extends Dictionary {
 	 *            InputStream to load the dictionary from
 	 * @throws IOException
 	 */
-	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
+	void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
 
-	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException;
+	void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Loads all information from another dictionary into this dictionary.
 	 */
-	public void load(TempDictionary other, ProgressListener listener);
+	void load(TempDictionary other, ProgressListener listener);
 	
 	/**
 	 * Saves the dictionary to a OutputStream
 	 */
-	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
+	void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
 
 }

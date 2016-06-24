@@ -40,25 +40,25 @@ import org.rdfhdt.hdt.triples.TempTriples;
  */
 public interface TempDictionary extends Closeable {
 	
-	public TempDictionarySection getSubjects();
+	TempDictionarySection getSubjects();
 	
-	public TempDictionarySection getPredicates();
+	TempDictionarySection getPredicates();
 	
-	public TempDictionarySection getObjects();
+	TempDictionarySection getObjects();
 	
-	public TempDictionarySection getShared();
+	TempDictionarySection getShared();
 	
 	/**
 	 * To be executed at the start of the processing
 	 * 
 	 */
-	public void startProcessing();
+	void startProcessing();
 	
 	/**
 	 * To be executed at the end of the processing
 	 * 
 	 */
-	public void endProcessing();
+	void endProcessing();
 
 	/**
 	 * Inserts a string in the dictionary in a position
@@ -68,27 +68,27 @@ public interface TempDictionary extends Closeable {
 	 * @param position
 	 *            TriplePosition to be inserted in
 	 */
-	public int insert(CharSequence str, TripleComponentRole position);
+	int insert(CharSequence str, TripleComponentRole position);
 
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections).
 	 * (used for two-pass way of work).
 	 * 
 	 */
-	public void reorganize();
+	void reorganize();
 	
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections)
 	 * and updates the IDs of the triples (used for one-pass way of work).
 	 */
-	public void reorganize(TempTriples triples);
+	void reorganize(TempTriples triples);
 	
-	public boolean isOrganized();
+	boolean isOrganized();
 	
 	/**
 	 * Empty all the strings of the dictionary.
 	 */
-	public void clear();
+	void clear();
 
 	/**
 	 * Get the ID of a given String
@@ -96,5 +96,5 @@ public interface TempDictionary extends Closeable {
 	 * @param role
 	 * @return
 	 */
-	public int stringToId(CharSequence subject, TripleComponentRole role);
+	int stringToId(CharSequence subject, TripleComponentRole role);
 }

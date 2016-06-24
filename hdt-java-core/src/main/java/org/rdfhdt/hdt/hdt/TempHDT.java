@@ -45,7 +45,7 @@ import org.rdfhdt.hdt.triples.TempTriples;
  */
 public interface TempHDT extends Closeable {
 	
-	public void insert(CharSequence subject, CharSequence predicate, CharSequence object);
+	void insert(CharSequence subject, CharSequence predicate, CharSequence object);
 	
 	/**
 	 * This method should be used before reorganizing triples!

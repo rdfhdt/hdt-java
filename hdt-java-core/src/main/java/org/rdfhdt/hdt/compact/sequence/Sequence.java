@@ -47,7 +47,7 @@ public interface Sequence extends Closeable {
 	 * @param element
 	 *            The element to be added to the array
 	 */
-	public void add(Iterator<Long> elements);
+	void add(Iterator<Long> elements);
 
 	/**
 	 * Gets the element in a specific position
@@ -56,21 +56,21 @@ public interface Sequence extends Closeable {
 	 *            The position of the element to be returned
 	 * @return int
 	 */
-	public long get(long position);
+	long get(long position);
 
 	/**
 	 * Gets the total number of elements in the array
 	 * 
 	 * @return int
 	 */
-	public long getNumberOfElements();
+	long getNumberOfElements();
 	
 	/**
 	 * Return the size of the data structure in bytes
 	 * 
 	 * @return
 	 */
-	public long size();
+	long size();
 
 	/**
 	 * Saves the array to an OutputStream
@@ -79,7 +79,7 @@ public interface Sequence extends Closeable {
 	 *            The OutputStream to be saved to
 	 * @throws IOException
 	 */
-	public void save(OutputStream output, ProgressListener listener) throws IOException;
+	void save(OutputStream output, ProgressListener listener) throws IOException;
 
 	/**
 	 * Loads a array from an InputStream
@@ -87,11 +87,11 @@ public interface Sequence extends Closeable {
 	 * @param input
 	 *            The InputStream to load from
 	 */
-	public void load(InputStream input, ProgressListener listener) throws IOException;
+	void load(InputStream input, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Type identifier of this Stream.
 	 * @return
 	 */
-	public String getType();
+	String getType();
 }

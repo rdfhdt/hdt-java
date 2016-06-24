@@ -7,5 +7,5 @@ public interface Reducer <T> {
 	 * @param b
 	 * @return
 	 */
-	public T reduce(T a, T b);
+	T reduce(T a, T b);
 }

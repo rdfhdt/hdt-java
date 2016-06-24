@@ -40,7 +40,7 @@ public interface Triples extends Closeable {
 	 * Iterates over all triples. Equivalent to this.search(new TripleID());
 	 * @return
 	 */
-	public IteratorTripleID searchAll();
+	IteratorTripleID searchAll();
 	
 	/**
 	 * Iterates over all triples that match the pattern.
@@ -50,32 +50,32 @@ public interface Triples extends Closeable {
 	 * @return IteratorTripleID 
 	 * 
 	 */
-	public IteratorTripleID search(TripleID pattern);
+	IteratorTripleID search(TripleID pattern);
 	
 	/**
 	 * Returns the total number of triples
 	 * 
 	 * @return int
 	 */
-	public long getNumberOfElements();
+	long getNumberOfElements();
 
 	/**
 	 * Returns the size in bytes of the internal representation
 	 * 
 	 * @return int
 	 */
-	public long size();
+	long size();
 
 	/**
 	 * Populates HDT Header with all information relevant to this Triples under a RDF root node.
 	 * @param head
 	 * @param rootNode
 	 */
-	public void populateHeader(Header head, String rootNode);
+	void populateHeader(Header head, String rootNode);
 	
 	/**
 	 * Returns a unique identifier of this Triples Implementation
 	 * @return
 	 */
-	public String getType();
+	String getType();
 }

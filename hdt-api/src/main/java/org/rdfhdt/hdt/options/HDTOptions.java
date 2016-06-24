@@ -32,10 +32,10 @@ package org.rdfhdt.hdt.options;
  *
  */
 public interface HDTOptions {
-	public String get(String key);
-	public void set(String key, String value);
-	public void setOptions(String options);
-	public long getInt(String string);
-	public void setInt(String key, long value);
-	public void clear();
+	String get(String key);
+	void set(String key, String value);
+	void setOptions(String options);
+	long getInt(String string);
+	void setInt(String key, long value);
+	void clear();
 }

@@ -16,7 +16,7 @@ public interface TriplesPrivate extends Triples {
 	 * @param output
 	 *            The OutputStream to save the triples to
 	 */
-	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
+	void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
 
 	/**
 	 * Loads the structure from an InputStream
@@ -25,15 +25,15 @@ public interface TriplesPrivate extends Triples {
 	 *            The InputStream to load the file from
 	 * @throws IOException
 	 */
-	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
+	void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
 
-	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException;
+	void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Generates the associated Index
 	 * @param listener
 	 */
-	public void generateIndex(ProgressListener listener);
+	void generateIndex(ProgressListener listener);
 	
 	/**
 	 * Loads the associated Index from an InputStream
@@ -42,7 +42,7 @@ public interface TriplesPrivate extends Triples {
 	 *            The InputStream to load the index from
 	 * @throws IOException
 	 */
-	public void loadIndex(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
+	void loadIndex(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException;
 
 	/**
 	 * Loads the associated Index from an InputStream
@@ -51,7 +51,7 @@ public interface TriplesPrivate extends Triples {
 	 *            The InputStream to load the index from
 	 * @throws IOException
 	 */
-	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException;
+	void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Saves the associated Index to an OutputStream
@@ -60,7 +60,7 @@ public interface TriplesPrivate extends Triples {
 	 *            The OutputStream to save the index
 	 * @throws IOException
 	 */
-	public void saveIndex(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
+	void saveIndex(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
 
 	/**
 	 * Loads triples from another Triples Structure
@@ -68,5 +68,5 @@ public interface TriplesPrivate extends Triples {
 	 * @param input
 	 *            The TempTriples input to load from
 	 */
-	public void load(TempTriples input, ProgressListener listener);
+	void load(TempTriples input, ProgressListener listener);
 }

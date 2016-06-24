@@ -21,5 +21,5 @@
 package org.rdfhdt.hdtjena.util;
 
 public interface Abortable {
-	 public void abort();
+	 void abort();
 }

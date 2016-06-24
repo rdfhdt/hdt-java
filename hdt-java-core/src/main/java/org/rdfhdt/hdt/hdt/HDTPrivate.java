@@ -19,7 +19,7 @@ public interface HDTPrivate extends HDT {
 	 * @param input
 	 *            InputStream to read from
 	 */
-	public void loadFromHDT(InputStream input, ProgressListener listener) throws IOException;
+	void loadFromHDT(InputStream input, ProgressListener listener) throws IOException;
 
 	/**
 	 * Loads a HDT file
@@ -27,16 +27,16 @@ public interface HDTPrivate extends HDT {
 	 * @param input
 	 *            InputStream to read from
 	 */
-	public void loadFromHDT(String fileName, ProgressListener listener) throws IOException;
+	void loadFromHDT(String fileName, ProgressListener listener) throws IOException;
 	
-	public void mapFromHDT(File f, long offset, ProgressListener listener) throws IOException;
+	void mapFromHDT(File f, long offset, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Generates any additional index needed to solve all triple patterns more efficiently
 	 * 
 	 * @param listener A listener to be notified of the progress.
 	 */
-	public void loadOrCreateIndex(ProgressListener listener);
+	void loadOrCreateIndex(ProgressListener listener);
 	
-	public void populateHeaderStructure(String baseUri);
+	void populateHeaderStructure(String baseUri);
 }

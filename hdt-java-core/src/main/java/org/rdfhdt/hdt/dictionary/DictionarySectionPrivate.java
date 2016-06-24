@@ -12,7 +12,7 @@ public interface DictionarySectionPrivate extends DictionarySection {
 	 * @param other
 	 * @param listener
 	 */
-	public void load(TempDictionarySection other, ProgressListener listener);
+	void load(TempDictionarySection other, ProgressListener listener);
 	
 	/**
 	 * Serialize dictionary section to a stream.
@@ -20,7 +20,7 @@ public interface DictionarySectionPrivate extends DictionarySection {
 	 * @param listener
 	 * @throws IOException
 	 */
-	public void save(OutputStream output, ProgressListener listener) throws IOException;
+	void save(OutputStream output, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Load dictionary section from a stream.
@@ -28,5 +28,5 @@ public interface DictionarySectionPrivate extends DictionarySection {
 	 * @param listener
 	 * @throws IOException
 	 */
-	public void load(InputStream input, ProgressListener listener) throws IOException;
+	void load(InputStream input, ProgressListener listener) throws IOException;
 }
