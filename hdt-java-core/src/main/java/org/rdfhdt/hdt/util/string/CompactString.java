@@ -77,6 +77,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		this.data = data;
 	}
 
+	@Override
 	public char charAt(int index) {
 		int ix = index;
 		if (ix >= data.length) {
@@ -85,10 +86,12 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		return (char) (data[ix] & 0xff);
 	}
 
+	@Override
 	public int length() {
 		return data.length;
 	}
 
+	@Override
 	public CharSequence subSequence(int start, int end) {
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
@@ -99,10 +102,12 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		return new CompactString(newdata);
 	}
 
+	@Override
 	public String toString() {
 		return new String(data, 0, data.length, ByteStringUtil.STRING_ENCODING);
 	}
 	
+	@Override
 	public int hashCode() {
 		// FNV Hash function: http://isthe.com/chongo/tech/comp/fnv/
 		if(hash==0){
@@ -116,6 +121,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		return hash;
 	}
 	
+	@Override
 	public boolean equals(Object o) {
 		if(o==null) {
 			return false;

@@ -50,6 +50,7 @@ public class LRUCache<K,V> extends LinkedHashMap<K, V> {
 	}
 	
 	 // This method is called just after a new entry has been added
+	@Override
     public boolean removeEldestEntry(Map.Entry<K,V> eldest) {
         return size() > entries;
     }
