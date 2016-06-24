@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 import java.util.zip.InflaterInputStream;
 
@@ -40,11 +40,11 @@ import java.util.zip.InflaterInputStream;
  */
 public class DeflateIntegerIterator implements Iterator<Integer> {
 
-	protected ArrayList<byte[]> buffer;
+	protected List<byte[]> buffer;
 	protected DataInputStream stream;
 	int current, next;
 	
-	public DeflateIntegerIterator(ArrayList<byte[]> buffer) {
+	public DeflateIntegerIterator(List<byte[]> buffer) {
 		this.buffer = buffer;
 	}
 	
