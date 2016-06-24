@@ -66,7 +66,7 @@ SELECT count(distinct ?o) { A ?p ?o }		// Distinct only allowed for ? ? ?
 public class OptimizedCount {
 	
 	public static Plan getPlan(HDTQueryEngine engine, Query query, DatasetGraph dataset, Binding input, Context context) {
-		if( (query.getAggregators().size()!=1) )
+		if(query.getAggregators().size()!=1)
 			return null;	
 			
 		// Must be count aggregator without "having" nor "group by"
@@ -184,7 +184,7 @@ public class OptimizedCount {
 			
 			// SELECT count(?s) { ?s ?p ?o }
 			// At least one variable must be the output
-			if( (ag instanceof AggCountVar) ) {
+			if(ag instanceof AggCountVar) {
 				ExprList exprList = ag.getExprList();
 				if(exprList.size()!=1) {
 					return null;

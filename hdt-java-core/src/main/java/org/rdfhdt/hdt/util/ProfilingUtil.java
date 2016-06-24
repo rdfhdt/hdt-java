@@ -130,14 +130,14 @@ public class ProfilingUtil {
 		char lastChar = property.charAt(property.length()-1);
 		
 		switch(lastChar){
-		case ('k'):
-		case ('K'):
+		case 'k':
+		case 'K':
 			return Long.parseLong(property.substring(0, property.length()-1))*1024;
-		case ('m'):
-		case ('M'):
+		case 'm':
+		case 'M':
 			return Long.parseLong(property.substring(0, property.length()-1))*1024*1024;
-		case ('g'):
-		case ('G'):
+		case 'g':
+		case 'G':
 			return Long.parseLong(property.substring(0, property.length()-1))*1024*1024*1024;
 		default:
 			return Long.parseLong(property);

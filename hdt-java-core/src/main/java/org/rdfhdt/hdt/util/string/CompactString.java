@@ -139,7 +139,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 			return true;
 		} else if (o instanceof CharSequence) {
 			CharSequence other = (CharSequence) o;
-			return (length()==other.length() && CharSequenceComparator.getInstance().compare(this, other)==0);
+			return length()==other.length() && CharSequenceComparator.getInstance().compare(this, other)==0;
 		}
 		throw new NotImplementedException();
 	}

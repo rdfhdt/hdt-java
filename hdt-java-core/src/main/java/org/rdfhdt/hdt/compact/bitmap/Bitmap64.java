@@ -132,7 +132,7 @@ public class Bitmap64 {
         	return false;
         }
         
-        return ((words[wordIndex] & (1L << bitIndex)) != 0);
+        return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
 	
 	/* (non-Javadoc)

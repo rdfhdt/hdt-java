@@ -86,7 +86,7 @@ public class SequenceLog64 implements DynamicSequence {
 	
 	/** longs required to represent "total" integers of "bitsField" bits each */
 	public static final long numWordsFor(int bitsField, long total) {
-		return ((bitsField*total+63)/64);
+		return (bitsField*total+63)/64;
 	}
 	
 	/** Number of bits required for last word */
@@ -145,7 +145,7 @@ public class SequenceLog64 implements DynamicSequence {
 		long mask = ~(~0L << bitsField) << j;
 		data[i] = (data[i] & ~mask) | (value << j);
 			
-		if((j+bitsField>W)) {
+		if(j+bitsField>W) {
 			mask = ~0L << (bitsField+j-W);
 			data[i+1] = (data[i+1] & mask) | value >>> (W-j);
 		}

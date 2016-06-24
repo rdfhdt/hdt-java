@@ -145,7 +145,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         	return false;
         }
         
-        return ((words[wordIndex] & (1L << bitIndex)) != 0);
+        return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
 	
 	public void set(long bitIndex, boolean value) {
