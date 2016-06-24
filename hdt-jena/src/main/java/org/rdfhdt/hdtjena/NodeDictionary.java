@@ -58,10 +58,10 @@ public class NodeDictionary {
 
 	private final Dictionary dictionary;
 
-	private final DictionaryCache cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
+	private final DictionaryCache[] cacheIDtoNode = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")
-	Map<String, Integer> cacheNodeToId [] = new Map[TripleComponentRole.values().length];
+	Map<String, Integer>[] cacheNodeToId = new Map[TripleComponentRole.values().length];
 	
 	public NodeDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;

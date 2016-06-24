@@ -20,7 +20,7 @@ import java.io.OutputStream;
 public class CRC8 implements CRC {
 	byte crc8;
 	
-	private static final byte crc8_table[] = {
+	private static final byte[] crc8_table = {
 	    (byte)0x00, (byte)0x07, (byte)0x0e, (byte)0x09, (byte)0x1c, (byte)0x1b, (byte)0x12, (byte)0x15,
 	    (byte)0x38, (byte)0x3f, (byte)0x36, (byte)0x31, (byte)0x24, (byte)0x23, (byte)0x2a, (byte)0x2d,
 	    (byte)0x70, (byte)0x77, (byte)0x7e, (byte)0x79, (byte)0x6c, (byte)0x6b, (byte)0x62, (byte)0x65,

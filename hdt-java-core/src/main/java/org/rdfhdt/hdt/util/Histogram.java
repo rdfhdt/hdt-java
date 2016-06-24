@@ -31,7 +31,7 @@ import java.io.PrintStream;
 
 
 public class Histogram {
-	int data[];
+	int[] data;
 	int numBands;
 	double maxObservedValue;
 	double minObservedValue;

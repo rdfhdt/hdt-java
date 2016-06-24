@@ -34,7 +34,7 @@ import org.apache.jena.graph.Node;
  */
 public class DictionaryCacheArray implements DictionaryCache {
 
-	private Node array[];
+	private Node[] array;
 	final int capacity;
 	int numentries=0;
 	
