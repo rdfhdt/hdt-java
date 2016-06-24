@@ -44,6 +44,8 @@ public class ProfilingUtil {
 
 	// field to store the hotspot diagnostic MBean 
 	private static volatile HotSpotDiagnosticMXBean hotspotMBean;
+	
+	private ProfilingUtil() {}
 
 	/**
 	 * Call this method from your application whenever you want to dump the heap snapshot into a file.

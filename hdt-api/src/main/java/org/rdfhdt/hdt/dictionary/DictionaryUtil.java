@@ -5,6 +5,9 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
 public class DictionaryUtil {
+	
+	private DictionaryUtil() {}
+	
 	/**
 	 * Converts a TripleID to a TripleString using a dictionary.
 	 * 

@@ -39,6 +39,9 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
  *
  */
 public class RDFParserFactory {
+	
+	private RDFParserFactory() {}
+	
 	public static RDFParserCallback getParserCallback(RDFNotation notation) {
 		// NOTE: Very fast but does not validate input. Might not be fully NTriples spec compliant.
 		if(notation == RDFNotation.NTRIPLES) {

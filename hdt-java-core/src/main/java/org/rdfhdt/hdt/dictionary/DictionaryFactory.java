@@ -44,6 +44,7 @@ public class DictionaryFactory {
 
 	public static final String MOD_DICT_IMPL_HASH = "hash";
 
+	private DictionaryFactory() {}
 
 	/**
 	 * Creates a default dictionary (HashDictionary)

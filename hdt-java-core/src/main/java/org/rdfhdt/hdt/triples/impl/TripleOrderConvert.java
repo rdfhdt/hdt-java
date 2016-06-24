@@ -93,6 +93,8 @@ public class TripleOrderConvert {
                 {true, false, false, false, false, true},
                 {false, false, true, false, true, false}
     };
+    
+    private TripleOrderConvert() {}
 	
 	public static void swapComponentOrder(TripleID triple, TripleComponentOrder from, TripleComponentOrder to) {
 		if(from==to) {

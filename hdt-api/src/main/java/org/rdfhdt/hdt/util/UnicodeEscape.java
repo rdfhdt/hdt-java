@@ -4,6 +4,9 @@ package org.rdfhdt.hdt.util;
 import java.io.IOException;
 
 public class UnicodeEscape {
+	
+	private UnicodeEscape() {}
+	
 	   /**
      * Checks whether the supplied character is a letter or number
      * according to the N-Triples specification.

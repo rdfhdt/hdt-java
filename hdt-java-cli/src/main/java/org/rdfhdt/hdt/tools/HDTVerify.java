@@ -11,6 +11,8 @@ import org.rdfhdt.hdt.util.string.CompactString;
 public class HDTVerify {
 
 	private static Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
+	
+	private HDTVerify() {}
 
 	private static void print(byte[] arr) {
 		for (int i = 0; i < arr.length; i++) {

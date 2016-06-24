@@ -45,6 +45,8 @@ public class SequenceFactory {
 	public static final byte TYPE_SEQ32 = 2;
 	public static final byte TYPE_SEQ64 = 3;
 	
+	private SequenceFactory() {}
+	
 	public static Sequence createStream(String name) {
 		if(name==null) {
 			return new SequenceLog64();

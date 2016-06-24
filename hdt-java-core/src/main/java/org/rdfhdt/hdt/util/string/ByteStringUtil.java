@@ -39,6 +39,8 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
  */
 public class ByteStringUtil {
 	
+	private ByteStringUtil() {}
+	
 	/**
 	 * For use in the project when using String.getBytes() and making Strings from byte[]
 	 */

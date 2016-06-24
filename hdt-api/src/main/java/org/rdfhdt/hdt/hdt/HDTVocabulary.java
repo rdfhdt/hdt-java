@@ -118,4 +118,6 @@ public class HDTVocabulary {
     // Misc
 	public static final String ORIGINAL_SIZE = HDT_BASE+"originalSize>";
 	public static final String HDT_SIZE = HDT_BASE+"hdtSize>";
+	
+	private HDTVocabulary() {}
 }
