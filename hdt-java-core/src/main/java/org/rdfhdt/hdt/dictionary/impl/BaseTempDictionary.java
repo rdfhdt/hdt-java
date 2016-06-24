@@ -73,8 +73,9 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		case OBJECT:
 			isOrganized = false;
 			return ((TempDictionarySection)objects).add(str);
+		default:
+			throw new IllegalArgumentException();
 		}
-		throw new IllegalArgumentException();
 	}
 
 	@Override
@@ -162,9 +163,9 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		case PREDICATE:
 		case SHARED:	                
 			return id;
+		default:
+			throw new IllegalArgumentException();
 		}
-
-		throw new IllegalArgumentException();
 	}
 	
 	/* (non-Javadoc)
@@ -205,7 +206,8 @@ public abstract class BaseTempDictionary implements TempDictionary {
 				return getGlobalId(ret, DictionarySectionRole.OBJECT);
 			}
 			return -1;
+		default:
+			throw new IllegalArgumentException();
 		}
-		throw new IllegalArgumentException();
 	}	
 }

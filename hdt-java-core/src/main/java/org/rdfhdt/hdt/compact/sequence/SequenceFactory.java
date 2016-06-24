@@ -69,8 +69,9 @@ public class SequenceFactory {
 			return new SequenceInt32();
 		case TYPE_SEQ64:
 			return new SequenceLog64();
-		}
-		throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
+		default :
+			throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
+		}		
 	}
 	
 	public static Sequence createStream(CountInputStream input, File f) throws IOException {
@@ -85,8 +86,9 @@ public class SequenceFactory {
 		case TYPE_SEQ64:
 //			return new SequenceLog64();
 			throw new NotImplementedException();
+		default:
+			throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
 		}
-		throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
 	}
 	
 }

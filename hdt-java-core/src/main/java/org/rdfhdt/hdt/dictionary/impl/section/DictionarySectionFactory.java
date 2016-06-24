@@ -65,8 +65,9 @@ public class DictionarySectionFactory {
 				section.load(input, listener);
 			}
 			return section;
+		default:
+			throw new IOException("DictionarySection implementation not available for id "+dictType);
 		}
-		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}
 	
 	public static DictionarySectionPrivate loadFrom(CountInputStream input, File f, ProgressListener listener) throws IOException {
@@ -81,7 +82,8 @@ public class DictionarySectionFactory {
 			DictionarySectionPrivate section= new PFCDictionarySectionMap(input, f);
 
 			return section;
+		default:
+			throw new IOException("DictionarySection implementation not available for id "+dictType);
 		}
-		throw new IOException("DictionarySection implementation not available for id "+dictType);
 	}
 }
