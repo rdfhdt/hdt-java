@@ -41,7 +41,7 @@ public class IterAbortable<T> extends IteratorWrapper<T> implements Abortable {
 		return k ;
 	}
 
-	volatile boolean abortFlag = false ;
+	volatile boolean abortFlag;
 
 	public IterAbortable(Iterator<T> iterator)
 	{

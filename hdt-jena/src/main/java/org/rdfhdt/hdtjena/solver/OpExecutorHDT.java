@@ -213,7 +213,7 @@ public class OpExecutorHDT extends OpExecutor {
     /** An op executor that simply executes a BGP or QuadPattern without any reordering */ 
     private static class OpExecutorPlainHDT extends OpExecutor
     {
-        Filter<Tuple<HDTId>> filter = null ;
+        Filter<Tuple<HDTId>> filter;
         
         @SuppressWarnings("unchecked")
 		public OpExecutorPlainHDT(ExecutionContext execCxt)

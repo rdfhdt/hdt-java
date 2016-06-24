@@ -50,11 +50,11 @@ public class TempHDTImpl implements TempHDT {
 	protected TempDictionary dictionary;
 	protected TempTriples triples;
 
-	protected String baseUri = null;
+	protected String baseUri;
 	
-	protected ModeOfLoading modeOfLoading = null;
-	protected boolean isOrganized = false;
-	protected long rawsize = 0;
+	protected ModeOfLoading modeOfLoading;
+	protected boolean isOrganized;
+	protected long rawsize;
 
 	public TempHDTImpl(HDTOptions spec, String baseUri, ModeOfLoading modeOfLoading) {
 		

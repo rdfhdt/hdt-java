@@ -36,7 +36,7 @@ public class DictionaryCacheArray implements DictionaryCache {
 
 	private Node array[];
 	final int capacity;
-	int numentries=0;
+	int numentries;
 	
 	public DictionaryCacheArray(int capacity) {
 		array = null;

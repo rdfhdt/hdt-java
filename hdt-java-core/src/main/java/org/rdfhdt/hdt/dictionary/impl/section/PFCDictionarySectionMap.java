@@ -309,10 +309,10 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
 		return new Iterator<CharSequence>() {
-			int id = 0;
+			int id;
 
 			ReplazableString tempString = new ReplazableString();
-			int bytebufferIndex=0;
+			int bytebufferIndex;
 			ByteBuffer buffer = buffers[0].duplicate();
 
 			@Override

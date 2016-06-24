@@ -83,7 +83,7 @@ public class HDTImpl implements HDTPrivate {
 
 	private String hdtFileName;
 	private String baseUri;
-	private boolean isMapped=false;
+	private boolean isMapped;
 
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);

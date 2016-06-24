@@ -87,7 +87,7 @@ public class OptimizedCountTest {
 
 	private class DummyIteratorTripleString implements IteratorTripleString {
 
-		boolean used = false;
+		boolean used;
 		
 		@Override
 		public boolean hasNext() {

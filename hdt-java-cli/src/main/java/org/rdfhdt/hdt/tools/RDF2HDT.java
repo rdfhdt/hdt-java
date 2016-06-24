@@ -47,29 +47,29 @@ import com.beust.jcommander.internal.Lists;
  */
 public class RDF2HDT implements ProgressListener {
 
-	public String rdfInput = null;
-	public String hdtOutput = null;
+	public String rdfInput;
+	public String hdtOutput;
 	
 	@Parameter(description = "<input RDF> <output HDT>")
 	public List<String> parameters = Lists.newArrayList();
 
 	@Parameter(names = "-options", description = "HDT Conversion options (override those of config file)")
-	public String options = null;
+	public String options;
 	
 	@Parameter(names = "-config", description = "Conversion config file")
-	public String configFile = null;
+	public String configFile;
 	
 	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, nquad, n3, turtle, rdfxml)")
-	public String rdfType = null;
+	public String rdfType;
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
-	public String baseURI = null;
+	public String baseURI;
 	
 	@Parameter(names = "-index", description = "Generate also external indices to solve all queries")
-	public boolean generateIndex = false;
+	public boolean generateIndex;
 	
 	@Parameter(names = "-quiet", description = "Do not show progress of the conversion")
-	public boolean quiet = false;
+	public boolean quiet;
 	
 	public void execute() throws ParserException, IOException {
 		HDTSpecification spec;

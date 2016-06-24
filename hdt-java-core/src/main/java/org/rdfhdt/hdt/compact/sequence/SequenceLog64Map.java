@@ -66,7 +66,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	private ByteBuffer [] buffers;
 	private FileChannel ch;
 	private int numbits;
-	private long numentries=0;
+	private long numentries;
 	private long lastword;
 	private long numwords;
 	

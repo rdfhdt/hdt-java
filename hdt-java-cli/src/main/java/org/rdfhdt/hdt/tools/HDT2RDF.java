@@ -48,8 +48,8 @@ public class HDT2RDF implements ProgressListener {
 	@Parameter(description = "<input RDF> <output HDT>")
 	public List<String> parameters = Lists.newArrayList();
 	
-	public String hdtInput = null;
-	public String rdfOutput = null;
+	public String hdtInput;
+	public String rdfOutput;
 
 	public void execute() throws Exception {
 		

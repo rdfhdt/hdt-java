@@ -55,7 +55,7 @@ public class SequenceLog64 implements DynamicSequence {
 	
 	protected long [] data;
 	protected int numbits;
-	protected long numentries=0;
+	protected long numentries;
 	protected long maxvalue;
 	
 	public SequenceLog64() {

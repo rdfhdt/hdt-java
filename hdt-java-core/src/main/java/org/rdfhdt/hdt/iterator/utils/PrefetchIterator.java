@@ -5,8 +5,8 @@ import java.util.NoSuchElementException;
 
 public abstract class PrefetchIterator<T> implements Iterator<T> {
 
-	protected T next=null;
-	private boolean used=false;
+	protected T next;
+	private boolean used;
 
 	@Override
 	public boolean hasNext() {

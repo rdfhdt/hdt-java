@@ -53,7 +53,7 @@ import org.rdfhdt.hdtjena.util.VarAppearance;
 public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
 {
 	
-	public static long numSearches = 0;
+	public static long numSearches;
 	
     private final NodeDictionary dictionary ;
     private final Triples triples;

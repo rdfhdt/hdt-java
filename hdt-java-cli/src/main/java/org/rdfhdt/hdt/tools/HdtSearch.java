@@ -54,10 +54,10 @@ public class HdtSearch implements ProgressListener {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
-	public String hdtInput = null;
+	public String hdtInput;
 	
 	@Parameter(names = "-memory", description = "Load the whole file into main memory. Ensures fastest querying.")
-	public boolean loadInMemory = false;
+	public boolean loadInMemory;
 	
 	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();

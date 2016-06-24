@@ -56,8 +56,8 @@ public class HDTGraph extends GraphBase {
 	private NodeDictionary nodeDictionary;
 	private ReorderTransformation reorderTransform;
 	private HDTStatistics hdtStatistics;
-	private long numSearches = 0;
-	private boolean closeAfter = false;
+	private long numSearches;
+	private boolean closeAfter;
 	
 	static {
 		// Register OpExecutor

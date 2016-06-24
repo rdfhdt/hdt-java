@@ -45,7 +45,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	final byte[] data;
 	
 	// Cached hash value.
-	private int hash=0;
+	private int hash;
 	
 	public static final CompactString EMPTY = new CompactString();
 	

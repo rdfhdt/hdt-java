@@ -158,18 +158,18 @@ public class FusekiHDTCmd extends CmdARQ
     
     private int port                    = 3030 ;
     private int mgtPort                 = -1 ;
-    private boolean listenLocal         = false ;
+    private boolean listenLocal;
 
-    protected DatasetGraph dsg            = null ; 
-    private String datasetPath          = null ;
-    private boolean allowUpdate         = false ;
+    protected DatasetGraph dsg;
+    private String datasetPath;
+    private boolean allowUpdate;
     
-    private String fusekiConfigFile     = null ;
+    private String fusekiConfigFile;
     private boolean enableCompression   = true ;
-    private String jettyConfigFile      = null ;
-    private String authConfigFile       = null ;
-    private String homeDir              = null ;
-    private String pagesDir             = null ;
+    private String jettyConfigFile;
+    private String authConfigFile;
+    private String homeDir;
+    private String pagesDir;
     
     public FusekiHDTCmd(String...argv)
     {
