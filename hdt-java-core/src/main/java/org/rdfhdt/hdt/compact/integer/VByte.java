@@ -48,6 +48,9 @@ import org.rdfhdt.hdt.util.Mutable;
  *
  */
 public class VByte {
+	
+	private VByte() {}
+	
 	public static void encode(OutputStream out, long value) throws IOException {
 		if(value<0) {
 			throw new IllegalArgumentException("Only can encode VByte of positive values");

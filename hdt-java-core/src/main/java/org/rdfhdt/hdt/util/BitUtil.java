@@ -32,6 +32,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class BitUtil {
+	
+	private BitUtil() {}
+	
 	/**
 	 * Number of bits needed to store up to n
 	 * @param n

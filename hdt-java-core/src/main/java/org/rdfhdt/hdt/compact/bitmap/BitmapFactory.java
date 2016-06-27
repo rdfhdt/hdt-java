@@ -37,6 +37,9 @@ import org.rdfhdt.hdt.exceptions.IllegalFormatException;
  *
  */
 public class BitmapFactory {
+	
+	private BitmapFactory() {}
+	
 	public static final byte TYPE_BITMAP_PLAIN = 1;
 	
 	public static Bitmap createBitmap(String type) {

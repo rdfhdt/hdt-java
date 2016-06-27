@@ -46,6 +46,9 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
  *
  */
 public class IOUtil {
+	
+	private IOUtil() {}
+	
 	public static String readLine(InputStream in, char character) throws IOException {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		while(true) {

@@ -42,6 +42,8 @@ import org.rdfhdt.hdt.util.io.CountInputStream;
  */
 public class DictionarySectionFactory {
 	
+	private DictionarySectionFactory() {}
+	
 	public static DictionarySectionPrivate loadFrom(InputStream input, ProgressListener listener) throws IOException {
 		if(!input.markSupported()) {
 			throw new IllegalArgumentException("Need support for mark()/reset(). Please wrap the InputStream with a BufferedInputStream");
