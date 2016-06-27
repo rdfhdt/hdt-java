@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 public class Iter {
+	
+	private Iter() {}
 
 	public static <T, R> Iterable<R> mapIterable(final Iterable<T> iter1, final Transform<T, R> converter) {
 		return new Iterable<R>() {

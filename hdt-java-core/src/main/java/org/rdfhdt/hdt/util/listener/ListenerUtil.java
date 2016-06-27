@@ -34,6 +34,9 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  *
  */
 public class ListenerUtil {
+	
+	private ListenerUtil() {}
+	
 	public static void notify(ProgressListener listener, String message, float value, float total) {
 		if(listener!=null) {
 			listener.notifyProgress( ((value)*100/total), message);

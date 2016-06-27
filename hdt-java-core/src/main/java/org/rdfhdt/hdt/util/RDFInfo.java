@@ -49,6 +49,8 @@ public class RDFInfo {
 	public static final String size_prop = "rdf.sizeInBytes";
 	public static final String triples_prop = "rdf.triples";
 	public static final String compression_prop = "rdf.expectedCompression";
+	
+	private RDFInfo() {}
 
 	/**
 	 * Fills the given HDTSpecification object with the given information about the (RDF)

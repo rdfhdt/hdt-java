@@ -38,6 +38,8 @@ import java.util.TimeZone;
  */
 public class StringUtil {
 	
+	private StringUtil() {}
+	
 	public static String getPercent(long v1, long max) {
 		if(max==0) {
 			return "%";

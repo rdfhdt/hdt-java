@@ -38,6 +38,9 @@ import org.rdfhdt.hdtjena.CustomDatatype;
  *
  */
 public class JenaNodeCreator {
+	
+	private JenaNodeCreator() {}
+	
 	public static Node createAnon() {
 		return new Node_Blank( BlankNodeId.create() );
 	}

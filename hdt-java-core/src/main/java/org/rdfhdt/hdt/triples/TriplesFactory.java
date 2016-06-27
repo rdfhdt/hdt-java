@@ -44,6 +44,7 @@ public class TriplesFactory {
 		
 	public static final String TEMP_TRIPLES_IMPL_LIST = "list";
 
+	private TriplesFactory() {}
 	
 	/**
 	 * Creates a new TempTriples (writable triples structure)

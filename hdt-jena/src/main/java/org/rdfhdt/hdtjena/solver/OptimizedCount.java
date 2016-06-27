@@ -65,6 +65,8 @@ SELECT count(distinct ?o) { A ?p ?o }		// Distinct only allowed for ? ? ?
 */
 public class OptimizedCount {
 	
+	private OptimizedCount() {}
+	
 	public static Plan getPlan(HDTQueryEngine engine, Query query, DatasetGraph dataset, Binding input, Context context) {
 		if( (query.getAggregators().size()!=1) )
 			return null;	

@@ -6,6 +6,9 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 public class HeaderUtil {
+	
+	private HeaderUtil() {}
+	
 	public static String cleanURI(CharSequence str) {
 		String uri = str.toString();
 		if(uri!=null && uri.length()>=2 && uri.charAt(0)=='<' && uri.charAt(uri.length()-1)=='>') {

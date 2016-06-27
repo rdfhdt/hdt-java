@@ -40,6 +40,8 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 public class HDTFactory {
 	private static TempDictTriplesFactory tempFactory=null;
 	
+	private HDTFactory() {}
+	
 	public static TempDictTriplesFactory getTempFactory() {
 		if(tempFactory==null) {
 			try {

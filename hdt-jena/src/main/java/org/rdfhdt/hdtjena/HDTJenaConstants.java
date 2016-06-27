@@ -42,4 +42,6 @@ public class HDTJenaConstants {
 	
 	public static final Symbol REMOVE_DUPLICATES = Symbol.create(HDTJENA_NS+"removeDuplicates");
 	public static final Symbol FILTER_SYMBOL = Symbol.create(HDTJENA_NS+"filter");
+	
+	private HDTJenaConstants() {}
 }
