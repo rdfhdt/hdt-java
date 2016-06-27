@@ -175,14 +175,14 @@ public class IOUtil {
 			n += count;
 		}
 
-		return ( ((long)readBuffer[7] << 56) +
+		return   ((long)readBuffer[7] << 56) +
 				 ((long)(readBuffer[6] & 255) << 48) +
 				 ((long)(readBuffer[5] & 255) << 40) +
 				 ((long)(readBuffer[4] & 255) << 32) +
 				 ((long)(readBuffer[3] & 255) << 24) +
 				 ((readBuffer[2] & 255) << 16) +
 				 ((readBuffer[1] & 255) <<  8) +
-				 ((readBuffer[0] & 255))
+				 ((readBuffer[0] & 255)
 			);
 	}
 
@@ -226,7 +226,7 @@ public class IOUtil {
 		int ch4 = in.read();
 		if ((ch1 | ch2 | ch3 | ch4) < 0)
 			throw new EOFException();
-		return ((ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0));
+		return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
 	}
 
 	/**
@@ -235,7 +235,7 @@ public class IOUtil {
 	 * @return
 	 */
 	public static int byteArrayToInt(byte[] value){
-		return ((value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0));
+		return (value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0);
 	}
 
 	/**

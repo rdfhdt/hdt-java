@@ -83,7 +83,7 @@ public class CRC16 implements CRC {
 	@Override
 	public boolean readAndCheck(InputStream in) throws IOException {
 		int readCRC = IOUtil.readShort(in)&0xFFFF;
-		return (readCRC==crc16);
+		return readCRC==crc16;
 	}
 
 	@Override

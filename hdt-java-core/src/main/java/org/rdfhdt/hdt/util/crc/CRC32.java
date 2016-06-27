@@ -89,7 +89,7 @@ public class CRC32 implements CRC {
 	@Override
 	public boolean readAndCheck(InputStream in) throws IOException {
 		int readCRC = IOUtil.readInt(in);
-		return (readCRC== (crc32 ^ 0xFFFFFFFF));
+		return readCRC== (crc32 ^ 0xFFFFFFFF);
 	}
 
 	@Override

@@ -31,7 +31,7 @@ public class UnicodeEscape {
      * the N-Triples specification. N-Triples numbers are 0 - 9.
      */
     private static boolean isNumber(int c) {
-        return (c >= 48 && c <= 57); // 0 - 9
+        return c >= 48 && c <= 57; // 0 - 9
     }
 
     /**

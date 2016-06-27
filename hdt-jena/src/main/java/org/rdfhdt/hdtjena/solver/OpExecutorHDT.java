@@ -70,7 +70,7 @@ public class OpExecutorHDT extends OpExecutor {
 	protected OpExecutorHDT(ExecutionContext execCtx) {
 		super(execCtx);
 		
-		isForHDT = (execCtx.getActiveGraph() instanceof HDTGraph) ;
+		isForHDT = execCtx.getActiveGraph() instanceof HDTGraph ;
 	}
 	
     @Override
