@@ -99,19 +99,19 @@ public class ProfilingUtil {
 		if (size >= 1024 * 1024 * 1024)
 		{
 			calcSize = (long) (((double)size) / (1024 * 1024 * 1024));
-			str = ""+calcSize +"GB";
+			str = Long.toString(calcSize) +"GB";
 		}
 		else if (size>= 1024 * 1024) {
 			calcSize = (long) (((double)size) / (1024 * 1024 ));
-			str = ""+ calcSize +"MB";
+			str = Long.toString(calcSize) +"MB";
 		}
 		else if (size>= 1024) {
 			calcSize = (long) (((double)size) / (1024));
-			str = ""+ calcSize +"KB";
+			str = Long.toString(calcSize) +"KB";
 		}
 		else {
 			calcSize = size;
-			str = ""+ calcSize +"B";
+			str = Long.toString(calcSize) +"B";
 		}
 		return str;
 	}
