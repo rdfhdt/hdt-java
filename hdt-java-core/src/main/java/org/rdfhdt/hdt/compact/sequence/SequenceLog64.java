@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 import java.util.Iterator;
 
@@ -187,7 +187,7 @@ public class SequenceLog64 implements DynamicSequence {
         }
 	}
 
-	public void addIntegers(ArrayList<Integer> elements) {
+	public void addIntegers(List<Integer> elements) {
 		long max = 0;
 		numentries = 0;
 		

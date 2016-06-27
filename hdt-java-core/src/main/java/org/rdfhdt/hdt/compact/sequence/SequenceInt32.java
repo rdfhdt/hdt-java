@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -170,7 +170,7 @@ public class SequenceInt32 implements DynamicSequence {
 		}
 	}
 
-	public void addIntegers(ArrayList<Integer> elements) {
+	public void addIntegers(List<Integer> elements) {
 		for (int i=0;i<elements.size();i++){
 			long value = elements.get(i).longValue();
 			append(value);
