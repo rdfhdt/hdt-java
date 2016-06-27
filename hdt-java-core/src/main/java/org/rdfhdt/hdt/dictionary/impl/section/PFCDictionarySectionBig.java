@@ -27,24 +27,30 @@
 
 package org.rdfhdt.hdt.dictionary.impl.section;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
-import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64Big;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.Mutable;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
@@ -57,7 +63,7 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
  *  It allows loading much bigger files, but waste some memory in pointers to the blocks and 
  *  some CPU to locate the array at search time.
  *  
- * @author mario.arias
+ * @author mario.arias, Lyudmila Balakireva
  *
  */
 public class PFCDictionarySectionBig implements DictionarySectionPrivate {
@@ -67,13 +73,17 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	
 	byte [][] data;
 	long [] posFirst;
-	protected SequenceLog64 blocks;
+	protected SequenceLog64Big blocks;
 	protected int blocksize;
 	protected int numstrings;
 	protected long size;
+	static int filecounter = 0;
 	
 	public PFCDictionarySectionBig(HDTOptions spec) {
-
+		this.blocksize = (int) spec.getInt("pfc.blocksize");
+		if(blocksize==0) {
+			blocksize = DEFAULT_BLOCK_SIZE;
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -81,8 +91,135 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	@Override
 	public void load(TempDictionarySection other, ProgressListener listener) {
-		throw new NotImplementedException();
+		this.blocks = new SequenceLog64Big(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
+		System.out.println("numbits:"+BitUtil.log2(other.size()));
+		Iterator<? extends CharSequence> it = other.getSortedEntries();		
+		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
+		
 	}
+	
+	
+	
+	public void load(Iterator<CharSequence> it, long numentries, ProgressListener listener)  {		
+		
+		this.blocks = new SequenceLog64Big(64, numentries/blocksize);
+		this.numstrings = 0;
+		
+		filecounter++;
+		String name = ".test"+filecounter+".tmp";
+		File file = new File(name);
+		FileOutputStream out=null;
+		
+			try {
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				out = new FileOutputStream(file);
+			} catch (FileNotFoundException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		
+		long byteoutsize = 0;
+		ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);		
+		CharSequence previousStr=null;
+		
+		try {
+			while(it.hasNext()) {
+				CharSequence str = it.next();
+
+				if(numstrings%blocksize==0) {
+					// Add new block pointer
+					byteOut.flush();
+					byteoutsize = byteoutsize+byteOut.size();
+					
+					blocks.append(byteoutsize);
+					byteOut.writeTo(out);
+					byteOut.reset();
+					// Copy full string
+					ByteStringUtil.append(byteOut, str, 0);
+				
+				} else {
+					// Find common part.
+					int delta = ByteStringUtil.longestCommonPrefix(previousStr, str);
+					// Write Delta in VByte
+					VByte.encode(byteOut, delta);
+					// Write remaining
+					ByteStringUtil.append(byteOut, str, delta);
+					
+				}
+				byteOut.write(0); // End of string
+			
+				numstrings++;
+								
+				previousStr = str;
+				
+			}
+			
+			// Ending block pointer.
+			byteOut.flush();
+			byteoutsize = byteoutsize + byteOut.size();
+			
+			//blocks.append(byteOut.size());
+			blocks.append(byteoutsize);
+			// Trim text/blocks
+			blocks.aggresiveTrimToSize();
+			
+			byteOut.flush();
+			byteOut.writeTo(out);
+			out.close();
+			
+			InputStream in = new FileInputStream(name);
+			// Read block by block
+			// Read packed data
+			
+			int block = 0;
+			int buffer = 0;
+			long bytePos = 0;
+			long numBlocks = blocks.getNumberOfElements();
+			//System.out.println("numblocks:"+numBlocks);
+			
+			long numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
+			data = new byte[(int)numBuffers][];
+			posFirst = new long[(int)numBuffers];
+			
+			while(block<numBlocks-1) {
+				int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
+				long nextBytePos = blocks.get(nextBlock);
+				
+				//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+				data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
+				
+				posFirst[buffer] = bytePos;
+				
+				bytePos = nextBytePos;
+				block+=BLOCK_PER_BUFFER;
+				buffer++;
+			}
+			
+			
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		finally {
+			try {
+				out.close();
+				file.delete();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	
+	
+	
 	
 	/**
 	 * Locate the block of a string doing binary search.
@@ -278,7 +415,28 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
-		throw new NotImplementedException();
+		
+        CRCOutputStream out = new CRCOutputStream(output, new CRC8());		
+		out.write(TYPE_INDEX);
+		VByte.encode(out, numstrings);		
+		
+		long datasize=0;
+	
+		for (int i =0; i<data.length;i++) {
+			datasize = data[i].length+ datasize;
+			
+		}
+		System.out.println("datasize:"+datasize);		
+		VByte.encode(out, datasize);
+		VByte.encode(out, blocksize);				
+		out.writeCRC();
+		blocks.save(output, listener);	// Write blocks directly to output, they have their own CRC check.		
+		out.setCRC(new CRC32());
+		for (int i =0; i<data.length;i++) {			
+		IOUtil.writeBuffer(out, data[i], 0, data[i].length, listener);		
+		}
+		out.writeCRC();
+		//throw new NotImplementedException();
 	}
 
 	/* (non-Javadoc)
@@ -287,6 +445,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	@SuppressWarnings("resource")
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
+		
 		CRCInputStream in = new CRCInputStream(input, new CRC8());
 		
 		// Read type
@@ -303,7 +462,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		}
 		
 		// Load block pointers
-		blocks = new SequenceLog64();
+		blocks = new SequenceLog64Big();
 		blocks.load(input, listener);
 		
 		// Initialize global block array

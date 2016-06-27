@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.dictionary;
 
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTFactory;
@@ -43,7 +44,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 public class DictionaryFactory {
 
 	public static final String MOD_DICT_IMPL_HASH = "hash";
-
+	public static final String DICTIONARY_TYPE_FOUR_SECTION_BIG ="dictionaryFourBig";
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -76,6 +77,9 @@ public class DictionaryFactory {
 		String name = spec.get("dictionary.type");
 		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
 			return new FourSectionDictionary(spec);
+		}
+		else if (DICTIONARY_TYPE_FOUR_SECTION_BIG.equals(name)){
+			return new FourSectionDictionaryBig(spec);
 		}
 		throw new IllegalFormatException("Implementation of ditionary not found for "+name);
 	}
