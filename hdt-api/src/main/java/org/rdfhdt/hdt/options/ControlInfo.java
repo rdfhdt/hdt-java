@@ -36,7 +36,7 @@ import java.io.OutputStream;
  *
  */
 public interface ControlInfo extends HDTOptions {
-	public enum Type {
+	enum Type {
 		UNKNOWN,
 		GLOBAL,
 		HEADER,
@@ -45,16 +45,16 @@ public interface ControlInfo extends HDTOptions {
 		INDEX
 	}
 	
-	public Type getType();
+	Type getType();
 	
-	public void setType(Type type);
+	void setType(Type type);
 	
-	public String getFormat();
+	String getFormat();
 
-	public void setFormat(String format);
+	void setFormat(String format);
 
-	public void save(OutputStream output) throws IOException;
+	void save(OutputStream output) throws IOException;
 	
-	public void load(InputStream input) throws IOException;	
+	void load(InputStream input) throws IOException;
 
 }

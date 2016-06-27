@@ -39,5 +39,5 @@ public interface ProgressListener {
 	 * @param level percent of the task accomplished
 	 * @param message Description of the operation
 	 */
-	public void notifyProgress(float level, String message);
+	void notifyProgress(float level, String message);
 }

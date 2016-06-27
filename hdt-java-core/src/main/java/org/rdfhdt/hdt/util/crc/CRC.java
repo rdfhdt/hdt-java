@@ -6,13 +6,13 @@ import java.io.OutputStream;
 
 public interface CRC extends Comparable<CRC> {
 	/** Update this CRC with the content of the buffer, from offset, using length bytes. */
-	public void update(byte []buffer, int offset, int length);
+	void update(byte[] buffer, int offset, int length);
 	
 	/** Update the CRC with the specified byte */
-	public void update(byte data);
+	void update(byte data);
 	
 	/** Write this CRC to an Output Stream */
-	public void writeCRC(OutputStream out) throws IOException;
+	void writeCRC(OutputStream out) throws IOException;
 	
 	/** Read CRC from InputStream and compare it to this. 
 	 * 
@@ -20,16 +20,16 @@ public interface CRC extends Comparable<CRC> {
 	 * @return true if the checksum is the same, false if checksum error.
 	 * @throws IOException
 	 */
-	public boolean readAndCheck(InputStream in) throws IOException;
+	boolean readAndCheck(InputStream in) throws IOException;
 	
 	/**
 	 * Get checksum value.
 	 * @return
 	 */
-	public long getValue();
+	long getValue();
 	
 	/**
 	 * Reset the checksum to the initial value.
 	 */
-	public void reset();
+	void reset();
 }

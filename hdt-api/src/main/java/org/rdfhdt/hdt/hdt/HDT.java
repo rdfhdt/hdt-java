@@ -51,21 +51,21 @@ public interface HDT extends RDFAccess,Closeable {
 	 * 
 	 * @return Header
 	 */
-	public Header getHeader();
+	Header getHeader();
 
 	/**
 	 * Gets the dictionary of the HDT
 	 * 
 	 * @return Dictionary
 	 */
-	public Dictionary getDictionary();
+	Dictionary getDictionary();
 
 	/**
 	 * Gets the triples of the HDT
 	 * 
 	 * @return Triples
 	 */
-	public Triples getTriples();
+	Triples getTriples();
 		
 	/**
 	 * Saves to OutputStream in HDT format
@@ -73,7 +73,7 @@ public interface HDT extends RDFAccess,Closeable {
 	 * @param output
 	 *            The OutputStream to save to
 	 */
-	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException;
+	void saveToHDT(OutputStream output, ProgressListener listener) throws IOException;
 
 	/**
 	 * Saves to a file in HDT format
@@ -81,18 +81,18 @@ public interface HDT extends RDFAccess,Closeable {
 	 * @param output
 	 *            The OutputStream to save to
 	 */
-	public void saveToHDT(String fileName, ProgressListener listener) throws IOException;
+	void saveToHDT(String fileName, ProgressListener listener) throws IOException;
 	
 	/**
 	 * Returns the size of the Data Structure in bytes.
 	 * @return
 	 */
-	public long size();
+	long size();
 	
 	/**
 	 * Get the Base URI for the Dataset.
 	 * @return
 	 */
-	public String getBaseURI();
+	String getBaseURI();
 
 }

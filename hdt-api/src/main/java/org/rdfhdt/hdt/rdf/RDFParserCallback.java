@@ -40,10 +40,10 @@ import org.rdfhdt.hdt.triples.TripleString;
  *
  */
 public interface RDFParserCallback {
-	public interface RDFCallback {
-		public void processTriple(TripleString triple, long pos);
+	interface RDFCallback {
+		void processTriple(TripleString triple, long pos);
 	}
 	
-	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
-	public void doParse(InputStream in, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
+	void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
+	void doParse(InputStream in, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
 }

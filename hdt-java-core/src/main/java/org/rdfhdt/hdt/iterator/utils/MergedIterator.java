@@ -52,7 +52,7 @@ public class MergedIterator<T> implements Iterator<T> {
 	}
 	
 	public interface Annotator<T> {
-		public void annotate(T el, Pos p);
+		void annotate(T el, Pos p);
 	}
 	
 	public MergedIterator(Iterator<T> left, Iterator<T> right, Comparator<T> comparator) {

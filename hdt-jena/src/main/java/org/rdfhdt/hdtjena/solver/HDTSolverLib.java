@@ -137,7 +137,7 @@ public class HDTSolverLib
 	// Conversions
 	
     public interface ConvertHDTIdToNode { 
-        public Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds) ;
+        Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds) ;
     }
     
     // Transform : BindingHDTId ==> Binding

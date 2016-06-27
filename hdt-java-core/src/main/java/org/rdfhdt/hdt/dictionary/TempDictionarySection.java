@@ -41,33 +41,33 @@ public interface TempDictionarySection extends DictionarySection {
 	/**
 	 * Adds an entry to the dictionary section.
 	 */
-	public int add(CharSequence str);
+	int add(CharSequence str);
 	
 	/**
 	 * Removes an entry from the dictionary section.
 	 */
-	public void remove(CharSequence str);
+	void remove(CharSequence str);
 	
 	/**
 	 * Sorts the entries in the dictionary section and updates their ID's according to the
 	 * sorting order.
 	 */
-	public void sort();
+	void sort();
 	
 	/**
 	 * Empties the dictionary section of all entries,
 	 */
-	public void clear();
+	void clear();
 	
 	/**
 	 * Indicates if the sort method has been called and the section is sorted, ID's updated
 	 * and the section ready to be used for generation of a QueryableDictionarySection.
 	 */
-	public boolean isSorted();
+	boolean isSorted();
 	
 	/**
 	 * Iterator over all entries in the dictionary, not neccessarily sorted.
 	 */
-	public Iterator<? extends CharSequence> getEntries();
+	Iterator<? extends CharSequence> getEntries();
 
 }

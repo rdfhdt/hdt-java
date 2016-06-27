@@ -37,13 +37,13 @@ public interface DynamicSequence extends Sequence {
 	 * @param index
 	 * @param value
 	 */
-	public void set(long index, long value);
+	void set(long index, long value);
 	
 	/**
 	 * Append a new value after the last position, increasing the number of elements by one.
 	 * @param value
 	 */
-	public void append(long value);
+	void append(long value);
 	
 	/**
 	 * Trim the internal data structure to fit the actual number of elements.

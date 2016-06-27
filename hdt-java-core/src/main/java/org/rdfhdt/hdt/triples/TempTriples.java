@@ -47,7 +47,7 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * @param object
 	 * @return
 	 */
-	public boolean insert(int subject, int predicate, int object);
+	boolean insert(int subject, int predicate, int object);
 	
 	/**
 	 * Adds one or more triples
@@ -56,7 +56,7 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 *            The triples to be inserted
 	 * @return boolean
 	 */
-	public boolean insert(TripleID... triples);
+	boolean insert(TripleID... triples);
 	
 	/**
 	 * Updates the given TripleID with the new values.
@@ -72,7 +72,7 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * @param obj
 	 * @return
 	 */
-	public boolean update(TripleID triple, int subj, int pred, int obj);
+	boolean update(TripleID triple, int subj, int pred, int obj);
 
 	/**
 	 * Deletes one or more triples according to a pattern
@@ -81,16 +81,16 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 *            The pattern to match against
 	 * @return boolean
 	 */
-	public boolean remove(TripleID... pattern);
+	boolean remove(TripleID... pattern);
 
 	/**
 	 * Sorts the triples based on the order(TripleComponentOrder) of the
 	 * triples.
 	 * If you want to sort in a different order use setOrder first.
 	 */
-	public void sort(ProgressListener listener);
+	void sort(ProgressListener listener);
 
-	public void removeDuplicates(ProgressListener listener);
+	void removeDuplicates(ProgressListener listener);
 	
 	/**
 	 * Sets a type of order(TripleComponentOrder)
@@ -98,20 +98,20 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * @param order
 	 *            The order to set
 	 */
-	public void setOrder(TripleComponentOrder order);
+	void setOrder(TripleComponentOrder order);
 	
 	/**
 	 * Gets the currently set order(TripleComponentOrder)
 	 */
-	public TripleComponentOrder getOrder();
+	TripleComponentOrder getOrder();
 	
 	/**
 	 * Clear all triples, resulting in an empty triples section.
 	 */
-	public void clear();
+	void clear();
 	
 	/**
 	 * Load triples from another instance.
 	 */
-	public void load(Triples triples, ProgressListener listener);
+	void load(Triples triples, ProgressListener listener);
 }
