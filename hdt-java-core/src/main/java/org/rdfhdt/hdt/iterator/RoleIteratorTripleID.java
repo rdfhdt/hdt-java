@@ -77,9 +77,10 @@ public class RoleIteratorTripleID implements Iterator<Integer> {
 			return iterator.next().getPredicate();
 		case OBJECT:
 			return iterator.next().getObject();
+		default:
+			// Never reached
+			return 0;
 		}
-		// Never reached
-		return 0;
 	}
 
 	/*

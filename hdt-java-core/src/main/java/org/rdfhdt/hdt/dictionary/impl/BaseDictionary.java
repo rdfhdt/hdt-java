@@ -65,9 +65,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		case PREDICATE:
 		case SHARED:	                
 			return id;
+		default:
+			throw new IllegalArgumentException();
 		}
-
-		throw new IllegalArgumentException();
 	}
 
 	protected int getLocalId(int id, TripleComponentRole position) {
@@ -81,9 +81,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			}
 		case PREDICATE:
 			return id;
+		default:
+			throw new IllegalArgumentException();
 		}
-
-		throw new IllegalArgumentException();
 	}
 	
 	/* (non-Javadoc)
@@ -131,8 +131,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 				return getGlobalId(ret, DictionarySectionRole.OBJECT);
 			}
 			return -1;
+		default:
+			throw new IllegalArgumentException();
 		}
-		throw new IllegalArgumentException();
 	}	
 	
 	@Override
@@ -201,8 +202,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			} else {
 				return (DictionarySectionPrivate)objects;
 			}
+		default:
+			throw new IllegalArgumentException();
 		}
-		throw new IllegalArgumentException();
 	}
 
 	/* (non-Javadoc)
