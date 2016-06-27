@@ -146,7 +146,7 @@ public class IOUtil {
 	 * @throws IOException
 	 */
 	public static void writeLong(OutputStream output, long value) throws IOException {
-		byte writeBuffer[] = new byte[8];
+		byte[] writeBuffer = new byte[8];
 		writeBuffer[7] = (byte)(value >>> 56);
 		writeBuffer[6] = (byte)(value >>> 48);
 		writeBuffer[5] = (byte)(value >>> 40);
@@ -167,7 +167,7 @@ public class IOUtil {
 	 */
 	public static final long readLong(InputStream input) throws IOException {
 		int n = 0;
-		byte readBuffer[] = new byte[8];
+		byte[] readBuffer = new byte[8];
 		while (n < 8) {
 			int count = input.read(readBuffer, n , 8-n);
 			if (count < 0)
@@ -193,7 +193,7 @@ public class IOUtil {
 	 * @throws IOException
 	 */
 	public static void writeInt(OutputStream output, int value) throws IOException {
-		byte writeBuffer[] = new byte[4];
+		byte[] writeBuffer = new byte[4];
 		writeBuffer[0] = (byte) (value & 0xFF);
 		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
 		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
@@ -205,7 +205,7 @@ public class IOUtil {
 	 * Convert int to byte array, little endian
 	 */
 	public static byte[] intToByteArray(int value) {
-		byte writeBuffer[] = new byte[4];
+		byte[] writeBuffer = new byte[4];
 		writeBuffer[0] = (byte) (value & 0xFF);
 		writeBuffer[1] = (byte) ((value>>8) & 0xFF);
 		writeBuffer[2] = (byte) ((value>>16) & 0xFF);
