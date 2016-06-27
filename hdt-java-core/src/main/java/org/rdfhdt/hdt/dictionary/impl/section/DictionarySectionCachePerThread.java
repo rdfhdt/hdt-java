@@ -53,9 +53,11 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	private ThreadLocal<Map<CharSequence,Integer>> cacheString =
 			new ThreadLocal<Map<CharSequence,Integer>>() {
 				@SuppressWarnings("serial")
+				@Override
 				protected java.util.Map<CharSequence,Integer> initialValue() {
 					return new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
+						@Override
 					    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
 					        return size() > CACHE_ENTRIES;
 					    }
@@ -66,9 +68,11 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 	private ThreadLocal<Map<Integer,CharSequence>> cacheID =
 			new ThreadLocal<Map<Integer,CharSequence>>() {
 				@SuppressWarnings("serial")
+				@Override
 				protected java.util.Map<Integer,CharSequence> initialValue() {
 					return new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
+						@Override
 					    public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {
 					        return size() > CACHE_ENTRIES;
 					    }

@@ -185,7 +185,8 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	public int length() {
 		return used;
 	}
-	
+
+	@Override
 	public int hashCode() {
 		// FNV Hash function: http://isthe.com/chongo/tech/comp/fnv/
 		int hash = (int) 2166136261L; 				
@@ -197,7 +198,8 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 
 		return hash;
 	}
-	
+
+	@Override
 	public boolean equals(Object o) {
 		if(o==null) {
 			return false;
@@ -254,7 +256,8 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		System.arraycopy(buffer, start, newdata, 0, end-start);
 		return new ReplazableString(newdata);
 	}
-	
+
+	@Override
 	public String toString() {
 		return new String(buffer, 0, used, ByteStringUtil.STRING_ENCODING);
 	}
