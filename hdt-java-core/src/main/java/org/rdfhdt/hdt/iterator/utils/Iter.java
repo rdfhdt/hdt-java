@@ -49,8 +49,8 @@ public class Iter {
 	public static <T> Iterator<T> filter(final Iterator<? extends T> stream, final Filter<T> filter) {
 		final Iterator<T> iter = new Iterator<T>() {
 
-			boolean finished     = false ;
-			boolean slotOccupied = false ;
+			boolean finished;
+			boolean slotOccupied;
 			T       slot ;
 
 			@Override
@@ -94,7 +94,7 @@ public class Iter {
 	public static <T> Iterator<T> limit(final Iterator<T> it, final int limit) {
 		return new Iterator<T>() {
 			
-			int pos=0;
+			int pos;
 
 			@Override
 			public boolean hasNext() {

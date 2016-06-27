@@ -389,7 +389,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
 		return new Iterator<CharSequence>() {
-			int pos = 0;
+			int pos;
 
 			@Override
 			public boolean hasNext() {

@@ -46,7 +46,7 @@ public class SequenceInt64 implements DynamicSequence {
 
 	/** The array that holds the objects **/
 	long [] data;
-	long numelements = 0;
+	long numelements;
 
 	/**
 	 * Basic constructor

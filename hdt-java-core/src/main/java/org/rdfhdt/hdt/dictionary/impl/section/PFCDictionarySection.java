@@ -343,8 +343,8 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
 		return new Iterator<CharSequence>() {
-			int id = 0;
-			int pos=0;
+			int id;
+			int pos;
 			Mutable<Long> delta = new Mutable<Long>(0L);
 			ReplazableString tempString = new ReplazableString();
 

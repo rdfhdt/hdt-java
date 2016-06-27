@@ -11,7 +11,7 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 
 public abstract class HDTManager {
 	
-	private static HDTManager instance = null;
+	private static HDTManager instance;
 	
 	private static HDTManager getInstance() {
 		if(instance==null) {

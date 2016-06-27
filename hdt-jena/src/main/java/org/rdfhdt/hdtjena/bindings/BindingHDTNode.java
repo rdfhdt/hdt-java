@@ -46,7 +46,7 @@ public class BindingHDTNode extends BindingBase
     @Override
     protected int size1() { return idBinding.size(); }
     
-    private List<Var> vars = null ;
+    private List<Var> vars;
     
     /** Iterate over all the names of variables. */
     @Override

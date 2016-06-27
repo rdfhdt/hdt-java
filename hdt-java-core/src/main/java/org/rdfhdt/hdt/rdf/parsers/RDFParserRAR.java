@@ -27,7 +27,7 @@ public class RDFParserRAR implements RDFParserCallback {
 	
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
-	private static Boolean available=null;
+	private static Boolean available;
 	
 	// List files in rar
 //	unrar vb FILE.rar

@@ -7,7 +7,7 @@ public class SortedReduceIterator<T> implements Iterator<T> {
 	
 	Iterator<T> it;
 	Reducer<T> reducer;
-	T nextValue=null;
+	T nextValue;
 	
 	public SortedReduceIterator(Iterator<T> it, Reducer<T> reducer) {
 		this.it=it;

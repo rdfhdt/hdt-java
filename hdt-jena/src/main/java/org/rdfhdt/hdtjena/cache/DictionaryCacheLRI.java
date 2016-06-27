@@ -43,7 +43,7 @@ public class DictionaryCacheLRI implements DictionaryCache {
 
 	private Map<Integer, Node> cache;
 	private int [] arr;
-	private int ptr=0;
+	private int ptr;
 	private final int size;
 	
 	public DictionaryCacheLRI(int size) {

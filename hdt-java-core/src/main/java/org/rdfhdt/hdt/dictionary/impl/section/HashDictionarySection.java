@@ -50,7 +50,7 @@ public class HashDictionarySection implements TempDictionarySection {
 	private HashMap<CharSequence, Integer> map;
 	private List<CharSequence> list;
 	private int size;
-	boolean sorted=false;
+	boolean sorted;
 	
 	/**
 	 * 

@@ -30,7 +30,7 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 
 public final class VarAppearance {
-	private byte value=0;
+	private byte value;
 	private static final byte SUBJECT = 1;
 	private static final byte PREDICATE = 2;
 	private static final byte OBJECT = 4;

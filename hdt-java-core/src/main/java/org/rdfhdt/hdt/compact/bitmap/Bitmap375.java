@@ -52,10 +52,10 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	
 	// Variables
 	private long pop;
-	private long [] superBlocksLong=null;
-	private int [] superBlocksInt=null;
+	private long [] superBlocksLong;
+	private int [] superBlocksInt;
 	private byte [] blocks;
-	private boolean indexUpToDate = false;
+	private boolean indexUpToDate;
     
 	public Bitmap375() {
 		super();

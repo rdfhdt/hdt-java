@@ -34,9 +34,9 @@ public class IteratorConcat<T> implements Iterator<T>
     
     private List<Iterator<T>> iterators = DS.list(); 
     int idx = -1 ;
-    private Iterator<T> current = null ;
-    private Iterator<T> removeFrom = null ;
-    boolean finished = false ;
+    private Iterator<T> current;
+    private Iterator<T> removeFrom;
+    boolean finished;
     
     /** @see IteratorCons */
     public static <T> Iterator<T> concat(Iterator<T> iter1, Iterator<T> iter2)

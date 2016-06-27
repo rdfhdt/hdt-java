@@ -47,7 +47,7 @@ public class SequenceInt32 implements DynamicSequence {
 
 	/** The array that holds the objects **/
 	int [] data;
-	int numelements = 0;
+	int numelements;
 
 	/**
 	 * Basic constructor

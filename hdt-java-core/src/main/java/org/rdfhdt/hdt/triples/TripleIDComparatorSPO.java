@@ -37,7 +37,7 @@ import java.util.Comparator;
 public final class TripleIDComparatorSPO implements Comparator<TripleID> {
 
 	// Singleton
-	private static TripleIDComparatorSPO instance=null; 
+	private static TripleIDComparatorSPO instance;
 	public static TripleIDComparatorSPO getInstance() {
 		if(instance==null) {
 			instance = new TripleIDComparatorSPO();

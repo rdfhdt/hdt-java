@@ -53,7 +53,7 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 		TempDictionary dict;
 		ProgressListener listener;
-		long count=0;
+		long count;
 
 		DictionaryAppender(TempDictionary dict, ProgressListener listener) {
 			this.dict = dict;
@@ -84,7 +84,7 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 		TempDictionary dict;
 		TempTriples triples;
 		ProgressListener listener;
-		long count=0;
+		long count;
 
 		public TripleAppender2(TempDictionary dict, TempTriples triples, ProgressListener listener) {
 			this.dict = dict;

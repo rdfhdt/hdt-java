@@ -50,7 +50,7 @@ public class HDTInfo {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
-	public String hdtInput = null;	
+	public String hdtInput;
 	
 	public void execute() throws ParserException, IOException {
 		InputStream input;

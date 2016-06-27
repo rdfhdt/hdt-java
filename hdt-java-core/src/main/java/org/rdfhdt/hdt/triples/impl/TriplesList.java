@@ -68,7 +68,7 @@ public class TriplesList implements TempTriples {
 	private TripleComponentOrder order;
 	private long numValidTriples;
 
-	private boolean sorted = false;
+	private boolean sorted;
 
 	/**
 	 * Constructor, given an order to sort by

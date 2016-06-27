@@ -42,7 +42,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 
 public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 
-	private static boolean initialized = false;
+	private static boolean initialized;
 
 	public static void init() {
 		if(initialized) {

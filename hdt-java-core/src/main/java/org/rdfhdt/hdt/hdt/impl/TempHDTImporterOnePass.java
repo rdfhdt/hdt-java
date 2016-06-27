@@ -55,8 +55,8 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		TempDictionary dict;
 		TempTriples triples;
 		ProgressListener listener;
-		long num = 0;
-		long size = 0;
+		long num;
+		long size;
 
 		public TripleAppender(TempDictionary dict, TempTriples triples, ProgressListener listener) {
 			this.dict = dict;

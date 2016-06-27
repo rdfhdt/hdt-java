@@ -58,7 +58,7 @@ import org.rdfhdt.hdtjena.util.VarAppearance;
 /** Utilities used within the HDT BGP solver : local HDT store */
 public class HDTSolverLib
 {
-	public static long numBGPs = 0;
+	public static long numBGPs;
 	
     protected static QueryIterator execute(HDTGraph graph, BasicPattern pattern, QueryIterator input,
     										Predicate<Tuple<HDTId>> filter, ExecutionContext execCxt)
