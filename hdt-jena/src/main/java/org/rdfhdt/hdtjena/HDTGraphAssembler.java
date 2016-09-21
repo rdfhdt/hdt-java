@@ -74,4 +74,8 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 			throw new AssemblerException(root, "Error reading HDT file: "+file+" / "+e.toString());
 		}
 	}
+
+	static {
+		init();
+	}
 }
