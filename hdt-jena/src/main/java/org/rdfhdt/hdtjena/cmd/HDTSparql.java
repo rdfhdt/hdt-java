@@ -22,7 +22,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 
 public class HDTSparql {
 	/**
-	 * HDTSparql, receives a SPARQL SELECT query and executes it against an HDT file.
+	 * HDTSparql, receives a SPARQL query and executes it against an HDT file.
 	 * @param args
 	 */
 	public static void main(String[] args) throws Throwable {
@@ -47,15 +47,20 @@ public class HDTSparql {
 			QueryExecution qe = QueryExecutionFactory.create(query, model);
 
 			try {
-				// FIXME: Do ASK/DESCRIBE/CONSTRUCT 
-				ResultSet results = qe.execSelect();
-
-				/*while(results.hasNext()) {
-				QuerySolution sol = results.nextSolution();
-				System.out.println(sol.toString());
-				}*/
-				// Output query results	
-				ResultSetFormatter.outputAsCSV(System.out, results);
+				// Perform the query and output the results, depending on query type
+				if (query.isSelectType()) {
+					ResultSet results = qe.execSelect();
+					ResultSetFormatter.outputAsCSV(System.out, results);
+				} else if (query.isDescribeType()) {
+					Model result = qe.execDescribe();
+					result.write(System.out, "N-TRIPLES", null);
+				} else if (query.isConstructType()) {
+					Model result = qe.execConstruct();
+					result.write(System.out, "N-TRIPLES", null);
+				} else if (query.isAskType()) {
+					boolean b = qe.execAsk();
+					System.out.println(b);
+				}
 			} finally {
 				qe.close();				
 			}
