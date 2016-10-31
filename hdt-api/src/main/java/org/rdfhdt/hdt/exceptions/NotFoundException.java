@@ -41,4 +41,10 @@ public class NotFoundException extends Exception {
 	public NotFoundException(String reason) {
 		super(reason);
 	}
+
+	@Override
+	public Throwable fillInStackTrace() {
+		// Do nothing, otherwise this becomes a performance bottleneck during search
+		return this;
+	}
 }

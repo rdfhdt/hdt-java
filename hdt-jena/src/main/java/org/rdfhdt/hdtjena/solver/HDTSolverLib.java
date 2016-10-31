@@ -35,7 +35,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.atlas.lib.Tuple;
+import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping;
@@ -44,7 +44,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.util.iterator.Filter;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.rdfhdt.hdtjena.NodeDictionary;

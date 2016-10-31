@@ -26,7 +26,9 @@
 
 package org.rdfhdt.hdtjena.solver;
 
-import org.apache.jena.atlas.lib.Tuple;
+import java.util.function.Predicate;
+
+import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.logging.Log;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.rdfhdt.hdtjena.HDTJenaConstants;
@@ -52,7 +54,6 @@ import org.apache.jena.sparql.engine.optimizer.reorder.ReorderProc;
 import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.mgt.Explain;
-import org.apache.jena.util.iterator.Filter;
 
 public class OpExecutorHDT extends OpExecutor {
 	
@@ -213,13 +214,13 @@ public class OpExecutorHDT extends OpExecutor {
     /** An op executor that simply executes a BGP or QuadPattern without any reordering */ 
     private static class OpExecutorPlainHDT extends OpExecutor
     {
-        Filter<Tuple<HDTId>> filter;
+        Predicate<Tuple<HDTId>> filter;
         
         @SuppressWarnings("unchecked")
 		public OpExecutorPlainHDT(ExecutionContext execCxt)
         {
             super(execCxt) ;
-            filter = (Filter<Tuple<HDTId>>)execCxt.getContext().get(HDTJenaConstants.FILTER_SYMBOL);
+            filter = (Predicate<Tuple<HDTId>>)execCxt.getContext().get(HDTJenaConstants.FILTER_SYMBOL);
         }
         
         @Override
