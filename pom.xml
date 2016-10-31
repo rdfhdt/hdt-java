@@ -33,7 +33,10 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
+    <jdk.version>1.7</jdk.version>
+
     <jena.version>3.0.1</jena.version>
+    <jena-jdk.version>1.8</jena-jdk.version>
   </properties>
 
   <scm>
@@ -180,8 +183,8 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>${jdk.version}</source>
+          <target>${jdk.version}</target>
         </configuration>
       </plugin>
       <plugin>
