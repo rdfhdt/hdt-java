@@ -188,8 +188,8 @@ public class TripleString {
 		if(line.charAt(posa)=='<') posa++;		// Remove <
 		if(line.charAt(posb-1)=='>') posb--;	// Remove >
 		
-		this.setSubject(line.substring(posa, posb));
-	
+		this.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+
 		// SET PREDICATE
 		posa = split+1;
 		posb = split = line.indexOf(' ', posa);
@@ -198,8 +198,8 @@ public class TripleString {
 		if(line.charAt(posa)=='<') posa++;
 		if(posb>posa && line.charAt(posb-1)=='>') posb--;
 		
-		this.setPredicate(line.substring(posa, posb));
-		
+		this.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+
 		// SET OBJECT
 		posa = split+1;
 		posb = line.length();

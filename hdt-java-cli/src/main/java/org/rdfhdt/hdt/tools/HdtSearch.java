@@ -108,7 +108,7 @@ public class HdtSearch implements ProgressListener {
 		
 		if(posb==-1) throw new ParserException("Make sure that you included three terms."); // Not found, error.
 		
-		dest.setSubject(line.substring(posa, posb));
+		dest.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 	
 		// SET PREDICATE
 		posa = split+1;
@@ -116,7 +116,7 @@ public class HdtSearch implements ProgressListener {
 		
 		if(posb==-1) throw new ParserException("Make sure that you included three terms.");
 		
-		dest.setPredicate(line.substring(posa, posb));
+		dest.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 		
 		// SET OBJECT
 		posa = split+1;

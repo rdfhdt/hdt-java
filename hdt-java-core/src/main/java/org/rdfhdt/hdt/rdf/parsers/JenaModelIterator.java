@@ -26,9 +26,9 @@ public class JenaModelIterator implements IteratorTripleString {
         Statement stm = iterator.nextStatement();
 
         return new TripleString(
-                        stm.getSubject().toString(),
-                        stm.getPredicate().toString(),
-                        stm.getObject().toString());
+                JenaNodeFormatter.format(stm.getSubject()),
+                JenaNodeFormatter.format(stm.getPredicate()),
+                JenaNodeFormatter.format(stm.getObject()));
 	}
 
 	@Override

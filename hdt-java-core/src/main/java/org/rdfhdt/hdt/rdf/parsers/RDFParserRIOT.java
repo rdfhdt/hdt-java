@@ -117,13 +117,19 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 
      @Override
      public void triple(Triple parsedTriple) {
-             triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
+             triple.setAll(
+					 JenaNodeFormatter.format(parsedTriple.getSubject()),
+					 JenaNodeFormatter.format(parsedTriple.getPredicate()),
+					 JenaNodeFormatter.format(parsedTriple.getObject()));
              callback.processTriple(triple, 0);              
      }
 
      @Override
      public void quad(Quad quad) {
-             triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
+             triple.setAll(
+					 JenaNodeFormatter.format(quad.getSubject()),
+					 JenaNodeFormatter.format(quad.getPredicate()),
+					 JenaNodeFormatter.format(quad.getObject()));
              callback.processTriple(triple, 0);              
      }
 

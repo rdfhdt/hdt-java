@@ -31,7 +31,7 @@ import java.util.Map;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
-import org.apache.jena.graph.JenaNodeCreator;
+import org.rdfhdt.hdt.rdf.parsers.JenaNodeCreator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -114,16 +114,9 @@ public class NodeDictionary {
 		Node node = cacheIDtoNode[role.ordinal()].get(id);
 		if(node==null) {
 			CharSequence str = dictionary.idToString(id, role);
-			char firstChar = str.charAt(0);
-			
-			if(firstChar=='_') {
-				node = JenaNodeCreator.createAnon(str);
-			} else if(firstChar=='"') {
-				node = JenaNodeCreator.createLiteral(str);
-			} else {
-				node = JenaNodeCreator.createURI(str);
-			}
-			
+
+			node = JenaNodeCreator.create(str);
+
 			cacheIDtoNode[role.ordinal()].put(id, node);
 		}
 		
