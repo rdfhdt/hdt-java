@@ -28,9 +28,6 @@ package org.rdfhdt.hdtjena;
 
 import java.util.Map;
 
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.rdfhdt.hdt.rdf.parsers.JenaNodeCreator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
@@ -41,6 +38,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.rdf.parsers.JenaNodeFormatter;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 import org.rdfhdt.hdtjena.cache.DictionaryCache;
@@ -153,23 +151,8 @@ public class NodeDictionary {
 	public static String nodeToStr(Node node) {
 		if(node==null || node.isVariable()) {
 			return "";
-		}else if(node.isURI()) {
-			return node.getURI();
-		} else if(node.isLiteral()) {
-			RDFDatatype t = node.getLiteralDatatype();
-			
-			if(t==null || XSDDatatype.XSDstring.getURI().equals(t.getURI())) {
-				// String
-				return "\""+node.getLiteralLexicalForm()+"\"";
-			} else if(RDFLangString.rdfLangString.equals(t)) {
-				// Lang
-				return "\""+node.getLiteralLexicalForm()+"\"@"+node.getLiteralLanguage();
-			} else {
-				// Typed
-				return "\""+node.getLiteralLexicalForm()+"\"^^<"+t.getURI()+">";
-			}
 		} else {
-			return node.toString();
+			return JenaNodeFormatter.format(node);
 		}
 	}
 	
