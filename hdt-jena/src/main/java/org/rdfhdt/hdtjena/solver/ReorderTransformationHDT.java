@@ -77,9 +77,9 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 				
 		// FIXME: Compute exactly for using the HDT  
 		Dictionary dict = graph.getHDT().getDictionary();
-		TERM_S = dict.getNsubjects()/numTriples;
-		TERM_P = dict.getNpredicates()/numTriples;
-		TERM_O = dict.getNobjects()/numTriples;
+		TERM_S = dict.getNsubjects()/Math.max(numTriples, 1);
+		TERM_P = dict.getNpredicates()/Math.max(numTriples, 1);
+		TERM_O = dict.getNobjects()/Math.max(numTriples, 1);
 	}
 
     private void initializeMatcher () {

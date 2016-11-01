@@ -191,9 +191,11 @@ public class BitmapTriples implements TriplesPrivate {
 			ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, number);
 			numTriples++;
 		}
-		
-		bitY.append(true);
-		bitZ.append(true);
+
+		if (numTriples > 0) {
+			bitY.append(true);
+			bitZ.append(true);
+		}
 		
 		vectorY.aggresiveTrimToSize();
 		vectorZ.trimToSize();
@@ -230,6 +232,10 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public IteratorTripleID search(TripleID pattern) {
+		if (getNumberOfElements() == 0) {
+			return new EmptyTriplesIterator(order);
+		}
+
 		TripleID reorderedPat = new TripleID(pattern);
 		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
 		String patternString = reorderedPat.getPatternString();

@@ -405,7 +405,7 @@ public class TriplesList implements TempTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public class TriplesListIterator implements IteratorTripleID {
+	public static class TriplesListIterator implements IteratorTripleID {
 
 		private TriplesList triplesList;
 		private int pos;

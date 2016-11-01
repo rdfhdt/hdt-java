@@ -69,7 +69,7 @@ public class MultiMergeTest {
 			
 			int val = it.next();
 			int valE = itE.next();
-			System.out.println(val);
+//			System.out.println(val);
 			assertEquals(val, valE);
 		}
 		
