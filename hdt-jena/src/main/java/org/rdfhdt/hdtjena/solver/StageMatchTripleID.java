@@ -38,6 +38,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.apache.jena.sparql.engine.iterator.QueryIterTriplePattern;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -48,8 +49,9 @@ import org.rdfhdt.hdtjena.bindings.BindingHDTId;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 import org.rdfhdt.hdtjena.util.VarAppearance;
 
-
-
+/**
+ * For each input binding, emits all tuples matching a triple pattern.  See {@link QueryIterTriplePattern}.
+ */
 public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
 {
 	
@@ -166,24 +168,32 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
             public BindingHDTId apply(TripleID triple)
             {
                 BindingHDTId output = new BindingHDTId(input) ;
-                
-                if(var[0]!=null && !output.containsKey(var[0])) {
-                	output.put(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT, dictionary));
+
+                if (var[0] != null && !insert(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT, dictionary), output)) {
+                    return null;
                 }
-                
-                if(var[1]!=null && !output.containsKey(var[1])) {
-                	output.put(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE, dictionary));
+                if (var[1] != null && !insert(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE, dictionary), output)) {
+                    return null;
                 }
-                
-                if(var[2]!=null && !output.containsKey(var[2])) {
-                	output.put(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT, dictionary));
+                if (var[2] != null && !insert(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT, dictionary), output)) {
+                    return null;
                 }
 
                 return output;
             }
         };
         
-        return it.map(binder);
+        return it.map(binder).removeNulls();
     }
-    
+
+    private static boolean insert(Var var, HDTId newId, BindingHDTId results)
+    {
+        HDTId currentId = results.get(var);
+        if (currentId != null) {
+             return newId.equals(currentId);
+        }
+
+        results.put(var, newId);
+        return true;
+    }
 }

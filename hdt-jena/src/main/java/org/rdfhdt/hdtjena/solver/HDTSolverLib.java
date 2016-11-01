@@ -64,7 +64,7 @@ public class HDTSolverLib
     {
     	numBGPs++;
     	
-        Iterator<BindingHDTId> chain = Iter.map(input, HDTSolverLib.convFromBinding(graph.getNodeDictionary(), execCxt)) ;
+        Iterator<BindingHDTId> chain = Iter.map(input, convFromBinding(graph.getNodeDictionary(), execCxt)) ;
         
         List<Abortable> killList = new ArrayList<Abortable>() ;
         
@@ -84,8 +84,8 @@ public class HDTSolverLib
         }
         
         // Need to make sure the bindings here point to parent.
-        Iterator<Binding> iterBinding = converter.convert(graph.getNodeDictionary(), chain) ;
-        
+        Iterator<Binding> iterBinding = Iter.map(chain, HDTSolverLib::convToBinding) ;
+
         // "input" will be closed by QueryIterHDT but is otherwise unused.
         // "killList" will be aborted on timeout.
         return new QueryIterHDT(iterBinding, killList, input, execCxt) ;
@@ -130,48 +130,19 @@ public class HDTSolverLib
 		if(id>0) {
 			return new HDTId(id, TripleComponentRole.OBJECT, dict);
 		}
-		return null; // NOT FOUND
+
+		return new HDTId(n); // NOT FOUND
 	}
 	
 	// Conversions
-	
-    public interface ConvertHDTIdToNode { 
-        Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds) ;
-    }
-    
-    // Transform : BindingHDTId ==> Binding
-    private static Function<BindingHDTId, Binding> convToBinding(final NodeDictionary dictionary)
-    {
-        return new Function<BindingHDTId, Binding>()
-        {
-            @Override
-            public Binding apply(BindingHDTId bindingIds)
-            {
-                return new BindingHDTNode(bindingIds);
-            }
-        } ;
-    }
-    
-    public final static ConvertHDTIdToNode converter = new ConvertHDTIdToNode(){
-    	@Override
-    	public Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds)
-    	{
-    		return Iter.map(iterBindingIds, convToBinding(dictionary)) ;
-    	}
-    } ;
 
-    public static Iterator<BindingHDTId> convertToIds(Iterator<Binding> iterBindings, NodeDictionary dictionary, ExecutionContext ctx)
-    { 
-    	return Iter.map(iterBindings, convFromBinding(dictionary, ctx)) ; 
+    /** Transform from HDTId bindings to generic Jena bindings. */
+    public static Binding convToBinding(BindingHDTId binding) {
+        return new BindingHDTNode(binding);
     }
-    
-    public static Iterator<Binding> convertToNodes(Iterator<BindingHDTId> iterBindingIds, NodeDictionary dictionary)
-    {
-    	return Iter.map(iterBindingIds, convToBinding(dictionary)) ; 
-    }
-    
-    // Transform : Binding ==> BindingHDTId
-    public static Function<Binding, BindingHDTId> convFromBinding(final NodeDictionary dictionary, final ExecutionContext ctx)
+
+    /** Transform from generic Jena bindings to HDTId bindings. */
+    public static Function<Binding, BindingHDTId> convFromBinding(NodeDictionary dictionary, ExecutionContext ctx)
     {
         return new Function<Binding, BindingHDTId>()
         {

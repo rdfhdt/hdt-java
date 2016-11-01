@@ -109,13 +109,8 @@ public class BindingHDTNode extends BindingBase
             HDTId id = idBinding.get(var) ;
             if ( id == null )
                 return null;
-            
-            Node n = id.getNode();
-            if(n==null) {
-            	n = id.getDictionary().getNode(id);
-            	id.setNode(n);
-            }
-            return n;
+
+            return id.getNode();
         } catch (Exception ex)
         {
             Log.fatal(this, String.format("get1(%s)", var), ex) ;

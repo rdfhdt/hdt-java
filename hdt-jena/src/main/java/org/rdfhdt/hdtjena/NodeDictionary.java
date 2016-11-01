@@ -104,10 +104,6 @@ public class NodeDictionary {
 
 	}
 
-	public Node getNode(HDTId hdtid) {
-		return getNode(hdtid.getId(), hdtid.getRole());
-	}
-	
 	public Node getNode(int id, TripleComponentRole role) {
 		Node node = cacheIDtoNode[role.ordinal()].get(id);
 		if(node==null) {
@@ -186,7 +182,7 @@ public class NodeDictionary {
 		return query.getPrefixMapping();
 	}
 
-    public static final Var asVar(Node node)
+    public static Var asVar(Node node)
     {
         if ( Var.isVar(node) )
             return Var.alloc(node) ;
