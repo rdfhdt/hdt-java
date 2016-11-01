@@ -151,7 +151,7 @@ public class NodeDictionary {
 			return JenaNodeFormatter.format(node);
 		}
 	}
-	
+
 	public TripleID getTripleID(Triple triple, PrefixMapping map) {
 		return new TripleID(
 				getIntID(nodeToStr(triple.getSubject(), map), TripleComponentRole.SUBJECT),
@@ -159,7 +159,7 @@ public class NodeDictionary {
 				getIntID(nodeToStr(triple.getObject(), map), TripleComponentRole.OBJECT)
 				);
 	}
-	
+
 	public TripleID getTriplePatID(Triple jenaTriple) {
 		int subject=0, predicate=0, object=0;
 		
@@ -190,8 +190,12 @@ public class NodeDictionary {
     }
 
 	public static int translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
-		if(dictionary==id.getDictionary()) {
-			return id.getValue();
+		if (dictionary == id.getDictionary()) {
+			if (role == id.getRole()) {
+				return id.getValue();
+			} else if (isSO(role) && isSO(id.getRole())) {
+				return id.getValue() <= dictionary.dictionary.getNshared() ? id.getValue() : -1;
+			}
 		}
 		
 		NodeDictionary dict2 = id.getDictionary();
@@ -200,5 +204,7 @@ public class NodeDictionary {
 		return dictionary.getIntID(str.toString(), role);
 	}
 
-
+	private static boolean isSO(TripleComponentRole role) {
+		return role == TripleComponentRole.SUBJECT || role == TripleComponentRole.OBJECT;
+	}
 }

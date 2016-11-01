@@ -27,7 +27,7 @@ public class HDTId {
 	public NodeDictionary getDictionary() {
 		return dict;
 	}
-	
+
 	public int getValue() {
 		return id;
 	}
