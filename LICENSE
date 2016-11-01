@@ -3,5 +3,6 @@ Each module has a different License:
 hdt-api: Apache License
 hdt-java-core: Lesser General Public License
 hdt-jena: Lesser General Public License
+hdt-jena-test: Apache License
 hdt-java-cli: Commandline tools have an Apache License
 hdt-fuseki: Apache License

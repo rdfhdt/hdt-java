@@ -37,6 +37,7 @@ hdt-api: Apache License
 hdt-java-cli (Commandline tools and examples): Apache License
 hdt-java-core: Lesser General Public License
 hdt-jena: Lesser General Public License
+hdt-jena-test: Apache License
 hdt-fuseki: Apache License
 
 

@@ -80,6 +80,7 @@
         <module>hdt-java-core</module>
         <module>hdt-java-cli</module>
         <module>hdt-jena</module>
+        <module>hdt-jena-test</module>
         <module>hdt-java-package</module>
         <module>hdt-fuseki</module>
       </modules>
@@ -110,8 +111,22 @@
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
+        <artifactId>jena-arq</artifactId>
+        <version>${jena.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
         <artifactId>jena-base</artifactId>
         <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-base</artifactId>
+        <version>${jena.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
@@ -122,6 +137,13 @@
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-core</artifactId>
         <version>${jena.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-core</artifactId>
+        <version>${jena.version}</version>
+        <classifier>tests</classifier>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
@@ -147,6 +169,12 @@
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
         <version>4.12</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>pl.pragmatists</groupId>
+        <artifactId>JUnitParams</artifactId>
+        <version>1.0.5</version>
         <scope>test</scope>
       </dependency>
     </dependencies>
