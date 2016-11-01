@@ -57,7 +57,7 @@ public class JenaNodeCreatorTest {
                 createLiteral("\"abc\"@\"en\""),
                 createLiteral("\"abc\"^^<xyz>"),
                 createLiteral("abc", "en"),
-                createLiteral("\"123\"", "en-UK"),
+                createLiteral("\"123\"", "en-uk"),
                 createLiteral("abc", TypeMapper.getInstance().getSafeTypeByName("en")),
                 createLiteral("\"123\"", TypeMapper.getInstance().getSafeTypeByName("xyz")),
                 createLiteral("abc", TypeMapper.getInstance().getSafeTypeByName("http://example.com#z\u00c3\u00b3")),

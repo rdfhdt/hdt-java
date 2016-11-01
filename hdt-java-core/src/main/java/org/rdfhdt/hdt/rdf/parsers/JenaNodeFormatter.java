@@ -52,8 +52,8 @@ public class JenaNodeFormatter {
                 return '"' + node.getLiteralLexicalForm() + '"';
 
             } else if (RDFLangString.rdfLangString.equals(t)) {
-                // Lang
-                return '"' + node.getLiteralLexicalForm() + "\"@" + node.getLiteralLanguage();
+                // Lang.  Lowercase the language tag to get semantic equivalence between "x"@en and "x"@EN as required by spec
+                return '"' + node.getLiteralLexicalForm() + "\"@" + node.getLiteralLanguage().toLowerCase();
 
             } else {
                 // Typed

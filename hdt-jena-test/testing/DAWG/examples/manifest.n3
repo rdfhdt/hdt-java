@@ -167,7 +167,7 @@
 
      [  mf:name    "sparql-query-example-Testing-Values-lang" ;
         rdfs:comment
-            "Example from section 11.2.3.7" ;
+            "Example from section 11.2.3.7, modified for HDT to convert the language tag to lowercase" ;
         mf:action
             [ qt:query  <ex11.2.3.7_0.rq> ;
               qt:data   <ex11.2.3.7_0.n3> ] ;
