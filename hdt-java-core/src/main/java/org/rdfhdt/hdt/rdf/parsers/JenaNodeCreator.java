@@ -42,28 +42,28 @@ public class JenaNodeCreator {
 	private JenaNodeCreator() {}
 
     public static Node create(CharSequence x) {
-        if (x.length() == 0) {
+        String str = x.toString();
+
+        if (str.length() == 0) {
             return createURI("");
         }
 
-        char firstChar = x.charAt(0);
+        char firstChar = str.charAt(0);
 
         if (firstChar == '_') {
-            return createAnon(x);
+            return createAnon(str);
         } else if (firstChar == '"') {
-            return createLiteral(x);
+            return createLiteral(str);
         } else {
-            return createURI(x);
+            return createURI(str);
         }
     }
 
-    private static Node createAnon(CharSequence x) {
-        return NodeFactory.createBlankNode(x.toString().substring(2));
+    private static Node createAnon(String str) {
+        return NodeFactory.createBlankNode(str.substring(2));
 	}
 
-    private static Node createLiteral(CharSequence x) {
-		// FIXME: Avoid converting to String?
-		String str = x.toString();
+    private static Node createLiteral(String str) {
 		int len=str.length();
 
 		String literal;
@@ -103,7 +103,7 @@ public class JenaNodeCreator {
         return NodeFactory.createLiteral(str.substring(1, len-2));
 	}
 
-    private static Node createURI(CharSequence x) {
-		return NodeFactory.createURI(x.toString());
+    private static Node createURI(String str) {
+		return NodeFactory.createURI(str);
 	}
 }

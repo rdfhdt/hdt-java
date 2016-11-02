@@ -34,6 +34,7 @@ import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.string.CompactString;
+import org.rdfhdt.hdt.util.string.DelayedString;
 
 /**
  * 
@@ -91,6 +92,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	 */
 	@Override
 	public int stringToId(CharSequence str, TripleComponentRole position) {
+		str = DelayedString.unwrap(str);
 
 		if(str==null || str.length()==0) {
 			return 0;
@@ -101,7 +103,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			str = new CompactString(str);
 		}
 
-		int ret=0;
+		int ret;
 		switch(position) {
 		case SUBJECT:
 			ret = shared.locate(str);
@@ -190,17 +192,17 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		switch (role) {
 		case SUBJECT:
 			if(id<=shared.getNumberOfElements()) {
-				return (DictionarySectionPrivate)shared;
+				return shared;
 			} else {
-				return (DictionarySectionPrivate)subjects;
+				return subjects;
 			}
 		case PREDICATE:
-			return (DictionarySectionPrivate)predicates;
+			return predicates;
 		case OBJECT:
 			if(id<=shared.getNumberOfElements()) {
-				return (DictionarySectionPrivate)shared;
+				return shared;
 			} else {
-				return (DictionarySectionPrivate)objects;
+				return objects;
 			}
 		default:
 			throw new IllegalArgumentException();

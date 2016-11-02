@@ -48,15 +48,10 @@ public final class CharSequenceComparator implements Comparator<CharSequence> {
 		if(s1==s2) {
 			return 0;
 		}
-		
-		if(s1 instanceof DelayedString) {
-			s1 = ((DelayedString) s1).str;
-		}
-		
-		if(s2 instanceof DelayedString) {
-			s2 = ((DelayedString) s2).str;
-		}
-		
+
+		s1 = DelayedString.unwrap(s1);
+		s2 = DelayedString.unwrap(s2);
+
 		if(s1 instanceof CompactString && s2 instanceof CompactString) {
 			CompactString cs1 = (CompactString) s1;
 			CompactString cs2 = (CompactString) s2;

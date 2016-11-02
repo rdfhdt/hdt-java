@@ -26,9 +26,6 @@
 
 package org.rdfhdt.hdtjena;
 
-import java.util.Map;
-
-import org.rdfhdt.hdt.rdf.parsers.JenaNodeCreator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -38,13 +35,13 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.rdf.parsers.JenaNodeCreator;
 import org.rdfhdt.hdt.rdf.parsers.JenaNodeFormatter;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 import org.rdfhdt.hdtjena.cache.DictionaryCache;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
 import org.rdfhdt.hdtjena.cache.DictionaryCacheLRI;
-import org.rdfhdt.hdtjena.cache.DummyMap;
 
 /**
  * Wraps all operations from ids to Nodes and vice versa using an HDT Dictionary.
@@ -56,52 +53,26 @@ public class NodeDictionary {
 
 	private final Dictionary dictionary;
 
-	private final DictionaryCache[] cacheIDtoNode = new DictionaryCache[TripleComponentRole.values().length];
-	
-	@SuppressWarnings("unchecked")
-	Map<String, Integer>[] cacheNodeToId = new Map[TripleComponentRole.values().length];
+	private final DictionaryCache[] cacheIDtoNode;
 	
 	public NodeDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
 		
 		// ID TO NODE	
-		final int idToNodeSize = 20000;
-		if(dictionary.getNsubjects()>idToNodeSize) {			
-			cacheIDtoNode[0] = new DictionaryCacheLRI(idToNodeSize);
-		} else {
-			cacheIDtoNode[0] = new DictionaryCacheArray((int) dictionary.getNsubjects());
-		}
-		
-		if(dictionary.getNpredicates()>idToNodeSize) {
-			cacheIDtoNode[1] = new DictionaryCacheLRI(idToNodeSize);
-		} else {	
-			cacheIDtoNode[1] = new DictionaryCacheArray((int) dictionary.getNpredicates());
-		}
-		
-		if(dictionary.getNobjects()>idToNodeSize) {			
-			cacheIDtoNode[2] = new DictionaryCacheLRI(idToNodeSize);
-		} else {
-			cacheIDtoNode[2] = new DictionaryCacheArray((int) dictionary.getNobjects());
-		}
-		
-		// NODE TO ID
-		// Disabled, it does not make so much impact.
-		cacheNodeToId[0] = new DummyMap<String, Integer>();
-		cacheNodeToId[1] = new DummyMap<String, Integer>();
-		cacheNodeToId[2] = new DummyMap<String, Integer>();
-		
-//		final int nodeToIDSize = 1000;
-//		
-//		cacheNodeToId[0] = new LRUCache<String, Integer>(nodeToIDSize);
-//		if(dictionary.getNpredicates()>nodeToIDSize) {
-//			System.out.println("Predicates LRU");
-//			cacheNodeToId[1] = new LRUCache<String, Integer>(nodeToIDSize);
-//		} else {
-//			System.out.println("Predicates Map");
-//			cacheNodeToId[1] = new ConcurrentHashMap<String, Integer>((int) dictionary.getNpredicates());
-//		}
-//		cacheNodeToId[2] = new LRUCache<String, Integer>(nodeToIDSize);
+		this.cacheIDtoNode = new DictionaryCache[]{
+				createCache(dictionary.getNsubjects()),
+				createCache(dictionary.getNpredicates()),
+				createCache(dictionary.getNobjects()),
+		};
+	}
 
+	private DictionaryCache createCache(long maxElements) {
+		final int idToNodeSize = 20000;
+		if(maxElements > idToNodeSize) {
+			return new DictionaryCacheLRI(idToNodeSize);
+		} else {
+			return new DictionaryCacheArray((int) maxElements);
+		}
 	}
 
 	public Node getNode(int id, TripleComponentRole role) {
@@ -113,7 +84,7 @@ public class NodeDictionary {
 
 			cacheIDtoNode[role.ordinal()].put(id, node);
 		}
-		
+
 		return node;
 	}
 	
@@ -125,15 +96,8 @@ public class NodeDictionary {
 		return getIntID(nodeToStr(node, map), role);
 	}
 	
-	public int getIntID(String str, TripleComponentRole role) {
-		Integer intValue = cacheNodeToId[role.ordinal()].get(str);
-		if(intValue!=null) {
-			return intValue.intValue();
-		}
-		
-		int val = dictionary.stringToId(str, role);
-		cacheNodeToId[role.ordinal()].put(str, val);
-		return val;
+	public int getIntID(CharSequence str, TripleComponentRole role) {
+		return dictionary.stringToId(str, role);
 	}
 	
 	public static String nodeToStr(Node node, PrefixMapping map) {
@@ -201,7 +165,7 @@ public class NodeDictionary {
 		NodeDictionary dict2 = id.getDictionary();
 		
 		CharSequence str = dict2.dictionary.idToString(id.getValue(), id.getRole());
-		return dictionary.getIntID(str.toString(), role);
+		return dictionary.getIntID(str, role);
 	}
 
 	private static boolean isSO(TripleComponentRole role) {

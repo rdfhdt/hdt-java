@@ -1,7 +1,7 @@
 package org.rdfhdt.hdt.util.string;
 
 public final class DelayedString implements CharSequence {
-	CharSequence str;
+	private CharSequence str;
 
 	public DelayedString(CharSequence str) {
 		this.str = str;
@@ -28,7 +28,7 @@ public final class DelayedString implements CharSequence {
 	@Override
 	public CharSequence subSequence(int start, int end) {
 		ensure();
-		return subSequence(start, end);
+		return str.subSequence(start, end);
 	}
 	
 	@Override
@@ -37,7 +37,10 @@ public final class DelayedString implements CharSequence {
 		return str.toString();
 	}
 	
-	public CharSequence getInternal() {
+	public static CharSequence unwrap(CharSequence str) {
+		if (str instanceof DelayedString) {
+			return ((DelayedString) str).str;
+		}
 		return str;
 	}
 

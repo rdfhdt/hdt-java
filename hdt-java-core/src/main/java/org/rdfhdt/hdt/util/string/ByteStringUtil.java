@@ -150,13 +150,11 @@ public class ByteStringUtil {
 	}
 	
 	public static final int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
-		byte [] buf=null;
+		byte [] buf;
 		int len;
 		
-		if(str instanceof DelayedString) {
-			str = ((DelayedString) str).getInternal();
-		}
-		
+		str = DelayedString.unwrap(str);
+
 		// Isolate array
 		if(str instanceof CompactString) {
 			buf = ((CompactString) str).getData();
