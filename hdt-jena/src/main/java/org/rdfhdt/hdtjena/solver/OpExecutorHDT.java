@@ -30,10 +30,6 @@ import java.util.function.Predicate;
 
 import org.apache.jena.atlas.lib.tuple.Tuple;
 import org.apache.jena.atlas.logging.Log;
-import org.rdfhdt.hdtjena.HDTGraph;
-import org.rdfhdt.hdtjena.HDTJenaConstants;
-import org.rdfhdt.hdtjena.bindings.HDTId;
-
 import org.apache.jena.graph.Graph;
 import org.apache.jena.sparql.ARQInternalErrorException;
 import org.apache.jena.sparql.algebra.Op;
@@ -54,6 +50,9 @@ import org.apache.jena.sparql.engine.optimizer.reorder.ReorderProc;
 import org.apache.jena.sparql.engine.optimizer.reorder.ReorderTransformation;
 import org.apache.jena.sparql.expr.ExprList;
 import org.apache.jena.sparql.mgt.Explain;
+import org.rdfhdt.hdtjena.HDTGraph;
+import org.rdfhdt.hdtjena.HDTJenaConstants;
+import org.rdfhdt.hdtjena.bindings.HDTId;
 
 public class OpExecutorHDT extends OpExecutor {
 	

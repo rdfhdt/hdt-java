@@ -13,6 +13,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.parsers.JenaModelIterator;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdtjena.HDTGraph;
 
 import java.io.IOException;
@@ -33,17 +34,15 @@ public class GraphConverter {
         return result;
     }
 
-    private static Model toHDT(Model model) {
+    private static HDTGraph toHDT(Graph graph) {
+        Model model = ModelFactory.createModelForGraph(graph);
+        IteratorTripleString tripleIter = new JenaModelIterator(model);
         HDT hdt;
         try {
-            hdt = HDTManager.generateHDT(new JenaModelIterator(model), "http://example.com", new HDTSpecification(), null);
+            hdt = HDTManager.generateHDT(tripleIter, "http://example.com", new HDTSpecification(), null);
         } catch (IOException | ParserException e) {
             throw new RuntimeException(e);
         }
-        return ModelFactory.createModelForGraph(new HDTGraph(hdt, true));
-    }
-
-    private static Graph toHDT(Graph graph) {
-        return toHDT(ModelFactory.createModelForGraph(graph)).getGraph();
+        return new HDTGraph(hdt, true);
     }
 }

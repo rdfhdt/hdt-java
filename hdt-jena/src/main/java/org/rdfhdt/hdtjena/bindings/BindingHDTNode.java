@@ -127,7 +127,12 @@ public class BindingHDTNode extends BindingBase
             extra = "/"+id ;
         Node node = get(var) ;
 
-        sbuff.append("( ?"+var.getVarName()+extra+" = "+node.toString()+" )") ;
+        sbuff.append("( ?")
+                .append(var.getVarName())
+                .append(extra)
+                .append(" = ")
+                .append(node)
+                .append(" )");
     }
 
 }

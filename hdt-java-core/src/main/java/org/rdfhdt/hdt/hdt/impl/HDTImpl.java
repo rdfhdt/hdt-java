@@ -315,7 +315,7 @@ public class HDTImpl implements HDTPrivate {
 				dictionary.stringToId(object, TripleComponentRole.OBJECT)
 			);
 
-		if(triple.getSubject()==-1 || triple.getPredicate()==-1 || triple.getObject()==-1) {
+		if(triple.isNoMatch()) {
 			throw new NotFoundException("String not found in dictionary");
 		}
 
@@ -441,4 +441,9 @@ public class HDTImpl implements HDTPrivate {
 		triples.close();
 	}
 
+	// For debugging
+	@Override
+	public String toString() {
+		return String.format("HDT[file=%s,#triples=%d]", hdtFileName, triples.getNumberOfElements());
+	}
 }

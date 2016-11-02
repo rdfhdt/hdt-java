@@ -155,7 +155,7 @@ public final class TripleID implements Comparable<TripleID> {
 	}
 	
 	public boolean equals(TripleID other) {
-		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
+		return subject == other.subject && predicate == other.predicate && object == other.object;
 	}
 
 	/**
@@ -208,7 +208,7 @@ public final class TripleID implements Comparable<TripleID> {
 	 * @return
 	 */
 	public boolean isEmpty() {
-		return !(subject != 0 || predicate != 0 || object != 0);
+		return subject == 0 && predicate == 0 && object == 0;
 	}
 
 	/**
@@ -218,7 +218,15 @@ public final class TripleID implements Comparable<TripleID> {
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-	
+
+	/**
+	 * Checks whether any of the components of the triple are "no match" (-1).
+	 * @return
+	 */
+	public boolean isNoMatch() {
+		return subject == -1 || predicate == -1 || object == -1;
+	}
+
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
 	 * @return

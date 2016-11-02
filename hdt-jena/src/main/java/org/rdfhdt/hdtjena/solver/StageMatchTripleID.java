@@ -131,7 +131,7 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         	}
         }
 
-        if(patternID.getSubject()==-1 || patternID.getPredicate()==-1 || patternID.getObject()==-1) {
+        if(patternID.isNoMatch()) {
         	// Not found in dictionary, no match.
         	return Iter.nullIter();
         }

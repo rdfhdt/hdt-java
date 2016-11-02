@@ -232,7 +232,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public IteratorTripleID search(TripleID pattern) {
-		if (getNumberOfElements() == 0) {
+		if (getNumberOfElements() == 0 || pattern.isNoMatch()) {
 			return new EmptyTriplesIterator(order);
 		}
 
