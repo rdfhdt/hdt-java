@@ -2,6 +2,7 @@ package org.rdfhdt.hdtjena.solver;
 
 import java.util.List;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -116,6 +117,9 @@ public class OptimizedCount {
 		}
 		TriplePath tp = pb.get(0);
 		Triple triple= tp.asTriple();
+		if(triple==null) {
+			return null;
+		}
 	
 		// Every two components must not be equal to each other. (Forbid Joins)
 		if(triple.getSubject().equals(triple.getPredicate()) ||
@@ -223,7 +227,7 @@ public class OptimizedCount {
 			}
 		}
 	
-		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count)) );	
+		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count), XSDDatatype.XSDinteger) );
 		return new PlanOp(new HDTOptimizeddOp(), engine, new QueryIterYieldN(1, bindingResult));
 	}
 }
