@@ -49,7 +49,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 * 
 	 */
 	public ReplazableString() {
-		buffer = new byte[16*1024];
+		buffer = new byte[128];
 		used=0;
 	}
 	
@@ -64,7 +64,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	
 	private void ensureSize(int size) {
 		if(size>buffer.length) {
-			buffer = Arrays.copyOf(buffer, size);
+			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
 	}
 	
@@ -175,7 +175,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public char charAt(int index) {
-		return (char)buffer[index];
+		return (char)(buffer[index] & 0xff);
 	}
 
 	/* (non-Javadoc)
