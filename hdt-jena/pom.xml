@@ -30,11 +30,6 @@
 		<artifactId>jena-arq</artifactId>
 	</dependency>
 	<dependency>
-        <groupId>junit</groupId>
-        <artifactId>junit</artifactId>
-	<scope>test</scope>
-	</dependency>
-	<dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-base</artifactId>
     </dependency>
@@ -42,6 +37,35 @@
         <groupId>org.rdfhdt</groupId>
         <artifactId>hdt-api</artifactId>
         <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-arq</artifactId>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-base</artifactId>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.apache.jena</groupId>
+        <artifactId>jena-core</artifactId>
+        <classifier>tests</classifier>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+        <groupId>pl.pragmatists</groupId>
+        <artifactId>JUnitParams</artifactId>
+        <scope>test</scope>
     </dependency>
   </dependencies>
 

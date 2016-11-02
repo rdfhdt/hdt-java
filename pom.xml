@@ -80,7 +80,6 @@
         <module>hdt-java-core</module>
         <module>hdt-java-cli</module>
         <module>hdt-jena</module>
-        <module>hdt-jena-test</module>
         <module>hdt-java-package</module>
         <module>hdt-fuseki</module>
       </modules>

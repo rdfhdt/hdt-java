@@ -1,3 +1,5 @@
+# modified 11/1/2016 for HDT to convert the language tag to lowercase
+
 @prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rs:      <http://www.w3.org/2001/sw/DataAccess/tests/result-set#> .
 
