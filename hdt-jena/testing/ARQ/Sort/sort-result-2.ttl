@@ -1,3 +1,5 @@
+# modified 11/2/2016 for HDT to convert language tags to lowercase
+
 @prefix :      <http://example/> .
 @prefix rs:    <http://www.w3.org/2001/sw/DataAccess/tests/result-set#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
@@ -44,7 +46,7 @@
                        rs:binding  [ rs:value     :y2 ;
                                      rs:variable  "x"
                                    ] ;
-                       rs:index    10
+                       rs:index    9
                      ] ;
   rs:solution        [ rs:binding  [ rs:value     "xyz" ;
                                      rs:variable  "v"
@@ -76,7 +78,7 @@
                        rs:binding  [ rs:value     :x2 ;
                                      rs:variable  "x"
                                    ] ;
-                       rs:index    16
+                       rs:index    15
                      ] ;
   rs:solution        [ rs:binding  [ rs:value     "abc"^^:unknown ;
                                      rs:variable  "v"
@@ -108,7 +110,7 @@
                        rs:binding  [ rs:value     :y3 ;
                                      rs:variable  "x"
                                    ] ;
-                       rs:index    9
+                       rs:index    10
                      ] ;
   rs:solution        [ rs:binding  [ rs:value     :abc ;
                                      rs:variable  "v"
@@ -132,7 +134,7 @@
                        rs:binding  [ rs:value     :x5 ;
                                      rs:variable  "x"
                                    ] ;
-                       rs:index    15
+                       rs:index    16
                      ] ;
   rs:solution        [ rs:binding  [ rs:value     "xyz"^^:unknown ;
                                      rs:variable  "v"
