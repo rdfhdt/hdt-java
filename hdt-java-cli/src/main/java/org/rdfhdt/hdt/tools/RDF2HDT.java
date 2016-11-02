@@ -102,9 +102,11 @@ public class RDF2HDT implements ProgressListener {
 				notation = RDFNotation.NTRIPLES;
 			}
 		}
-		
+
+		StopWatch sw = new StopWatch();
 		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI,notation , spec, this);
-		
+		System.out.println("File converted in: "+sw.stopAndShow());
+
 		try {
 			// Show Basic stats
 			if(!quiet){
@@ -116,7 +118,7 @@ public class RDF2HDT implements ProgressListener {
 			}
 
 			// Dump to HDT file
-			StopWatch sw = new StopWatch();
+			sw = new StopWatch();
 			hdt.saveToHDT(hdtOutput, this);
 			System.out.println("HDT saved to file in: "+sw.stopAndShow());
 

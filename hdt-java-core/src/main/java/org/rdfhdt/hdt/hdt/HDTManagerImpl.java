@@ -15,7 +15,6 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
-import org.rdfhdt.hdt.util.StopWatch;
 
 public class HDTManagerImpl extends HDTManager {
 
@@ -97,8 +96,6 @@ public class HDTManagerImpl extends HDTManager {
 			loader = new TempHDTImporterOnePass();
 		}
 		
-		StopWatch st = new StopWatch();
-		
 		// Create TempHDT
 		TempHDT modHdt = loader.loadFromRDF(spec, rdfFileName, baseURI, rdfNotation, listener);
 		
@@ -114,8 +111,6 @@ public class HDTManagerImpl extends HDTManager {
 		} catch (NotFoundException e) {
 		}
 		
-		System.out.println("File converted in: "+st.stopAndShow());
-		
 		modHdt.close();
 		
 		return hdt;
@@ -125,9 +120,7 @@ public class HDTManagerImpl extends HDTManager {
 	public HDT doGenerateHDT(IteratorTripleString triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
 		//choose the importer
 		TempHDTImporterOnePass loader = new TempHDTImporterOnePass();
-		
-		StopWatch st = new StopWatch();
-		
+
 		// Create TempHDT
 		TempHDT modHdt = loader.loadFromTriples(spec, triples, baseURI, listener);
 		
@@ -142,8 +135,6 @@ public class HDTManagerImpl extends HDTManager {
 			hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, originalSize);
 		} catch (NotFoundException e) {
 		}
-		
-		System.out.println("File converted in: "+st.stopAndShow());
 		
 		modHdt.close();
 		
