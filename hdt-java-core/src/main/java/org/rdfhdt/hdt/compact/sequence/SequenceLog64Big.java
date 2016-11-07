@@ -116,7 +116,7 @@ public class SequenceLog64Big implements DynamicSequence {
         * @param bitsField Length in bits of each field
         * @param index Position to be retrieved
         */
-	private static final long getField(LongLargeArray data, int bitsField, long index) {
+	private static long getField(LongLargeArray data, int bitsField, long index) {
 		if(bitsField==0) return 0;
 		
                 long bitPos = index*bitsField;
@@ -138,7 +138,7 @@ public class SequenceLog64Big implements DynamicSequence {
         * @param index Position to store in
         * @param value Value to be stored
         */
-	private static final void setField(LongLargeArray data, int bitsField, long index, long value) {
+	private static void setField(LongLargeArray data, int bitsField, long index, long value) {
 		if(bitsField==0) return;
 		
 		long bitPos = index*bitsField;
@@ -154,7 +154,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		}
 	}
 	
-	private final void resizeArray(long size) {
+	private void resizeArray(long size) {
 		//data = Arrays.copyOf(data, size);	
 		
 		LongLargeArray a = new LongLargeArray(size);

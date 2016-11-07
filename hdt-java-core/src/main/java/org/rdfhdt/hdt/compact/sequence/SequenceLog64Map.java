@@ -171,7 +171,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		in.close();
 	}
 	
-	private final long getWord(long w) {
+	private long getWord(long w) {
 		if(w==numwords-1) {
 			return lastword;
 		}

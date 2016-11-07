@@ -113,7 +113,7 @@ public class SequenceLog64 implements DynamicSequence {
      * @param bitsField Length in bits of each field
      * @param index Position to be retrieved
      */
-	private static final long getField(long [] data, int bitsField, long index) {
+	private static long getField(long [] data, int bitsField, long index) {
 		if(bitsField==0) return 0;
 		
         long bitPos = index*bitsField;
@@ -135,7 +135,7 @@ public class SequenceLog64 implements DynamicSequence {
      * @param index Position to store in
      * @param value Value to be stored
      */
-	private static final void setField(long [] data, int bitsField, long index, long value) {
+	private static void setField(long [] data, int bitsField, long index, long value) {
 		if(bitsField==0) return;
 		
 		long bitPos = index*bitsField;
@@ -151,7 +151,7 @@ public class SequenceLog64 implements DynamicSequence {
 		}
 	}
 	
-	private final void resizeArray(int size) {
+	private void resizeArray(int size) {
 		data = Arrays.copyOf(data, size);
 	}
 	

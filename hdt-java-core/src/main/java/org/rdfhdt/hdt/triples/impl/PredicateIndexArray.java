@@ -29,7 +29,7 @@ class PredicateIndexArray implements PredicateIndex {
 		this.triples = triples;
 	}
 	
-	private final long calculatePos(int pred) {
+	private long calculatePos(int pred) {
 		if(pred<=1) {
 			return 0;
 		}
