@@ -47,11 +47,12 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 public class DictionarySectionCache implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
-	private DictionarySectionPrivate child;
+	private final DictionarySectionPrivate child;
 	
 
 	@SuppressWarnings("serial")
-	Map<CharSequence, Integer> cacheString = new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
+    final
+    Map<CharSequence, Integer> cacheString = new LinkedHashMap<CharSequence,Integer>(CACHE_ENTRIES+1, .75F, true) {
 					    // This method is called just after a new entry has been added
 						@Override
 					    public boolean removeEldestEntry(Map.Entry<CharSequence,Integer> eldest) {
@@ -60,7 +61,8 @@ public class DictionarySectionCache implements DictionarySectionPrivate {
 					};
 					
 	@SuppressWarnings("serial")
-	Map<Integer, CharSequence> cacheID = new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
+    final
+    Map<Integer, CharSequence> cacheID = new LinkedHashMap<Integer,CharSequence>(CACHE_ENTRIES+1, .75F, true) {
 						// This method is called just after a new entry has been added
 						@Override
 						public boolean removeEldestEntry(Map.Entry<Integer,CharSequence> eldest) {

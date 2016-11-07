@@ -40,10 +40,11 @@ import java.util.Iterator;
  *
  */
 public class MergedIterator<T> implements Iterator<T> {
-	private Iterator<T> left, right;
+	private final Iterator<T> left;
+	private final Iterator<T> right;
 	private T currentLeft, currentRight;
-	private Comparator<T> comparator;
-	private Annotator<T> annotator;
+	private final Comparator<T> comparator;
+	private final Annotator<T> annotator;
 	
 	public enum Pos {
 		LEFT,

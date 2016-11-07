@@ -10,7 +10,7 @@ import org.rdfhdt.hdt.util.string.CompactString;
 
 public class HDTVerify {
 
-	private static Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
+	private static final Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
 	
 	private HDTVerify() {}
 

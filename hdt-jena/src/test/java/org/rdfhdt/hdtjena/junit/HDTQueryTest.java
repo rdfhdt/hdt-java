@@ -81,9 +81,9 @@ import static org.junit.Assert.fail;
 public class HDTQueryTest implements ScriptTest {
     private static int testCounter = 1;
 
-    private int testNumber = testCounter++;
+    private final int testNumber = testCounter++;
     private final String testName;
-    private TestItem testItem;
+    private final TestItem testItem;
 
     private SPARQLResult results;    // Maybe null if no testing of results
 

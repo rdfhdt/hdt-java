@@ -46,7 +46,7 @@ import org.rdfhdt.hdt.triples.TempTriples;
  */
 public abstract class BaseTempDictionary implements TempDictionary {
 	
-	HDTOptions spec;
+	final HDTOptions spec;
 	protected boolean isOrganized;
 
 	protected TempDictionarySection subjects; 

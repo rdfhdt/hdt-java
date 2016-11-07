@@ -43,7 +43,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  */
 public class IntermediateListener implements ProgressListener {
 
-	private ProgressListener child;
+	private final ProgressListener child;
 	private float min, max;
 	
 	/**

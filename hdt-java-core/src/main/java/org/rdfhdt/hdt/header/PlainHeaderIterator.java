@@ -37,9 +37,11 @@ import org.rdfhdt.hdt.triples.TripleString;
  *
  */
 public class PlainHeaderIterator implements IteratorTripleString {
-	private PlainHeader header;
+	private final PlainHeader header;
 	private int pos;
-	private TripleString nextTriple, pattern, returnTriple;
+	private TripleString nextTriple;
+    private final TripleString pattern;
+    private TripleString returnTriple;
 	private boolean hasMoreTriples;
 	
 	/**

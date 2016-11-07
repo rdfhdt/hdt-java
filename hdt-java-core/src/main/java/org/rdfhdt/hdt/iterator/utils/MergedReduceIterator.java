@@ -40,10 +40,11 @@ import java.util.Iterator;
  *
  */
 public class MergedReduceIterator<T> implements Iterator<T> {
-	private Iterator<T> left, right;
+	private final Iterator<T> left;
+    private final Iterator<T> right;
 	private T currentLeft, currentRight;
-	private Comparator<T> comparator;
-	private Reducer<T> reducer;
+	private final Comparator<T> comparator;
+	private final Reducer<T> reducer;
 	
 	public MergedReduceIterator(Iterator<T> left, Iterator<T> right, Comparator<T> comparator, Reducer<T> combinator) {
 		this.left = left;

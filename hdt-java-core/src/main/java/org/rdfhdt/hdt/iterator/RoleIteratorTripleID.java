@@ -41,8 +41,8 @@ import java.util.Iterator;
  */
 public class RoleIteratorTripleID implements Iterator<Integer> {
 
-	TripleComponentRole position;
-	Iterator<TripleID> iterator;
+	final TripleComponentRole position;
+	final Iterator<TripleID> iterator;
 
 	/**
 	 * @param position

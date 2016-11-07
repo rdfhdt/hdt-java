@@ -37,7 +37,7 @@ import org.apache.jena.graph.Node;
  */
 public class DictionaryCacheArrayWeak implements DictionaryCache {
 
-	private Reference<Node>[] array;
+	private final Reference<Node>[] array;
 	
 	@SuppressWarnings("unchecked")
 	public DictionaryCacheArrayWeak(int capacity) {

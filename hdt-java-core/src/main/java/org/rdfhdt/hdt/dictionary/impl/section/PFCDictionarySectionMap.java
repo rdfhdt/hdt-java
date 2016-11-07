@@ -74,8 +74,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected Sequence blocks;
 	protected long dataSize;
 
-	private File f;
-	private long startOffset, endOffset;
+	private final File f;
+	private final long startOffset;
+    private long endOffset;
 
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
 		this.f = f;
@@ -311,7 +312,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return new Iterator<CharSequence>() {
 			int id;
 
-			ReplazableString tempString = new ReplazableString();
+			final ReplazableString tempString = new ReplazableString();
 			int bytebufferIndex;
 			ByteBuffer buffer = buffers[0].duplicate();
 

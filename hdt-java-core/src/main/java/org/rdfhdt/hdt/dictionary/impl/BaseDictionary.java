@@ -46,7 +46,7 @@ import org.rdfhdt.hdt.util.string.DelayedString;
  */
 public abstract class BaseDictionary implements DictionaryPrivate {
 	
-	protected HDTOptions spec;
+	protected final HDTOptions spec;
 	
 	protected DictionarySectionPrivate subjects; 
 	protected DictionarySectionPrivate predicates;

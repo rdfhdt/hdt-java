@@ -37,7 +37,7 @@ import java.util.List;
 public class DictionaryIDMapping {
 	class Entry {
 		int newid;
-		CharSequence str;
+		final CharSequence str;
 		
 		Entry(CharSequence str) {
 			this.str = str;
@@ -45,7 +45,7 @@ public class DictionaryIDMapping {
 		}
 	}
 	
-	List<Entry> list;
+	final List<Entry> list;
 	
 	public DictionaryIDMapping(int numentries) {
 		list = new ArrayList<Entry>(numentries);

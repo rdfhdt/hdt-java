@@ -46,7 +46,7 @@ public class HDTQueryEngine extends QueryEngineMain {
     // Query engine factory.
     // Call HDTQueryEngine.register() to add to the global query engine registry. 
 
-    static QueryEngineFactory factory = new HDTQueryEngineFactory() ;
+    static final QueryEngineFactory factory = new HDTQueryEngineFactory() ;
 
     static public QueryEngineFactory getFactory() { 
     	return factory;

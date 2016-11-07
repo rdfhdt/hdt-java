@@ -35,7 +35,7 @@ import java.util.Properties;
  */
 public class HDTOptionsBase implements HDTOptions {
 	/** The properties are stored here */
-	Properties properties;
+    final Properties properties;
 
 	/**
 	 * 

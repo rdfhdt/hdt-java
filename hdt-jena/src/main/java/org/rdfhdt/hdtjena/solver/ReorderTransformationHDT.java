@@ -64,7 +64,7 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 	final long TERM_O ;         // Used for ? ? O if no stats
 	final long numTriples ;		// Actual number of triples of the dataset.
 
-	private GraphStatisticsHandler stats;
+	private final GraphStatisticsHandler stats;
     public final StatsMatcher matcher = new StatsMatcher() ;
     
 

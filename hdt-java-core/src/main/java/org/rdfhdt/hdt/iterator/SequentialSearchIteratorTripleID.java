@@ -39,8 +39,11 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class SequentialSearchIteratorTripleID implements IteratorTripleID {
-	private TripleID pattern, nextTriple, previousTriple, returnTriple;
-	IteratorTripleID iterator;
+	private final TripleID pattern;
+    private final TripleID nextTriple;
+    private TripleID previousTriple;
+    private final TripleID returnTriple;
+	final IteratorTripleID iterator;
 	boolean hasMoreTriples, hasPreviousTriples;
 	boolean goingUp;
 	

@@ -146,7 +146,7 @@ public class HDTSolverLib
     {
         return new Function<Binding, BindingHDTId>()
         {
-        	PrefixMapping mapping = NodeDictionary.getMapping(ctx);
+        	final PrefixMapping mapping = NodeDictionary.getMapping(ctx);
         	
             @Override
             public BindingHDTId apply(Binding binding)

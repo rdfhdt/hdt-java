@@ -40,7 +40,7 @@ public class QueryIterHDT extends QueryIterPlainWrapper
 {
     // Rename as QueryIterCloseOther?
     final private QueryIterator originalInput ;
-    private List<Abortable> killList ;
+    private final List<Abortable> killList ;
     
     // The original input needs closing as well.
     public QueryIterHDT(Iterator<Binding> iterBinding, List<Abortable> killList , QueryIterator originalInput, ExecutionContext execCxt)

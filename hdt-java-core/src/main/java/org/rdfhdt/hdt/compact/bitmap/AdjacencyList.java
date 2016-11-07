@@ -35,8 +35,8 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
  *
  */
 public class AdjacencyList {
-	private Sequence array;
-	private Bitmap bitmap;
+	private final Sequence array;
+	private final Bitmap bitmap;
 	
 	/**
 	 * @param array

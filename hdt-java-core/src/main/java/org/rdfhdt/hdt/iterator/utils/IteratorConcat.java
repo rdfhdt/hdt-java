@@ -32,7 +32,7 @@ public class IteratorConcat<T> implements Iterator<T>
     // No - we don't really need IteratorCons and IteratorConcat
     // Historical.
     
-    private List<Iterator<T>> iterators = DS.list(); 
+    private final List<Iterator<T>> iterators = DS.list();
     int idx = -1 ;
     private Iterator<T> current;
     private Iterator<T> removeFrom;

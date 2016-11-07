@@ -48,7 +48,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 public class DictionarySectionCachePerThread implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
-	private DictionarySectionPrivate child;
+	private final DictionarySectionPrivate child;
 	
 	private ThreadLocal<Map<CharSequence,Integer>> cacheString =
 			new ThreadLocal<Map<CharSequence,Integer>>() {

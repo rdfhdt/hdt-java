@@ -345,8 +345,8 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		return new Iterator<CharSequence>() {
 			int id;
 			int pos;
-			Mutable<Long> delta = new Mutable<Long>(0L);
-			ReplazableString tempString = new ReplazableString();
+			final Mutable<Long> delta = new Mutable<Long>(0L);
+			final ReplazableString tempString = new ReplazableString();
 
 			@Override
 			public boolean hasNext() {

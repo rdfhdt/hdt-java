@@ -41,8 +41,8 @@ import org.apache.jena.graph.Node;
  */
 public class DictionaryCacheLRI implements DictionaryCache {
 
-	private Map<Integer, Node> cache;
-	private int [] arr;
+	private final Map<Integer, Node> cache;
+	private final int [] arr;
 	private int ptr;
 	private final int size;
 	

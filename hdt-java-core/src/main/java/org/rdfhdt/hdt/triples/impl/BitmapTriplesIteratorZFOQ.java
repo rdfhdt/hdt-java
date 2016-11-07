@@ -38,14 +38,16 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
-	BitmapTriples triples;
-	TripleID pattern, returnTriple;
+	final BitmapTriples triples;
+	final TripleID pattern;
+    final TripleID returnTriple;
 	
 	AdjacencyList adjY, adjIndex;
 	long posIndex, minIndex, maxIndex;
 	int x, y, z;
 	
-	int patY, patZ;
+	int patY;
+    final int patZ;
 	
 	public BitmapTriplesIteratorZFOQ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;

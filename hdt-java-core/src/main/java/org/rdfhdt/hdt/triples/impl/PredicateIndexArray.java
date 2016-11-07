@@ -21,7 +21,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 class PredicateIndexArray implements PredicateIndex {
 	
-	BitmapTriples triples;
+	final BitmapTriples triples;
 	Sequence array;
 	Bitmap bitmap;
 	

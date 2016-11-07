@@ -31,7 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 
 public class StopWatchCpu extends StopWatch {
-	private static ThreadMXBean threadData;
+	private static final ThreadMXBean threadData;
 	
 	static {
 		threadData = ManagementFactory.getThreadMXBean();

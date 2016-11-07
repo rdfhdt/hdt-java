@@ -47,8 +47,8 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 public class DictionarySectionCacheAll implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
-	private DictionarySectionPrivate child;
-	private boolean preload;
+	private final DictionarySectionPrivate child;
+	private final boolean preload;
 	
 	Map<CharSequence, Integer> cacheString;
 	CharSequence [] cacheID; 

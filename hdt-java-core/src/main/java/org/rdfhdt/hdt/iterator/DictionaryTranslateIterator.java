@@ -43,9 +43,9 @@ import org.rdfhdt.hdt.triples.TripleString;
 public class DictionaryTranslateIterator implements IteratorTripleString {
 
 	/** The iterator of TripleID */
-	IteratorTripleID iterator;
+    final IteratorTripleID iterator;
 	/** The dictionary */
-	Dictionary dictionary;
+    final Dictionary dictionary;
 
 	CharSequence s, p, o;
 	

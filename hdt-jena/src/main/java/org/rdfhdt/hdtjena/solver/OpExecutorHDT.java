@@ -65,7 +65,7 @@ public class OpExecutorHDT extends OpExecutor {
         }
     };
 	
-	private boolean isForHDT;
+	private final boolean isForHDT;
 
 	protected OpExecutorHDT(ExecutionContext execCtx) {
 		super(execCtx);
@@ -200,7 +200,7 @@ public class OpExecutorHDT extends OpExecutor {
         return pattern ;
     }
     
-    private static OpExecutorFactory plainFactory = new OpExecutorPlainFactoryHDT() ;
+    private static final OpExecutorFactory plainFactory = new OpExecutorPlainFactoryHDT() ;
     private static class OpExecutorPlainFactoryHDT implements OpExecutorFactory
     {
         @Override
@@ -213,7 +213,7 @@ public class OpExecutorHDT extends OpExecutor {
     /** An op executor that simply executes a BGP or QuadPattern without any reordering */ 
     private static class OpExecutorPlainHDT extends OpExecutor
     {
-        Predicate<Tuple<HDTId>> filter;
+        final Predicate<Tuple<HDTId>> filter;
         
         @SuppressWarnings("unchecked")
 		public OpExecutorPlainHDT(ExecutionContext execCxt)

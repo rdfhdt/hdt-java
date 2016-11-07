@@ -8,7 +8,7 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 public class JenaModelIterator implements IteratorTripleString {
-	private Model model;
+	private final Model model;
 	private StmtIterator iterator;
 	
 	public JenaModelIterator(Model model) {

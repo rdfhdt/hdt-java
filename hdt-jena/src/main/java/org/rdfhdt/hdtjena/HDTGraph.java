@@ -50,7 +50,7 @@ import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
  *
  */
 public class HDTGraph extends GraphBase {
-	private static HDTCapabilities capabilities= new HDTCapabilities();
+	private static final HDTCapabilities capabilities= new HDTCapabilities();
 
 	private HDT hdt;
 	private NodeDictionary nodeDictionary;

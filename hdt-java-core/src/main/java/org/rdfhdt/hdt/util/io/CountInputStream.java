@@ -37,7 +37,7 @@ import java.io.InputStream;
 public class CountInputStream extends InputStream {
 	long total;
 	long partial;
-	InputStream in;
+	final InputStream in;
 	
 	long markTotal;
 	long markPartial;

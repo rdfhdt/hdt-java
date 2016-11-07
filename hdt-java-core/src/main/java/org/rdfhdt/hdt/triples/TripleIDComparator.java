@@ -42,7 +42,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 	private static final long serialVersionUID = -8322949509663015732L;
 	
 	/** Determines the order of comparison */
-	private TripleComponentOrder order;
+	private final TripleComponentOrder order;
 	
 	public static Comparator<TripleID> getComparator(TripleComponentOrder order) {
 		if(order==TripleComponentOrder.SPO) {

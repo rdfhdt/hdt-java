@@ -40,7 +40,7 @@ import java.util.zip.InflaterInputStream;
  */
 public class DeflateIntegerIterator implements Iterator<Integer> {
 
-	protected List<byte[]> buffer;
+	protected final List<byte[]> buffer;
 	protected DataInputStream stream;
 	int current, next;
 	

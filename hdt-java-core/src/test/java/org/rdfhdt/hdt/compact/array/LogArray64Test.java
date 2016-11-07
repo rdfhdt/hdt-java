@@ -21,7 +21,7 @@ import org.rdfhdt.hdt.util.BitUtil;
 @RunWith(Parameterized.class)
 public class LogArray64Test {
 
-	private int numbits;
+	private final int numbits;
 	private static final int numentries = 10000;
 	SequenceLog64 array;
 	long [] plain;

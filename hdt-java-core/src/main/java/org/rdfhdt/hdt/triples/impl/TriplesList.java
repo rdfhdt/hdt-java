@@ -409,7 +409,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public static class TriplesListIterator implements IteratorTripleID {
 
-		private TriplesList triplesList;
+		private final TriplesList triplesList;
 		private int pos;
 
 		public TriplesListIterator(TriplesList triplesList) {

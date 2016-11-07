@@ -52,9 +52,9 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 public class TempHDTImporterOnePass implements TempHDTImporter {
 
 	class TripleAppender implements RDFCallback {
-		TempDictionary dict;
-		TempTriples triples;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final TempTriples triples;
+		final ProgressListener listener;
 		long num;
 		long size;
 

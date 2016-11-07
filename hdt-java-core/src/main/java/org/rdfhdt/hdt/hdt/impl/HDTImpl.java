@@ -75,7 +75,7 @@ import org.rdfhdt.hdt.util.listener.IntermediateListener;
  */
 public class HDTImpl implements HDTPrivate {
 
-	private HDTOptions spec;
+	private final HDTOptions spec;
 
 	protected HeaderPrivate header;
 	protected DictionaryPrivate dictionary;

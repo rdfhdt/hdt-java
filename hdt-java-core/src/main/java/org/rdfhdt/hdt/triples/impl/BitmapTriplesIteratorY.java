@@ -44,9 +44,10 @@ import org.rdfhdt.hdt.triples.TripleID;
  */
 public class BitmapTriplesIteratorY implements IteratorTripleID {
 
-	private BitmapTriples triples;
-	private TripleID pattern, returnTriple;
-	private int patY;
+	private final BitmapTriples triples;
+	private final TripleID pattern;
+    private final TripleID returnTriple;
+	private final int patY;
 	
 	private AdjacencyList adjY, adjZ;
 	long posY, posZ;

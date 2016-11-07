@@ -51,8 +51,8 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 	class DictionaryAppender implements RDFCallback {
 
-		TempDictionary dict;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final ProgressListener listener;
 		long count;
 
 		DictionaryAppender(TempDictionary dict, ProgressListener listener) {
@@ -81,9 +81,9 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 	 *
 	 */
 	class TripleAppender2 implements RDFCallback {
-		TempDictionary dict;
-		TempTriples triples;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final TempTriples triples;
+		final ProgressListener listener;
 		long count;
 
 		public TripleAppender2(TempDictionary dict, TempTriples triples, ProgressListener listener) {
