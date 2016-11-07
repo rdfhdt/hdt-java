@@ -282,7 +282,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	
 		ReplazableString tempString = new ReplazableString();
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
@@ -353,7 +353,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		// Copy first string
  		int len = ByteStringUtil.strlen(block, pos);
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(block, pos, len);
 		

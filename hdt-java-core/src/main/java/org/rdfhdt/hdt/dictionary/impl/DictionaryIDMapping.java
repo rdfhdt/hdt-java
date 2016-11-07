@@ -48,7 +48,7 @@ public class DictionaryIDMapping {
 	final List<Entry> list;
 	
 	public DictionaryIDMapping(int numentries) {
-		list = new ArrayList<Entry>(numentries);
+		list = new ArrayList<>(numentries);
 	}
 	
 	public void add(CharSequence str) {

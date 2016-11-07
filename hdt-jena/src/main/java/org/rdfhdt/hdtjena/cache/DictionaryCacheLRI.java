@@ -49,7 +49,7 @@ public class DictionaryCacheLRI implements DictionaryCache {
 	public DictionaryCacheLRI(int size) {
 		this.size = size;
 		arr = new int[size];
-		cache = new ConcurrentHashMap<Integer, Node>(size);
+		cache = new ConcurrentHashMap<>(size);
 	}
 		
 	/* (non-Javadoc)

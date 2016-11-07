@@ -57,7 +57,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 public class PlainHeader implements HeaderPrivate, RDFCallback {
 	
 	protected final HDTOptions spec;
-	protected final List<TripleString> triples= new ArrayList<TripleString>();
+	protected final List<TripleString> triples= new ArrayList<>();
 	
 	public PlainHeader() {
 		spec = new HDTSpecification();

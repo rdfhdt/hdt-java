@@ -60,8 +60,8 @@ public class HashDictionarySection implements TempDictionarySection {
 	}
 	
 	public HashDictionarySection(HDTOptions spec) {
-		map = new HashMap<CharSequence, Integer>();
-		list = new ArrayList<CharSequence>();
+		map = new HashMap<>();
+		list = new ArrayList<>();
 		size=0;
 	}
 	
@@ -149,7 +149,7 @@ public class HashDictionarySection implements TempDictionarySection {
 	@Override
     public void sort() {
 		// Update list.
-		list = new ArrayList<CharSequence>(map.size());
+		list = new ArrayList<>(map.size());
 		for(CharSequence str : map.keySet()) {
 			list.add(str);
 		}

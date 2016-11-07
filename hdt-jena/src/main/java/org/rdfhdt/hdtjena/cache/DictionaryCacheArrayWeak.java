@@ -59,7 +59,7 @@ public class DictionaryCacheArrayWeak implements DictionaryCache {
 	
 	@Override
     public void put(int id, Node node) {
-		array[id-1] = new WeakReference<Node>(node);
+		array[id-1] = new WeakReference<>(node);
 	}
 
 	@Override

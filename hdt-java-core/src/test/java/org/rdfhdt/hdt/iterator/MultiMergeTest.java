@@ -18,7 +18,7 @@ public class MultiMergeTest {
 	List<Integer> listA, listB, listC, listOut, listOutB;
 
 	private List<Integer> getList(int[] ints) {
-	    List<Integer> intList = new ArrayList<Integer>();
+	    List<Integer> intList = new ArrayList<>();
 	    for (int index = 0; index < ints.length; index++)
 	    {
 	        intList.add(ints[index]);
@@ -58,7 +58,7 @@ public class MultiMergeTest {
 		list.add(listB.iterator());
 		list.add(listC.iterator());
 		
-		Iterator<Integer> it = new MultiMerge<Integer>(list.iterator(), new IntegerComparator());
+		Iterator<Integer> it = new MultiMerge<>(list.iterator(), new IntegerComparator());
 		
 		it = new SortedReduceIterator<>(it, new ReducerLeft<Integer>());
 		

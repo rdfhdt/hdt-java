@@ -39,7 +39,7 @@ public class MultiMerge<T> implements Iterator<T> {
 			Iterator<T> inner = it.next();
 			
 			if(inner.hasNext()) {
-				Source<T> s = new Source<T>(inner, comparator);
+				Source<T> s = new Source<>(inner, comparator);
 				if(s.read()) {
 					queue.add(s);
 				}

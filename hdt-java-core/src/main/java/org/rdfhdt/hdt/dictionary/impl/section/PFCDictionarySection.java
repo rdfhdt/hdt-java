@@ -202,7 +202,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		int pos = (int)blocks.get(block);
 		ReplazableString tempString = new ReplazableString();
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
@@ -269,7 +269,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		int pos = (int) blocks.get(block);
  		int len = ByteStringUtil.strlen(text, pos);
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(text, pos, len);
 		
@@ -345,7 +345,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		return new Iterator<CharSequence>() {
 			int id;
 			int pos;
-			final Mutable<Long> delta = new Mutable<Long>(0L);
+			final Mutable<Long> delta = new Mutable<>(0L);
 			final ReplazableString tempString = new ReplazableString();
 
 			@Override

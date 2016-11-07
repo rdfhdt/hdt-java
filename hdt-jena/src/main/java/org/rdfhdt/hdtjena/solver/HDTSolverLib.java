@@ -66,10 +66,10 @@ public class HDTSolverLib
     	
         Iterator<BindingHDTId> chain = Iter.map(input, convFromBinding(graph.getNodeDictionary(), execCxt)) ;
         
-        List<Abortable> killList = new ArrayList<Abortable>() ;
+        List<Abortable> killList = new ArrayList<>() ;
         
         // Compute appearances of variables
-        Map<Var, VarAppearance> mapVar = new HashMap<Var, VarAppearance>();
+        Map<Var, VarAppearance> mapVar = new HashMap<>();
         for ( Triple triplePattern : pattern )
         {
         	addVarAppearance(mapVar, triplePattern.getSubject(), TripleComponentRole.SUBJECT);

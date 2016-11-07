@@ -472,7 +472,7 @@ public class BitmapTriples implements TriplesPrivate {
 				}
 
 				// FIXME: Sort directly without copying?
-				ArrayList<Pair> list=new ArrayList<Pair>((int)listLen);
+				ArrayList<Pair> list= new ArrayList<>((int) listLen);
 
 				// Create temporary list of (position, predicate)
 				for(long i=first; i<last;i++) {
@@ -541,7 +541,7 @@ public class BitmapTriples implements TriplesPrivate {
 			int positionY;
 		}
 
-		ArrayList<List<Pair>> list=new ArrayList<List<Pair>>();
+		ArrayList<List<Pair>> list= new ArrayList<>();
 		
 		System.out.println("Generating HDT Index for ?PO, and ??O queries.");
 		// Generate lists
@@ -562,7 +562,7 @@ public class BitmapTriples implements TriplesPrivate {
 			
 			List<Pair> inner = list.get((int)valueZ-1);
 			if(inner==null) {
-				inner = new ArrayList<Pair>(1);
+				inner = new ArrayList<>(1);
 				list.set((int)valueZ-1, inner);
 			}
 			

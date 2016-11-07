@@ -39,7 +39,7 @@ public class DictionaryCacheLRU implements DictionaryCache {
 	private final LRUCache<Integer, Node> lru;
 	
 	public DictionaryCacheLRU(int size) {
-		lru = new LRUCache<Integer, Node>(size);
+		lru = new LRUCache<>(size);
 	}
 	
 	/* (non-Javadoc)

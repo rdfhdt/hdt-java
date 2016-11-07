@@ -37,7 +37,7 @@ import org.apache.jena.graph.Node;
  */
 public class DictionaryCacheHash implements DictionaryCache {
 
-	private final Map<Integer, Node> hash = new ConcurrentHashMap<Integer, Node>();
+	private final Map<Integer, Node> hash = new ConcurrentHashMap<>();
 	
 	@Override
 	public Node get(int id) {

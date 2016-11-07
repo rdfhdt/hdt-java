@@ -58,7 +58,7 @@ public class DictionarySectionCacheAll implements DictionarySectionPrivate {
 		this.child = child;
 		this.preload = preload;
 		
-		cacheString = new HashMap<CharSequence, Integer>(child.getNumberOfElements()*2);
+		cacheString = new HashMap<>(child.getNumberOfElements() * 2);
 		cacheID = new CharSequence[child.getNumberOfElements()];
 
 		if(preload) {

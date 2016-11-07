@@ -81,7 +81,7 @@ public class TriplesList implements TempTriples {
 		//precise allocation of the array (minimal memory wasting)
 		long numTriples = RDFInfo.getTriples(specification);
 		numTriples = (numTriples>0)?numTriples:100;
-		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
+		this.arrayOfTriples = new ArrayList<>((int) numTriples);
 
 		//choosing starting(or default) component order
 		String orderStr = specification.get("triplesOrder");
@@ -99,7 +99,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public boolean reallocateIfEmpty(int numTriples){
 		if (arrayOfTriples.isEmpty()) {
-			arrayOfTriples = new ArrayList<TripleID>(numTriples);
+			arrayOfTriples = new ArrayList<>(numTriples);
 			return true;
 		} else {
 			return false;
