@@ -45,7 +45,7 @@ public class MergedIterator<T> implements Iterator<T> {
 	private Comparator<T> comparator;
 	private Annotator<T> annotator;
 	
-	public static enum Pos {
+	public enum Pos {
 		LEFT,
 		RIGHT,
 		BOTH
