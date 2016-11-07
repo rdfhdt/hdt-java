@@ -28,7 +28,7 @@ public class MultiMerge<T> implements Iterator<T> {
 
 		@Override
 		public int compareTo(Source<T> o) {
-			return comparator.compare(this.entry, (T) o.entry);
+			return comparator.compare(this.entry, o.entry);
 		}
 		
 		

@@ -61,7 +61,7 @@ public class DictionaryCacheArray implements DictionaryCache {
 	@Override
     public void put(int id, Node node) {
 		if(array==null) {
-			array = new Node[(int)capacity];
+			array = new Node[capacity];
 		}
 		if(array[id-1]==null) {
 			numentries++;

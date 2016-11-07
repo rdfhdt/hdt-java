@@ -365,8 +365,8 @@ public class HDTImpl implements HDTPrivate {
 		modHdt.reorganizeTriples(listener);
 
         // Get parts
-        TempTriples modifiableTriples = (TempTriples) modHdt.getTriples();
-        TempDictionary modifiableDictionary = (TempDictionary) modHdt.getDictionary();
+        TempTriples modifiableTriples = modHdt.getTriples();
+        TempDictionary modifiableDictionary = modHdt.getDictionary();
 
         // Convert triples to final format
         if(triples.getClass().equals(modifiableTriples.getClass())) {

@@ -66,13 +66,13 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		switch(position) {
 		case SUBJECT:
 			isOrganized = false;
-			return ((TempDictionarySection)subjects).add(str);
+			return subjects.add(str);
 		case PREDICATE:
 			isOrganized = false;
-			return ((TempDictionarySection)predicates).add(str);			
+			return predicates.add(str);
 		case OBJECT:
 			isOrganized = false;
-			return ((TempDictionarySection)objects).add(str);
+			return objects.add(str);
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -88,7 +88,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 
 			// FIXME: These checks really needed?
 			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
-				((TempDictionarySection)shared).add(str);
+				shared.add(str);
 			}
 		}
 
@@ -96,15 +96,15 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		Iterator<? extends CharSequence> itShared = ((TempDictionarySection)shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
-			((TempDictionarySection)subjects).remove(sharedStr);
-			((TempDictionarySection)objects).remove(sharedStr);
+			subjects.remove(sharedStr);
+			objects.remove(sharedStr);
 		}
 
 		// Sort sections individually
-		((TempDictionarySection)shared).sort();
-		((TempDictionarySection)subjects).sort();
-		((TempDictionarySection)objects).sort();
-		((TempDictionarySection)predicates).sort();
+		shared.sort();
+		subjects.sort();
+		objects.sort();
+		predicates.sort();
 		
 		isOrganized = true;
 

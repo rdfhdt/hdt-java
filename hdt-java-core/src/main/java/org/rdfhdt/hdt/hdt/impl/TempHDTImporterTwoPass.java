@@ -123,8 +123,8 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 		// Create Modifiable Instance and parser
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.TWO_PASS);
-		TempDictionary dictionary = (TempDictionary)modHDT.getDictionary();
-		TempTriples triples = (TempTriples)modHDT.getTriples();
+		TempDictionary dictionary = modHDT.getDictionary();
+		TempTriples triples = modHDT.getTriples();
 
 		// Load RDF in the dictionary
 		dictionary.startProcessing();

@@ -430,7 +430,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get((int)pos++);
+			return triplesList.arrayOfTriples.get(pos++);
 		}
 
 		/* (non-Javadoc)
@@ -446,7 +446,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get((int)--pos);
+			return triplesList.arrayOfTriples.get(--pos);
 		}
 
 		/* (non-Javadoc)
