@@ -54,5 +54,5 @@ public interface DynamicSequence extends Sequence {
 	 * Trim the internal data structure to fit the actual number of elements. 
 	 * Use advanced algorithm to reduce the size to the minimum, even if it is costly.
 	 */
-	void aggresiveTrimToSize();
+	void aggressiveTrimToSize();
 }

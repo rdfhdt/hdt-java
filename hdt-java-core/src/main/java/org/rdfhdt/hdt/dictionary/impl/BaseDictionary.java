@@ -38,7 +38,7 @@ import org.rdfhdt.hdt.util.string.DelayedString;
 
 /**
  * 
- * This abstract clas implements all general methods that are the same
+ * This abstract class implements all general methods that are the same
  * for every implementation of Dictionary.
  * 
  * @author mario.arias, Eugen

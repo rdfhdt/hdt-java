@@ -122,7 +122,7 @@ public class RDFInfo {
 	}
 	
 	/**
-	 * Gets the "rdf.expectedCompression" peoperty is it is set. If not sets it to 0.15 and returns that value.
+	 * Gets the "rdf.expectedCompression" property is it is set. If not sets it to 0.15 and returns that value.
 	 */
 	public static float getCompression(HDTOptions specs){
 		float compression;
@@ -142,7 +142,7 @@ public class RDFInfo {
 
 	/**
 	 * Finds the length of file in bytes and counts the number of lines and fills
-	 * the given specs with them using "fillHDTSpecification(long, int, HDTOptionss)" method.
+	 * the given specs with them using "fillHDTSpecification(long, int, HDTOptions)" method.
 	 * 
 	 */
 	public static long countLines(String filename, RDFParserCallback parser, RDFNotation notation)

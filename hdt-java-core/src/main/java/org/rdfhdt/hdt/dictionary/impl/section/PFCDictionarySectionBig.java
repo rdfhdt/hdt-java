@@ -166,7 +166,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			//blocks.append(byteOut.size());
 			blocks.append(byteoutsize);
 			// Trim text/blocks
-			blocks.aggresiveTrimToSize();
+			blocks.aggressiveTrimToSize();
 			
 			byteOut.flush();
 			byteOut.writeTo(out);
@@ -190,7 +190,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 				long nextBytePos = blocks.get(nextBlock);
 				
-				//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+				//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 				data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
 				
 				posFirst[buffer] = bytePos;
@@ -357,7 +357,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(block, pos, len);
 		
-		// Copy strings untill we find our's.
+		// Copy strings until we find our's.
 		for(int i=0;i<nstring;i++) {
 			pos+=len+1;
 			pos += VByte.decode(block, pos, delta);
@@ -483,7 +483,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 			long nextBytePos = blocks.get(nextBlock);
 			
-			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+			//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 			data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
 			
 			posFirst[buffer] = bytePos;

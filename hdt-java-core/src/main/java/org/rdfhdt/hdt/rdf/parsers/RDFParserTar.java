@@ -41,7 +41,7 @@ public class RDFParserTar implements RDFParserCallback {
 				input = System.in;
 			} else if(fileName.endsWith(".gz") || fileName.endsWith("tgz")) {
 //				input = new BackgroundDecompressorStream(new GZIPInputStream(new FileInputStream(fileName)));
-				// In theory the BufferedInputStream is not neccessary, but Tar crashes when not using it.
+				// In theory the BufferedInputStream is not necessary, but Tar crashes when not using it.
 				input = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
 			} else if(fileName.endsWith("bz2") || fileName.endsWith("bz")) {
 				input = new ExternalDecompressStream(new File(fileName), ExternalDecompressStream.PBZIP2);

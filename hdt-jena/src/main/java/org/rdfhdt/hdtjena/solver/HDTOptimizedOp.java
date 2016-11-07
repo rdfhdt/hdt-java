@@ -6,7 +6,7 @@ import org.apache.jena.sparql.algebra.Transform;
 import org.apache.jena.sparql.algebra.op.Op0;
 import org.apache.jena.sparql.util.NodeIsomorphismMap;
 
-public class HDTOptimizeddOp extends Op0 {
+public class HDTOptimizedOp extends Op0 {
 
 	@Override
 	public void visit(OpVisitor opVisitor) {
@@ -26,7 +26,7 @@ public class HDTOptimizeddOp extends Op0 {
 
 	@Override
 	public Op0 copy() {
-		return new HDTOptimizeddOp();
+		return new HDTOptimizedOp();
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class HDTOptimizeddOp extends Op0 {
 
 	@Override
 	public boolean equalTo(Op other, NodeIsomorphismMap labelMap) {
-		if(other instanceof HDTOptimizeddOp)
+		if(other instanceof HDTOptimizedOp)
 			return true;
 		return false;
 	}

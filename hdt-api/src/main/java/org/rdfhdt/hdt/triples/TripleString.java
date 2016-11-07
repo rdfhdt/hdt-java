@@ -155,7 +155,7 @@ public class TripleString {
 	}
 	
 	/**
-	 * Checks wether all components are empty.
+	 * Checks whether all components are empty.
 	 * @return
 	 */
 	public boolean isEmpty() {
@@ -163,7 +163,7 @@ public class TripleString {
 	}
 	
 	/**
-	 * Checks wether any component is empty.
+	 * Checks whether any component is empty.
 	 * @return
 	 */
 	public boolean hasEmpty() {

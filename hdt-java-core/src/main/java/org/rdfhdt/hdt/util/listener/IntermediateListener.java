@@ -33,7 +33,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  * Provides notifications by dividing an overall task in subtasks.
  * 
  * Call setRange() with the estimated percent of the overall task that
- * the subtask will take (i.e. 20-40%). Then call the substask providing
+ * the subtask will take (i.e. 20-40%). Then call the subtask providing
  * the IntermediateListener as Callback. The IntermediateListener will translate
  * the notifications of the subtask (in the 0-100 range) to the range supplied (20-40)
  * by using linear interpolation.

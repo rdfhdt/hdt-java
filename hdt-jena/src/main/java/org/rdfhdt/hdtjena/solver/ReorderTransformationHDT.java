@@ -87,7 +87,7 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
         
         //matcher.addPattern(new Pattern(1,   TERM, TERM, TERM)) ;     // SPO - built-in - not needed as a rule
         
-        // Numbers choosen as an approximation for a graph of 10K triples
+        // Numbers chosen as an approximation for a graph of 10K triples
         matcher.addPattern(new Pattern(5,	TERM, TERM, VAR)) ;     // SP?
         matcher.addPattern(new Pattern(1000,VAR, type, TERM)) ;    // ? type O -- worse than ?PO
         matcher.addPattern(new Pattern(90,	VAR,  TERM, TERM)) ;    // ?PO

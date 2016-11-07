@@ -71,7 +71,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 			adjY = new AdjacencyList(triples.seqY, triples.bitmapY);
 			adjZ = new AdjacencyList(triples.seqZ, triples.bitmapZ);
 			
-			numOccurrences = triples.predicateIndex.getNumOcurrences(patY);
+			numOccurrences = triples.predicateIndex.getNumOccurrences(patY);
 			maxZ = triples.adjZ.getNumberOfElements();
 			
 			goToStart();

@@ -75,7 +75,7 @@ public class SequenceInt64 implements DynamicSequence {
 	}
 	
 	@Override
-    public void aggresiveTrimToSize() {
+    public void aggressiveTrimToSize() {
 		trimToSize();
 	}
 

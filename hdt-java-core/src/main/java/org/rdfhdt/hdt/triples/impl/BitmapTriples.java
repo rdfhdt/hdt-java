@@ -197,7 +197,7 @@ public class BitmapTriples implements TriplesPrivate {
 			bitZ.append(true);
 		}
 		
-		vectorY.aggresiveTrimToSize();
+		vectorY.aggressiveTrimToSize();
 		vectorZ.trimToSize();
 		
 		// Assign local variables to BitmapTriples Object

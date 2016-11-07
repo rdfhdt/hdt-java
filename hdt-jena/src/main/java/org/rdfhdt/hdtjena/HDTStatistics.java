@@ -71,7 +71,7 @@ public class HDTStatistics implements GraphStatisticsHandler {
 			return 0;
 		}
 		
-		// FIMXE: No index on ?P?, avoid creating the iterator. Dirty hack.
+		// FIXME: No index on ?P?, avoid creating the iterator. Dirty hack.
 		if(p>0 && s==0 && o==0 && (triples instanceof BitmapTriples)) {
 			Sequence predCount = ((BitmapTriples)triples).getPredicateCount();
 			if(predCount!=null) {

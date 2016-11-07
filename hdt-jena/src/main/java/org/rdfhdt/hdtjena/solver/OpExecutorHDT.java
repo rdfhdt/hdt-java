@@ -183,7 +183,7 @@ public class OpExecutorHDT extends OpExecutor {
         if ( transform != null )
         {
             // This works by getting one result from the peek iterator,
-            // and creating the more gounded BGP. The tranform is used to
+            // and creating the more grounded BGP. The tranform is used to
             // determine the best order and the transformation is returned. This
             // transform is applied to the unsubstituted pattern (which will be
             // substituted as part of evaluation.

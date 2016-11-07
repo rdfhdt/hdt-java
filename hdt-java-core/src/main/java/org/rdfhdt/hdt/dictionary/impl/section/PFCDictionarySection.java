@@ -120,7 +120,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			blocks.append(byteOut.size());
 
 			// Trim text/blocks
-			blocks.aggresiveTrimToSize();
+			blocks.aggressiveTrimToSize();
 
 			byteOut.flush();
 			text = byteOut.toByteArray();

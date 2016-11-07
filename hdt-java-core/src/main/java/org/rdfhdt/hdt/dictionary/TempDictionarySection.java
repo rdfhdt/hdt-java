@@ -66,7 +66,7 @@ public interface TempDictionarySection extends DictionarySection {
 	boolean isSorted();
 	
 	/**
-	 * Iterator over all entries in the dictionary, not neccessarily sorted.
+	 * Iterator over all entries in the dictionary, not necessarily sorted.
 	 */
 	Iterator<? extends CharSequence> getEntries();
 

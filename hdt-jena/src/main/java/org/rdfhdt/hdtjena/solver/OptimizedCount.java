@@ -228,6 +228,6 @@ public class OptimizedCount {
 		}
 	
 		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count), XSDDatatype.XSDinteger) );
-		return new PlanOp(new HDTOptimizeddOp(), engine, new QueryIterYieldN(1, bindingResult));
+		return new PlanOp(new HDTOptimizedOp(), engine, new QueryIterYieldN(1, bindingResult));
 	}
 }

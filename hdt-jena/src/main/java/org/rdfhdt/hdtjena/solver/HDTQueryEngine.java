@@ -82,7 +82,7 @@ public class HDTQueryEngine extends QueryEngineMain {
     	@Override
     	public Plan create(Op op, DatasetGraph dataset, Binding inputBinding, Context context) {
     		// Should not be called because accept/Op is false
-    		throw new ARQInternalErrorException("HDTQueryEngine: factory calleddirectly with an algebra expression");
+    		throw new ARQInternalErrorException("HDTQueryEngine: factory called directly with an algebra expression");
     	}
     }
 }

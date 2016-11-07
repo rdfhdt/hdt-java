@@ -37,7 +37,7 @@ class PredicateIndexArray implements PredicateIndex {
 	}
 	
 	@Override
-    public long getNumOcurrences(int pred) {
+    public long getNumOccurrences(int pred) {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
 	
@@ -84,7 +84,7 @@ class PredicateIndexArray implements PredicateIndex {
 
 	        ListenerUtil.notifyCond(iListener,  "Counting appearances of predicates", i, triples.seqY.getNumberOfElements(), 20000);
 	    }
-	    predCount.aggresiveTrimToSize();
+	    predCount.aggressiveTrimToSize();
 	    
 	    // Convert predicate count to bitmap
 	    Bitmap375 bitmap = new Bitmap375(triples.seqY.getNumberOfElements());

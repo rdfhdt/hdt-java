@@ -83,7 +83,7 @@ public class DictionaryFactory {
 		else if (DICTIONARY_TYPE_FOUR_SECTION_BIG.equals(name)){
 			return new FourSectionDictionaryBig(spec);
 		}
-		throw new IllegalFormatException("Implementation of ditionary not found for "+name);
+		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
 	
 	public static DictionaryPrivate createDictionary(ControlInfo ci) {
@@ -91,6 +91,6 @@ public class DictionaryFactory {
 		if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
 			return new FourSectionDictionary(new HDTSpecification());
 		}
-		throw new IllegalFormatException("Implementation of ditionary not found for "+name);
+		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
 }

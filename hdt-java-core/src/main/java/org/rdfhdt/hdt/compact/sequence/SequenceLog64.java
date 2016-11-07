@@ -252,7 +252,7 @@ public class SequenceLog64 implements DynamicSequence {
 	}
 	
 	@Override
-    public void aggresiveTrimToSize() {
+    public void aggressiveTrimToSize() {
 		long max = 0;
 		// Count and calculate number of bits needed per element.
 		for(int i=0; i<numentries; i++) {
