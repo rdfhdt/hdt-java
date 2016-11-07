@@ -33,6 +33,8 @@ import java.nio.charset.Charset;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author mario.arias
  *
@@ -44,7 +46,7 @@ public class ByteStringUtil {
 	/**
 	 * For use in the project when using String.getBytes() and making Strings from byte[]
 	 */
-	public static final Charset STRING_ENCODING = Charset.forName("UTF-8");
+	public static final Charset STRING_ENCODING = UTF_8;
 	
 	public static String asString(byte [] buff, int offset) {
 		int len = strlen(buff, offset);

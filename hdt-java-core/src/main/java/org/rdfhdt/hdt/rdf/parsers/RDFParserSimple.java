@@ -41,6 +41,8 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.ExternalDecompressStream;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author mario.arias
  *
@@ -56,14 +58,14 @@ public class RDFParserSimple implements RDFParserCallback {
 			BufferedReader reader; 
 		
 			if(fileName.equals("-")) {
-				reader = new BufferedReader(new InputStreamReader(System.in));
+				reader = new BufferedReader(new InputStreamReader(System.in, UTF_8));
 			} else if(fileName.endsWith(".gz")) {
 //				reader = new BufferedReader(new InputStreamReader(new BackgroundDecompressorStream(new GZIPInputStream(new FileInputStream(fileName)))));
-				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))));
+				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName)), UTF_8));
 			} else if(fileName.endsWith(".bz2")) {
-				reader = new BufferedReader(new InputStreamReader(new ExternalDecompressStream(new File(fileName), ExternalDecompressStream.BZIP2)));
+				reader = new BufferedReader(new InputStreamReader(new ExternalDecompressStream(new File(fileName), ExternalDecompressStream.BZIP2), UTF_8));
 			} else {
-				reader = new BufferedReader(new FileReader(new File(fileName)));
+				reader = new BufferedReader(new InputStreamReader(new FileInputStream(fileName), UTF_8));
 			}
 			String line;
 			long numLine = 1;
@@ -93,7 +95,7 @@ public class RDFParserSimple implements RDFParserCallback {
 	@Override
     public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(input, UTF_8));
 			String line;
 			long numLine = 1;
 			TripleString triple = new TripleString();

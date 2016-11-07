@@ -45,6 +45,8 @@ import org.rdfhdt.hdt.util.UnicodeEscape;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 
 /**
  * @author mario.arias
@@ -136,7 +138,7 @@ public class HdtSearch implements ProgressListener {
 			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
 		}
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in, UTF_8));
 		try {
 			TripleString triplePattern = new TripleString();
 

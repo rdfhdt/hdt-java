@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -12,6 +11,8 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Parses a RAR file directly, processing each file that contains rdf separately.
@@ -65,7 +66,7 @@ public class RDFParserRAR implements RDFParserCallback {
 			ProcessBuilder listProcessBuilder = new ProcessBuilder(cmdList1);
 //			listProcess.redirectInput(tempFile);
 			Process processList = listProcessBuilder.start();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(processList.getInputStream(), Charset.forName("UTF-8")));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(processList.getInputStream(), UTF_8));
 
 			String [] cmdExtract = Arrays.copyOf(cmdExtractFile, cmdExtractFile.length);
 			cmdExtract[3]=rarFile;
