@@ -41,12 +41,7 @@ public class BitUtil {
 	 * @return
 	 */
 	public static final int log2(long n) {
-        int b = 0;
-        while(n!=0) {
-                b++;
-                n>>>=1;
-        }
-        return b;
+		return (n != 0) ? (64 - Long.numberOfLeadingZeros(n)) : 0;
 	}
 	
 	public static final long maxVal(int numbits) {
