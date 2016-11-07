@@ -27,6 +27,7 @@
 package org.rdfhdt.hdt.tools;
 
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.hdt.HDT;
@@ -37,7 +38,6 @@ import org.rdfhdt.hdt.triples.TripleString;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
 
 
 /**
@@ -45,9 +45,9 @@ import com.beust.jcommander.internal.Lists;
  *
  */
 public class HDT2RDF implements ProgressListener {
-	@Parameter(description = "<input RDF> <output HDT>")
-	public List<String> parameters = Lists.newArrayList();
-	
+	@Parameter(description = "<input HDT> <output RDF>")
+	public List<String> parameters = new ArrayList<>();
+
 	public String hdtInput;
 	public String rdfOutput;
 

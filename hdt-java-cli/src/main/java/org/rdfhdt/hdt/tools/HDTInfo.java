@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -39,7 +40,6 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
 
 
 /**
@@ -48,7 +48,7 @@ import com.beust.jcommander.internal.Lists;
  */
 public class HDTInfo {
 	@Parameter(description = "<HDT File>")
-	public List<String> parameters = Lists.newArrayList();
+	public List<String> parameters = new ArrayList<>();
 
 	public String hdtInput;
 	
@@ -72,8 +72,6 @@ public class HDTInfo {
 		input.close();	
 		
 		System.out.write(headerData);
-		
-		input.close();
 	}
 
 	public static void main(String[] args) throws Throwable {

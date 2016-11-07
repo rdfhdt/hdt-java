@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.tools;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -43,7 +44,6 @@ import org.rdfhdt.hdt.util.UnicodeEscape;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
 
 
 /**
@@ -52,7 +52,7 @@ import com.beust.jcommander.internal.Lists;
  */
 public class HdtSearch implements ProgressListener {
 	@Parameter(description = "<HDT File>")
-	public List<String> parameters = Lists.newArrayList();
+	public List<String> parameters = new ArrayList<>();
 
 	public String hdtInput;
 	

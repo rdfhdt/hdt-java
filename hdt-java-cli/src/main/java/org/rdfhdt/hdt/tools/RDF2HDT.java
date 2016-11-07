@@ -27,6 +27,7 @@
 package org.rdfhdt.hdt.tools;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -39,7 +40,6 @@ import org.rdfhdt.hdt.util.StopWatch;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
 
 /**
  * @author mario.arias
@@ -51,7 +51,7 @@ public class RDF2HDT implements ProgressListener {
 	public String hdtOutput;
 	
 	@Parameter(description = "<input RDF> <output HDT>")
-	public List<String> parameters = Lists.newArrayList();
+	public List<String> parameters = new ArrayList<>();
 
 	@Parameter(names = "-options", description = "HDT Conversion options (override those of config file)")
 	public String options;
