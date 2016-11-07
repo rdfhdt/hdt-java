@@ -36,15 +36,18 @@ class PredicateIndexArray implements PredicateIndex {
 		return bitmap.select1(pred-1)+1;
 	}
 	
-	public long getNumOcurrences(int pred) {
+	@Override
+    public long getNumOcurrences(int pred) {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
 	
-	public long getOccurrence(int pred, long occ) {
+	@Override
+    public long getOccurrence(int pred, long occ) {
 		return array.get(calculatePos(pred)+occ-1);
 	}
 	
-	public void load(InputStream input) throws IOException {
+	@Override
+    public void load(InputStream input) throws IOException {
 		bitmap = BitmapFactory.createBitmap(input);
 		bitmap.load(input, null);
 		

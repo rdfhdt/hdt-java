@@ -635,7 +635,8 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	
-	public void generateIndex(ProgressListener listener) {		
+	@Override
+    public void generateIndex(ProgressListener listener) {
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.generate(listener);
 		

@@ -42,11 +42,13 @@ public class StopWatchCpu extends StopWatch {
 		reset();
 	}
 
-	public void reset() {
+	@Override
+    public void reset() {
 		ini = end = threadData.getCurrentThreadCpuTime()/1000;
 	}
 
-	public void stop() {
+	@Override
+    public void stop() {
 		end = threadData.getCurrentThreadCpuTime()/1000;
 	}
 }

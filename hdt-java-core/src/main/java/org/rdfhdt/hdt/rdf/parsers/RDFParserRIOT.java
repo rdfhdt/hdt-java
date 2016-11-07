@@ -86,7 +86,8 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 		}	
 	}
 	
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	@Override
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		this.callback = callback;
 		try {
 			switch(notation) {

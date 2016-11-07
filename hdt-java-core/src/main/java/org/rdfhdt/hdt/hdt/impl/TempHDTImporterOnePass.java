@@ -64,7 +64,8 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			this.listener = listener;
 		}
 
-		public void processTriple(TripleString triple, long pos) {
+		@Override
+        public void processTriple(TripleString triple, long pos) {
 			triples.insert(
 					dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
 					dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),

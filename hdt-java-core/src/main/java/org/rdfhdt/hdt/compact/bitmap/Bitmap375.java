@@ -148,6 +148,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
 	
+	@Override
 	public void set(long bitIndex, boolean value) {
 		indexUpToDate=false;
 		super.set(bitIndex, value);

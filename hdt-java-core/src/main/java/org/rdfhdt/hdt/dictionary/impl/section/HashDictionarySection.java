@@ -121,7 +121,8 @@ public class HashDictionarySection implements TempDictionarySection {
 		return list.iterator();
 	}
 
-	public int add(CharSequence entry) {
+	@Override
+    public int add(CharSequence entry) {
 		CharSequence compact = new CompactString(entry);
 		Integer pos = map.get(compact);
 		if(pos!=null) {
@@ -139,12 +140,14 @@ public class HashDictionarySection implements TempDictionarySection {
 		return list.size();
 	}
 
-	public void remove(CharSequence seq) {
+	@Override
+    public void remove(CharSequence seq) {
 		map.remove(seq);
 		sorted = false;
 	}
 	
-	public void sort() {
+	@Override
+    public void sort() {
 		// Update list.
 		list = new ArrayList<CharSequence>(map.size());
 		for(CharSequence str : map.keySet()) {

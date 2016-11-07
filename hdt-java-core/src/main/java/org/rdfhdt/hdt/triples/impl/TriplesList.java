@@ -219,7 +219,8 @@ public class TriplesList implements TempTriples {
 	 * @param order
 	 *            the order to set
 	 */
-	public void setOrder(TripleComponentOrder order) {
+	@Override
+    public void setOrder(TripleComponentOrder order) {
 		if (this.order.equals(order))
 			return;
 		this.order = order;
@@ -353,7 +354,8 @@ public class TriplesList implements TempTriples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.ordinal() );
 	}
 
-	public String getType() {
+	@Override
+    public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST;
 	}
 

@@ -90,7 +90,8 @@ public class RDFParserSimple implements RDFParserCallback {
 		}
 	}
 
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	@Override
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 			String line;

@@ -81,7 +81,8 @@ public class TempHDTImpl implements TempHDT {
 		return triples;
 	}
 
-	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
+	@Override
+    public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
 		rawsize += subject.length()+predicate.length()+object.length()+4;
 		this.triples.insert(
 				dictionary.insert(subject, TripleComponentRole.SUBJECT),
@@ -145,7 +146,8 @@ public class TempHDTImpl implements TempHDT {
 		isOrganized = true;
 	}
 	
-	public boolean isOrganized() {
+	@Override
+    public boolean isOrganized() {
 		return isOrganized;
 	}
 

@@ -74,6 +74,7 @@ public class CRC8 implements CRC {
      * @param crc   The starting CRC value
      * @return      The updated CRC value
      */
+    @Override
     public void update(byte data) {
         crc8 = crc8_table[(crc8 ^ data) & 0xFF ];
     }

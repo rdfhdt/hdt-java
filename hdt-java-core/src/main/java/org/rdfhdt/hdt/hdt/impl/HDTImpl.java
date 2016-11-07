@@ -91,7 +91,8 @@ public class HDTImpl implements HDTPrivate {
         triples = TriplesFactory.createTriples(spec);
 	}
 
-	public void populateHeaderStructure(String baseUri) {
+	@Override
+    public void populateHeaderStructure(String baseUri) {
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.VOID_DATASET);
 

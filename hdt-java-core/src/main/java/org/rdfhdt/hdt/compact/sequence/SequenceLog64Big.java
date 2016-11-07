@@ -239,14 +239,16 @@ public class SequenceLog64Big implements DynamicSequence {
 		return getField(data, numbits, position);
 	}
 	
-	public void set(long position, long value) {
+	@Override
+    public void set(long position, long value) {
 		//if(value<0 || value>maxvalue) {
 			//throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
 		//}
 		setField(data, numbits, position, value);
 	}
 	
-	public void append(long value) {
+	@Override
+    public void append(long value) {
 
 		//assert numentries<Integer.MAX_VALUE;
 		
@@ -264,7 +266,8 @@ public class SequenceLog64Big implements DynamicSequence {
 		numentries++;
 	}
 	
-	public void aggresiveTrimToSize() {
+	@Override
+    public void aggresiveTrimToSize() {
 		long max = 0;
 		// Count and calculate number of bits needed per element.
 		for(long i=0; i<numentries; i++) {
@@ -292,7 +295,8 @@ public class SequenceLog64Big implements DynamicSequence {
 
 	}
 	
-	public void trimToSize() {
+	@Override
+    public void trimToSize() {
 		resizeArray((long)numWordsFor(numbits, numentries));
 	}
 	

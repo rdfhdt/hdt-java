@@ -50,15 +50,18 @@ public class HDTOptionsBase implements HDTOptions {
 	 * @param key
 	 * @return
 	 */
-	public String get(String key) {
+	@Override
+    public String get(String key) {
 		return properties.getProperty(key);
 	}
 	
-	public void set(String key, String value) {
+	@Override
+    public void set(String key, String value) {
 		properties.setProperty(key, value);
 	}
 	
-	public void setOptions(String options) {
+	@Override
+    public void setOptions(String options) {
 		for(String item : options.split(";")) {
 			int pos = item.indexOf('=');
 			if(pos!=-1) {
@@ -73,7 +76,8 @@ public class HDTOptionsBase implements HDTOptions {
 	 * @param string
 	 * @return
 	 */
-	public long getInt(String string) {
+	@Override
+    public long getInt(String string) {
 		String val = properties.getProperty(string.trim());
 		if(val!=null) {
 			return Long.parseLong(val);
@@ -81,13 +85,15 @@ public class HDTOptionsBase implements HDTOptions {
 		return 0;
 	}
 	
-	public void setInt(String key, long value) {
+	@Override
+    public void setInt(String key, long value) {
 		properties.setProperty(key, Long.toString(value));
 	}
 	
 
 	
-	public void clear() {
+	@Override
+    public void clear() {
 		properties.clear();
 	}
 }
