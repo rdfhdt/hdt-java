@@ -178,7 +178,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 			return 0;
 		}
 
-		int ret=0;
+		int ret;
 		switch(position) {
 		case SUBJECT:
 			ret = shared.locate(str);

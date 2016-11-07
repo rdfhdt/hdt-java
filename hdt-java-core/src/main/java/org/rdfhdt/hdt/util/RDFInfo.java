@@ -125,7 +125,7 @@ public class RDFInfo {
 	 * Gets the "rdf.expectedCompression" peoperty is it is set. If not sets it to 0.15 and returns that value.
 	 */
 	public static float getCompression(HDTOptions specs){
-		float compression = 0;
+		float compression;
 		try {
 			compression = Float.parseFloat(specs.get(compression_prop));
 		} catch (NumberFormatException e){
@@ -151,7 +151,7 @@ public class RDFInfo {
 	    try {
 	        byte[] c = new byte[1024];
 	        int count = 0;
-	        int readChars = 0;
+	        int readChars;
 	        boolean empty = true;
 	        while ((readChars = is.read(c)) != -1) {
 	            empty = false;

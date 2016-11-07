@@ -53,7 +53,7 @@ public class HDT2RDF implements ProgressListener {
 
 	public void execute() throws Exception {
 		
-		PrintStream out = null;
+		PrintStream out;
 		if (rdfOutput.equals("stdout")){
 			out = System.out;
 		} else {

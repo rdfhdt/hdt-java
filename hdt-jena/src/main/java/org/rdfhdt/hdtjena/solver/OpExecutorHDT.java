@@ -151,7 +151,7 @@ public class OpExecutorHDT extends OpExecutor {
 	        }
 	        // -- Filter placement
 	            
-	        Op op = null ;
+	        Op op;
 	        if ( exprs != null )
 	            op = TransformFilterPlacement.transform(exprs, pattern) ;
 	        else

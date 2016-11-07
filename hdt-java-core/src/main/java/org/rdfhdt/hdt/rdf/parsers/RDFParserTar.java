@@ -61,7 +61,7 @@ public class RDFParserTar implements RDFParserCallback {
 		try {
 
 			final TarArchiveInputStream debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", input);
-			TarArchiveEntry entry = null;
+			TarArchiveEntry entry;
 			
 			// Make sure that the parser does not close the Tar Stream so we can read the rest of the files.
 			NonCloseInputStream nonCloseIn = new NonCloseInputStream(debInputStream);

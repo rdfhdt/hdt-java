@@ -53,7 +53,7 @@ public class DictionarySectionFactory {
 		input.reset();
 		input.mark(64);		// To allow children to reset() and try another instance.
 		
-		DictionarySectionPrivate section=null;
+		DictionarySectionPrivate section;
 		
 		switch(dictType) {
 		case PFCDictionarySection.TYPE_INDEX:

@@ -61,7 +61,7 @@ public class HdtSearch implements ProgressListener {
 	
 	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();
-		int count = 0;
+		int count;
 
 		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
 		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
