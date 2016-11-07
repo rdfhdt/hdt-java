@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.util.io.IOUtil;
 
 
 public class HDTEnsureDictionaryOrder {

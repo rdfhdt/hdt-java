@@ -1,7 +1,6 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
 import org.junit.Test;
-import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.triples.TripleString;

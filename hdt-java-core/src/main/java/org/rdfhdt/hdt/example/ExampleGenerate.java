@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.example;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
 /**

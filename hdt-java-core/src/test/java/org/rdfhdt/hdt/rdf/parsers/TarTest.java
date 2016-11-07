@@ -1,6 +1,5 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 

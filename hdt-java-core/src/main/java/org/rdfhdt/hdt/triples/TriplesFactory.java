@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.triples;
 
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.hdt.TempDictTriplesFactory;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
