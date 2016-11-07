@@ -31,6 +31,6 @@ public class HDTGenerateIndex {
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.exit(-1);
-		};
-	}
+		}
+    }
 }

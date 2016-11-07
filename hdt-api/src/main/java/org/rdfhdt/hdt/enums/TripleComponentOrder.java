@@ -59,5 +59,5 @@ public enum TripleComponentOrder {
 	/**
 	 * Object, predicate, subject
 	 */
-	OPS;
+	OPS,
 }

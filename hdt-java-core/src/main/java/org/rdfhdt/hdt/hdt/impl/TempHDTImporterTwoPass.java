@@ -72,9 +72,9 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 		public long getCount() {
 			return count;
 		}
-	};
+	}
 
-	/**
+    /**
 	 * Warning: different from HDTConverterOnePass$TripleAppender
 	 * This one uses dict.stringToID, the other uses dict.insert
 	 * @author mario.arias
@@ -102,9 +102,9 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 			count++;
 			ListenerUtil.notifyCond(listener, "Generating triples "+count+" triples processed.", count, 0, 100);
 		}
-	};
+	}
 
-	@Override
+    @Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
 		

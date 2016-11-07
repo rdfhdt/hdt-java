@@ -62,8 +62,8 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
-				};
-	};
+				}
+            };
 	
 	private ThreadLocal<Map<Integer,CharSequence>> cacheID =
 			new ThreadLocal<Map<Integer,CharSequence>>() {
@@ -77,8 +77,8 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
-				};
-	};
+				}
+            };
 	
 	public DictionarySectionCachePerThread(DictionarySectionPrivate child) {
 		this.child = child;

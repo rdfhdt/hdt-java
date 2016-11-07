@@ -37,5 +37,5 @@ public enum TripleComponentRole {
 	/** The triple is a predicate */
 	PREDICATE,
 	/** The triple is an object */
-	OBJECT;
+	OBJECT,
 }
