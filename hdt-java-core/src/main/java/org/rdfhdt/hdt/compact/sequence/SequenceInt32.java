@@ -169,7 +169,7 @@ public class SequenceInt32 implements DynamicSequence {
 	@Override
 	public void add(Iterator<Long> iterator) {
 		while (iterator.hasNext()) {
-			long value = iterator.next().longValue();
+			long value = iterator.next();
 			append(value);
 		}
 	}

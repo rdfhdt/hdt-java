@@ -75,7 +75,7 @@ public class HashDictionarySection implements TempDictionarySection {
 		if(val==null) {
 			return 0;
 		}
-		return val.intValue();
+		return val;
 	}
 
 	/* (non-Javadoc)

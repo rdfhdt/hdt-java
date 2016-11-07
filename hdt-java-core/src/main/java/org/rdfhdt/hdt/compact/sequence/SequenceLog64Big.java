@@ -180,7 +180,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		
 		// Count and calculate number of bits needed per element.
 		while(elements.hasNext()) {
-			long val = elements.next().longValue();
+			long val = elements.next();
 			max = val>max ? val : max;
 			numentries++;
 		}
@@ -193,7 +193,7 @@ public class SequenceLog64Big implements DynamicSequence {
                 // Save
                 int count = 0;
                 while(elements.hasNext()) {
-                        long element = elements.next().longValue();
+                        long element = elements.next();
                         assert element<=maxvalue;
                         setField(data, numbits, count, element);
                         count++;
