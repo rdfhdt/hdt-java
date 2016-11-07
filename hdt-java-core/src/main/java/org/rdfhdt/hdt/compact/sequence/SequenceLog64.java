@@ -85,12 +85,12 @@ public class SequenceLog64 implements DynamicSequence {
 	}
 	
 	/** longs required to represent "total" integers of "bitsField" bits each */
-	public static final long numWordsFor(int bitsField, long total) {
+	public static long numWordsFor(int bitsField, long total) {
 		return (bitsField*total+63)/64;
 	}
 	
 	/** Number of bits required for last word */
-	public static final int lastWordNumBits(int bitsField, long total) {
+	public static int lastWordNumBits(int bitsField, long total) {
 		long totalBits = bitsField*total;
 		if(totalBits==0) {
 			return 0;
@@ -99,12 +99,12 @@ public class SequenceLog64 implements DynamicSequence {
 	}
 	
 	/** Number of bits required for last word */
-	public static final int lastWordNumBytes(int bitsField, long total) {
+	public static int lastWordNumBytes(int bitsField, long total) {
 		return ((lastWordNumBits(bitsField, total)-1)/8)+1;	// +1 To have output in the range 1-8, -1 to compensate.
 	}
 
 	/** Number of bytes required to represent n integers of e bits each */
-	public static final long numBytesFor(int bitsField, long total) {
+	public static long numBytesFor(int bitsField, long total) {
 		return (bitsField*total+7)/8;
 	}
 

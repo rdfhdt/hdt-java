@@ -40,15 +40,15 @@ public class BitUtil {
 	 * @param n
 	 * @return
 	 */
-	public static final int log2(long n) {
+	public static int log2(long n) {
 		return (n != 0) ? (64 - Long.numberOfLeadingZeros(n)) : 0;
 	}
 	
-	public static final long maxVal(int numbits) {
+	public static long maxVal(int numbits) {
 		return ~(~0L<<numbits);
 	}
 	
-	public static final long readLowerBitsByteAligned(long numbits, InputStream in) throws IOException {
+	public static long readLowerBitsByteAligned(long numbits, InputStream in) throws IOException {
         int bitsRead = 0;
         long value = 0;
         while(bitsRead<numbits) {
@@ -60,7 +60,7 @@ public class BitUtil {
         return value;
 }
 
-	public static final void writeLowerBitsByteAligned(long value, long numbits, OutputStream out) throws IOException {
+	public static void writeLowerBitsByteAligned(long value, long numbits, OutputStream out) throws IOException {
 		while(numbits>0) {
 			out.write((int)(value & 0xFF));
 			value>>>=8;
@@ -68,7 +68,7 @@ public class BitUtil {
 		}
 	}
 	
-	public static final int select1(long value, int rank) {
+	public static int select1(long value, int rank) {
         int bitpos=0;
         while(rank>0 && value!=0) {
         	rank-= value & 1;
@@ -78,7 +78,7 @@ public class BitUtil {
         return bitpos;
 	}
 	
-	public static final int select0(long value, int rank) {
+	public static int select0(long value, int rank) {
         int bitpos=0;
         while(rank>0) {
         	rank-= (value ^ 1) & 1;

@@ -85,19 +85,19 @@ public class Bitmap64 {
 	/**
      * Given a bit index, return word index containing it.
      */
-	protected static final int wordIndex(long bitIndex) {
+	protected static int wordIndex(long bitIndex) {
         return (int) (bitIndex >>> LOGW);
     }
     
-    public static final long numWords(long numbits) {
+    public static long numWords(long numbits) {
     	return ((numbits-1)>>>LOGW) + 1;
     }
     
-    public static final long numBytes(long numbits) {
+    public static long numBytes(long numbits) {
     	return ((numbits-1)>>>3) + 1;
     }
     
-    protected static final int lastWordNumBits(long numbits) {
+    protected static int lastWordNumBits(long numbits) {
     	if(numbits==0) {
     		return 0;
     	}
