@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/solver/HDTSolverLib.java $
  * Revision: $Rev: 197 $
  * Last modified: $Date: 2013-04-12 19:39:33 +0100 (vie, 12 abr 2013) $

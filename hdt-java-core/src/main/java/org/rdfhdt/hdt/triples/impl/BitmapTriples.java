@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/impl/BitmapTriples.java $
  * Revision: $Rev: 203 $
  * Last modified: $Date: 2013-05-24 10:48:53 +0100 (vie, 24 may 2013) $

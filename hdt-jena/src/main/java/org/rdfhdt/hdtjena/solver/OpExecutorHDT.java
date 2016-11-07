@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/solver/OpExecutorHDT.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $

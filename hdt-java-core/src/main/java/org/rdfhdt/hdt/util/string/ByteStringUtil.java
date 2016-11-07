@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/string/ByteStringUtil.java $
  * Revision: $Rev: 199 $
  * Last modified: $Date: 2013-04-17 23:35:53 +0100 (mi, 17 abr 2013) $

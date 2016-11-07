@@ -30,10 +30,6 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.rdf.model.impl.ModelCom;
 
 /**
- * 
- */
-
-/**
  * @author mario.arias
  *
  */

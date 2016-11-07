@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/iterator/SequentialSearchIteratorTripleID.java $
  * Revision: $Rev: 196 $
  * Last modified: $Date: 2013-04-12 10:34:20 +0100 (vie, 12 abr 2013) $

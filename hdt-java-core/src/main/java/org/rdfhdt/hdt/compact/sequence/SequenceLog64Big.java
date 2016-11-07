@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceLog64.java $
  * Revision: $Rev: 130 $
  * Last modified: $Date: 2013-01-21 00:09:42 +0000 (lun, 21 ene 2013) $

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/PFCDictionarySection.java $
  * Revision: $Rev: 94 $
  * Last modified: $Date: 2012-11-20 23:44:36 +0000 (mar, 20 nov 2012) $

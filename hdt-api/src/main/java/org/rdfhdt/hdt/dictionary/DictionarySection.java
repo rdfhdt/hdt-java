@@ -1,5 +1,5 @@
 package org.rdfhdt.hdt.dictionary;
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/dictionary/DictionarySection.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $

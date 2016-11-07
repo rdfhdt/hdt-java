@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/io/IOUtil.java $
  * Revision: $Rev: 194 $
  * Last modified: $Date: 2013-03-04 21:30:01 +0000 (lun, 04 mar 2013) $

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$

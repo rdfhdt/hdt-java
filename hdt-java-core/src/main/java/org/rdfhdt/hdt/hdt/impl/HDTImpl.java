@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/hdt/impl/HDTImpl.java $
  * Revision: $Rev: 202 $
  * Last modified: $Date: 2013-05-10 18:04:41 +0100 (vie, 10 may 2013) $

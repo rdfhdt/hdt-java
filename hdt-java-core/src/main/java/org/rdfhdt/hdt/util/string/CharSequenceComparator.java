@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/string/CharSequenceComparator.java $
  * Revision: $Rev: 200 $
  * Last modified: $Date: 2013-04-17 23:36:44 +0100 (mi, 17 abr 2013) $
