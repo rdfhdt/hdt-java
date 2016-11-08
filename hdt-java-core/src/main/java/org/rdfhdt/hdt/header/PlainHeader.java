@@ -49,12 +49,15 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PlainHeader implements HeaderPrivate, RDFCallback {
+	private static final Logger log = LoggerFactory.getLogger(PlainHeader.class);
 	
 	protected final HDTOptions spec;
 	protected final List<TripleString> triples= new ArrayList<>();
@@ -131,7 +134,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 			RDFParserSimple parser = new RDFParserSimple();
 			parser.doParse(new ByteArrayInputStream(headerData), "http://www.rdfhdt.org", RDFNotation.NTRIPLES, this);
 		} catch (ParserException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new IllegalFormatException("Error parsing header");
 		}
 	}

@@ -43,6 +43,8 @@ import org.rdfhdt.hdtjena.solver.HDTJenaIterator;
 import org.rdfhdt.hdtjena.solver.HDTQueryEngine;
 import org.rdfhdt.hdtjena.solver.OpExecutorHDT;
 import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -50,6 +52,8 @@ import org.rdfhdt.hdtjena.solver.ReorderTransformationHDT;
  *
  */
 public class HDTGraph extends GraphBase {
+	private static final Logger log = LoggerFactory.getLogger(HDTGraph.class);
+
 	private static final HDTCapabilities capabilities= new HDTCapabilities();
 
 	private HDT hdt;
@@ -136,7 +140,7 @@ public class HDTGraph extends GraphBase {
 			try {
 				hdt.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error("Unexpected exception.", e);
 			}
 		}
 	}

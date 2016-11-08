@@ -66,12 +66,15 @@ import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation of HDT interface
  *
  */
 public class HDTImpl implements HDTPrivate {
+	private static final Logger log = LoggerFactory.getLogger(HDTImpl.class);
 
 	private final HDTOptions spec;
 
@@ -158,7 +161,7 @@ public class HDTImpl implements HDTPrivate {
 				this.baseUri = it.next().getSubject().toString();
 			}
 		} catch (NotFoundException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 
 		// Load dictionary
@@ -237,7 +240,7 @@ public class HDTImpl implements HDTPrivate {
 				this.baseUri = it.next().getSubject().toString();
 			}
 		} catch (NotFoundException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 
 		// Load dictionary
@@ -408,7 +411,7 @@ public class HDTImpl implements HDTPrivate {
 			}
 			in.close();
 		} catch (Exception e) {
-			System.out.println("Could not read .hdt.index, Generating a new one.");
+			log.info("Could not read .hdt.index, Generating a new one.");
 
 			// GENERATE
 			triples.generateIndex(listener);
@@ -420,7 +423,7 @@ public class HDTImpl implements HDTPrivate {
 				triples.saveIndex(out, ci, listener);
 				out.close();
 			} catch (IOException e2) {
-
+				log.warn("Could not save .hdt.index: {}", e2.toString());
 			}
 		}
 	}

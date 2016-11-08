@@ -48,6 +48,10 @@
             <artifactId>jena-base</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+        <dependency>
             <groupId>pl.edu.icm</groupId>
             <artifactId>JLargeArrays</artifactId>
         </dependency>

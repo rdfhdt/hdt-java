@@ -16,6 +16,11 @@
   </properties>
 
   <dependencies>
+    <dependency>
+        <groupId>org.rdfhdt</groupId>
+        <artifactId>hdt-api</artifactId>
+        <version>${project.version}</version>
+    </dependency>
   	<dependency>
   		<groupId>org.rdfhdt</groupId>
   		<artifactId>hdt-java-core</artifactId>
@@ -34,9 +39,8 @@
         <artifactId>jena-base</artifactId>
     </dependency>
     <dependency>
-        <groupId>org.rdfhdt</groupId>
-        <artifactId>hdt-api</artifactId>
-        <version>${project.version}</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
     </dependency>
 
     <dependency>

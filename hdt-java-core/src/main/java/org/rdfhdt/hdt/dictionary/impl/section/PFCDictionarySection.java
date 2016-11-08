@@ -51,12 +51,16 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PFCDictionarySection implements DictionarySectionPrivate {
+	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySection.class);
+
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
@@ -128,7 +132,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			// DEBUG
 			//dumpAll();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 	}
 		

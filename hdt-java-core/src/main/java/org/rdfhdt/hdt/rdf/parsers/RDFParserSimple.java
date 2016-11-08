@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.rdf.parsers;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.GZIPInputStream;
@@ -40,6 +39,8 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.ExternalDecompressStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -48,6 +49,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  */
 public class RDFParserSimple implements RDFParserCallback {
+	private static final Logger log = LoggerFactory.getLogger(RDFParserSimple.class);
 
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.RDFCallback)
@@ -87,7 +89,7 @@ public class RDFParserSimple implements RDFParserCallback {
 			}
 			reader.close();
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception parsing file: {}", fileName, e);
 			throw new ParserException();
 		}
 	}
@@ -111,7 +113,7 @@ public class RDFParserSimple implements RDFParserCallback {
 			}
 			reader.close();
 		}catch(Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new ParserException();
 		}
 	}

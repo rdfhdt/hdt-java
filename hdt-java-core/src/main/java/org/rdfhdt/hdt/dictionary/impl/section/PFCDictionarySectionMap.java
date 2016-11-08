@@ -56,12 +56,16 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeable {
+	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionMap.class);
+
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
@@ -250,7 +254,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			}
 			return 0;
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			return 0;
 		}
 	}
@@ -283,7 +287,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			}
 			return new CompactString(tempString).getDelayed();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			return null;
 		}
 	}

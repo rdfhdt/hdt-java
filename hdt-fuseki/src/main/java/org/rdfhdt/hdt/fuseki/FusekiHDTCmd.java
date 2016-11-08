@@ -252,7 +252,7 @@ public class FusekiHDTCmd extends CmdARQ
             dsg = DatasetGraphFactory.createMem() ;
             // replace by RiotLoader after ARQ refresh.
             String filename = getValue(argFile) ;
-            log.info("Dataset: in-memory: load file: "+filename) ;
+            log.info("Dataset: in-memory: load file: {}", filename);
             if ( ! FileOps.exists(filename) )
                 throw new CmdException("File not found: "+filename) ;
 
@@ -276,7 +276,7 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argTDB) )
         {
             String dir = getValue(argTDB) ;
-            log.info("TDB dataset: directory="+dir) ;
+            log.info("TDB dataset: directory={}", dir);
             if ( ! FileOps.exists(dir) )
                 throw new CmdException("Directory not found: "+dir) ;
             dsg = TDBFactory.createDatasetGraph(dir) ;
@@ -285,7 +285,7 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argHDT) )
         {
             String hdtFile = getValue(argHDT) ;
-            log.info("HDT dataset: file="+hdtFile) ;
+            log.info("HDT dataset: file={}", hdtFile);
             if ( ! FileOps.exists(hdtFile) )
                 throw new CmdException("HDT file does not exist: "+hdtFile) ;
             
@@ -436,29 +436,29 @@ public class FusekiHDTCmd extends CmdARQ
         }
         
         homeDir = sort_out_dir(homeDir) ;
-        Fuseki.configLog.info("Home Directory: " + FileOps.fullDirectoryPath(homeDir));
+        Fuseki.configLog.info("Home Directory: {}", FileOps.fullDirectoryPath(homeDir));
         if ( ! FileOps.exists(homeDir) )
-            Fuseki.configLog.warn("No such directory for Fuseki home: "+homeDir) ;
+            Fuseki.configLog.warn("No such directory for Fuseki home: {}", homeDir);
         
         String staticContentDir = pagesDir ;
         if ( staticContentDir == null )
             staticContentDir = homeDir+Fuseki.PagesStatic ;
-        
-        Fuseki.configLog.debug("Static Content Directory: "+ FileOps.fullDirectoryPath(staticContentDir)) ;
+
+        Fuseki.configLog.debug("Static Content Directory: {}", FileOps.fullDirectoryPath(staticContentDir));
 
         if ( ! FileOps.exists(staticContentDir) ) {
-            Fuseki.configLog.warn("No such directory for static content: " + FileOps.fullDirectoryPath(staticContentDir)) ;
+            Fuseki.configLog.warn("No such directory for static content: {}", FileOps.fullDirectoryPath(staticContentDir));
             Fuseki.configLog.warn("You may need to set the --pages or --home option to configure static content correctly");
         }
         
         if ( jettyConfigFile != null )
-            Fuseki.configLog.info("Jetty configuration: "+jettyConfigFile) ;
+            Fuseki.configLog.info("Jetty configuration: {}", jettyConfigFile);
         
         ServerConfig serverConfig ;
         
         if ( fusekiConfigFile != null )
         {
-            Fuseki.configLog.info("Configuration file: "+fusekiConfigFile) ;
+            Fuseki.configLog.info("Configuration file: {}", fusekiConfigFile);
             serverConfig = FusekiConfig.configure(fusekiConfigFile) ;
         }
         else
@@ -485,13 +485,15 @@ public class FusekiHDTCmd extends CmdARQ
         
         if ( mgtPort > 0 )
         {
-            Fuseki.configLog.info("Management services on port "+mgtPort) ;
+            Fuseki.configLog.info("Management services on port {}", mgtPort);
             mgtServer = ManagementServer.createManagementServer(mgtPort) ;
             try { mgtServer.start() ; }
             catch (java.net.BindException ex)
-            { serverLog.error("SPARQLServer: Failed to start management server: " + ex.getMessage()) ; System.exit(1) ; }
+            {
+                serverLog.error("SPARQLServer: Failed to start management server: {}", ex.getMessage()); System.exit(1) ; }
             catch (Exception ex)
-            { serverLog.error("SPARQLServer: Failed to start management server: " + ex.getMessage(), ex) ; System.exit(1) ; }
+            {
+                serverLog.error("SPARQLServer: Failed to start management server: {}", ex.getMessage(), ex); System.exit(1) ; }
         }
 
         server.start() ;

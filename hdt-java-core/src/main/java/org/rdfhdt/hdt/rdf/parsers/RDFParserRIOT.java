@@ -28,7 +28,6 @@ package org.rdfhdt.hdt.rdf.parsers;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.zip.GZIPInputStream;
 
@@ -42,12 +41,16 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
+	private static final Logger log = LoggerFactory.getLogger(RDFParserRIOT.class);
+
 	private RDFCallback callback;
 	private final TripleString triple = new TripleString();
 	
@@ -79,9 +82,8 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 				default:
 					throw new NotImplementedException("Parser not found for format "+notation);	
 			}
-		} catch (FileNotFoundException e) {
-			throw new ParserException();
 		} catch (Exception e) {
+			log.error("Unexpected exception parsing file: {}", fileName, e);
 			throw new ParserException();
 		}	
 	}
@@ -105,7 +107,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					throw new NotImplementedException("Parser not found for format "+notation);	
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new ParserException();
 		}	
 	}

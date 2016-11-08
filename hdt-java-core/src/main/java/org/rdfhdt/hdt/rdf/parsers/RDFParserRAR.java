@@ -11,6 +11,8 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -25,7 +27,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 
 public class RDFParserRAR implements RDFParserCallback {
-	
+	private static final Logger log = LoggerFactory.getLogger(RDFParserRAR.class);
+
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
 	private static Boolean available;
@@ -75,11 +78,11 @@ public class RDFParserRAR implements RDFParserCallback {
 			// Read file name from list
 			while ((fileName = reader.readLine()) != null) {
 				// FIXME: Create several processes in background?
-				System.out.println("File: "+fileName);
+				log.info("File: {}", fileName);
 				RDFNotation guessnot = RDFNotation.guess(fileName);
 				if(guessnot!=null) {
 					// Create 
-					System.out.println("Parse from rar: "+fileName+" as "+guessnot);
+					log.info("Parse from rar: {} as {}", fileName, guessnot);
 					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
 
 					cmdExtract[4]=fileName;
@@ -92,7 +95,7 @@ public class RDFParserRAR implements RDFParserCallback {
 					in.close();
 					processExtract.waitFor();
 				} else {
-					System.out.println("Parse from rar "+fileName+": Not suitable parser found.");
+					log.info("Parse from rar {}: No suitable parser found.", fileName);
 				}
 			}
 			
@@ -100,7 +103,7 @@ public class RDFParserRAR implements RDFParserCallback {
 			processList.waitFor();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception parsing file: {}", rarFile, e);
 			throw new ParserException();
 		} 
 	}

@@ -27,6 +27,9 @@
 
 package org.rdfhdt.hdt.compact.sequence;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -39,6 +42,7 @@ import java.util.zip.InflaterInputStream;
  *
  */
 public class DeflateIntegerIterator implements Iterator<Integer> {
+	private static final Logger log = LoggerFactory.getLogger(DeflateIntegerIterator.class);
 
 	protected final List<byte[]> buffer;
 	protected DataInputStream stream;
@@ -77,8 +81,7 @@ public class DeflateIntegerIterator implements Iterator<Integer> {
 				next = -1;
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error("Unexpected exception.", e1);
 		}
 	}
 	

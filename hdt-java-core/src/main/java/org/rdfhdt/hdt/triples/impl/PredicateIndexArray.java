@@ -18,8 +18,11 @@ import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class PredicateIndexArray implements PredicateIndex {
+	private static final Logger log = LoggerFactory.getLogger(PredicateIndexArray.class);
 	
 	final BitmapTriples triples;
 	Sequence array;
@@ -95,7 +98,7 @@ class PredicateIndexArray implements PredicateIndex {
 	        ListenerUtil.notifyCond(iListener, "Creating Predicate bitmap", i, predCount.getNumberOfElements(), 100000);
 	    }
 	    bitmap.set(triples.seqY.getNumberOfElements()-1, true);
-	    System.out.println("Predicate Bitmap in " + st.stopAndShow());
+        log.info("Predicate Bitmap in {}", st.stopAndShow());
 	    st.reset();
 
 	    predCount=null;
@@ -122,7 +125,7 @@ class PredicateIndexArray implements PredicateIndex {
 
 	    this.array = array;
 	    this.bitmap = bitmap;
-	    System.out.println("Count predicates in "+st.stopAndShow());
+        log.info("Count predicates in {}", st.stopAndShow());
 	}
 
 	@Override
