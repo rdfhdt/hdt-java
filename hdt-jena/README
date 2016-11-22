@@ -6,18 +6,17 @@ This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This al
 
 # First make sure you compiled hdt-java
 $ cd ../hdt-java
-hdt-java $ ant jar
+hdt-java $ mvn install
 
 # Generate an HDT file using the hdt-java library 
 hdt-java $ ./rdf2hdt.sh data/test.nt data/test.hdt
 
 # Now get to the hdt-jena dir and compile it
 hdt-java $ cd ../hdt-jena
-hdt-java $ ant jar
+hdt-java $ mvn install 
 
 # Execute SPARQL Query against the file.
 $ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }"
-
 
 ########## Create Jena Model from Java #########
 # Note it needs hdt-lib.jar, hdt-jena.jar and Jena jars.

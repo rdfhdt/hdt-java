@@ -4,7 +4,6 @@ source `dirname $0`/javaenv.sh
 
 export hdtFile=$1
 shift
-
-$JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH org.rdfhdt.hdtjena.HDTSparql $hdtFile "$*"
+mvn exec:java -Dexec.mainClass="org.rdfhdt.hdtjena.cmd.HDTSparql" -Dexec.args="$hdtFile '$1'"
 
 exit $?
