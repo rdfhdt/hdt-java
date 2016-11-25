@@ -77,6 +77,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 				case RDFXML:
 					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
 					break;
+				case N3:
 				case TURTLE:
 					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
 					break;
