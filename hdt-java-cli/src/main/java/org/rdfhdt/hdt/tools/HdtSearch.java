@@ -35,6 +35,7 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -54,6 +55,9 @@ public class HdtSearch implements ProgressListener {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
+	@Parameter(names = "-version", description = "Prints the HDT version number")
+	public static boolean showVersion;
+	
 	public String hdtInput;
 	
 	@Parameter(names = "-memory", description = "Load the whole file into main memory. Ensures fastest querying.")
@@ -184,6 +188,11 @@ public class HdtSearch implements ProgressListener {
 		JCommander com = new JCommander(hdtSearch, args);
 		com.setProgramName("hdtSearch");
 
+		if (showVersion) {
+			System.out.println(HDTVersion.get_version_string("."));
+			System.exit(0);
+		}
+		
 		if(hdtSearch.parameters.size()!=1) {
 			com.usage();
 			System.exit(1);

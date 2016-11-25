@@ -34,13 +34,13 @@ import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
-
 
 /**
  * @author mario.arias
@@ -50,29 +50,32 @@ public class HDTInfo {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = Lists.newArrayList();
 
+	@Parameter(names = "-version", description = "Prints the HDT version number")
+	public static boolean showVersion;
+
 	public String hdtInput;
-	
+
 	public void execute() throws ParserException, IOException {
 		InputStream input;
-		if(hdtInput.endsWith(".gz")) {
+		if (hdtInput.endsWith(".gz")) {
 			input = new GZIPInputStream(new FileInputStream(hdtInput));
 		} else {
 			input = new BufferedInputStream(new FileInputStream(hdtInput));
 		}
 		ControlInformation ci = new ControlInformation();
-		
+
 		// Load Global ControlInformation
 		ci.load(input);
-		
+
 		// Load header
 		ci.load(input);
-		int headerSize = (int)ci.getInt("length");
-		
-		byte [] headerData = IOUtil.readBuffer(input, headerSize, null);
-		input.close();	
-		
+		int headerSize = (int) ci.getInt("length");
+
+		byte[] headerData = IOUtil.readBuffer(input, headerSize, null);
+		input.close();
+
 		System.out.write(headerData);
-		
+
 		input.close();
 	}
 
@@ -80,17 +83,21 @@ public class HDTInfo {
 		HDTInfo hdtInfo = new HDTInfo();
 		JCommander com = new JCommander(hdtInfo, args);
 		com.setProgramName("hdtInfo");
-		
+		if (showVersion) {
+			System.out.println(HDTVersion.get_version_string("."));
+			System.exit(0);
+		}
+
 		try {
-			if (hdtInfo.hdtInput==null)
+			if (hdtInfo.hdtInput == null)
 				hdtInfo.hdtInput = hdtInfo.parameters.get(0);
-		} catch (Exception e){
+		} catch (Exception e) {
 			com.usage();
 			System.exit(1);
 		}
-		
+
+
 		hdtInfo.execute();
 	}
 
-	
 }

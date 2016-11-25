@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -47,6 +48,9 @@ import com.beust.jcommander.internal.Lists;
 public class HDT2RDF implements ProgressListener {
 	@Parameter(description = "<input RDF> <output HDT>")
 	public List<String> parameters = Lists.newArrayList();
+	
+	@Parameter(names = "-version", description = "Prints the HDT version number")
+	public static boolean showVersion;
 	
 	public String hdtInput;
 	public String rdfOutput;
@@ -91,6 +95,11 @@ public class HDT2RDF implements ProgressListener {
 		JCommander com = new JCommander(hdt2rdf, args);
 		com.setProgramName("hdt2rdf");
 
+		if (showVersion) {
+			System.out.println(HDTVersion.get_version_string("."));
+			System.exit(0);
+		}
+		
 		try {
 			hdt2rdf.hdtInput = hdt2rdf.parameters.get(0);
 		} catch (Exception e){

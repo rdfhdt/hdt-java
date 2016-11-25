@@ -33,6 +33,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -61,6 +62,9 @@ public class RDF2HDT implements ProgressListener {
 	
 	@Parameter(names = "-rdftype", description = "Type of RDF Input (ntriples, nquad, n3, turtle, rdfxml)")
 	public String rdfType;
+	
+	@Parameter(names = "-version", description = "Prints the HDT version number")
+	public static boolean showVersion;
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
 	public String baseURI;
@@ -157,7 +161,11 @@ public class RDF2HDT implements ProgressListener {
 			rdf2hdt.rdfInput = rdf2hdt.parameters.get(0);
 			rdf2hdt.hdtOutput = rdf2hdt.parameters.get(1);
 			
-		} else {
+		} else if (showVersion){
+				System.out.println(HDTVersion.get_version_string("."));
+				System.exit(0);
+			}
+		else{
 			com.usage();
 			System.exit(1);
 		}

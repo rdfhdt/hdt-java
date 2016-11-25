@@ -45,8 +45,8 @@ import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTPrivate;
+import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
 import org.rdfhdt.hdt.header.Header;
@@ -63,7 +63,6 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
-import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -141,8 +140,9 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
-			throw new IllegalFormatException("This software cannot open this version of HDT File");
+		//if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
+		if (!hdtFormat.contains(HDTVocabulary.HDT_CONTAINER_BASE)){			
+			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
 		// Load header
@@ -220,8 +220,8 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
-			throw new IllegalFormatException("This software cannot open this version of HDT File");
+		if (!hdtFormat.contains(HDTVocabulary.HDT_CONTAINER_BASE)){			
+			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
 		// Load header
@@ -396,11 +396,19 @@ public class HDTImpl implements HDTPrivate {
 	@Override
 	public void loadOrCreateIndex(ProgressListener listener) {
 		ControlInfo ci = new ControlInformation();
-		String indexName = hdtFileName+".index";
+		String indexName = hdtFileName+ HDTVersion.get_index_suffix("-");
 		indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
-
+		String versionName = indexName;
+		File ff = new File(indexName);
+		// backward compatibility
+		if (!ff.isFile() || !ff.canRead()){
+			indexName = hdtFileName+ (".index");
+			indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
+			ff = new File(indexName);
+		}
+		
 		try {
-			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(indexName)));
+			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(ff)));
 			ci.load(in);
 			if(isMapped) {
 				triples.mapIndex(in, new File(indexName), ci, listener);
@@ -416,7 +424,7 @@ public class HDTImpl implements HDTPrivate {
 
 			// SAVE
 			try {
-				FileOutputStream out = new FileOutputStream(indexName);
+				FileOutputStream out = new FileOutputStream(versionName);
 				ci.clear();
 				triples.saveIndex(out, ci, listener);
 				out.close();
