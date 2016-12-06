@@ -171,4 +171,9 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 		return iterator.numResultEstimation();
 	}
 
+	@Override
+	public long getNextTriplePosition() {
+		return iterator.getNextTriplePosition();
+	}
+
 }

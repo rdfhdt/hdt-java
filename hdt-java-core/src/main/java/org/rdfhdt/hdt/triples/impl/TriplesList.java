@@ -499,6 +499,11 @@ public class TriplesList implements TempTriples {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
+		
+		@Override
+		public long getNextTriplePosition() {
+			return pos;
+		}
 	}
 
 	@Override

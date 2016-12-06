@@ -91,4 +91,10 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 	 * @return
 	 */
 	TripleComponentOrder getOrder();
+	
+	/**
+	 * Return the next position of the triple, from 1 to numTriples.
+	 * @return
+	 */
+	long getNextTriplePosition();
 }
