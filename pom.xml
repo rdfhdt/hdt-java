@@ -35,7 +35,7 @@
 
     <jdk.version>1.7</jdk.version>
 
-    <jena.version>3.1.0</jena.version>
+    <jena.version>3.1.1</jena.version>
     <jena-jdk.version>1.8</jena-jdk.version>
     <logback.version>1.1.7</logback.version>
   </properties>
