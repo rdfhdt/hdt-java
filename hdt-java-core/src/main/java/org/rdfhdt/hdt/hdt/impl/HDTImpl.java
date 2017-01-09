@@ -140,8 +140,7 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		//if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
-		if (!hdtFormat.contains(HDTVocabulary.HDT_CONTAINER_BASE)){			
+		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
 			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
@@ -220,7 +219,7 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		if (!hdtFormat.contains(HDTVocabulary.HDT_CONTAINER_BASE)){			
+		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
 			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
