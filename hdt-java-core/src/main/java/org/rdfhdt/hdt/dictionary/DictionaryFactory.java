@@ -30,6 +30,8 @@ package org.rdfhdt.hdt.dictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
+import org.rdfhdt.hdt.dictionary.impl.PSFCFourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.PSFCTempDictionary;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
@@ -44,6 +46,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 public class DictionaryFactory {
 
 	public static final String MOD_DICT_IMPL_HASH = "hash";
+	public static final String MOD_DICT_IMPL_HASH_PSFC = "hashPsfc";
 	public static final String DICTIONARY_TYPE_FOUR_SECTION_BIG ="dictionaryFourBig";
 
 	private DictionaryFactory() {}
@@ -67,7 +70,11 @@ public class DictionaryFactory {
 		String dictImpl = spec.get("tempDictionary.impl");
 		
 		// Implementations available in the Core
-		if(dictImpl==null || "".equals(dictImpl) || MOD_DICT_IMPL_HASH.equals(dictImpl)) {
+		if(dictImpl==null || "".equals(dictImpl) || MOD_DICT_IMPL_HASH_PSFC.equals(dictImpl)) {
+			return new PSFCTempDictionary(new HashDictionary(spec));
+		}
+
+		if(MOD_DICT_IMPL_HASH.equals(dictImpl)) {
 			return new HashDictionary(spec);
 		}
 		
@@ -77,7 +84,10 @@ public class DictionaryFactory {
 	
 	public static DictionaryPrivate createDictionary(HDTOptions spec) {
 		String name = spec.get("dictionary.type");
-		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
+		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
+			return new PSFCFourSectionDictionary(spec);
+		}
+		else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)){
 			return new FourSectionDictionary(spec);
 		}
 		else if (DICTIONARY_TYPE_FOUR_SECTION_BIG.equals(name)){
@@ -88,7 +98,10 @@ public class DictionaryFactory {
 	
 	public static DictionaryPrivate createDictionary(ControlInfo ci) {
 		String name = ci.getFormat();
-		if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
+		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
+			return new PSFCFourSectionDictionary(new HDTSpecification());
+		}
+		else if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
 			return new FourSectionDictionary(new HDTSpecification());
 		}
 		throw new IllegalFormatException("Implementation of dictionary not found for "+name);

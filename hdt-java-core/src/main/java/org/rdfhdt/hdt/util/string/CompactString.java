@@ -77,6 +77,24 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		this.data = data;
 	}
 
+	public int indexOf(char ch) {
+		for (int i = 0; i < data.length; i++) {
+			if ((char) (data[i] & 0xff) == ch) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public int lastIndexOf(char ch) {
+		for (int i = data.length - 1; i >= 0; i--) {
+			if ((char) (data[i] & 0xff) == ch) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
 	@Override
 	public char charAt(int index) {
 		int ix = index;

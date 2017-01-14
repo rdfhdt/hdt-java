@@ -45,14 +45,16 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	
 	byte [] buffer;
 	int used;
-	/**
-	 * 
-	 */
+
 	public ReplazableString() {
-		buffer = new byte[128];
+		this(128);
+	}
+
+	public ReplazableString(int initialCapacity) {
+		buffer = new byte[initialCapacity];
 		used=0;
 	}
-	
+
 	private ReplazableString(byte [] buffer) {
 		this.buffer = buffer;
 		this.used = buffer.length;
