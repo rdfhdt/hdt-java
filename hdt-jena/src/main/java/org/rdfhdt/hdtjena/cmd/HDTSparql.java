@@ -5,6 +5,13 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdtjena.HDTGraph;
 
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import com.beust.jcommander.internal.Lists;
+
+import java.io.IOException;
+import java.util.List;
+
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -21,19 +28,13 @@ import org.apache.jena.rdf.model.ModelFactory;
  */
 
 public class HDTSparql {
-	/**
-	 * HDTSparql, receives a SPARQL query and executes it against an HDT file.
-	 * @param args
-	 */
-	public static void main(String[] args) throws Throwable {
-		if (args.length != 2) {
-			System.err.println("Usage: hdtsparql <hdt input> <SPARQL Query>.");
-			System.exit(1);
-		}
+	@Parameter(description = "<HDT file> <SPARQL query>")
+	public List<String> parameters = Lists.newArrayList();
 
-		String fileHDT = args[0];
-		String sparqlQuery = args[1];
+	public String fileHDT;
+	public String sparqlQuery;
 
+	public void execute() throws IOException {
 		// Create HDT
 		HDT hdt = HDTManager.mapIndexedHDT(fileHDT, null);
 
@@ -68,5 +69,25 @@ public class HDTSparql {
 			// Close
 			hdt.close();
 		}
+	}
+
+	/**
+	 * HDTSparql, receives a SPARQL query and executes it against an HDT file.
+	 * @param args
+	 */
+	public static void main(String[] args) throws Throwable {
+		HDTSparql hdtSparql = new HDTSparql();
+		JCommander com = new JCommander(hdtSparql, args);
+		com.setProgramName("hdtsparql");
+
+		if (hdtSparql.parameters.size() != 2) {
+			com.usage();
+			System.exit(1);
+		}
+
+		hdtSparql.fileHDT = hdtSparql.parameters.get(0);
+		hdtSparql.sparqlQuery = hdtSparql.parameters.get(1);
+
+		hdtSparql.execute();
 	}
 }
