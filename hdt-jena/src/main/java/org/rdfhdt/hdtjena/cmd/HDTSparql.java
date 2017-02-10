@@ -10,8 +10,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
+import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
@@ -20,6 +22,10 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.system.StreamOps;
+import org.apache.jena.riot.system.StreamRDF;
+import org.apache.jena.riot.system.StreamRDFWriter;
 
 /**
  * 
@@ -30,6 +36,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 public class HDTSparql {
 	@Parameter(description = "<HDT file> <SPARQL query>")
 	public List<String> parameters = Lists.newArrayList();
+
+	@Parameter(names="-stream", description="Stream CONSTRUCT query results, with a duplicate suppression window given as argument (0 disables streaming)")
+	public int streamWindow = 0;
 
 	public String fileHDT;
 	public String sparqlQuery;
@@ -56,8 +65,18 @@ public class HDTSparql {
 					Model result = qe.execDescribe();
 					result.write(System.out, "N-TRIPLES", null);
 				} else if (query.isConstructType()) {
-					Model result = qe.execConstruct();
-					result.write(System.out, "N-TRIPLES", null);
+					if (streamWindow > 0) {
+						System.err.println("using streaming mode with window " + streamWindow);
+						Iterator<Triple> results = qe.execConstructTriples();
+						StreamRDF writer = StreamRDFWriter.getWriterStream(System.out, Lang.NTRIPLES);
+						writer.start();
+						StreamOps.sendTriplesToStream(results, writer);
+						writer.finish();
+					} else {
+						System.err.println("not streaming");
+						Model result = qe.execConstruct();
+						result.write(System.out, "N-TRIPLES", null);
+					}
 				} else if (query.isAskType()) {
 					boolean b = qe.execAsk();
 					System.out.println(b);
