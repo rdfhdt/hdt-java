@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.jena.ext.com.google.common.cache.Cache;
+import org.apache.jena.ext.com.google.common.cache.CacheBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
@@ -23,7 +25,6 @@ import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
-import org.apache.jena.riot.system.StreamOps;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.riot.system.StreamRDFWriter;
 
@@ -37,11 +38,13 @@ public class HDTSparql {
 	@Parameter(description = "<HDT file> <SPARQL query>")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names="-stream", description="Stream CONSTRUCT query results, with a duplicate suppression window given as argument (0 disables streaming)")
-	public int streamWindow = 0;
+	@Parameter(names="-stream", description="Stream CONSTRUCT query results as they are generated")
+	public boolean streamMode = false;
 
 	public String fileHDT;
 	public String sparqlQuery;
+
+	private final int DUP_WINDOW = 1000; // size of the window used for eliminating duplicates when streaming
 
 	public void execute() throws IOException {
 		// Create HDT
@@ -65,12 +68,23 @@ public class HDTSparql {
 					Model result = qe.execDescribe();
 					result.write(System.out, "N-TRIPLES", null);
 				} else if (query.isConstructType()) {
-					if (streamWindow > 0) {
-						System.err.println("using streaming mode with window " + streamWindow);
+					if (streamMode) {
+						System.err.println("using streaming mode");
 						Iterator<Triple> results = qe.execConstructTriples();
 						StreamRDF writer = StreamRDFWriter.getWriterStream(System.out, Lang.NTRIPLES);
+						Cache<Triple,Boolean> seenTriples = CacheBuilder.newBuilder()
+								.maximumSize(DUP_WINDOW).build();
+
 						writer.start();
-						StreamOps.sendTriplesToStream(results, writer);
+						while (results.hasNext()) {
+							Triple triple = results.next();
+							if (seenTriples.getIfPresent(triple) != null) {
+								// the triple has already been emitted
+								continue;
+							}
+							seenTriples.put(triple, true);
+							writer.triple(triple);
+						}
 						writer.finish();
 					} else {
 						System.err.println("not streaming");
