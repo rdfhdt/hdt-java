@@ -38,13 +38,13 @@ public class HDTSparql {
 	@Parameter(description = "<HDT file> <SPARQL query>")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names="-stream", description="Stream CONSTRUCT query results as they are generated")
+	@Parameter(names="-stream", description="Output CONSTRUCT/DESCRIBE query results directly as they are generated")
 	public boolean streamMode = false;
 
 	public String fileHDT;
 	public String sparqlQuery;
 
-	private final int DUP_WINDOW = 1000; // size of the window used for eliminating duplicates when streaming
+	private final int DUP_WINDOW = 1000; // size of window used for eliminating duplicates while streaming
 
 	public void execute() throws IOException {
 		// Create HDT
@@ -65,29 +65,18 @@ public class HDTSparql {
 					ResultSet results = qe.execSelect();
 					ResultSetFormatter.outputAsCSV(System.out, results);
 				} else if (query.isDescribeType()) {
-					Model result = qe.execDescribe();
-					result.write(System.out, "N-TRIPLES", null);
+					if (streamMode) {
+						Iterator<Triple> results = qe.execDescribeTriples();
+						streamResults(results);
+					} else {
+						Model result = qe.execDescribe();
+						result.write(System.out, "N-TRIPLES", null);
+					}
 				} else if (query.isConstructType()) {
 					if (streamMode) {
-						System.err.println("using streaming mode");
 						Iterator<Triple> results = qe.execConstructTriples();
-						StreamRDF writer = StreamRDFWriter.getWriterStream(System.out, Lang.NTRIPLES);
-						Cache<Triple,Boolean> seenTriples = CacheBuilder.newBuilder()
-								.maximumSize(DUP_WINDOW).build();
-
-						writer.start();
-						while (results.hasNext()) {
-							Triple triple = results.next();
-							if (seenTriples.getIfPresent(triple) != null) {
-								// the triple has already been emitted
-								continue;
-							}
-							seenTriples.put(triple, true);
-							writer.triple(triple);
-						}
-						writer.finish();
+						streamResults(results);
 					} else {
-						System.err.println("not streaming");
 						Model result = qe.execConstruct();
 						result.write(System.out, "N-TRIPLES", null);
 					}
@@ -102,6 +91,24 @@ public class HDTSparql {
 			// Close
 			hdt.close();
 		}
+	}
+
+	private void streamResults(Iterator<Triple> results) {
+		StreamRDF writer = StreamRDFWriter.getWriterStream(System.out, Lang.NTRIPLES);
+		Cache<Triple,Boolean> seenTriples = CacheBuilder.newBuilder()
+				.maximumSize(DUP_WINDOW).build();
+
+		writer.start();
+		while (results.hasNext()) {
+			Triple triple = results.next();
+			if (seenTriples.getIfPresent(triple) != null) {
+				// the triple has already been emitted
+				continue;
+			}
+			seenTriples.put(triple, true);
+			writer.triple(triple);
+		}
+		writer.finish();
 	}
 
 	/**
