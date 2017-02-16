@@ -38,7 +38,7 @@ public class HDTSparql {
 	@Parameter(description = "<HDT file> <SPARQL query>")
 	public List<String> parameters = Lists.newArrayList();
 
-	@Parameter(names="-stream", description="Output CONSTRUCT/DESCRIBE query results directly as they are generated")
+	@Parameter(names="--stream", description="Output CONSTRUCT/DESCRIBE query results directly as they are generated")
 	public boolean streamMode = false;
 
 	public String fileHDT;
