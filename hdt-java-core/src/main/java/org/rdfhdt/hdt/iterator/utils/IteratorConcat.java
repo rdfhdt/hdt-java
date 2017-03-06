@@ -18,12 +18,12 @@
 
 package org.rdfhdt.hdt.iterator.utils;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 import org.apache.jena.atlas.iterator.IteratorCons;
-import org.apache.jena.atlas.lib.DS;
 
 /** Iterator of Iterators */
 
@@ -32,7 +32,7 @@ public class IteratorConcat<T> implements Iterator<T>
     // No - we don't really need IteratorCons and IteratorConcat
     // Historical.
     
-    private final List<Iterator<T>> iterators = DS.list();
+    private final List<Iterator<T>> iterators = new ArrayList<>();
     int idx = -1 ;
     private Iterator<T> current;
     private Iterator<T> removeFrom;
