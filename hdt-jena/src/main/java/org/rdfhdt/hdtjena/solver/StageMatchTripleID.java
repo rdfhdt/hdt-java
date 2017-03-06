@@ -111,24 +111,15 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
     	numSearches++;
     	    	
         if(var[0]!=null) {
-        	HDTId id = input.get(var[0]);
-        	if(id!=null) {
-        		patternID.setSubject(NodeDictionary.translate(dictionary, id, TripleComponentRole.SUBJECT));
-        	}
+            patternID.setSubject(translateBinding(input, var[0], dictionary, TripleComponentRole.SUBJECT));
         }
         
         if(var[1]!=null) {
-        	HDTId id = input.get(var[1]);
-        	if(id!=null) {
-        		patternID.setPredicate(NodeDictionary.translate(dictionary, id, TripleComponentRole.PREDICATE));
-        	}
+            patternID.setPredicate(translateBinding(input, var[1], dictionary, TripleComponentRole.PREDICATE));
         }
         
         if(var[2]!=null) {
-        	HDTId id = input.get(var[2]);
-        	if(id!=null) {
-        		patternID.setObject(NodeDictionary.translate(dictionary, id, TripleComponentRole.OBJECT));
-        	}
+            patternID.setObject(translateBinding(input, var[2], dictionary, TripleComponentRole.OBJECT));
         }
 
         if(patternID.isNoMatch()) {
@@ -184,6 +175,14 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         };
         
         return it.map(binder).removeNulls();
+    }
+
+    private static int translateBinding(BindingHDTId input, Var var, NodeDictionary dictionary, TripleComponentRole role) {
+        HDTId id = input.get(var);
+        if (id == null) {
+            return 0;  // match all
+        }
+        return NodeDictionary.translate(dictionary, id, role);
     }
 
     private static boolean insert(Var var, HDTId newId, BindingHDTId results)
