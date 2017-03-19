@@ -212,7 +212,11 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 	
 	@Override
 	public long getNextTriplePosition() {
-		return posZ;
+		if(posZ>nextZ) {
+			return adjZ.find(nextY);
+		}
+		else
+			return posZ;
 	}
 
 }
