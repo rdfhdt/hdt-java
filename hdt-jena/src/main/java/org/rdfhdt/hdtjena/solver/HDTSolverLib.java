@@ -131,7 +131,7 @@ public class HDTSolverLib
 		if(id>0) {
 			return new HDTId(id, TripleComponentRole.OBJECT, dict);
 		}
-		return null; // NOT FOUND
+		return new HDTId(id, null, dict); // NOT FOUND
 	}
 	
 	// Conversions
