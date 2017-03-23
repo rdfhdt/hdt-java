@@ -8,54 +8,41 @@
   <parent>
     <groupId>org.rdfhdt</groupId>
     <artifactId>hdt-java-parent</artifactId>
-    <version>2.0</version>
-    <relativePath>../</relativePath>
+    <version>2.0-SNAPSHOT</version>
   </parent>
+
+  <properties>
+    <jdk.version>${jena-jdk.version}</jdk.version>
+  </properties>
 
   <dependencies>
   	<dependency>
   		<groupId>org.rdfhdt</groupId>
   		<artifactId>hdt-java-core</artifactId>
-  		<version>2.0</version>
+  		<version>${project.version}</version>
   	</dependency>
   	<dependency>
   		<groupId>org.apache.jena</groupId>
   		<artifactId>jena-core</artifactId>
-  		<version>3.0.1</version>
   	</dependency>
 	<dependency>
 	    <groupId>org.apache.jena</groupId>
 		<artifactId>jena-arq</artifactId>
-		<version>3.0.1</version>
 	</dependency>
 	<dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-	    <version>4.11</version>
+	<scope>test</scope>
 	</dependency>
 	<dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-base</artifactId>
-        <version>3.0.1</version>
     </dependency>
     <dependency>
         <groupId>org.rdfhdt</groupId>
         <artifactId>hdt-api</artifactId>
-        <version>2.0</version>
+        <version>${project.version}</version>
     </dependency>
   </dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>2.1</version>
-				<configuration>
-					<source>1.6</source>
-					<target>1.6</target>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 </project>
