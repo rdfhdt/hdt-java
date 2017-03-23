@@ -43,6 +43,9 @@
         <artifactId>hdt-api</artifactId>
         <version>${project.version}</version>
     </dependency>
+    <dependency>
+        <groupId>com.beust</groupId>
+        <artifactId>jcommander</artifactId>
+    </dependency>
   </dependencies>
-
 </project>
