@@ -32,10 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.atlas.lib.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping;
@@ -44,7 +42,6 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.util.iterator.Filter;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdtjena.HDTGraph;
 import org.rdfhdt.hdtjena.NodeDictionary;
@@ -61,7 +58,7 @@ public class HDTSolverLib
 	public static long numBGPs;
 	
     protected static QueryIterator execute(HDTGraph graph, BasicPattern pattern, QueryIterator input,
-    										Predicate<Tuple<HDTId>> filter, ExecutionContext execCxt)
+    										ExecutionContext execCxt)
     {
     	numBGPs++;
     	
@@ -80,7 +77,7 @@ public class HDTSolverLib
 
         for ( Triple triplePattern : pattern )
         {
-            chain = solve(graph, triplePattern, chain, filter, mapVar, execCxt) ;
+            chain = solve(graph, triplePattern, chain, mapVar, execCxt) ;
             chain = IterAbortable.makeAbortable(chain, killList) ; 
         }
         
@@ -108,7 +105,7 @@ public class HDTSolverLib
 
     
     private static Iterator<BindingHDTId> solve(HDTGraph graph, Triple tuple, Iterator<BindingHDTId> chain, 
-    											Predicate<Tuple<HDTId>> filter, Map<Var, VarAppearance> mapVar,
+    											Map<Var, VarAppearance> mapVar,
                                                  ExecutionContext execCxt)
     {
         return new StageMatchTripleID(graph, chain, tuple, execCxt, mapVar) ;

@@ -8,7 +8,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphMaker;
 import org.apache.jena.sparql.core.DatasetGraphOne;
 import org.apache.jena.sparql.core.PathBlock;
 import org.apache.jena.sparql.core.TriplePath;
@@ -134,7 +133,7 @@ public class OptimizedCount {
 		Graph g=null;
 		if(dataset instanceof DatasetGraphOne ) {
 			g = dataset.getDefaultGraph();
-		} else if(dataset instanceof DatasetGraphMaker) {
+		} else {
 			if(graphName!=null) {
 				g = dataset.getGraph(graphName);
 			} else {
