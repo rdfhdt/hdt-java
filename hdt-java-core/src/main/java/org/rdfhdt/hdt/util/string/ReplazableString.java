@@ -175,7 +175,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public char charAt(int index) {
-		return (char)buffer[index];
+		return (char)(buffer[index] & 0xFF);
 	}
 
 	/* (non-Javadoc)
