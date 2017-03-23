@@ -203,6 +203,10 @@ public class ByteStringUtil {
 	public static final int append(CharSequence str, int start, byte [] buffer, int bufpos) {
 		byte [] bytes;
 		int len;
+		
+		if(str instanceof DelayedString) {
+			str = ((DelayedString) str).getInternal();
+		}
 		if(str instanceof String) {
 			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
 			len = bytes.length;
@@ -242,6 +246,11 @@ public class ByteStringUtil {
 	public static final int append(OutputStream out, CharSequence str, int start) throws IOException {
 		byte [] bytes;
 		int len;
+		
+		if(str instanceof DelayedString) {
+			str = ((DelayedString) str).getInternal();
+		}
+		
 		if(str instanceof String) {
 			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
 			len = bytes.length;
