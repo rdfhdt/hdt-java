@@ -46,7 +46,7 @@ import com.beust.jcommander.internal.Lists;
  *
  */
 public class HDT2RDF implements ProgressListener {
-	@Parameter(description = "<input RDF> <output HDT>")
+	@Parameter(description = "<input HDT> <output NT>")
 	public List<String> parameters = Lists.newArrayList();
 	
 	@Parameter(names = "-version", description = "Prints the HDT version number")
