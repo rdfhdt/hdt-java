@@ -28,7 +28,7 @@ public class OptimizedCountTest {
 
 	@Before
 	public void setUp() throws Exception {
-		HDT hdt = HDTManager.generateHDT(new DummyIteratorTripleString(), "", new HDTSpecification(), null);
+		HDT hdt = HDTManager.generateHDT(new DummyIteratorTripleString(), "http://www.rdfhdt.org", new HDTSpecification(), null);
 		graph =new HDTGraph(hdt, true);
 		dataset = DatasetGraphFactory.createOneGraph(graph);
 	}
@@ -102,16 +102,6 @@ public class OptimizedCountTest {
 
 		@Override
 		public void remove() {
-		}
-
-		@Override
-		public boolean hasPrevious() {
-			return false;
-		}
-
-		@Override
-		public TripleString previous() {
-			return null;
 		}
 
 		@Override

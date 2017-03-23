@@ -3,6 +3,8 @@ package org.rdfhdt.hdt.hdt;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -10,11 +12,13 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.impl.HDTImpl;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterOnePass;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterTwoPass;
+import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.header.HeaderUtil;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.rdf.TripleWriter;
+import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
 
 public class HDTManagerImpl extends HDTManager {
@@ -122,7 +126,7 @@ public class HDTManagerImpl extends HDTManager {
 	}
 
 	@Override
-	public HDT doGenerateHDT(IteratorTripleString triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
+	public HDT doGenerateHDT(Iterator<TripleString> triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
 		//choose the importer
 		TempHDTImporterOnePass loader = new TempHDTImporterOnePass();
 		
@@ -148,6 +152,16 @@ public class HDTManagerImpl extends HDTManager {
 		modHdt.close();
 		
 		return hdt;
+	}
+
+	@Override
+	protected TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException {
+		return new TripleWriterHDT(baseURI, hdtFormat, out);
+	}
+
+	@Override
+	protected TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException {
+		return new TripleWriterHDT(baseURI, hdtFormat, outFile, false);
 	}
 	
 }

@@ -26,16 +26,9 @@
 
 package org.rdfhdt.hdt.rdf.parsers;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.List;
-import java.util.zip.GZIPInputStream;
 
-import org.apache.jena.atlas.lib.Tuple;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Node_Literal;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
@@ -46,6 +39,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -62,17 +56,13 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		this.callback = callback;
 		try {
-			InputStream input;
-			if(fileName.equals("-")) {
-				input = new BufferedInputStream(System.in);
-			} else if(fileName.endsWith(".gz")) {
-				input = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
-			} else {
-				input = new BufferedInputStream(new FileInputStream(fileName));
-			}
+			InputStream input = IOUtil.getFileInputStream(fileName);
 			switch(notation) {
 				case NTRIPLES:
 					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
+					break;
+				case NQUAD:
+					RDFDataMgr.parse(this, input, Lang.NQUADS);
 					break;
 				case RDFXML:
 					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
@@ -98,6 +88,9 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 				case NTRIPLES:
 					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
 					break;
+				case NQUAD:
+					RDFDataMgr.parse(this, input, Lang.NQUADS);
+					break;					
 				case RDFXML:
 					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
 					break;
@@ -122,14 +115,14 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 
      @Override
      public void triple(Triple parsedTriple) {
-             triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
-             callback.processTriple(triple, 0);              
+    	 triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
+    	 callback.processTriple(triple, 0);              
      }
 
      @Override
      public void quad(Quad quad) {
-             triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
-             callback.processTriple(triple, 0);              
+    	 triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
+    	 callback.processTriple(triple, 0);              
      }
 
      @Override

@@ -28,18 +28,15 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.zip.GZIPInputStream;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.util.io.ExternalDecompressStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * @author mario.arias
@@ -52,65 +49,55 @@ public class RDFParserSimple implements RDFParserCallback {
 	 */
 	@Override
 	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+		BufferedReader reader;
 		try {
-			BufferedReader reader; 
-		
-			if(fileName.equals("-")) {
-				reader = new BufferedReader(new InputStreamReader(System.in));
-			} else if(fileName.endsWith(".gz")) {
-//				reader = new BufferedReader(new InputStreamReader(new BackgroundDecompressorStream(new GZIPInputStream(new FileInputStream(fileName)))));
-				reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(fileName))));
-			} else if(fileName.endsWith(".bz2")) {
-				reader = new BufferedReader(new InputStreamReader(new ExternalDecompressStream(new File(fileName), ExternalDecompressStream.BZIP2)));
-			} else {
-				reader = new BufferedReader(new FileReader(new File(fileName)));
-			}
-			String line;
-			long numLine = 1;
-			TripleString triple = new TripleString();
-			while((line=reader.readLine())!=null) {
-				try {
-					triple.read(line);
-				} catch (Exception e) {
-					System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n Line: "+line+ "\nError: "+e.getMessage());
-					
-				}
-				if(!triple.hasEmpty()) {
-//					System.out.println(triple);
-					callback.processTriple(triple, 0);
-				} else {
-					System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
-				}
-				numLine++;
-			}
-			reader.close();
-		} catch(Exception e) {
+			reader = IOUtil.getFileReader(fileName);
+		} catch (IOException e) {
 			e.printStackTrace();
-			throw new ParserException();
+			throw new ParserException(e);
+		}
+		try {
+			doParse(reader, baseUri, notation, callback);
+		} finally {
+			IOUtil.closeQuietly(reader);
+		}
+	}
+	
+	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
+		try {
+			doParse(reader, baseUri, notation, callback);
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException e) {
+			}
 		}
 	}
 
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	private void doParse(BufferedReader reader, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 			String line;
 			long numLine = 1;
 			TripleString triple = new TripleString();
 			while((line=reader.readLine())!=null) {
-				triple.read(line);
-				if(!triple.hasEmpty()) {
-//					System.out.println(triple);
-					callback.processTriple(triple, 0);
-				} else {
-					System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
+				
+				line = line.trim().replaceAll("\\t"," ");
+				if(!line.startsWith("#")) {
+					triple.read(line);
+					if(!triple.hasEmpty()) {
+						//System.out.println(triple);
+						callback.processTriple(triple, 0);
+					} else {
+						System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
+					}
 				}
 				numLine++;
 			}
 			reader.close();
 		}catch(Exception e) {
 			e.printStackTrace();
-			throw new ParserException();
+			throw new ParserException(e);
 		}
 	}
-	
 }

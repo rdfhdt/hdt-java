@@ -88,22 +88,6 @@ public class PlainHeaderIterator implements IteratorTripleString {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.iterator.IteratorTripleString#hasPrevious()
-	 */
-	@Override
-	public boolean hasPrevious() {
-		throw new NotImplementedException();
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.iterator.IteratorTripleString#previous()
-	 */
-	@Override
-	public TripleString previous() {
-		throw new NotImplementedException();
-	}
-
-	/* (non-Javadoc)
 	 * @see hdt.iterator.IteratorTripleString#goToStart()
 	 */
 	@Override

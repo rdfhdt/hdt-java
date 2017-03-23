@@ -52,14 +52,4 @@ public class JenaModelIterator implements IteratorTripleString {
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
-	public boolean hasPrevious() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public TripleString previous() {
-		throw new UnsupportedOperationException();
-	}
-
 }

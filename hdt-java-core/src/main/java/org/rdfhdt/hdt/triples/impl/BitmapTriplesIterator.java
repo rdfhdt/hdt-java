@@ -31,7 +31,6 @@ import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
@@ -50,13 +49,27 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	private long nextY, nextZ;
 	private int x, y, z;
 	
-	BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
+	public BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
 		this.pattern = new TripleID();
 		newSearch(pattern);
 	}
-	
+
+	public BitmapTriplesIterator(BitmapTriples triples, long minZ, long maxZ) {
+		this.triples = triples;
+		this.returnTriple = new TripleID();
+		this.pattern = new TripleID();
+		adjY = triples.adjY;
+		adjZ = triples.adjZ;
+
+		this.minZ = minZ;
+		this.maxZ = maxZ;
+		this.minY = adjZ.findListIndex(minZ);
+		this.maxY = adjZ.findListIndex(maxZ);
+		goToStart();
+	}
+
 	public void newSearch(TripleID pattern) {
 		this.pattern.assign(pattern);
 		

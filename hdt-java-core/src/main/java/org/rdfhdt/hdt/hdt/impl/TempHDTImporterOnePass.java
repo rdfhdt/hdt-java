@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.hdt.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -42,7 +43,6 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.TriplesFactory;
@@ -109,7 +109,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		return modHDT; 
 	}
 	
-	public TempHDT loadFromTriples(HDTOptions specs, IteratorTripleString iterator, String baseUri, ProgressListener listener)
+	public TempHDT loadFromTriples(HDTOptions specs, Iterator<TripleString> iterator, String baseUri, ProgressListener listener)
 			throws IOException {
 			
 		// Create Modifiable Instance

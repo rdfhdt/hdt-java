@@ -138,6 +138,13 @@ public class BitSequence375Test {
 		}	
 	}
 	
+	@Test
+	public void testSelectNext1() {
+		for(long i=0;i<bitseq.getNumBits();i++) {
+			System.out.println("Pos: "+i+" => "+ (bitseq.access(i)?"1":"0")+ " Next: "+bitseq.selectNext1(i));
+		}	
+	}
+	
 	public long select0b(Bitmap375 bitseq, long x) {
 		if(x<=0) {
 			return -1;

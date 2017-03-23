@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheLRI.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheHash.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -24,66 +24,37 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdt.cache;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.jena.graph.Node;
-
 /**
- * Least-Recently-Inserted Cache. Removes the oldest entries inserted.
- * Can result in cache misses but it is very fast.
- * It uses an array-based circular buffer to remove old entries 
- *
  * @author mario.arias
  *
  */
-public class DictionaryCacheLRI implements DictionaryCache {
+public class DictionaryCacheHash<T> implements DictionaryCache<T> {
 
-	private Map<Integer, Node> cache;
-	private int [] arr;
-	private int ptr;
-	private final int size;
+	private Map<Integer, T> hash = new ConcurrentHashMap<Integer, T>();
 	
-	public DictionaryCacheLRI(int size) {
-		this.size = size;
-		arr = new int[size];
-		cache = new ConcurrentHashMap<Integer, Node>(size);
-	}
-		
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
-	 */
 	@Override
-	public Node get(int id) {
-		return cache.get(id);
+	public T get(int id) {
+		return hash.get(id);
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
-	 */
 	@Override
-	public void put(int id, Node node) {
-		cache.put(id, node);
-		if(cache.size()>size) {
-			cache.remove(arr[ptr]);
-		}
-		synchronized (this) {
-			arr[ptr]=id;
-			ptr = (ptr+1)%size;	
-		}
+	public void put(int id, T node) {
+		hash.put(id, node);
 	}
 
 	@Override
 	public int size() {
-		return cache.size();
+		return hash.size();
 	}
 
 	@Override
 	public void clear() {
-		cache.clear();
-		// No need to clear the circular buffer.
+		hash.clear();
 	}
 
 }

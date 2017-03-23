@@ -20,9 +20,11 @@ package org.rdfhdt.hdt.fuseki;
 
 import static org.apache.jena.fuseki.Fuseki.serverLog;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.lib.FileOps;
@@ -56,6 +58,7 @@ import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.apache.jena.sparql.core.DatasetGraphMap;
 import org.apache.jena.tdb.TDB;
 import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb.sys.Names;
 import org.apache.jena.tdb.transaction.TransactionManager;
 
 /**
@@ -98,12 +101,34 @@ public class FusekiHDTCmd extends CmdARQ
         ) ;
 
     
-    static {
-        // Check if default command logging.
-        if ( "set".equals(System.getProperty("log4j.configuration", "set") ) )
+    // Set logging.
+    // 1/ Use log4j.configuration is defined.
+    // 2/ Use file:log4j.properties 
+    // 3/ Use Built in.
+    
+    static void setLogging() {
+        // No loggers have been created but configuration may have been set up. 
+        String x = System.getProperty("log4j.configuration", null) ;
+        
+        if ( x != null && ! x.equals("set") ) {
+            // "set" indicates that CmdMain set logging.
+            // Use standard log4j initialization.
+            return ;
+        }
+        
+        String fn = "log4j.properties" ;
+        File f = new File(fn) ;
+        if ( f.exists() ) {
+            // Use file log4j.properties
+            System.setProperty("log4j.configuration", "file:"+fn) ;
+            return ;
+        }
+        // Use built-in for Fuseki.
             LogCtl.resetLogging(log4Jsetup) ; 
     }
     
+    static { setLogging() ; }
+
     // Arguments:
     // --update
     
@@ -149,27 +174,27 @@ public class FusekiHDTCmd extends CmdARQ
 
     static public void main(String...argv)
     {
-        // // Just to make sure ...
-        // ARQ.init() ;
-        // TDB.init() ;
+        // Just to make sure ...
+        ARQ.init() ;
+        TDB.init() ;
         Fuseki.init() ;
         new FusekiHDTCmd(argv).mainRun() ;
     }
     
     private int port                    = 3030 ;
     private int mgtPort                 = -1 ;
-    private boolean listenLocal;
+    private boolean listenLocal         = false ;
 
-    protected DatasetGraph dsg;
-    private String datasetPath;
-    private boolean allowUpdate;
+    private DatasetGraph dsg            = null ; 
+    private String datasetPath          = null ;
+    private boolean allowUpdate         = false ;
     
-    private String fusekiConfigFile;
+    private String fusekiConfigFile     = null ;
     private boolean enableCompression   = true ;
-    private String jettyConfigFile;
-    private String authConfigFile;
-    private String homeDir;
-    private String pagesDir;
+    private String jettyConfigFile      = null ;
+    private String authConfigFile       = null ;
+    private String homeDir              = null ;
+    private String pagesDir             = null ;
     
     public FusekiHDTCmd(String...argv)
     {
@@ -235,13 +260,17 @@ public class FusekiHDTCmd extends CmdARQ
         if ( fusekiConfigFile != null )
         {
             if ( x > 1 )
-                throw new CmdException("Dataset specificed on the command line and also a configuration file specificed.") ;
+                throw new CmdException("Dataset specified on the command line but a configuration file also given.") ;
         }
         else
         {
             if ( x == 0 )
                 throw new CmdException("Required: either --config=FILE or one of --mem, --file, --loc, --hdt or --desc") ;
         }
+        
+        // One of:
+        // argMem, argFile, argMemTDB, argTDB, argHDT
+        
         
         if ( contains(argMem) )
         {
@@ -277,9 +306,14 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argTDB) )
         {
             String dir = getValue(argTDB) ;
-            log.info("TDB dataset: directory="+dir) ;
-            if ( ! FileOps.exists(dir) )
-                throw new CmdException("Directory not found: "+dir) ;
+            
+            if ( Objects.equals(dir, Names.memName) ) {
+                log.info("TDB dataset: in-memory") ;
+            } else {
+                if ( ! FileOps.exists(dir) )
+                    throw new CmdException("Directory not found: "+dir) ;
+                log.info("TDB dataset: directory="+dir) ;
+            }
             dsg = TDBFactory.createDatasetGraph(dir) ;
         }
         
@@ -322,7 +356,7 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argFusekiConfig) )
         {
             if ( dsg != null )
-                throw new CmdException("Dataset specificed on the command line and also a configuration file specificed.") ;
+                throw new CmdException("(internal error) Dataset specificed on the command line but a a configuration file also given.") ;
             fusekiConfigFile = getValue(argFusekiConfig) ;
         }
         
@@ -463,7 +497,11 @@ public class FusekiHDTCmd extends CmdARQ
             serverConfig = FusekiConfig.configure(fusekiConfigFile) ;
         }
         else
+        {
 			serverConfig = FusekiConfig.defaultConfiguration(datasetPath, dsg, allowUpdate, listenLocal) ;
+            if ( ! allowUpdate )
+                Fuseki.serverLog.info("Running in read-only mode.");
+        }
 		
             
         // TODO Get from parsing config file.

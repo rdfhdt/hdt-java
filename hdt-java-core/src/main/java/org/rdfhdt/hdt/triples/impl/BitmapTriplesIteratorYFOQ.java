@@ -31,7 +31,6 @@ import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.compact.sequence.DeflateIntegerIterator;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
@@ -49,15 +48,16 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		private int patY;
 		
 		private AdjacencyList adjY, adjZ;
-		private long posY, posZ;
+		private long posY;
+		long posZ;
 		private long prevZ, nextZ, maxZ;
 		private int x, y, z;
 		
-		private long numOccurrences, numOccurrence;
+		private long numOccurrences, numOccurrence, predBase;
 		
 		DeflateIntegerIterator index;
 		
-		BitmapTriplesIteratorYFOQ(BitmapTriples triples, TripleID pattern) {
+		public BitmapTriplesIteratorYFOQ(BitmapTriples triples, TripleID pattern) {
 			this.triples = triples;
 			this.pattern = new TripleID(pattern);
 			this.returnTriple = new TripleID();
@@ -68,10 +68,11 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 				throw new IllegalArgumentException("This structure is not meant to process this pattern");
 			}
 			
-			adjY = new AdjacencyList(triples.seqY, triples.bitmapY);
-			adjZ = new AdjacencyList(triples.seqZ, triples.bitmapZ);
+			adjY = new AdjacencyList(triples.getSeqY(), triples.getBitmapY());
+			adjZ = new AdjacencyList(triples.getSeqZ(), triples.getBitmapZ());
 			
 			numOccurrences = triples.predicateIndex.getNumOcurrences(patY);
+			predBase = triples.predicateIndex.getBase(patY);
 			maxZ = triples.adjZ.getNumberOfElements();
 			
 			goToStart();
@@ -98,7 +99,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		public TripleID next() {	
 			if(posZ>nextZ) {
 				numOccurrence++;
-				posY = triples.predicateIndex.getOccurrence(patY, numOccurrence);
+				posY = triples.predicateIndex.getOccurrence(predBase, numOccurrence);
 				
 				posZ = prevZ = adjZ.find(posY);
 				nextZ = adjZ.last(posY); 
@@ -131,7 +132,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		public TripleID previous() {
 			if(posZ<=prevZ) {
 				numOccurrence--;
-				posY = triples.predicateIndex.getOccurrence(patY, numOccurrence);
+				posY = triples.predicateIndex.getOccurrence(predBase, numOccurrence);
 
 				prevZ = adjZ.find(posY);
 				posZ = nextZ = adjZ.last(posY); 
@@ -155,7 +156,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		@Override
 		public void goToStart() {
 			numOccurrence = 1;
-			posY = triples.predicateIndex.getOccurrence(patY, numOccurrence);
+			posY = triples.predicateIndex.getOccurrence(predBase, numOccurrence);
 			
 			posZ = prevZ = adjZ.find(posY);
 			nextZ = adjZ.last(posY);

@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheArrayWeak.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheArray.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -24,54 +24,66 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdt.cache;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 
-import org.apache.jena.graph.Node;
 
 /**
+ * 
+ * Cache using an array. Assumes valid id>0
+ * 
  * @author mario.arias
  *
  */
-public class DictionaryCacheArrayWeak implements DictionaryCache {
+public class DictionaryCacheArray<T> implements DictionaryCache<T> {
 
-	private Reference<Node>[] array;
+	private Object array[];
+	final int capacity;
+	int numentries=0;
 	
-	@SuppressWarnings("unchecked")
-	public DictionaryCacheArrayWeak(int capacity) {
-		array = new Reference[capacity];		
+	public DictionaryCacheArray(int capacity) {
+		array = null;
+		numentries=0;
+		this.capacity=capacity;
 	}
 	
 	/* (non-Javadoc)
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	public Node get(int id) {
-		Reference<Node> ref = array[id-1];
-		if(ref!=null) {
-			return ref.get();
+	public T get(int id) {
+		if(array==null) {
+			return null;
 		}
-
-		return null;
+		if(id>array.length) {
+			return null; // Not found
+		}
+		return (T) array[id-1];
 	}
 	
-	public void put(int id, Node node) {
-		array[id-1] = new WeakReference<Node>(node);
+	public void put(int id, T node) {
+		if(array==null) {
+			array = new Object[(int)capacity];
+		}
+		if(array.length<id) {
+//			System.err.println("Warning: Trying to insert a value in cache out of bounds: "+id + " / "+array.length);
+			return;
+		}
+		if(array[id-1]==null) {
+			numentries++;
+		}
+		array[id-1] = node;
 	}
 
 	@Override
 	public int size() {
-		// Can't estimate. We don't know how many the GC disposed.
-		return 0;
+		return numentries;
 	}
 
 	@Override
 	public void clear() {
-		// FIXME: Implement concurrency friendly.
+		array=null;
 	}
-	
-	
 
 }

@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheLRU.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheArrayWeak.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -24,48 +24,52 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdt.cache;
 
-import org.apache.jena.graph.Node;
-
-import org.rdfhdt.hdt.util.LRUCache;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 
 /**
  * @author mario.arias
  *
  */
-public class DictionaryCacheLRU implements DictionaryCache {
+public class DictionaryCacheArrayWeak<T> implements DictionaryCache<T> {
 
-	private LRUCache<Integer, Node> lru;
+	private Reference<T> array[];
 	
-	public DictionaryCacheLRU(int size) {
-		lru = new LRUCache<Integer, Node>(size);
+	@SuppressWarnings("unchecked")
+	public DictionaryCacheArrayWeak(int capacity) {
+		array = new Reference[capacity];		
 	}
 	
 	/* (non-Javadoc)
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public Node get(int id) {
-		return lru.get(id);
-	}
+	public T get(int id) {
+		Reference<T> ref = array[id-1];
+		if(ref!=null) {
+			return ref.get();
+		}
 
-	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
-	 */
-	@Override
-	public void put(int id, Node node) {
-		lru.put(id, node);
+		return null;
+	}
+	
+	public void put(int id, T node) {
+		array[id-1] = new WeakReference<T>(node);
 	}
 
 	@Override
 	public int size() {
-		return lru.size();
+		// Can't estimate. We don't know how many the GC disposed.
+		return 0;
 	}
 
 	@Override
 	public void clear() {
-		lru.clear();
+		// FIXME: Implement concurrency friendly.
 	}
+	
+	
 
 }

@@ -31,6 +31,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +43,7 @@ import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -53,6 +55,7 @@ import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
+import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -63,6 +66,7 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
+import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -83,6 +87,7 @@ public class HDTImpl implements HDTPrivate {
 	private String hdtFileName;
 	private String baseUri;
 	private boolean isMapped;
+	private boolean isClosed=false;
 
 	private void createComponents() {
 		header = HeaderFactory.createHeader(spec);
@@ -91,6 +96,14 @@ public class HDTImpl implements HDTPrivate {
 	}
 
 	public void populateHeaderStructure(String baseUri) {
+		if(baseUri==null || baseUri.length()==0) {
+			throw new IllegalArgumentException("baseURI cannot be empty");
+		}
+		
+		if(isClosed) {
+			throw new IllegalStateException("Cannot add header to a closed HDT.");
+		}
+		
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
 		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.VOID_DATASET);
 
@@ -174,6 +187,8 @@ public class HDTImpl implements HDTPrivate {
 		iListener.setRange(60, 100);
 		triples = TriplesFactory.createTriples(ci);
 		triples.load(input, ci, iListener);
+		
+		isClosed=false;
 	}
 
 	@Override
@@ -188,6 +203,8 @@ public class HDTImpl implements HDTPrivate {
 		in.close();
 
 		this.hdtFileName = hdtFileName;
+		
+		isClosed=false;
 	}
 
 	@Override
@@ -258,7 +275,10 @@ public class HDTImpl implements HDTPrivate {
 		triples = TriplesFactory.createTriples(ci);
 		triples.mapFromFile(input, f, iListener);
 
+		// Close the file used to keep track of positions.
 		input.close();
+		
+		isClosed=false;
 	}
 
 	/*
@@ -307,6 +327,10 @@ public class HDTImpl implements HDTPrivate {
 	@Override
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search an already closed HDT");
+		}
+		
 		// Conversion from TripleString to TripleID
 		TripleID triple = new TripleID(
 				dictionary.stringToId(subject, TripleComponentRole.SUBJECT),
@@ -317,8 +341,17 @@ public class HDTImpl implements HDTPrivate {
 		if(triple.getSubject()==-1 || triple.getPredicate()==-1 || triple.getObject()==-1) {
 			throw new NotFoundException("String not found in dictionary");
 		}
-
-		return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
+		
+		if(isMapped) {
+			try {
+				return new DictionaryTranslateIteratorBuffer(triples.search(triple), (FourSectionDictionary) dictionary, subject, predicate, object);
+			}catch(NullPointerException e) {
+				e.printStackTrace();
+				return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
+			}
+		} else {
+			return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
+		}
 	}
 
 	/*
@@ -356,7 +389,17 @@ public class HDTImpl implements HDTPrivate {
 	 */
 	@Override
 	public long size() {
+		if(isClosed)
+			return 0;
+
 		return dictionary.size()+triples.size();
+	}
+	
+	public void loadFromParts(HeaderPrivate h, DictionaryPrivate d, TriplesPrivate t) {
+		this.header = h;
+		this.dictionary = d;
+		this.triples = t;
+		isClosed=false;	
 	}
 
 	public void loadFromModifiableHDT(TempHDT modHdt, ProgressListener listener) {
@@ -387,6 +430,7 @@ public class HDTImpl implements HDTPrivate {
         }
 
         this.baseUri = modHdt.getBaseURI();
+        isClosed=false;
 	}
 
 	/* (non-Javadoc)
@@ -405,31 +449,43 @@ public class HDTImpl implements HDTPrivate {
 			indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
 			ff = new File(indexName);
 		}
-		
+		CountInputStream in=null;
 		try {
-			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(ff)));
+			in = new CountInputStream(new BufferedInputStream(new FileInputStream(ff)));
 			ci.load(in);
 			if(isMapped) {
 				triples.mapIndex(in, new File(indexName), ci, listener);
 			} else {
 				triples.loadIndex(in, ci, listener);
 			}
-			in.close();
 		} catch (Exception e) {
-			System.out.println("Could not read .hdt.index, Generating a new one.");
+			if(e instanceof FileNotFoundException) {
+				System.out.println("The .hdt.index doesn't exist, generating a new one.");
+			} else {				
+				System.out.println("Error reading .hdt.index, generating a new one. The error was: "+e.getMessage());
+				e.printStackTrace();
+			}
 
 			// GENERATE
+			StopWatch st = new StopWatch();
 			triples.generateIndex(listener);
 
 			// SAVE
+			FileOutputStream out=null;
 			try {
-				FileOutputStream out = new FileOutputStream(versionName);
+				out = new FileOutputStream(versionName);
 				ci.clear();
 				triples.saveIndex(out, ci, listener);
 				out.close();
+				System.out.println("Index generated and saved in "+st.stopAndShow());
 			} catch (IOException e2) {
-
+				System.err.println("Error writing index file.");
+				e2.printStackTrace();
+			} finally {
+				IOUtil.closeQuietly(out);
 			}
+		} finally {
+			IOUtil.closeQuietly(in);
 		}
 	}
 
@@ -444,8 +500,20 @@ public class HDTImpl implements HDTPrivate {
 
 	@Override
 	public void close() throws IOException {
+		isClosed=true;
 		dictionary.close();
 		triples.close();
 	}
+	
+	public String getHDTFileName() {
+		return hdtFileName;
+	}
 
+	public boolean isClosed() {
+		return isClosed;
+	}
+
+	public boolean isMapped() {
+		return isMapped;
+	}
 }

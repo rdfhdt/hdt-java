@@ -342,6 +342,7 @@ public class SequenceLog64Big implements DynamicSequence {
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#load(java.io.InputStream, hdt.ProgressListener)
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC8());

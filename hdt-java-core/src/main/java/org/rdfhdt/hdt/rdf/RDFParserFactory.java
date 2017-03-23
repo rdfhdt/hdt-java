@@ -29,37 +29,39 @@ package org.rdfhdt.hdt.rdf;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
-import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserList;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRAR;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserZip;
 
 /**
  * @author mario.arias
  *
  */
 public class RDFParserFactory {
-	
-	private RDFParserFactory() {}
-	
 	public static RDFParserCallback getParserCallback(RDFNotation notation) {
-		// NOTE: Very fast but does not validate input. Might not be fully NTriples spec compliant.
-		if(notation == RDFNotation.NTRIPLES) {
-			return new RDFParserSimple();
-		}
 		
-		if(notation == RDFNotation.NTRIPLES || notation == RDFNotation.TURTLE || notation == RDFNotation.N3 || notation == RDFNotation.RDFXML) {
-			return new RDFParserRIOT();
-		}
-		
-		if(notation==RDFNotation.TAR) {
-			return new RDFParserTar();
-		}
-		
-		if(notation == RDFNotation.RAR) {
-			return new RDFParserRAR();
-		}
-		
-		throw new NotImplementedException("Parser not found for notation: "+notation);
+		switch(notation) {
+			case NTRIPLES:	
+			case NQUAD:
+			case TURTLE:
+			case N3:
+			case RDFXML:
+				return new RDFParserRIOT();
+			case DIR:
+				// FIXME: Implement
+				throw new NotImplementedException("RDFParserDir not implemented");
+			case LIST:
+				return new RDFParserList();
+			case ZIP:
+				return new RDFParserZip();
+			case TAR:
+				return new RDFParserTar();
+			case RAR:
+				return new RDFParserRAR();
+		}		
+
+		throw new NotImplementedException("Parser not found for notation: "+notation);		
 	}
 }

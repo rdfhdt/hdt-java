@@ -172,7 +172,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 
 	@Override
 	public CharSequence getBaseURI() {
-		IteratorTripleString it = search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
+		IteratorTripleString it = search("", HeaderUtil.cleanURI(HDTVocabulary.RDF_TYPE), HeaderUtil.cleanURI(HDTVocabulary.HDT_DATASET));
 		if(it.hasNext()) {
 			TripleString ts = it.next();
 			return ts.getSubject();

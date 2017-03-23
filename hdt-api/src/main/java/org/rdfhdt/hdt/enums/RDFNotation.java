@@ -68,7 +68,33 @@ public enum RDFNotation {
 	/**
 	 * RAR Package with multiple files in other RDF Formats
 	 */
-	RAR
+	RAR,
+	
+	/**
+	 * ZIP Package with multiple files in other RDF Formats
+	 */
+	ZIP,
+
+	/**
+	 * NQuads
+	 */
+	NQUAD,
+	
+	/**
+	 * JSON-LD
+	 */
+	JSONLD,
+	
+	/**
+	 * List of URIs with RDF content in other RDF Formats
+	 */
+	LIST,
+	
+	/**
+	 * Directory with RDF content
+	 */
+	DIR
+	
 	;
 	
 	public static RDFNotation parse(String str) {
@@ -80,7 +106,9 @@ public enum RDFNotation {
 			return NTRIPLES;
 		} else if(str.equals("n3")) {
 			return N3;
-		} else if(str.equals("rdfxml")||str.equals("rdf-xml")) {
+		} else if(str.equals("nq")||str.equals("nquad")) {
+			return NQUAD;
+		} else if(str.equals("rdfxml")||str.equals("rdf-xml") || str.equals("owl")) {
 			return RDFXML;
 		} else if(str.equals("turtle")) {
 			return TURTLE;
@@ -88,6 +116,10 @@ public enum RDFNotation {
 			return RAR;
 		} else if(str.equals("tar")||str.equals("tgz")||str.equals("tbz")||str.equals("tbz2")) {
 			return TAR;
+		} else if(str.equals("zip")) {
+			return ZIP;
+		} else if(str.equals("list")) {
+			return LIST;
 		}
 		throw new IllegalArgumentException();
 	}
@@ -98,7 +130,7 @@ public enum RDFNotation {
 		int idx = str.lastIndexOf('.');		
 		if(idx!=-1) {
 			String ext = str.substring(idx+1, str.length());
-			if(ext.equals("gz") || ext.equals("bz") || ext.equals("bz2")) {
+			if(ext.equals("gz") || ext.equals("bz") || ext.equals("bz2")|| ext.equals("xz")) {
 				str = str.substring(0,idx);
 			}
 		}
@@ -107,6 +139,8 @@ public enum RDFNotation {
 			return NTRIPLES;
 		} else if(str.endsWith("n3")) {
 			return N3;
+		} else if(str.endsWith("nq")||str.endsWith("nquad")) {
+			return NQUAD;
 		} else if(str.endsWith("rdf")||str.endsWith("xml")||str.endsWith("owl")) {
 			return RDFXML;
 		} else if(str.endsWith("ttl")) {
@@ -115,6 +149,10 @@ public enum RDFNotation {
  			return TAR;
  		} else if(str.endsWith("rar")){
   			return RAR;
+  		} else if(str.endsWith("zip")){
+  			return ZIP;
+  		} else if(str.endsWith("list")){
+  			return LIST;
   		}
 		throw new IllegalArgumentException("Could not guess the format for "+fileName);
 	}

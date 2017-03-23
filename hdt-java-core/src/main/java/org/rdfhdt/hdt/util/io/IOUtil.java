@@ -28,16 +28,23 @@ package org.rdfhdt.hdt.util.io;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.zip.GZIPInputStream;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
@@ -48,6 +55,34 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
 public class IOUtil {
 	
 	private IOUtil() {}
+	
+	public static InputStream getFileInputStream(String fileName) throws IOException {
+		InputStream input;
+		String name = fileName.toLowerCase();
+		if(name.startsWith("http:/") || name.startsWith("ftp:/")) {
+			URL url = new URL(fileName);
+			URLConnection con = url.openConnection();
+		    con.connect();
+		    input = con.getInputStream();
+		} else if(name.equals("-")) {
+			input = new BufferedInputStream(System.in);
+		} else {
+			input = new BufferedInputStream(new FileInputStream(fileName));
+		}
+			
+		if(name.endsWith(".gz")||name.endsWith(".tgz")) {
+			input = new GZIPInputStream(input);
+		} else if(name.endsWith("bz2") || name.endsWith("bz")) {	
+			input = new BZip2CompressorInputStream(input, true);
+		} else if(name.endsWith("xz")) {	
+			input = new XZCompressorInputStream(input, true);
+		}
+		return input;
+	}
+
+	public static BufferedReader getFileReader(String fileName) throws IOException {
+		return new BufferedReader(new InputStreamReader(getFileInputStream(fileName)));
+	}
 	
 	public static String readLine(InputStream in, char character) throws IOException {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
@@ -331,18 +366,7 @@ public class IOUtil {
 		}
 	}
 
-
-	public static void closeQuietly(InputStream input) {
-		if( input == null )
-			return;
-
-		try {
-			input.close();
-		} catch (IOException e) {
-		}
-	}
-
-	public static void closeQuietly(OutputStream output) {
+	public static void closeQuietly(Closeable output) {
 		if( output == null )
 			return;
 
@@ -351,5 +375,4 @@ public class IOUtil {
 		} catch (IOException e) {
 		}
 	}
-
 }

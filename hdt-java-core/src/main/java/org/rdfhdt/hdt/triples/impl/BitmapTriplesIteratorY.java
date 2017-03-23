@@ -53,7 +53,7 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 	private long prevY, nextY, prevZ, nextZ;
 	private int x, y, z;
 	
-	BitmapTriplesIteratorY(BitmapTriples triples, TripleID pattern) {
+	public BitmapTriplesIteratorY(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.pattern = new TripleID(pattern);
 		this.returnTriple = new TripleID();

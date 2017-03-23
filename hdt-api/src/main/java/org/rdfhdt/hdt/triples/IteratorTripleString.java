@@ -38,19 +38,6 @@ import java.util.Iterator;
  */
 public interface IteratorTripleString extends Iterator<TripleString> {
 
-	/**
-	 * Whether the iterator has previous elements.
-	 * @return
-	 */
-	boolean hasPrevious();
-	
-	/**
-	 * Get the previous element. Call only if hasPrevious() returns true.
-	 * It moves the cursor of the Iterator to the previous entry.
-	 * @return
-	 */
-	TripleString previous();
-	
 	/** 
 	 * Point the cursor to the first element of the data structure.
 	 */

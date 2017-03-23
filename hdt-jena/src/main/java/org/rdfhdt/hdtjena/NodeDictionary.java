@@ -39,14 +39,13 @@ import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.ARQConstants;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
+import org.rdfhdt.hdt.cache.DictionaryCache;
+import org.rdfhdt.hdt.cache.DictionaryCacheArray;
+import org.rdfhdt.hdt.cache.DictionaryCacheLRI;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.bindings.HDTId;
-import org.rdfhdt.hdtjena.cache.DictionaryCache;
-import org.rdfhdt.hdtjena.cache.DictionaryCacheArray;
-import org.rdfhdt.hdtjena.cache.DictionaryCacheLRI;
-import org.rdfhdt.hdtjena.cache.DummyMap;
 
 /**
  * Wraps all operations from ids to Nodes and vice versa using an HDT Dictionary.
@@ -58,10 +57,10 @@ public class NodeDictionary {
 
 	private final Dictionary dictionary;
 
-	private final DictionaryCache[] cacheIDtoNode = new DictionaryCache[TripleComponentRole.values().length];
+	private final DictionaryCache<Node> cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")
-	Map<String, Integer>[] cacheNodeToId = new Map[TripleComponentRole.values().length];
+	Map<String, Integer> cacheNodeToId [] = new Map[TripleComponentRole.values().length];
 	
 	public NodeDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
@@ -69,28 +68,28 @@ public class NodeDictionary {
 		// ID TO NODE	
 		final int idToNodeSize = 20000;
 		if(dictionary.getNsubjects()>idToNodeSize) {			
-			cacheIDtoNode[0] = new DictionaryCacheLRI(idToNodeSize);
+			cacheIDtoNode[0] = new DictionaryCacheLRI<Node>(idToNodeSize);
 		} else {
-			cacheIDtoNode[0] = new DictionaryCacheArray((int) dictionary.getNsubjects());
+			cacheIDtoNode[0] = new DictionaryCacheArray<Node>((int) dictionary.getNsubjects());
 		}
 		
 		if(dictionary.getNpredicates()>idToNodeSize) {
-			cacheIDtoNode[1] = new DictionaryCacheLRI(idToNodeSize);
+			cacheIDtoNode[1] = new DictionaryCacheLRI<Node>(idToNodeSize);
 		} else {	
-			cacheIDtoNode[1] = new DictionaryCacheArray((int) dictionary.getNpredicates());
+			cacheIDtoNode[1] = new DictionaryCacheArray<Node>((int) dictionary.getNpredicates());
 		}
 		
 		if(dictionary.getNobjects()>idToNodeSize) {			
-			cacheIDtoNode[2] = new DictionaryCacheLRI(idToNodeSize);
+			cacheIDtoNode[2] = new DictionaryCacheLRI<Node>(idToNodeSize);
 		} else {
-			cacheIDtoNode[2] = new DictionaryCacheArray((int) dictionary.getNobjects());
+			cacheIDtoNode[2] = new DictionaryCacheArray<Node>((int) dictionary.getNobjects());
 		}
 		
 		// NODE TO ID
 		// Disabled, it does not make so much impact.
-		cacheNodeToId[0] = new DummyMap<String, Integer>();
-		cacheNodeToId[1] = new DummyMap<String, Integer>();
-		cacheNodeToId[2] = new DummyMap<String, Integer>();
+		cacheNodeToId[0] = DummyMap.getInstance();
+		cacheNodeToId[1] = DummyMap.getInstance();
+		cacheNodeToId[2] = DummyMap.getInstance();
 		
 //		final int nodeToIDSize = 1000;
 //		
@@ -145,7 +144,9 @@ public class NodeDictionary {
 		}
 		
 		int val = dictionary.stringToId(str, role);
-		cacheNodeToId[role.ordinal()].put(str, val);
+		if(val>0) {
+			cacheNodeToId[role.ordinal()].put(str, val);
+		}
 		return val;
 	}
 	

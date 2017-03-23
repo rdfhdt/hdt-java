@@ -16,6 +16,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
@@ -29,7 +30,7 @@ class PredicateIndexArray implements PredicateIndex {
 		this.triples = triples;
 	}
 	
-	private final long calculatePos(int pred) {
+	public long getBase(int pred) {
 		if(pred<=1) {
 			return 0;
 		}
@@ -40,8 +41,8 @@ class PredicateIndexArray implements PredicateIndex {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
 	
-	public long getOccurrence(int pred, long occ) {
-		return array.get(calculatePos(pred)+occ-1);
+	public long getOccurrence(long base, long occ) {
+		return array.get(base+occ-1);
 	}
 	
 	public void load(InputStream input) throws IOException {
@@ -62,12 +63,12 @@ class PredicateIndexArray implements PredicateIndex {
 	public void generate(ProgressListener listener) {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
-		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(triples.seqY.getNumberOfElements()));
+		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
 	
 	    long maxCount = 0;
-	    for(long i=0;i<triples.seqY.getNumberOfElements(); i++) {
+	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
 	        // Read value
-	        long val = triples.seqY.get(i);
+	        long val = triples.getSeqY().get(i);
 
 	        // Grow if necessary
 	        if(predCount.getNumberOfElements()<val) {
@@ -79,19 +80,19 @@ class PredicateIndexArray implements PredicateIndex {
 	        maxCount = count>maxCount ? count : maxCount;
 	        predCount.set(val-1, count);
 
-	        ListenerUtil.notifyCond(iListener,  "Counting appearances of predicates", i, triples.seqY.getNumberOfElements(), 20000);
+	        ListenerUtil.notifyCond(iListener,  "Counting appearances of predicates", i, triples.getSeqY().getNumberOfElements(), 20000);
 	    }
 	    predCount.aggresiveTrimToSize();
 	    
 	    // Convert predicate count to bitmap
-	    Bitmap375 bitmap = new Bitmap375(triples.seqY.getNumberOfElements());
+	    Bitmap375 bitmap = new Bitmap375(triples.getSeqY().getNumberOfElements());
 	    long tempCountPred=0;
 	    for(long i=0;i<predCount.getNumberOfElements();i++) {
 	        tempCountPred += predCount.get(i);
 	        bitmap.set(tempCountPred-1,true);
 	        ListenerUtil.notifyCond(iListener, "Creating Predicate bitmap", i, predCount.getNumberOfElements(), 100000);
 	    }
-	    bitmap.set(triples.seqY.getNumberOfElements()-1, true);
+	    bitmap.set(triples.getSeqY().getNumberOfElements()-1, true);
 	    System.out.println("Predicate Bitmap in " + st.stopAndShow());
 	    st.reset();
 
@@ -99,14 +100,14 @@ class PredicateIndexArray implements PredicateIndex {
 	    
 	    
 	    // Create predicate index
-	    SequenceLog64 array = new SequenceLog64(BitUtil.log2(triples.seqY.getNumberOfElements()), triples.seqY.getNumberOfElements());
-	    array.resize(triples.seqY.getNumberOfElements());
+	    SequenceLog64 array = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
+	    array.resize(triples.getSeqY().getNumberOfElements());
 
-	    SequenceLog64 insertArray = new SequenceLog64(BitUtil.log2(triples.seqY.getNumberOfElements()), bitmap.countOnes());
+	    SequenceLog64 insertArray = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
 	    insertArray.resize(bitmap.countOnes());
 
-	    for(long i=0;i<triples.seqY.getNumberOfElements(); i++) {
-	            long predicateValue = triples.seqY.get(i);
+	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
+	            long predicateValue = triples.getSeqY().get(i);
 
 	            long insertBase = predicateValue==1 ? 0 : bitmap.select1(predicateValue-1)+1;
 	            long insertOffset = insertArray.get(predicateValue-1);
@@ -114,8 +115,9 @@ class PredicateIndexArray implements PredicateIndex {
 
 	            array.set(insertBase+insertOffset, i);
 	            
-	            ListenerUtil.notifyCond(iListener,  "Generating predicate references", i, triples.seqY.getNumberOfElements(), 100000);
+	            ListenerUtil.notifyCond(iListener,  "Generating predicate references", i, triples.getSeqY().getNumberOfElements(), 100000);
 	    }
+	    IOUtil.closeQuietly(insertArray);
 
 	    this.array = array;
 	    this.bitmap = bitmap;
@@ -129,4 +131,14 @@ class PredicateIndexArray implements PredicateIndex {
 		
 		array = new SequenceLog64Map(input, f);
 	}
+
+	@Override
+	public void close() throws IOException {
+		bitmap=null;
+		if(array!=null) {
+			array.close();
+		}
+		array=null;
+	}
+
 }

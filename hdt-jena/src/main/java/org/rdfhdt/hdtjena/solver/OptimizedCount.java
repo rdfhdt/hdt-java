@@ -8,7 +8,7 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphMaker;
+import org.apache.jena.sparql.core.DatasetGraphCollection;
 import org.apache.jena.sparql.core.DatasetGraphOne;
 import org.apache.jena.sparql.core.PathBlock;
 import org.apache.jena.sparql.core.TriplePath;
@@ -134,7 +134,7 @@ public class OptimizedCount {
 		Graph g=null;
 		if(dataset instanceof DatasetGraphOne ) {
 			g = dataset.getDefaultGraph();
-		} else if(dataset instanceof DatasetGraphMaker) {
+		} else if(dataset instanceof DatasetGraphCollection) {
 			if(graphName!=null) {
 				g = dataset.getGraph(graphName);
 			} else {
@@ -208,7 +208,7 @@ public class OptimizedCount {
 			if(patternID.isEmpty()) {
 				// All results
 				count = hdtg.getHDT().getTriples().getNumberOfElements();
-			} else {
+			} else if(patternID.isValid()) {
 				// Search triple pattern
 				IteratorTripleID it = hdtg.getHDT().getTriples().search(patternID);
 				if(it.numResultEstimation()==ResultEstimationType.EXACT) {
@@ -220,6 +220,8 @@ public class OptimizedCount {
 						count++;
 					}
 				}
+			} else {
+				count=0;
 			}
 		}
 	

@@ -1,11 +1,7 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -14,7 +10,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
-import org.rdfhdt.hdt.util.io.ExternalDecompressStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.NonCloseInputStream;
 
 /**
@@ -36,18 +32,7 @@ public class RDFParserTar implements RDFParserCallback {
 	@Override
 	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		try {
-			InputStream input;
-			if(fileName.equals("-")) {
-				input = System.in;
-			} else if(fileName.endsWith(".gz") || fileName.endsWith("tgz")) {
-//				input = new BackgroundDecompressorStream(new GZIPInputStream(new FileInputStream(fileName)));
-				// In theory the BufferedInputStream is not neccessary, but Tar crashes when not using it.
-				input = new BufferedInputStream(new GZIPInputStream(new FileInputStream(fileName)));
-			} else if(fileName.endsWith("bz2") || fileName.endsWith("bz")) {
-				input = new ExternalDecompressStream(new File(fileName), ExternalDecompressStream.PBZIP2);
-			} else {
-				input = new BufferedInputStream(new FileInputStream(fileName));
-			}
+			InputStream input = IOUtil.getFileInputStream(fileName);
 			this.doParse(input, baseUri, notation, callback);
 			input.close();
 		} catch (Exception e) {

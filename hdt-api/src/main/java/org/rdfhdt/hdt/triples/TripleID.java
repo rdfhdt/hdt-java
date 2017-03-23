@@ -27,14 +27,17 @@
 
 package org.rdfhdt.hdt.triples;
 
+import java.io.Serializable;
+
 
 
 /**
  * TripleID holds a triple as integers
  * 
  */
-public final class TripleID implements Comparable<TripleID> {
-
+public final class TripleID implements Comparable<TripleID>, Serializable {
+	private static final long serialVersionUID = -4685524566493494912L;
+	
 	private int subject;
 	private int predicate;
 	private int object;

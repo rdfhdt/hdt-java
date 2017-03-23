@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCache.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheNone.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -24,17 +24,39 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdt.cache;
 
-import org.apache.jena.graph.Node;
 
 /**
  * @author mario.arias
  *
  */
-public interface DictionaryCache {
-	Node get(int id);
-	void put(int id, Node node);
-	int size();
-	void clear();
+public class DictionaryCacheNone<T> implements DictionaryCache<T> {
+
+	/* (non-Javadoc)
+	 * @see hdt.jena.DictionaryNodeCache#get(int)
+	 */
+	@Override
+	public T get(int id) {
+		return null;
+	}
+
+	/* (non-Javadoc)
+	 * @see hdt.jena.DictionaryNodeCache#put(int, com.hp.hpl.jena.graph.Node)
+	 */
+	@Override
+	public void put(int id, T node) {
+		
+	}
+
+	@Override
+	public int size() {
+		return 0;
+	}
+
+	@Override
+	public void clear() {
+
+	}
+
 }

@@ -44,7 +44,6 @@ import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 public class HDTStatistics implements GraphStatisticsHandler {
 
 	private final NodeDictionary nodeDictionary;
-	private final Triples triples;
 	private final HDT hdt;
 	
 	/**
@@ -53,7 +52,6 @@ public class HDTStatistics implements GraphStatisticsHandler {
 	public HDTStatistics(HDTGraph graph) {
 		this.nodeDictionary = graph.getNodeDictionary();
 		this.hdt = graph.getHDT();
-		this.triples = hdt.getTriples();
 	}
 	
 	/* (non-Javadoc)
@@ -61,29 +59,48 @@ public class HDTStatistics implements GraphStatisticsHandler {
 	 */
 	@Override
 	public long getStatistic(Node subject, Node predicate, Node object) {
-		int s, p, o;
-		s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);
-		p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
-		o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);
-		
-		if(s<0||p<0||o<0) {
-			// Not in dataset
-			return 0;
-		}
-		
-		// FIMXE: No index on ?P?, avoid creating the iterator. Dirty hack.
-		if(p>0 && s==0 && o==0 && (triples instanceof BitmapTriples)) {
-			Sequence predCount = ((BitmapTriples)triples).getPredicateCount();
-			if(predCount!=null) {
-				return predCount.get(p-1);
-			} else {
-				// We don't know, rough estimation.
-				return triples.getNumberOfElements()/hdt.getDictionary().getNpredicates();
-			}	
-		}
-		
-		IteratorTripleID it = triples.search(new TripleID(s, p, o));
-		return it.estimatedNumResults();
-	}
+		try {
+			final BitmapTriples triples = (BitmapTriples) hdt.getTriples();
+			
+			if(subject.isVariable() && predicate.isVariable() && object.isVariable()) {
+				return triples.getNumberOfElements();
+			}
 
+			int s, p, o;
+			s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);
+			p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
+			o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);
+
+			if(s<0||p<0||o<0) {
+				// Not in dataset
+				return 0;
+			}
+
+			// FIMXE: No index on ?P?, avoid creating the iterator. Dirty hack.
+			if(p>0 && s==0 && o==0 && (triples instanceof BitmapTriples)) {
+				Sequence predCount = ((BitmapTriples)triples).getPredicateCount();
+				if(predCount!=null) {
+					return predCount.get(p-1);
+				} else {
+					// We don't know, rough estimation.
+					long pred = hdt.getDictionary().getNpredicates();
+					if(pred>0) {
+						return triples.getNumberOfElements()/pred;
+					} else {
+						return triples.getNumberOfElements();
+					}
+				}	
+			}
+			
+			if(s==0 && o!=0 && triples.getIndexZ()==null) {
+				return triples.getNumberOfElements();
+			}
+
+			IteratorTripleID it = triples.search(new TripleID(s, p, o));
+			return it.estimatedNumResults();
+		} catch (Exception e) {
+			// Something went wrong. Worst case estimation instead of crashing.
+			return Long.MAX_VALUE;
+		}
+	}
 }

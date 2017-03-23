@@ -71,23 +71,15 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 public class BitmapTriples implements TriplesPrivate {
 	protected TripleComponentOrder order=TripleComponentOrder.SPO;
 	
-	public Sequence seqY;
+	protected Sequence seqY, seqZ, indexZ, predicateCount;
+	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 
-	public Sequence seqZ;
-
-	protected Sequence indexZ;
-
-	protected Sequence predicateCount;
-	public Bitmap bitmapY;
-
-	public Bitmap bitmapZ;
-
-	protected Bitmap bitmapIndexZ;
-	
 	protected AdjacencyList adjY, adjZ, adjIndex;
 	
 	// Index for Y
-	PredicateIndex predicateIndex;
+	public PredicateIndex predicateIndex;
+	
+	private boolean isClosed=false;
 
 	public BitmapTriples() {
 		this(new HDTSpecification());
@@ -107,6 +99,8 @@ public class BitmapTriples implements TriplesPrivate {
 
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
+		
+		isClosed=false;
 	}
 	
 	public BitmapTriples(Sequence seqY, Sequence seqZ, Bitmap bitY, Bitmap bitZ, TripleComponentOrder order) {
@@ -118,6 +112,8 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
+
+		isClosed=false;
 	}
 	
 	
@@ -192,8 +188,10 @@ public class BitmapTriples implements TriplesPrivate {
 			numTriples++;
 		}
 		
-		bitY.append(true);
-		bitZ.append(true);
+		if(numTriples>0) {
+			bitY.append(true);
+			bitZ.append(true);
+		}
 		
 		vectorY.aggresiveTrimToSize();
 		vectorZ.trimToSize();
@@ -210,6 +208,8 @@ public class BitmapTriples implements TriplesPrivate {
 		// DEBUG
 //		adjY.dump();
 //		adjZ.dump();
+		
+		isClosed=false;
 	}
 
 	/* (non-Javadoc)
@@ -230,6 +230,10 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public IteratorTripleID search(TripleID pattern) {
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
+		}
+		
 		TripleID reorderedPat = new TripleID(pattern);
 		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
 		String patternString = reorderedPat.getPatternString();
@@ -279,6 +283,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public long getNumberOfElements() {
+		if(isClosed) return 0;
 		return seqZ.getNumberOfElements();
 	}
 
@@ -287,6 +292,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public long size() {
+		if(isClosed) return 0;
 		return seqY.size()+seqZ.size()+bitmapY.getSizeBytes()+bitmapZ.getSizeBytes();
 	}
 
@@ -340,6 +346,8 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
+		
+		isClosed=false;
 	}
 	
 
@@ -372,6 +380,7 @@ public class BitmapTriples implements TriplesPrivate {
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
 		
+		isClosed=false;
 	}
 	
 
@@ -642,6 +651,10 @@ public class BitmapTriples implements TriplesPrivate {
 	 */
 	@Override
 	public void populateHeader(Header header, String rootNode) {
+		if(rootNode==null || rootNode.length()==0) {
+			throw new IllegalArgumentException("Root node for the header cannot be null");
+		}
+		
 		header.insert(rootNode, HDTVocabulary.TRIPLES_TYPE, getType());
 		header.insert(rootNode, HDTVocabulary.TRIPLES_NUM_TRIPLES, getNumberOfElements() );
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.toString() );
@@ -765,18 +778,46 @@ public class BitmapTriples implements TriplesPrivate {
 
 	@Override
 	public void close() throws IOException {
-		seqY.close(); seqY=null;
-		seqZ.close(); seqZ=null;
+		isClosed=true;
+		if(seqY!=null) {
+			seqY.close(); seqY=null;
+		}
+		if(seqZ!=null) { 
+			seqZ.close(); seqZ=null;
+		}
 		if(indexZ!=null) {
 			indexZ.close(); indexZ=null;
 		}
 		if(predicateCount!=null) {
 			predicateCount.close(); predicateCount=null;
 		}
+		if(predicateIndex!=null) {
+			predicateIndex.close(); predicateIndex=null;
+		}
 	}
 
 	public TripleComponentOrder getOrder() {
 		return this.order;
+	}
+
+	public Sequence getIndexZ() {
+		return indexZ;
+	}
+
+	public Sequence getSeqY() {
+		return seqY;
+	}
+
+	public Sequence getSeqZ() {
+		return seqZ;
+	}
+
+	public Bitmap getBitmapY() {
+		return bitmapY;
+	}
+
+	public Bitmap getBitmapZ() {
+		return bitmapZ;
 	}
 }
 

@@ -41,11 +41,23 @@ public class Iter {
 		return iter ;
 	}
 
+	public static <T> Iterator<T> dedup(Iterator<? extends T> it) {
+		return new DedupIterator<T>(it);
+	}
 
 	public static <T> Iterator<T> filter(Iterable<? extends T> stream, Filter<T> filter) {
 		return filter(stream.iterator(), filter) ;
 	}
-
+	
+	public static <T> Iterator<T> filterNotEqual(final Iterator<? extends T> stream, final T sampleObject) {
+		return filter(stream, new Filter<T>(){
+			@Override
+			public boolean accept(T item) {
+				return !sampleObject.equals(item);
+			}});
+	}
+	
+	
 	public static <T> Iterator<T> filter(final Iterator<? extends T> stream, final Filter<T> filter) {
 		final Iterator<T> iter = new Iterator<T>() {
 
@@ -130,5 +142,58 @@ public class Iter {
 				throw new UnsupportedOperationException();
 			}
 		};
+	}
+	
+	public static <T> Iterator<T> single(final T element) {
+		return new Iterator<T>() {
+			boolean used = false;
+			
+			@Override
+			public boolean hasNext() {
+				return !used;
+			}
+
+			@Override
+			public T next() {
+				if(!used) {
+					used=true;
+					return element;
+				}
+				throw new NoSuchElementException();
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
+	
+	public static <T> Iterator<T> side(final Iterator<T> it, final SideEffect<T> side) {
+		return new Iterator<T>() {
+
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public T next() {
+				T el = it.next();
+				side.call(el);
+				return el;
+			}
+
+			@Override
+			public void remove() {
+				
+			}
+		};
+	}
+	
+	public static <T> void traverse(final Iterator<T> it) {
+		while(it.hasNext()) {
+			it.next();
+		}
 	}
 }

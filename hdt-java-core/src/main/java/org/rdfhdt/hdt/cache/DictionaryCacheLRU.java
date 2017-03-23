@@ -1,5 +1,5 @@
 /**
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheArray.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/cache/DictionaryCacheLRU.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -24,58 +24,46 @@
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  */
 
-package org.rdfhdt.hdtjena.cache;
+package org.rdfhdt.hdt.cache;
 
-import org.apache.jena.graph.Node;
+import org.rdfhdt.hdt.util.LRUCache;
 
 /**
  * @author mario.arias
  *
  */
-public class DictionaryCacheArray implements DictionaryCache {
+public class DictionaryCacheLRU<T> implements DictionaryCache<T> {
 
-	private Node[] array;
-	final int capacity;
-	int numentries;
+	private LRUCache<Integer, T> lru;
 	
-	public DictionaryCacheArray(int capacity) {
-		array = null;
-		numentries=0;
-		this.capacity=capacity;
+	public DictionaryCacheLRU(int size) {
+		lru = new LRUCache<Integer, T>(size);
 	}
 	
 	/* (non-Javadoc)
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public Node get(int id) {
-		if(array==null) {
-			return null;
-		}
-		if(id>array.length) {
-			throw new IndexOutOfBoundsException();
-		}
-		return array[id-1];
+	public T get(int id) {
+		return lru.get(id);
 	}
-	
-	public void put(int id, Node node) {
-		if(array==null) {
-			array = new Node[(int)capacity];
-		}
-		if(array[id-1]==null) {
-			numentries++;
-		}
-		array[id-1] = node;
+
+	/* (non-Javadoc)
+	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.T)
+	 */
+	@Override
+	public void put(int id, T node) {
+		lru.put(id, node);
 	}
 
 	@Override
 	public int size() {
-		return numentries;
+		return lru.size();
 	}
 
 	@Override
 	public void clear() {
-		array=null;
+		lru.clear();
 	}
 
 }

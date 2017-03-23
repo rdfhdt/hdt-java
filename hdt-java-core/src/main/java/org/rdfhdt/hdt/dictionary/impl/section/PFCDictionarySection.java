@@ -61,10 +61,10 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
 	// FIXME: Due to java array indexes being int, only 2GB can be addressed per dictionary section.
-	protected byte [] text; // Encoded sequence
+	protected byte [] text=new byte[0]; // Encoded sequence
 	protected int blocksize;
 	protected int numstrings;
-	protected SequenceLog64 blocks;
+	protected SequenceLog64 blocks= new SequenceLog64();
 	
 	public PFCDictionarySection(HDTOptions spec) {
 		this.blocksize = (int) spec.getInt("pfc.blocksize");
@@ -81,6 +81,14 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		this.blocks = new SequenceLog64(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		Iterator<? extends CharSequence> it = other.getSortedEntries();
 		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
+	}
+	
+	public void load(PFCDictionarySectionBuilder builder) throws IOException {
+		builder.finished();
+		this.numstrings = builder.getNumstrings();
+		this.text = builder.getText();
+		this.blocks = builder.getBlocks();
+		this.blocksize = builder.getBlocksize();
 	}
 
 	public void load(Iterator<CharSequence> it, long numentries, ProgressListener listener) {
@@ -400,6 +408,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	/* (non-Javadoc)
 	 * @see hdt.dictionary.DictionarySection#load(java.io.InputStream, hdt.ProgressListener)
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC8());

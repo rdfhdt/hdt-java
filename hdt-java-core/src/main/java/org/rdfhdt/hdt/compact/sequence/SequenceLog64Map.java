@@ -40,6 +40,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -126,7 +127,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	
 	private void mapFiles(File f, long base) throws IOException {
 		// Read packed data
-		ch = new FileInputStream(f).getChannel();
+		ch = FileChannel.open(Paths.get(f.toString()));
 		long maxSize = base+SequenceLog64.numBytesFor(numbits, numentries);
 		int buffer = 0;
 		long block=0;
@@ -273,6 +274,8 @@ public class SequenceLog64Map implements Sequence,Closeable {
 
 	@Override
 	public void close() throws IOException {
+		buffers=null;
+		System.gc();
 		ch.close();
 	}
 }

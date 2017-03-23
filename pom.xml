@@ -28,7 +28,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jdk.version>1.8</jdk.version>
-    <jena.version>3.0.1</jena.version>
+    <jena.version>3.2.0</jena.version>
     <jena-jdk.version>1.8</jena-jdk.version>
   </properties>
 
@@ -119,7 +119,7 @@
       <dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-fuseki1</artifactId>
-        <version>1.3.0</version>
+        <version>1.5.0</version>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>

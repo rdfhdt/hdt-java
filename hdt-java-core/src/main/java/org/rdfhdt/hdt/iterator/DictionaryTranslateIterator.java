@@ -63,6 +63,7 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	public DictionaryTranslateIterator(IteratorTripleID iteratorTripleID, Dictionary dictionary) {
 		this.iterator = iteratorTripleID;
 		this.dictionary = dictionary;
+		this.s = this.p = this.o = "";
 	}
 	
 	/**
@@ -134,23 +135,6 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	@Override
 	public void remove() {
 		iterator.remove();
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.iterator.IteratorTripleString#hasPrevious()
-	 */
-	@Override
-	public boolean hasPrevious() {
-		return iterator.hasPrevious();
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.iterator.IteratorTripleString#previous()
-	 */
-	@Override
-	public TripleString previous() {
-		TripleID triple = iterator.previous();
-		return DictionaryUtil.tripleIDtoTripleString(dictionary, triple);
 	}
 
 	/* (non-Javadoc)

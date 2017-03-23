@@ -37,6 +37,7 @@ import java.util.Iterator;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
@@ -322,6 +323,7 @@ public class SequenceLog64 implements DynamicSequence {
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#load(java.io.InputStream, hdt.ProgressListener)
 	 */
+	@SuppressWarnings("resource")
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC8());
@@ -382,6 +384,39 @@ public class SequenceLog64 implements DynamicSequence {
 	@Override
 	public String getType() {
 		return HDTVocabulary.SEQ_TYPE_LOG;
+	}
+
+	public long binSearchExact(long element, long begin, long end) throws NotFoundException {
+		while(begin<=end) {
+			long mid = (begin+end)/2;
+			long read = get(mid);
+			if(element>read) {
+				begin = mid+1;
+			} else if(element<read) {
+				end = mid-1;
+			} else {
+				return mid;
+			}
+		}
+		throw new NotFoundException();
+	}
+
+	public long binSearch(long element, long fromIndex, long toIndex) {
+		long low = fromIndex;
+		long high = toIndex - 1;
+
+		while (low <= high) {
+			long mid = (low + high) >>> 1;
+		long midVal = get(mid);
+
+		if (midVal < element)
+			low = mid + 1;
+		else if (midVal > element)
+			high = mid - 1;
+		else
+			return mid; // key found
+		}
+		return -(low + 1);  // key not found.
 	}
 
 	@Override

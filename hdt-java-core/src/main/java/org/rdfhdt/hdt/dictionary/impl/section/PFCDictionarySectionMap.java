@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -65,7 +66,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
-	private static final int BLOCKS_PER_BYTEBUFFER = 50000;
+	static final int BLOCKS_PER_BYTEBUFFER = 50000;
 	protected FileChannel ch;
 	protected ByteBuffer [] buffers; // Encoded sequence
 	long [] posFirst;	// Global byte position of the start of each buffer
@@ -109,7 +110,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		endOffset = input.getTotalBytes();
 
 		// Read packed data
-		ch = new FileInputStream(f).getChannel();
+		ch = FileChannel.open(Paths.get(f.toString()));
 		int block = 0;
 		int buffer = 0;
 		long numBlocks = blocks.getNumberOfElements();
@@ -347,9 +348,95 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			}
 		};
 	}
+	
+	public Iterator<CharSequence> getSortedEntries(final Iterator<Integer> in) {
+		return new Iterator<CharSequence>() {
+			int id = 0;
+
+			ReplazableString tempString = new ReplazableString();
+			int bytebufferIndex=0;
+			ByteBuffer buffer = buffers[0].duplicate();
+
+			@Override
+			public boolean hasNext() {
+				return in.hasNext();
+			}
+
+			@Override
+			public CharSequence next() {
+				int target = in.next();
+				
+				if(target<1 || target>numstrings) {
+					throw new IndexOutOfBoundsException("Trying to access position "+target+ " but PFC has "+numstrings+" elements.");
+				}
+							
+				if(target<( (id%blocksize)+blocksize) ) {
+					// If the searched string is in the current block, just continue
+					
+					while(id<target) {
+						if(!buffer.hasRemaining()) {
+							buffer = buffers[++bytebufferIndex].duplicate();
+							buffer.rewind();
+						}
+						try {
+							if((id%blocksize)==0) {
+								tempString.replace(buffer, 0);
+							} else {				
+								long delta = VByte.decode(buffer);
+								tempString.replace(buffer, (int) delta);
+							}
+							id++;
+							
+							if(id==target) {
+								return new CompactString(tempString).getDelayed();
+//								return tempString.toString();
+							}
+						} catch (IOException e) {
+							throw new RuntimeException(e);
+						}
+					}
+					// Should not reach here.
+					throw new RuntimeException("Not found");
+				
+				} else {
+					// The searched string is in another block, seek directly to that one.
+					
+					id = target;
+					
+					int block = (target-1)/blocksize;
+					bytebufferIndex = block/BLOCKS_PER_BYTEBUFFER;
+					buffer = buffers[bytebufferIndex++].duplicate();
+					buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
+
+					try {
+						tempString = new ReplazableString();
+						tempString.replace(buffer,0);
+
+						int stringid = (target-1)%blocksize;
+						for(int i=0;i<stringid;i++) {
+							long delta = VByte.decode(buffer);
+							tempString.replace(buffer, (int) delta);
+						}
+						return new CompactString(tempString).getDelayed();
+					} catch (IOException e) {
+						e.printStackTrace();
+						return null;
+					}
+				}
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException();
+			}
+		};
+	}
 
 	@Override
 	public void close() throws IOException {
+		blocks.close();
+		buffers = null;
+		System.gc();
 		ch.close();
 	}
 
