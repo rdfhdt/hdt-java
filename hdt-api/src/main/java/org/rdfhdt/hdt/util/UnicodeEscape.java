@@ -78,7 +78,7 @@ public class UnicodeEscape {
 				
 				if(curr=='"') {
 					// The datatype or lang must be after the last " symbol.
-					last=i;
+					last=i-1;
 					break;
 				}
 				
@@ -88,13 +88,13 @@ public class UnicodeEscape {
 					break;
 				}
 				if(curr=='^' && prev=='^') {
-					last = i-2;
+					last = i-3;
 					break;
 				}
 			}
 		}
         
-        for (int i = first; i < last; i++) {
+        for (int i = first; i <= last; i++) {
             char c = label.charAt(i);
             int cInt = c;
 
@@ -131,7 +131,7 @@ public class UnicodeEscape {
             }
         }
         
-        appendable.append(label.subSequence(last, label.length()));
+        appendable.append(label.subSequence(last+1, label.length()));
     }
     
     /**
