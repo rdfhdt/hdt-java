@@ -75,9 +75,9 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					throw new NotImplementedException("Parser not found for format "+notation);	
 			}
 		} catch (FileNotFoundException e) {
-			throw new ParserException();
+			throw new ParserException(e);
 		} catch (Exception e) {
-			throw new ParserException();
+			throw new ParserException(e);
 		}	
 	}
 	
@@ -103,7 +103,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ParserException();
+			throw new ParserException(e);
 		}	
 	}
 
