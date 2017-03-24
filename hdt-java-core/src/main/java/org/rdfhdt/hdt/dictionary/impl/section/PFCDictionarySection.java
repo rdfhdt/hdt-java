@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/PFCDictionarySection.java $
  * Revision: $Rev: 201 $
  * Last modified: $Date: 2013-04-17 23:40:20 +0100 (mié, 17 abr 2013) $
@@ -51,12 +51,16 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PFCDictionarySection implements DictionarySectionPrivate {
+	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySection.class);
+
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
@@ -128,7 +132,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			blocks.append(byteOut.size());
 
 			// Trim text/blocks
-			blocks.aggresiveTrimToSize();
+			blocks.aggressiveTrimToSize();
 
 			byteOut.flush();
 			text = byteOut.toByteArray();
@@ -136,7 +140,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 			// DEBUG
 			//dumpAll();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 	}
 		
@@ -210,7 +214,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		int pos = (int)blocks.get(block);
 		ReplazableString tempString = new ReplazableString();
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
@@ -277,7 +281,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		int pos = (int) blocks.get(block);
  		int len = ByteStringUtil.strlen(text, pos);
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(text, pos, len);
 		
@@ -353,8 +357,8 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		return new Iterator<CharSequence>() {
 			int id;
 			int pos;
-			Mutable<Long> delta = new Mutable<Long>(0L);
-			ReplazableString tempString = new ReplazableString();
+			final Mutable<Long> delta = new Mutable<>(0L);
+			final ReplazableString tempString = new ReplazableString();
 
 			@Override
 			public boolean hasNext() {

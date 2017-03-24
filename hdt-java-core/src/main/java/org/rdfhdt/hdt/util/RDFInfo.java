@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/RDFInfo.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -122,10 +122,10 @@ public class RDFInfo {
 	}
 	
 	/**
-	 * Gets the "rdf.expectedCompression" peoperty is it is set. If not sets it to 0.15 and returns that value.
+	 * Gets the "rdf.expectedCompression" property is it is set. If not sets it to 0.15 and returns that value.
 	 */
 	public static float getCompression(HDTOptions specs){
-		float compression = 0;
+		float compression;
 		try {
 			compression = Float.parseFloat(specs.get(compression_prop));
 		} catch (NumberFormatException e){
@@ -142,7 +142,7 @@ public class RDFInfo {
 
 	/**
 	 * Finds the length of file in bytes and counts the number of lines and fills
-	 * the given specs with them using "fillHDTSpecification(long, int, HDTOptionss)" method.
+	 * the given specs with them using "fillHDTSpecification(long, int, HDTOptions)" method.
 	 * 
 	 */
 	public static long countLines(String filename, RDFParserCallback parser, RDFNotation notation)
@@ -151,7 +151,7 @@ public class RDFInfo {
 	    try {
 	        byte[] c = new byte[1024];
 	        int count = 0;
-	        int readChars = 0;
+	        int readChars;
 	        boolean empty = true;
 	        while ((readChars = is.read(c)) != -1) {
 	            empty = false;

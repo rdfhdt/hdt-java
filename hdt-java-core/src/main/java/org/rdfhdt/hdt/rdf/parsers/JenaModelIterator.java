@@ -8,7 +8,7 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 
 public class JenaModelIterator implements IteratorTripleString {
-	private Model model;
+	private final Model model;
 	private StmtIterator iterator;
 	
 	public JenaModelIterator(Model model) {
@@ -26,9 +26,9 @@ public class JenaModelIterator implements IteratorTripleString {
         Statement stm = iterator.nextStatement();
 
         return new TripleString(
-                        stm.getSubject().toString(),
-                        stm.getPredicate().toString(),
-                        stm.getObject().toString());
+                JenaNodeFormatter.format(stm.getSubject()),
+                JenaNodeFormatter.format(stm.getPredicate()),
+                JenaNodeFormatter.format(stm.getObject()));
 	}
 
 	@Override

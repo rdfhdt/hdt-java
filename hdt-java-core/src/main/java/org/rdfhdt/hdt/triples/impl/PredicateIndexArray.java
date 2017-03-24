@@ -19,8 +19,11 @@ import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 class PredicateIndexArray implements PredicateIndex {
+	private static final Logger log = LoggerFactory.getLogger(PredicateIndexArray.class);
 	
 	BitmapTriples triples;
 	Sequence array;
@@ -36,15 +39,18 @@ class PredicateIndexArray implements PredicateIndex {
 		}
 		return bitmap.select1(pred-1)+1;
 	}
-	
+
+	@Override
 	public long getNumOcurrences(int pred) {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
 	
+	@Override
 	public long getOccurrence(long base, long occ) {
 		return array.get(base+occ-1);
 	}
 	
+	@Override
 	public void load(InputStream input) throws IOException {
 		bitmap = BitmapFactory.createBitmap(input);
 		bitmap.load(input, null);
@@ -82,7 +88,7 @@ class PredicateIndexArray implements PredicateIndex {
 
 	        ListenerUtil.notifyCond(iListener,  "Counting appearances of predicates", i, triples.getSeqY().getNumberOfElements(), 20000);
 	    }
-	    predCount.aggresiveTrimToSize();
+	    predCount.aggressiveTrimToSize();
 	    
 	    // Convert predicate count to bitmap
 	    Bitmap375 bitmap = new Bitmap375(triples.getSeqY().getNumberOfElements());
@@ -93,7 +99,7 @@ class PredicateIndexArray implements PredicateIndex {
 	        ListenerUtil.notifyCond(iListener, "Creating Predicate bitmap", i, predCount.getNumberOfElements(), 100000);
 	    }
 	    bitmap.set(triples.getSeqY().getNumberOfElements()-1, true);
-	    System.out.println("Predicate Bitmap in " + st.stopAndShow());
+        log.info("Predicate Bitmap in {}", st.stopAndShow());
 	    st.reset();
 
 	    predCount=null;
@@ -121,7 +127,7 @@ class PredicateIndexArray implements PredicateIndex {
 
 	    this.array = array;
 	    this.bitmap = bitmap;
-	    System.out.println("Count predicates in "+st.stopAndShow());
+        log.info("Count predicates in {}", st.stopAndShow());
 	}
 
 	@Override

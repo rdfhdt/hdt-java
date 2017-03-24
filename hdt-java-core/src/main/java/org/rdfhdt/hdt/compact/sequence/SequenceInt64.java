@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceInt64.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -69,11 +69,13 @@ public class SequenceInt64 implements DynamicSequence {
 		data = newData;
 	}
 	
-	public void trimToSize() {
+	@Override
+    public void trimToSize() {
 		resizeArray((int)numelements);
 	}
 	
-	public void aggresiveTrimToSize() {
+	@Override
+    public void aggressiveTrimToSize() {
 		trimToSize();
 	}
 
@@ -89,7 +91,8 @@ public class SequenceInt64 implements DynamicSequence {
 		return data[(int)position];
 	}
 	
-	public void set(long position, long value) {
+	@Override
+    public void set(long position, long value) {
 		assert position>=0 && position<=Integer.MAX_VALUE;
 		assert value>=0 && value<=Long.MAX_VALUE;
 		
@@ -97,7 +100,8 @@ public class SequenceInt64 implements DynamicSequence {
 		numelements = (int) Math.max(numelements, position+1);
 	}
 	
-	public void append(long value) {
+	@Override
+    public void append(long value) {
 		assert value>=0 && value<=Long.MAX_VALUE;
 		assert numelements<Long.MAX_VALUE;
 		
@@ -164,7 +168,7 @@ public class SequenceInt64 implements DynamicSequence {
 	@Override
 	public void add(Iterator<Long> iterator) {
 		while (iterator.hasNext()) {
-			long value = iterator.next().longValue();
+			long value = iterator.next();
 			append(value);
 		}
 	}

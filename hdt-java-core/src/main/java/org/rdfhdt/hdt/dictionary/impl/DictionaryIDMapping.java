@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/DictionaryIDMapping.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -37,7 +37,7 @@ import java.util.List;
 public class DictionaryIDMapping {
 	class Entry {
 		int newid;
-		CharSequence str;
+		final CharSequence str;
 		
 		Entry(CharSequence str) {
 			this.str = str;
@@ -45,10 +45,10 @@ public class DictionaryIDMapping {
 		}
 	}
 	
-	List<Entry> list;
+	final List<Entry> list;
 	
 	public DictionaryIDMapping(int numentries) {
-		list = new ArrayList<Entry>(numentries);
+		list = new ArrayList<>(numentries);
 	}
 	
 	public void add(CharSequence str) {

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/BaseTempDictionary.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -46,7 +46,7 @@ import org.rdfhdt.hdt.triples.TempTriples;
  */
 public abstract class BaseTempDictionary implements TempDictionary {
 	
-	HDTOptions spec;
+	final HDTOptions spec;
 	protected boolean isOrganized;
 
 	protected TempDictionarySection subjects; 
@@ -66,13 +66,13 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		switch(position) {
 		case SUBJECT:
 			isOrganized = false;
-			return ((TempDictionarySection)subjects).add(str);
+			return subjects.add(str);
 		case PREDICATE:
 			isOrganized = false;
-			return ((TempDictionarySection)predicates).add(str);			
+			return predicates.add(str);
 		case OBJECT:
 			isOrganized = false;
-			return ((TempDictionarySection)objects).add(str);
+			return objects.add(str);
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -88,7 +88,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 
 			// FIXME: These checks really needed?
 			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
-				((TempDictionarySection)shared).add(str);
+				shared.add(str);
 			}
 		}
 
@@ -96,15 +96,15 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		Iterator<? extends CharSequence> itShared = ((TempDictionarySection)shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
-			((TempDictionarySection)subjects).remove(sharedStr);
-			((TempDictionarySection)objects).remove(sharedStr);
+			subjects.remove(sharedStr);
+			objects.remove(sharedStr);
 		}
 
 		// Sort sections individually
-		((TempDictionarySection)shared).sort();
-		((TempDictionarySection)subjects).sort();
-		((TempDictionarySection)objects).sort();
-		((TempDictionarySection)predicates).sort();
+		shared.sort();
+		subjects.sort();
+		objects.sort();
+		predicates.sort();
 		
 		isOrganized = true;
 
@@ -178,7 +178,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 			return 0;
 		}
 
-		int ret=0;
+		int ret;
 		switch(position) {
 		case SUBJECT:
 			ret = shared.locate(str);

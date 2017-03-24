@@ -31,7 +31,6 @@ import java.util.Map;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
-import org.apache.jena.graph.JenaNodeCreator;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -44,6 +43,8 @@ import org.rdfhdt.hdt.cache.DictionaryCacheArray;
 import org.rdfhdt.hdt.cache.DictionaryCacheLRI;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.rdf.parsers.JenaNodeCreator;
+import org.rdfhdt.hdt.rdf.parsers.JenaNodeFormatter;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 
@@ -106,7 +107,7 @@ public class NodeDictionary {
 	}
 
 	public Node getNode(HDTId hdtid) {
-		return getNode(hdtid.getId(), hdtid.getRole());
+		return getNode(hdtid.getValue(), hdtid.getRole());
 	}
 	
 	public Node getNode(int id, TripleComponentRole role) {
@@ -116,11 +117,11 @@ public class NodeDictionary {
 			char firstChar = str.charAt(0);
 			
 			if(firstChar=='_') {
-				node = JenaNodeCreator.createAnon(str);
+				node = JenaNodeCreator.createAnon(str.toString());
 			} else if(firstChar=='"') {
-				node = JenaNodeCreator.createLiteral(str);
+				node = JenaNodeCreator.createLiteral(str.toString());
 			} else {
-				node = JenaNodeCreator.createURI(str);
+				node = JenaNodeCreator.createURI(str.toString());
 			}
 			
 			cacheIDtoNode[role.ordinal()].put(id, node);
@@ -161,23 +162,8 @@ public class NodeDictionary {
 	public static String nodeToStr(Node node) {
 		if(node==null || node.isVariable()) {
 			return "";
-		}else if(node.isURI()) {
-			return node.getURI();
-		} else if(node.isLiteral()) {
-			RDFDatatype t = node.getLiteralDatatype();
-			
-			if(t==null || XSDDatatype.XSDstring.getURI().equals(t.getURI())) {
-				// String
-				return "\""+node.getLiteralLexicalForm()+"\"";
-			} else if(RDFLangString.rdfLangString.equals(t)) {
-				// Lang
-				return "\""+node.getLiteralLexicalForm()+"\"@"+node.getLiteralLanguage();
 			} else {
-				// Typed
-				return "\""+node.getLiteralLexicalForm()+"\"^^<"+t.getURI()+">";
-			}
-		} else {
-			return node.toString();
+			return JenaNodeFormatter.format(node);
 		}
 	}
 	
@@ -220,7 +206,11 @@ public class NodeDictionary {
 
 	public static int translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
 		if(dictionary==id.getDictionary()) {
+			if (role == id.getRole()) {
 			return id.getValue();
+			} else if (isSO(role) && isSO(id.getRole())) {
+				return id.getValue() <= dictionary.dictionary.getNshared() ? id.getValue() : -1;
+			}
 		}
 		
 		NodeDictionary dict2 = id.getDictionary();
@@ -229,5 +219,7 @@ public class NodeDictionary {
 		return dictionary.getIntID(str.toString(), role);
 	}
 
-
+	private static boolean isSO(TripleComponentRole role) {
+		return role == TripleComponentRole.SUBJECT || role == TripleComponentRole.OBJECT;
+	}
 }

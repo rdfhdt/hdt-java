@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/header/PlainHeader.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -49,15 +49,18 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PlainHeader implements HeaderPrivate, RDFCallback {
+	private static final Logger log = LoggerFactory.getLogger(PlainHeader.class);
 	
-	protected HDTOptions spec;
-	protected List<TripleString> triples= new ArrayList<TripleString>();
+	protected final HDTOptions spec;
+	protected final List<TripleString> triples= new ArrayList<>();
 	
 	public PlainHeader() {
 		spec = new HDTSpecification();
@@ -131,7 +134,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 			RDFParserSimple parser = new RDFParserSimple();
 			parser.doParse(new ByteArrayInputStream(headerData), "http://www.rdfhdt.org", RDFNotation.NTRIPLES, this);
 		} catch (ParserException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new IllegalFormatException("Error parsing header");
 		}
 	}

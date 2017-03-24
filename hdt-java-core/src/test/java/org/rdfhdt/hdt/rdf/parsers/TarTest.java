@@ -1,6 +1,5 @@
 package org.rdfhdt.hdt.rdf.parsers;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 
@@ -17,7 +16,7 @@ public class TarTest {
 //		InputStream input = new CountInputStream(new BufferedInputStream(new GZIPInputStream(new FileInputStream("/Users/mck/rdf/dataset/tgztest.tar.gz"))));
 //		InputStream input = new CountInputStream(new BufferedInputStream(new FileInputStream("/Users/mck/rdf/dataset/tgztest.tar")));
 		final TarArchiveInputStream debInputStream = new TarArchiveInputStream(input);
-		TarArchiveEntry entry = null;
+		TarArchiveEntry entry;
 		
 		NonCloseInputStream nonCloseIn = new NonCloseInputStream(debInputStream);
 

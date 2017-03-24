@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/string/ByteStringUtil.java $
  * Revision: $Rev: 199 $
  * Last modified: $Date: 2013-04-17 23:35:53 +0100 (mi, 17 abr 2013) $
@@ -33,6 +33,8 @@ import java.nio.charset.Charset;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * @author mario.arias
  *
@@ -44,14 +46,14 @@ public class ByteStringUtil {
 	/**
 	 * For use in the project when using String.getBytes() and making Strings from byte[]
 	 */
-	public static final Charset STRING_ENCODING = Charset.forName("UTF-8");
+	public static final Charset STRING_ENCODING = UTF_8;
 	
-	public static final String asString(byte [] buff, int offset) {
+	public static String asString(byte [] buff, int offset) {
 		int len = strlen(buff, offset);
 		return new String(buff, offset, len, STRING_ENCODING);
 	}
 	
-	public static final String asString(ByteBuffer buff, int offset) {
+	public static String asString(ByteBuffer buff, int offset) {
 		int len = strlen(buff, offset);
 		byte [] arr = new byte[len];
 		
@@ -63,7 +65,7 @@ public class ByteStringUtil {
 		return new String(arr, STRING_ENCODING);
 	}
 	
-	public static final int strlen(byte [] buff, int off) {
+	public static int strlen(byte [] buff, int off) {
 		int len = buff.length;
 		int pos = off;
 		while(pos<len && buff[pos]!=0) {
@@ -72,7 +74,7 @@ public class ByteStringUtil {
 		return pos-off;
 	}
 	
-	public static final int strlen(ByteBuffer buf, int base) {
+	public static int strlen(ByteBuffer buf, int base) {
 		int len=0;
 		int n=buf.capacity()-base;
 		while(len<n) {
@@ -84,11 +86,11 @@ public class ByteStringUtil {
 		throw new IllegalArgumentException("Buffer not Null-Terminated");
 	}
 	
-	public static final int longestCommonPrefix(CharSequence str1, CharSequence str2) {
+	public static int longestCommonPrefix(CharSequence str1, CharSequence str2) {
 		return longestCommonPrefix(str1, str2, 0);
 	}
 	
-	public static final int longestCommonPrefix(CharSequence str1, CharSequence str2, int from) {
+	public static int longestCommonPrefix(CharSequence str1, CharSequence str2, int from) {
 		int len = Math.min(str1.length(), str2.length());
 		int delta = from;
 		while(delta<len && str1.charAt(delta)==str2.charAt(delta)) {
@@ -97,7 +99,7 @@ public class ByteStringUtil {
 		return delta-from;
 	}
 	
-	public static final int strcmp(CharSequence str, byte [] buff2, int off2) {
+	public static int strcmp(CharSequence str, byte [] buff2, int off2) {
 		byte [] buff1;
 		int off1;
 		int len1;
@@ -149,14 +151,12 @@ public class ByteStringUtil {
 		return 0;
 	}
 	
-	public static final int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
-		byte [] buf=null;
+	public static int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
+		byte [] buf;
 		int len;
 		
-		if(str instanceof DelayedString) {
-			str = ((DelayedString) str).getInternal();
-		}
-		
+		str = DelayedString.unwrap(str);
+
 		// Isolate array
 		if(str instanceof CompactString) {
 			buf = ((CompactString) str).getData();
@@ -200,7 +200,7 @@ public class ByteStringUtil {
 		}	
 	}
 	
-	public static final int append(CharSequence str, int start, byte [] buffer, int bufpos) {
+	public static int append(CharSequence str, int start, byte [] buffer, int bufpos) {
 		byte [] bytes;
 		int len;
 		
@@ -243,7 +243,7 @@ public class ByteStringUtil {
 		return written;
 	}
 
-	public static final int append(OutputStream out, CharSequence str, int start) throws IOException {
+	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
 		byte [] bytes;
 		int len;
 		

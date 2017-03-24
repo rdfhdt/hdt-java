@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/FourSectionDictionary.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -35,7 +35,6 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
-import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySectionBig;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;

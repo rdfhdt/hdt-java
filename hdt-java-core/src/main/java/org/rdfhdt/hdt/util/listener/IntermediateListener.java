@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/listener/IntermediateListener.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -33,7 +33,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  * Provides notifications by dividing an overall task in subtasks.
  * 
  * Call setRange() with the estimated percent of the overall task that
- * the subtask will take (i.e. 20-40%). Then call the substask providing
+ * the subtask will take (i.e. 20-40%). Then call the subtask providing
  * the IntermediateListener as Callback. The IntermediateListener will translate
  * the notifications of the subtask (in the 0-100 range) to the range supplied (20-40)
  * by using linear interpolation.
@@ -43,7 +43,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  */
 public class IntermediateListener implements ProgressListener {
 
-	private ProgressListener child;
+	private final ProgressListener child;
 	private float min, max;
 	
 	/**

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/hdt/HDTVocabulary.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -82,6 +82,7 @@ public class HDTVocabulary {
 	// Dictionary Types
 	public static final String DICTIONARY_TYPE_PLAIN = HDT_DICTIONARY_BASE+"Plain>";
 	public static final String DICTIONARY_TYPE_FOUR_SECTION = HDT_DICTIONARY_BASE+"Four>";
+	public static final String DICTIONARY_TYPE_FOUR_PSFC_SECTION = HDT_DICTIONARY_BASE+"FourPsfc>";
 
 	// Triples
 	public static final String TRIPLES_TYPE = DUBLIN_CORE+"format>";

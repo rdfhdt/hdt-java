@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -12,6 +11,10 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Parses a RAR file directly, processing each file that contains rdf separately.
@@ -24,7 +27,8 @@ import org.rdfhdt.hdt.rdf.RDFParserFactory;
  */
 
 public class RDFParserRAR implements RDFParserCallback {
-	
+	private static final Logger log = LoggerFactory.getLogger(RDFParserRAR.class);
+
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
 	private static Boolean available;
@@ -65,7 +69,7 @@ public class RDFParserRAR implements RDFParserCallback {
 			ProcessBuilder listProcessBuilder = new ProcessBuilder(cmdList1);
 //			listProcess.redirectInput(tempFile);
 			Process processList = listProcessBuilder.start();
-			BufferedReader reader = new BufferedReader(new InputStreamReader(processList.getInputStream(), Charset.forName("UTF-8")));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(processList.getInputStream(), UTF_8));
 
 			String [] cmdExtract = Arrays.copyOf(cmdExtractFile, cmdExtractFile.length);
 			cmdExtract[3]=rarFile;
@@ -74,11 +78,11 @@ public class RDFParserRAR implements RDFParserCallback {
 			// Read file name from list
 			while ((fileName = reader.readLine()) != null) {
 				// FIXME: Create several processes in background?
-				System.out.println("File: "+fileName);
+				log.info("File: {}", fileName);
 				RDFNotation guessnot = RDFNotation.guess(fileName);
 				if(guessnot!=null) {
 					// Create 
-					System.out.println("Parse from rar: "+fileName+" as "+guessnot);
+					log.info("Parse from rar: {} as {}", fileName, guessnot);
 					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
 
 					cmdExtract[4]=fileName;
@@ -91,7 +95,7 @@ public class RDFParserRAR implements RDFParserCallback {
 					in.close();
 					processExtract.waitFor();
 				} else {
-					System.out.println("Parse from rar "+fileName+": Not suitable parser found.");
+					log.info("Parse from rar {}: No suitable parser found.", fileName);
 				}
 			}
 			
@@ -99,7 +103,7 @@ public class RDFParserRAR implements RDFParserCallback {
 			processList.waitFor();
 
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception parsing file: {}", rarFile, e);
 			throw new ParserException();
 		} 
 	}

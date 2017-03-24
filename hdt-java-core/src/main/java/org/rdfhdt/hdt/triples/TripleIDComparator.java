@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/TripleIDComparator.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -42,7 +42,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 	private static final long serialVersionUID = -8322949509663015732L;
 	
 	/** Determines the order of comparison */
-	private TripleComponentOrder order;
+	private final TripleComponentOrder order;
 	
 	public static Comparator<TripleID> getComparator(TripleComponentOrder order) {
 		if(order==TripleComponentOrder.SPO) {

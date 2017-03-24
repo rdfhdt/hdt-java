@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/FourSectionDictionary.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -90,7 +90,7 @@ public class FourSectionDictionary extends BaseDictionary {
 	@Override
 	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {
 		ci.setType(Type.DICTIONARY);
-		ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
+		ci.setFormat(getType());
 		ci.setInt("elements", this.getNumberOfElements());
 		ci.save(output);
 
@@ -143,7 +143,7 @@ public class FourSectionDictionary extends BaseDictionary {
 	 */
 	@Override
 	public void populateHeader(Header header, String rootNode) {
-		header.insert(rootNode, HDTVocabulary.DICTIONARY_TYPE, HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
+		header.insert(rootNode, HDTVocabulary.DICTIONARY_TYPE, getType());
 //		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMSUBJECTS, getNsubjects());
 //		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMPREDICATES, getNpredicates());
 //		header.insert(rootNode, HDTVocabulary.DICTIONARY_NUMOBJECTS, getNobjects());

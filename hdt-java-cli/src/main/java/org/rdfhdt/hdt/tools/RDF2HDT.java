@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/RDF2HDT.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -106,9 +106,11 @@ public class RDF2HDT implements ProgressListener {
 				notation = RDFNotation.NTRIPLES;
 			}
 		}
-		
+
+		StopWatch sw = new StopWatch();
 		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI,notation , spec, this);
-		
+		System.out.println("File converted in: "+sw.stopAndShow());
+
 		try {
 			// Show Basic stats
 			if(!quiet){
@@ -120,7 +122,7 @@ public class RDF2HDT implements ProgressListener {
 			}
 
 			// Dump to HDT file
-			StopWatch sw = new StopWatch();
+			sw = new StopWatch();
 			hdt.saveToHDT(hdtOutput, this);
 			System.out.println("HDT saved to file in: "+sw.stopAndShow());
 

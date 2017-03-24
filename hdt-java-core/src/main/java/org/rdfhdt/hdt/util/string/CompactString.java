@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/string/CompactString.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -75,6 +75,24 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 
 	private CompactString(byte[] data) {
 		this.data = data;
+	}
+
+	public int indexOf(char ch) {
+		for (int i = 0; i < data.length; i++) {
+			if ((char) (data[i] & 0xff) == ch) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	public int lastIndexOf(char ch) {
+		for (int i = data.length - 1; i >= 0; i--) {
+			if ((char) (data[i] & 0xff) == ch) {
+				return i;
+			}
+		}
+		return -1;
 	}
 
 	@Override

@@ -59,7 +59,7 @@ public class BindingHDTNode extends BindingBase
 
     private List<Var> calcVars()
     {
-        List<Var> vars = new ArrayList<Var>(4) ;
+        List<Var> vars = new ArrayList<>(4) ;
         // Only if not in parent.
         // A (var/value) binding may have been copied down to record it's HDTId.  
         
@@ -109,13 +109,8 @@ public class BindingHDTNode extends BindingBase
             HDTId id = idBinding.get(var) ;
             if ( id == null )
                 return null;
-            
-            Node n = id.getNode();
-            if(n==null) {
-            	n = id.getDictionary().getNode(id);
-            	id.setNode(n);
-            }
-            return n;
+
+            return id.getNode();
         } catch (Exception ex)
         {
             Log.fatal(this, String.format("get1(%s)", var), ex) ;
@@ -132,7 +127,12 @@ public class BindingHDTNode extends BindingBase
             extra = "/"+id ;
         Node node = get(var) ;
 
-        sbuff.append("( ?"+var.getVarName()+extra+" = "+node.toString()+" )") ;
+        sbuff.append("( ?")
+                .append(var.getVarName())
+                .append(extra)
+                .append(" = ")
+                .append(node)
+                .append(" )");
     }
 
 }

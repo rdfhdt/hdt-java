@@ -1,0 +1,7 @@
+# modified 11/1/2016 for HDT to convert the language tag to lowercase
+
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+SELECT ?name ?mbox
+ WHERE { ?x foaf:name  ?name ;
+            foaf:mbox  ?mbox .
+         FILTER ( lang(?name) = "es" ) }

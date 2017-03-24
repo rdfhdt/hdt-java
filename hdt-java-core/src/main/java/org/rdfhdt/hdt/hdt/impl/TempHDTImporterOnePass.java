@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/hdt/impl/TempHDTImporterOnePass.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -52,9 +52,9 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 public class TempHDTImporterOnePass implements TempHDTImporter {
 
 	class TripleAppender implements RDFCallback {
-		TempDictionary dict;
-		TempTriples triples;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final TempTriples triples;
+		final ProgressListener listener;
 		long num;
 		long size;
 
@@ -64,7 +64,8 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			this.listener = listener;
 		}
 
-		public void processTriple(TripleString triple, long pos) {
+		@Override
+        public void processTriple(TripleString triple, long pos) {
 			triples.insert(
 					dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
 					dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
@@ -74,8 +75,8 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
-	};
-	
+	}
+
 	@Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {

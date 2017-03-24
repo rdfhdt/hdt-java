@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/solver/QueryIterHDT.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
@@ -40,7 +40,7 @@ public class QueryIterHDT extends QueryIterPlainWrapper
 {
     // Rename as QueryIterCloseOther?
     final private QueryIterator originalInput ;
-    private List<Abortable> killList ;
+    private final List<Abortable> killList ;
     
     // The original input needs closing as well.
     public QueryIterHDT(Iterator<Binding> iterBinding, List<Abortable> killList , QueryIterator originalInput, ExecutionContext execCxt)

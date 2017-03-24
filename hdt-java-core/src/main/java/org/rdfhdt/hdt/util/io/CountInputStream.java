@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/io/CountInputStream.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -37,7 +37,7 @@ import java.io.InputStream;
 public class CountInputStream extends InputStream {
 	long total;
 	long partial;
-	InputStream in;
+	final InputStream in;
 	
 	long markTotal;
 	long markPartial;

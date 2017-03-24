@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/AdjacencyList.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -35,8 +35,8 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
  *
  */
 public class AdjacencyList {
-	private Sequence array;
-	private Bitmap bitmap;
+	private final Sequence array;
+	private final Bitmap bitmap;
 	
 	/**
 	 * @param array

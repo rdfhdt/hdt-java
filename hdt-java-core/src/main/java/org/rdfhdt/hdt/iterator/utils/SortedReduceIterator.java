@@ -5,8 +5,8 @@ import java.util.NoSuchElementException;
 
 public class SortedReduceIterator<T> implements Iterator<T> {
 	
-	Iterator<T> it;
-	Reducer<T> reducer;
+	final Iterator<T> it;
+	final Reducer<T> reducer;
 	T nextValue;
 	
 	public SortedReduceIterator(Iterator<T> it, Reducer<T> reducer) {

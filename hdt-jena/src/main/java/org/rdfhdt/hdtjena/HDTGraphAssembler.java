@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/HDTGraphAssembler.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
@@ -38,9 +38,12 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.util.graph.GraphUtils;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class HDTGraphAssembler extends AssemblerBase implements Assembler {
+	private static final Logger log = LoggerFactory.getLogger(HDTGraphAssembler.class);
 
 	private static boolean initialized;
 
@@ -70,7 +73,7 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 			HDTGraph graph = new HDTGraph(hdt);
 			return ModelFactory.createModelForGraph(graph);
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Error reading HDT file: {}", file, e);
 			throw new AssemblerException(root, "Error reading HDT file: "+file+" / "+e.toString());
 		}
 	}

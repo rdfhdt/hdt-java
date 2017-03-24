@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/solver/ReorderTransformationHDT.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
@@ -64,7 +64,7 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 	final long TERM_O ;         // Used for ? ? O if no stats
 	final long numTriples ;		// Actual number of triples of the dataset.
 
-	private GraphStatisticsHandler stats;
+	private final GraphStatisticsHandler stats;
     public final StatsMatcher matcher = new StatsMatcher() ;
     
 
@@ -77,9 +77,9 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 				
 		// FIXME: Compute exactly for using the HDT  
 		Dictionary dict = graph.getHDT().getDictionary();
-		TERM_S = dict.getNsubjects()/numTriples;
-		TERM_P = dict.getNpredicates()/numTriples;
-		TERM_O = dict.getNobjects()/numTriples;
+		TERM_S = dict.getNsubjects()/Math.max(numTriples, 1);
+		TERM_P = dict.getNpredicates()/Math.max(numTriples, 1);
+		TERM_O = dict.getNobjects()/Math.max(numTriples, 1);
 	}
 
     private void initializeMatcher () {
@@ -87,7 +87,7 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
         
         //matcher.addPattern(new Pattern(1,   TERM, TERM, TERM)) ;     // SPO - built-in - not needed as a rule
         
-        // Numbers choosen as an approximation for a graph of 10K triples
+        // Numbers chosen as an approximation for a graph of 10K triples
         matcher.addPattern(new Pattern(5,	TERM, TERM, VAR)) ;     // SP?
         matcher.addPattern(new Pattern(1000,VAR, type, TERM)) ;    // ? type O -- worse than ?PO
         matcher.addPattern(new Pattern(90,	VAR,  TERM, TERM)) ;    // ?PO

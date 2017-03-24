@@ -66,10 +66,10 @@ public class HDTSolverLib
     	
         Iterator<BindingHDTId> chain = Iter.map(input, HDTSolverLib.convFromBinding(graph.getNodeDictionary(), execCxt)) ;
         
-        List<Abortable> killList = new ArrayList<Abortable>() ;
+        List<Abortable> killList = new ArrayList<>() ;
         
         // Compute appearances of variables
-        Map<Var, VarAppearance> mapVar = new HashMap<Var, VarAppearance>();
+        Map<Var, VarAppearance> mapVar = new HashMap<>();
         for ( Triple triplePattern : pattern )
         {
         	addVarAppearance(mapVar, triplePattern.getSubject(), TripleComponentRole.SUBJECT);
@@ -84,7 +84,7 @@ public class HDTSolverLib
         }
         
         // Need to make sure the bindings here point to parent.
-        Iterator<Binding> iterBinding = converter.convert(graph.getNodeDictionary(), chain) ;
+        Iterator<Binding> iterBinding = Iter.map(chain, HDTSolverLib::convToBinding) ;
         
         // "input" will be closed by QueryIterHDT but is otherwise unused.
         // "killList" will be aborted on timeout.
@@ -135,8 +135,9 @@ public class HDTSolverLib
 	
 	// Conversions
 	
-    public interface ConvertHDTIdToNode { 
-        Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds) ;
+    /** Transform from HDTId bindings to generic Jena bindings. */
+    public static Binding convToBinding(BindingHDTId binding) {
+        return new BindingHDTNode(binding);
     }
     
     // Transform : BindingHDTId ==> Binding
@@ -152,14 +153,6 @@ public class HDTSolverLib
         } ;
     }
     
-    public final static ConvertHDTIdToNode converter = new ConvertHDTIdToNode(){
-    	@Override
-    	public Iterator<Binding> convert(NodeDictionary dictionary, Iterator<BindingHDTId> iterBindingIds)
-    	{
-    		return Iter.map(iterBindingIds, convToBinding(dictionary)) ;
-    	}
-    } ;
-
     public static Iterator<BindingHDTId> convertToIds(Iterator<Binding> iterBindings, NodeDictionary dictionary, ExecutionContext ctx)
     { 
     	return Iter.map(iterBindings, convFromBinding(dictionary, ctx)) ; 

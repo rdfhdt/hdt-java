@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/DynamicSequence.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -54,5 +54,5 @@ public interface DynamicSequence extends Sequence {
 	 * Trim the internal data structure to fit the actual number of elements. 
 	 * Use advanced algorithm to reduce the size to the minimum, even if it is costly.
 	 */
-	void aggresiveTrimToSize();
+	void aggressiveTrimToSize();
 }

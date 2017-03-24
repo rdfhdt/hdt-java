@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/options/ControlInformation.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -51,23 +51,28 @@ public class ControlInformation extends HDTOptionsBase implements ControlInfo {
 		super();
 	}	
 	
-	public ControlInfo.Type getType() {
+	@Override
+    public ControlInfo.Type getType() {
 		return type;
 	}
 	
-	public void setType(ControlInfo.Type type) {
+	@Override
+    public void setType(ControlInfo.Type type) {
 		this.type = type;
 	}
 	
-	public String getFormat() {
+	@Override
+    public String getFormat() {
 		return format;
 	}
 
-	public void setFormat(String format) {
+	@Override
+    public void setFormat(String format) {
 		this.format = format;
 	}
 
-	public void save(OutputStream output) throws IOException {
+	@Override
+    public void save(OutputStream output) throws IOException {
 		CRCOutputStream out = new CRCOutputStream(output, new CRC16());
 		
 		// Cookie
@@ -92,7 +97,8 @@ public class ControlInformation extends HDTOptionsBase implements ControlInfo {
 		out.writeCRC();
 	}
 	
-	public void load(InputStream input) throws IOException {
+	@Override
+    public void load(InputStream input) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC16());
        
 		// Cookie

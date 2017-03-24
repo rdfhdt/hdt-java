@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/Bitmap375.java $
  * Revision: $Rev: 129 $
  * Last modified: $Date: 2013-01-21 00:08:27 +0000 (lun, 21 ene 2013) $
@@ -148,6 +148,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
 	
+	@Override
 	public void set(long bitIndex, boolean value) {
 		indexUpToDate=false;
 		super.set(bitIndex, value);

@@ -40,12 +40,16 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
+	private static final Logger log = LoggerFactory.getLogger(RDFParserRIOT.class);
+
 	private RDFCallback callback;
 	private TripleString triple = new TripleString();
 	
@@ -77,6 +81,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 		} catch (FileNotFoundException e) {
 			throw new ParserException(e);
 		} catch (Exception e) {
+			log.error("Unexpected exception parsing file: {}", fileName, e);
 			throw new ParserException(e);
 		}	
 	}
@@ -102,7 +107,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					throw new NotImplementedException("Parser not found for format "+notation);	
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new ParserException(e);
 		}	
 	}
@@ -115,13 +120,19 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 
      @Override
      public void triple(Triple parsedTriple) {
-    	 triple.setAll(parsedTriple.getSubject().toString(), parsedTriple.getPredicate().toString(), parsedTriple.getObject().toString());
+             triple.setAll(
+					 JenaNodeFormatter.format(parsedTriple.getSubject()),
+					 JenaNodeFormatter.format(parsedTriple.getPredicate()),
+					 JenaNodeFormatter.format(parsedTriple.getObject()));
     	 callback.processTriple(triple, 0);              
      }
 
      @Override
      public void quad(Quad quad) {
-    	 triple.setAll(quad.getSubject().toString(), quad.getPredicate().toString(), quad.getObject().toString());
+             triple.setAll(
+					 JenaNodeFormatter.format(quad.getSubject()),
+					 JenaNodeFormatter.format(quad.getPredicate()),
+					 JenaNodeFormatter.format(quad.getObject()));
     	 callback.processTriple(triple, 0);              
      }
 

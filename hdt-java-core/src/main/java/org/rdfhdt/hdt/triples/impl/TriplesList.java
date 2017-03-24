@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/impl/TriplesList.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -81,7 +81,7 @@ public class TriplesList implements TempTriples {
 		//precise allocation of the array (minimal memory wasting)
 		long numTriples = RDFInfo.getTriples(specification);
 		numTriples = (numTriples>0)?numTriples:100;
-		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
+		this.arrayOfTriples = new ArrayList<>((int) numTriples);
 
 		//choosing starting(or default) component order
 		String orderStr = specification.get("triplesOrder");
@@ -99,7 +99,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public boolean reallocateIfEmpty(int numTriples){
 		if (arrayOfTriples.isEmpty()) {
-			arrayOfTriples = new ArrayList<TripleID>(numTriples);
+			arrayOfTriples = new ArrayList<>(numTriples);
 			return true;
 		} else {
 			return false;
@@ -219,7 +219,8 @@ public class TriplesList implements TempTriples {
 	 * @param order
 	 *            the order to set
 	 */
-	public void setOrder(TripleComponentOrder order) {
+	@Override
+    public void setOrder(TripleComponentOrder order) {
 		if (this.order.equals(order))
 			return;
 		this.order = order;
@@ -353,7 +354,8 @@ public class TriplesList implements TempTriples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.ordinal() );
 	}
 
-	public String getType() {
+	@Override
+    public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST;
 	}
 
@@ -405,9 +407,9 @@ public class TriplesList implements TempTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public class TriplesListIterator implements IteratorTripleID {
+	public static class TriplesListIterator implements IteratorTripleID {
 
-		private TriplesList triplesList;
+		private final TriplesList triplesList;
 		private int pos;
 
 		public TriplesListIterator(TriplesList triplesList) {
@@ -428,7 +430,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get((int)pos++);
+			return triplesList.arrayOfTriples.get(pos++);
 		}
 
 		/* (non-Javadoc)
@@ -444,7 +446,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get((int)--pos);
+			return triplesList.arrayOfTriples.get(--pos);
 		}
 
 		/* (non-Javadoc)

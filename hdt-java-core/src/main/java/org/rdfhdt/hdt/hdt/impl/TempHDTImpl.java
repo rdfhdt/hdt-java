@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/hdt/impl/TempHDTImpl.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -46,11 +46,11 @@ import org.rdfhdt.hdt.triples.TriplesFactory;
  */
 public class TempHDTImpl implements TempHDT {
 
-	protected Header header;
-	protected TempDictionary dictionary;
-	protected TempTriples triples;
+	protected final Header header;
+	protected final TempDictionary dictionary;
+	protected final TempTriples triples;
 
-	protected String baseUri;
+	protected final String baseUri;
 	
 	protected ModeOfLoading modeOfLoading;
 	protected boolean isOrganized;
@@ -81,7 +81,8 @@ public class TempHDTImpl implements TempHDT {
 		return triples;
 	}
 
-	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
+	@Override
+    public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
 		rawsize += subject.length()+predicate.length()+object.length()+4;
 		this.triples.insert(
 				dictionary.insert(subject, TripleComponentRole.SUBJECT),
@@ -145,7 +146,8 @@ public class TempHDTImpl implements TempHDT {
 		isOrganized = true;
 	}
 	
-	public boolean isOrganized() {
+	@Override
+    public boolean isOrganized() {
 		return isOrganized;
 	}
 

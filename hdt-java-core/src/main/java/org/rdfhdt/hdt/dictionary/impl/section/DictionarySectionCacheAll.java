@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/DictionarySectionCacheAll.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -47,8 +47,8 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 public class DictionarySectionCacheAll implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
-	private DictionarySectionPrivate child;
-	private boolean preload;
+	private final DictionarySectionPrivate child;
+	private final boolean preload;
 	
 	Map<CharSequence, Integer> cacheString;
 	CharSequence [] cacheID; 
@@ -58,7 +58,7 @@ public class DictionarySectionCacheAll implements DictionarySectionPrivate {
 		this.child = child;
 		this.preload = preload;
 		
-		cacheString = new HashMap<CharSequence, Integer>(child.getNumberOfElements()*2);
+		cacheString = new HashMap<>(child.getNumberOfElements() * 2);
 		cacheID = new CharSequence[child.getNumberOfElements()];
 
 		if(preload) {

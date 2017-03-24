@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceLog64.java $
  * Revision: $Rev: 130 $
  * Last modified: $Date: 2013-01-21 00:09:42 +0000 (lun, 21 ene 2013) $
@@ -86,12 +86,12 @@ public class SequenceLog64 implements DynamicSequence {
 	}
 	
 	/** longs required to represent "total" integers of "bitsField" bits each */
-	public static final long numWordsFor(int bitsField, long total) {
+	public static long numWordsFor(int bitsField, long total) {
 		return (bitsField*total+63)/64;
 	}
 	
 	/** Number of bits required for last word */
-	public static final int lastWordNumBits(int bitsField, long total) {
+	public static int lastWordNumBits(int bitsField, long total) {
 		long totalBits = bitsField*total;
 		if(totalBits==0) {
 			return 0;
@@ -100,12 +100,12 @@ public class SequenceLog64 implements DynamicSequence {
 	}
 	
 	/** Number of bits required for last word */
-	public static final int lastWordNumBytes(int bitsField, long total) {
+	public static int lastWordNumBytes(int bitsField, long total) {
 		return ((lastWordNumBits(bitsField, total)-1)/8)+1;	// +1 To have output in the range 1-8, -1 to compensate.
 	}
 
 	/** Number of bytes required to represent n integers of e bits each */
-	public static final long numBytesFor(int bitsField, long total) {
+	public static long numBytesFor(int bitsField, long total) {
 		return (bitsField*total+7)/8;
 	}
 
@@ -114,7 +114,7 @@ public class SequenceLog64 implements DynamicSequence {
      * @param bitsField Length in bits of each field
      * @param index Position to be retrieved
      */
-	private static final long getField(long [] data, int bitsField, long index) {
+	private static long getField(long [] data, int bitsField, long index) {
 		if(bitsField==0) return 0;
 		
         long bitPos = index*bitsField;
@@ -136,7 +136,7 @@ public class SequenceLog64 implements DynamicSequence {
      * @param index Position to store in
      * @param value Value to be stored
      */
-	private static final void setField(long [] data, int bitsField, long index, long value) {
+	private static void setField(long [] data, int bitsField, long index, long value) {
 		if(bitsField==0) return;
 		
 		long bitPos = index*bitsField;
@@ -152,7 +152,7 @@ public class SequenceLog64 implements DynamicSequence {
 		}
 	}
 	
-	private final void resizeArray(int size) {
+	private void resizeArray(int size) {
 		data = Arrays.copyOf(data, size);
 	}
 	
@@ -168,7 +168,7 @@ public class SequenceLog64 implements DynamicSequence {
 		
 		// Count and calculate number of bits needed per element.
 		while(elements.hasNext()) {
-			long val = elements.next().longValue();
+			long val = elements.next();
 			max = val>max ? val : max;
 			numentries++;
 		}
@@ -181,7 +181,7 @@ public class SequenceLog64 implements DynamicSequence {
         // Save
         int count = 0;
         while(elements.hasNext()) {
-        	long element = elements.next().longValue();
+        	long element = elements.next();
         	assert element<=maxvalue;
         	setField(data, numbits, count, element);
         	count++;
@@ -226,14 +226,16 @@ public class SequenceLog64 implements DynamicSequence {
 		return getField(data, numbits, position);
 	}
 	
-	public void set(long position, long value) {
+	@Override
+    public void set(long position, long value) {
 		if(value<0 || value>maxvalue) {
 			throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
 		}
 		setField(data, numbits, position, value);
 	}
 	
-	public void append(long value) {
+	@Override
+    public void append(long value) {
 
 		assert numentries<Integer.MAX_VALUE;
 		
@@ -250,7 +252,8 @@ public class SequenceLog64 implements DynamicSequence {
 		numentries++;
 	}
 	
-	public void aggresiveTrimToSize() {
+	@Override
+    public void aggressiveTrimToSize() {
 		long max = 0;
 		// Count and calculate number of bits needed per element.
 		for(int i=0; i<numentries; i++) {
@@ -274,7 +277,8 @@ public class SequenceLog64 implements DynamicSequence {
 
 	}
 	
-	public void trimToSize() {
+	@Override
+    public void trimToSize() {
 		resizeArray((int)numWordsFor(numbits, numentries));
 	}
 	

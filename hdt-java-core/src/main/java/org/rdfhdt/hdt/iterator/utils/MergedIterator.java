@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/iterator/MergedIterator.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -40,12 +40,13 @@ import java.util.Iterator;
  *
  */
 public class MergedIterator<T> implements Iterator<T> {
-	private Iterator<T> left, right;
+	private final Iterator<T> left;
+	private final Iterator<T> right;
 	private T currentLeft, currentRight;
-	private Comparator<T> comparator;
-	private Annotator<T> annotator;
+	private final Comparator<T> comparator;
+	private final Annotator<T> annotator;
 	
-	public static enum Pos {
+	public enum Pos {
 		LEFT,
 		RIGHT,
 		BOTH

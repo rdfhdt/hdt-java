@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/hdt/impl/TempHDTImporterTwoPass.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -51,8 +51,8 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 	class DictionaryAppender implements RDFCallback {
 
-		TempDictionary dict;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final ProgressListener listener;
 		long count;
 
 		DictionaryAppender(TempDictionary dict, ProgressListener listener) {
@@ -72,18 +72,18 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 		public long getCount() {
 			return count;
 		}
-	};
+	}
 
-	/**
+    /**
 	 * Warning: different from HDTConverterOnePass$TripleAppender
 	 * This one uses dict.stringToID, the other uses dict.insert
 	 * @author mario.arias
 	 *
 	 */
 	class TripleAppender2 implements RDFCallback {
-		TempDictionary dict;
-		TempTriples triples;
-		ProgressListener listener;
+		final TempDictionary dict;
+		final TempTriples triples;
+		final ProgressListener listener;
 		long count;
 
 		public TripleAppender2(TempDictionary dict, TempTriples triples, ProgressListener listener) {
@@ -92,7 +92,8 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 			this.listener = listener;
 		}
 
-		public void processTriple(TripleString triple, long pos) {
+		@Override
+        public void processTriple(TripleString triple, long pos) {
 			triples.insert(
 					dict.stringToId(triple.getSubject(), TripleComponentRole.SUBJECT),
 					dict.stringToId(triple.getPredicate(), TripleComponentRole.PREDICATE),
@@ -101,9 +102,9 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 			count++;
 			ListenerUtil.notifyCond(listener, "Generating triples "+count+" triples processed.", count, 0, 100);
 		}
-	};
+	}
 
-	@Override
+    @Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws IOException, ParserException {
 		
@@ -122,8 +123,8 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 		// Create Modifiable Instance and parser
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.TWO_PASS);
-		TempDictionary dictionary = (TempDictionary)modHDT.getDictionary();
-		TempTriples triples = (TempTriples)modHDT.getTriples();
+		TempDictionary dictionary = modHDT.getDictionary();
+		TempTriples triples = modHDT.getTriples();
 
 		// Load RDF in the dictionary
 		dictionary.startProcessing();

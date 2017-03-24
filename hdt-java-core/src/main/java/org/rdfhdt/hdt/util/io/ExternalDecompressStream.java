@@ -1,10 +1,14 @@
 package org.rdfhdt.hdt.util.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class ExternalDecompressStream extends InputStream {
+	private static final Logger log = LoggerFactory.getLogger(ExternalDecompressStream.class);
 
 	private InputStream in;
 	private Process process;
@@ -65,7 +69,7 @@ public class ExternalDecompressStream extends InputStream {
 		    process.getOutputStream().close();
 		    process.getErrorStream().close(); 
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 	}
 

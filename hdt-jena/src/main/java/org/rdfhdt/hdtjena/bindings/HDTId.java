@@ -9,21 +9,25 @@ public class HDTId {
 	
 	private final int id;
 	private final TripleComponentRole role;	// SUBJECT / PREDICATE / OBJECT
+	private final NodeDictionary dict;
 	private Node node;		// Caches the associated Node
-	private NodeDictionary dict;
-	
+
 	public HDTId(int id, TripleComponentRole role, NodeDictionary dict) {
-		super();
 		this.id = id;
 		this.role = role;
-		this.node = null;
 		this.dict = dict;
 	}
-	
+
+	/** "Does not exist" id.  Guaranteed to be not equal to any other HDTId. */
+	public HDTId(Node node) {
+		this(-1, null, null);
+		this.node = node;
+	}
+
 	public NodeDictionary getDictionary() {
 		return dict;
 	}
-	
+
 	public int getValue() {
 		return id;
 	}
@@ -38,14 +42,23 @@ public class HDTId {
 	}
 	
 	public Node getNode() {
+		if (node == null) {
+			node = dict.getNode(id, role);
+		}
 		return node;
 	}
-	
-	public void setNode(Node n) {
-		this.node = n;
+
+	public boolean exists() {
+		return id != -1;
 	}
 
-	public int getId() {
-		return id;
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof HDTId)) {
+			return false;
+		}
+		HDTId hdtId = (HDTId) obj;
+		return exists() && hdtId.exists() &&
+				id == NodeDictionary.translate(dict, hdtId, role);
 	}
 }

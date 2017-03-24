@@ -11,7 +11,7 @@ import java.io.InputStream;
  */
 public class SkipReadInputStream extends InputStream {
 	
-	private InputStream in;
+	private final InputStream in;
 	
 	/**
 	 * @param parent
@@ -36,7 +36,7 @@ public class SkipReadInputStream extends InputStream {
 	}
 
 	private static final int BUF_SIZE = 16384;
-	private static byte [] buf = new byte[BUF_SIZE];		
+	private static final byte [] buf = new byte[BUF_SIZE];
 	
 	@Override
 	public long skip(long n) throws IOException {

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/HashDictionarySection.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -60,8 +60,8 @@ public class HashDictionarySection implements TempDictionarySection {
 	}
 	
 	public HashDictionarySection(HDTOptions spec) {
-		map = new HashMap<CharSequence, Integer>();
-		list = new ArrayList<CharSequence>();
+		map = new HashMap<>();
+		list = new ArrayList<>();
 		size=0;
 	}
 	
@@ -75,7 +75,7 @@ public class HashDictionarySection implements TempDictionarySection {
 		if(val==null) {
 			return 0;
 		}
-		return val.intValue();
+		return val;
 	}
 
 	/* (non-Javadoc)
@@ -121,7 +121,8 @@ public class HashDictionarySection implements TempDictionarySection {
 		return list.iterator();
 	}
 
-	public int add(CharSequence entry) {
+	@Override
+    public int add(CharSequence entry) {
 		CharSequence compact = new CompactString(entry);
 		Integer pos = map.get(compact);
 		if(pos!=null) {
@@ -139,14 +140,16 @@ public class HashDictionarySection implements TempDictionarySection {
 		return list.size();
 	}
 
-	public void remove(CharSequence seq) {
+	@Override
+    public void remove(CharSequence seq) {
 		map.remove(seq);
 		sorted = false;
 	}
 	
-	public void sort() {
+	@Override
+    public void sort() {
 		// Update list.
-		list = new ArrayList<CharSequence>(map.size());
+		list = new ArrayList<>(map.size());
 		for(CharSequence str : map.keySet()) {
 			list.add(str);
 		}

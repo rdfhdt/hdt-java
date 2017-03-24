@@ -5,12 +5,11 @@ import java.util.Iterator;
 
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.util.io.IOUtil;
 
 
 public class HDTEnsureDictionaryOrder {
 
-	private static Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
+	private static final Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
 
 	private static void print(byte[] arr) {
 		for (int i = 0; i < arr.length; i++) {

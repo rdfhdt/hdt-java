@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/iterator/SequentialSearchIteratorTripleID.java $
  * Revision: $Rev: 196 $
  * Last modified: $Date: 2013-04-12 10:34:20 +0100 (vie, 12 abr 2013) $
@@ -39,8 +39,11 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class SequentialSearchIteratorTripleID implements IteratorTripleID {
-	private TripleID pattern, nextTriple, previousTriple, returnTriple;
-	IteratorTripleID iterator;
+	private final TripleID pattern;
+    private final TripleID nextTriple;
+    private TripleID previousTriple;
+    private final TripleID returnTriple;
+	final IteratorTripleID iterator;
 	boolean hasMoreTriples, hasPreviousTriples;
 	boolean goingUp;
 	

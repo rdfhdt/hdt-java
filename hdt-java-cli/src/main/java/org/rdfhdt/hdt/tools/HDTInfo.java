@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/HDTInfo.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -30,6 +30,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
@@ -40,7 +41,6 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
 
 /**
  * @author mario.arias
@@ -48,7 +48,7 @@ import com.beust.jcommander.internal.Lists;
  */
 public class HDTInfo {
 	@Parameter(description = "<HDT File>")
-	public List<String> parameters = Lists.newArrayList();
+	public List<String> parameters = new ArrayList<>();
 
 	@Parameter(names = "-version", description = "Prints the HDT version number")
 	public static boolean showVersion;

@@ -1,6 +1,6 @@
 package org.rdfhdt.hdt.hdt.impl;
 /**
- * Enumeration for specifing the mode of loading of a
+ * Enumeration for specifying the mode of loading of a
  * TempHDT from RDF
  * @author Eugen
  *

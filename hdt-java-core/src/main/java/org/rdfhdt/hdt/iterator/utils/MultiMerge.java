@@ -5,11 +5,11 @@ import java.util.Iterator;
 import java.util.PriorityQueue;
 
 public class MultiMerge<T> implements Iterator<T> {
-	PriorityQueue<Source<T>> queue = new PriorityQueue<>();
+	final PriorityQueue<Source<T>> queue = new PriorityQueue<>();
 
 	private static class Source<T> implements Comparable<Source<T>>{
-		Comparator<T> comparator;
-		Iterator<T> it;
+		final Comparator<T> comparator;
+		final Iterator<T> it;
 		T entry;
 		
 		Source(Iterator<T> it, Comparator<T> comparator) {
@@ -28,7 +28,7 @@ public class MultiMerge<T> implements Iterator<T> {
 
 		@Override
 		public int compareTo(Source<T> o) {
-			return comparator.compare(this.entry, (T) o.entry);
+			return comparator.compare(this.entry, o.entry);
 		}
 		
 		
@@ -39,7 +39,7 @@ public class MultiMerge<T> implements Iterator<T> {
 			Iterator<T> inner = it.next();
 			
 			if(inner.hasNext()) {
-				Source<T> s = new Source<T>(inner, comparator);
+				Source<T> s = new Source<>(inner, comparator);
 				if(s.read()) {
 					queue.add(s);
 				}

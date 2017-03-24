@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/impl/BitmapTriplesIteratorZ.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -39,9 +39,10 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class BitmapTriplesIteratorZ implements IteratorTripleID {
-	private BitmapTriples triples;
-	private TripleID pattern, returnTriple;
-	private int patZ;
+	private final BitmapTriples triples;
+	private final TripleID pattern;
+    private final TripleID returnTriple;
+	private final int patZ;
 	
 	private AdjacencyList adjY, adjZ;
 	long posZ;

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/exceptions/NotFoundException.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -40,5 +40,11 @@ public class NotFoundException extends Exception {
 	
 	public NotFoundException(String reason) {
 		super(reason);
+	}
+
+	@Override
+	public Throwable fillInStackTrace() {
+		// Do nothing, otherwise this becomes a performance bottleneck during search
+		return this;
 	}
 }

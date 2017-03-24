@@ -1,0 +1,7 @@
+@prefix : <http://example/vocab#> .
+
+# uris were carefully chosen such that the HDT id of subject != predicate so testing whether
+# 'subject == predicate' requires more than simply comparing the numeric HDT ids.
+
+:q :q :q .
+:x :p :x .

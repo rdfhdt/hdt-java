@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/DictionarySectionCachePerThread.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -48,7 +48,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 public class DictionarySectionCachePerThread implements DictionarySectionPrivate {
 	
 	final int CACHE_ENTRIES = 128;
-	private DictionarySectionPrivate child;
+	private final DictionarySectionPrivate child;
 	
 	private ThreadLocal<Map<CharSequence,Integer>> cacheString =
 			new ThreadLocal<Map<CharSequence,Integer>>() {
@@ -62,8 +62,8 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
-				};
-	};
+				}
+            };
 	
 	private ThreadLocal<Map<Integer,CharSequence>> cacheID =
 			new ThreadLocal<Map<Integer,CharSequence>>() {
@@ -77,8 +77,8 @@ public class DictionarySectionCachePerThread implements DictionarySectionPrivate
 					        return size() > CACHE_ENTRIES;
 					    }
 					};
-				};
-	};
+				}
+            };
 	
 	public DictionarySectionCachePerThread(DictionarySectionPrivate child) {
 		this.child = child;

@@ -11,7 +11,6 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.rdfhdt.hdt.util.io.IOUtil;
 
 public class BitSequence375Test {
 	final static int num=10000;

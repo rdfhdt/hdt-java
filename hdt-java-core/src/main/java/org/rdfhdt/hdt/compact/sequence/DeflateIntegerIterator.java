@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/DeflateIntegerIterator.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -27,6 +27,9 @@
 
 package org.rdfhdt.hdt.compact.sequence;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -39,8 +42,9 @@ import java.util.zip.InflaterInputStream;
  *
  */
 public class DeflateIntegerIterator implements Iterator<Integer> {
+	private static final Logger log = LoggerFactory.getLogger(DeflateIntegerIterator.class);
 
-	protected List<byte[]> buffer;
+	protected final List<byte[]> buffer;
 	protected DataInputStream stream;
 	int current, next;
 	
@@ -77,8 +81,7 @@ public class DeflateIntegerIterator implements Iterator<Integer> {
 				next = -1;
 			}
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+			log.error("Unexpected exception.", e1);
 		}
 	}
 	

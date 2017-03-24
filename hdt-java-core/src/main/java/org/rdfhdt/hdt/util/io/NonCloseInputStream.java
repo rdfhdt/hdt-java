@@ -14,7 +14,7 @@ import java.io.InputStream;
 
 public class NonCloseInputStream extends InputStream {
 	
-	private InputStream in;
+	private final InputStream in;
 	
 	/**
 	 * @param parent

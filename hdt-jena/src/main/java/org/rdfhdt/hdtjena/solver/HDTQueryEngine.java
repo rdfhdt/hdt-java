@@ -46,7 +46,7 @@ public class HDTQueryEngine extends QueryEngineMain {
     // Query engine factory.
     // Call HDTQueryEngine.register() to add to the global query engine registry. 
 
-    static QueryEngineFactory factory = new HDTQueryEngineFactory() ;
+    static final QueryEngineFactory factory = new HDTQueryEngineFactory() ;
 
     static public QueryEngineFactory getFactory() { 
     	return factory;
@@ -82,7 +82,7 @@ public class HDTQueryEngine extends QueryEngineMain {
     	@Override
     	public Plan create(Op op, DatasetGraph dataset, Binding inputBinding, Context context) {
     		// Should not be called because accept/Op is false
-    		throw new ARQInternalErrorException("HDTQueryEngine: factory calleddirectly with an algebra expression");
+    		throw new ARQInternalErrorException("HDTQueryEngine: factory called directly with an algebra expression");
     	}
     }
 }

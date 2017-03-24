@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceLog64Map.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -29,10 +29,8 @@ package org.rdfhdt.hdt.compact.sequence;
 
 import java.io.BufferedInputStream;
 import java.io.Closeable;
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -172,7 +170,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		in.close();
 	}
 	
-	private final long getWord(long w) {
+	private long getWord(long w) {
 		if(w==numwords-1) {
 			return lastword;
 		}

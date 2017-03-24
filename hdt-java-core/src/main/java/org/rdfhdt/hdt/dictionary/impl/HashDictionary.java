@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/HashDictionary.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -73,7 +73,7 @@ public class HashDictionary extends BaseTempDictionary {
 			
 			// GENERATE SHARED at the same time
 			if(str.length()>0 && str.charAt(0)!='"' && objects.locate(str)!=0) {
-				((TempDictionarySection)shared).add(str);
+				shared.add(str);
 			}
 		}
 		//System.out.println("Num shared: "+shared.getNumberOfElements()+" in "+st.stopAndShow());
@@ -97,17 +97,17 @@ public class HashDictionary extends BaseTempDictionary {
 		Iterator<? extends CharSequence> itShared = ((TempDictionarySection) shared).getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
-			((TempDictionarySection)subjects).remove(sharedStr);
-			((TempDictionarySection)objects).remove(sharedStr);
+			subjects.remove(sharedStr);
+			objects.remove(sharedStr);
 		}
 		//System.out.println("Mapping generated in "+st.stopAndShow());
 		
 		// Sort sections individually
 		st.reset();
-		((TempDictionarySection)subjects).sort();
-		((TempDictionarySection)predicates).sort();
-		((TempDictionarySection)objects).sort();
-		((TempDictionarySection)shared).sort();
+		subjects.sort();
+		predicates.sort();
+		objects.sort();
+		shared.sort();
 		//System.out.println("Sections sorted in "+ st.stopAndShow());
 		
 		// Update mappings with new IDs

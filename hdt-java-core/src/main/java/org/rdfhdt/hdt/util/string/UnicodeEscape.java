@@ -236,7 +236,7 @@ public class UnicodeEscape {
     }
 
     /**
-     * Converts a decimal value to a hexadecimal string represention
+     * Converts a decimal value to a hexadecimal string representation
      * of the specified length.
      * 
      * @param decimal A decimal value.

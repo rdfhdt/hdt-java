@@ -21,7 +21,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 public class CRC16 implements CRC {
 	int crc16;
 	
-	private static short[] crc16_table = {
+	private static final short[] crc16_table = {
 	    (short)0x0000, (short)0xc0c1, (short)0xc181, (short)0x0140, (short)0xc301, (short)0x03c0, (short)0x0280, (short)0xc241,
 	    (short)0xc601, (short)0x06c0, (short)0x0780, (short)0xc741, (short)0x0500, (short)0xc5c1, (short)0xc481, (short)0x0440,
 	    (short)0xcc01, (short)0x0cc0, (short)0x0d80, (short)0xcd41, (short)0x0f00, (short)0xcfc1, (short)0xce81, (short)0x0e40,

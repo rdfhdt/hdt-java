@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/enums/RDFNotation.java $
  * Revision: $Rev: 17 $
  * Last modified: $Date: 2012-07-03 21:43:15 +0100 (mar, 03 jul 2012) $

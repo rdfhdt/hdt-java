@@ -30,7 +30,7 @@ public class IteratorConcat<T> implements Iterator<T>
     // No - we don't really need IteratorCons and IteratorConcat
     // Historical.
     
-    private List<Iterator<T>> iterators = new ArrayList<Iterator<T>>(); 
+    private final List<Iterator<T>> iterators = new ArrayList<>();
     int idx = -1 ;
     private Iterator<T> current;
     private Iterator<T> removeFrom;
@@ -40,7 +40,7 @@ public class IteratorConcat<T> implements Iterator<T>
     {
         if (iter2 == null) return iter1 ;
         if (iter1 == null) return iter2 ;
-        IteratorConcat<T> c = new IteratorConcat<T>() ;
+        IteratorConcat<T> c = new IteratorConcat<>() ;
         c.add(iter1) ;
         c.add(iter2) ;
         return c ;

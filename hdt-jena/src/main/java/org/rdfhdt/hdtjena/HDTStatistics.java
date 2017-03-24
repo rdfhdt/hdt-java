@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/HDTStatistics.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
@@ -65,6 +65,7 @@ public class HDTStatistics implements GraphStatisticsHandler {
 			if(subject.isVariable() && predicate.isVariable() && object.isVariable()) {
 				return triples.getNumberOfElements();
 			}
+
 
 			int s, p, o;
 			s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);

@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/StopWatchCpu.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -31,7 +31,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
 
 public class StopWatchCpu extends StopWatch {
-	private static ThreadMXBean threadData;
+	private static final ThreadMXBean threadData;
 	
 	static {
 		threadData = ManagementFactory.getThreadMXBean();
@@ -42,11 +42,13 @@ public class StopWatchCpu extends StopWatch {
 		reset();
 	}
 
-	public void reset() {
+	@Override
+    public void reset() {
 		ini = end = threadData.getCurrentThreadCpuTime()/1000;
 	}
 
-	public void stop() {
+	@Override
+    public void stop() {
 		end = threadData.getCurrentThreadCpuTime()/1000;
 	}
 }

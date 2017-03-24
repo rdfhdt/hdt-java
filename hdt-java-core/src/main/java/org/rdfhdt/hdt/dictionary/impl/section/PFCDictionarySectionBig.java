@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/PFCDictionarySectionBig.java $
  * Revision: $Rev: 194 $
  * Last modified: $Date: 2013-03-04 21:30:01 +0000 (lun, 04 mar 2013) $
@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.dictionary.impl.section;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,6 +54,8 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Implementation of Plain Front Coding that divides the data in different arrays, therefore
@@ -67,6 +68,8 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
  *
  */
 public class PFCDictionarySectionBig implements DictionarySectionPrivate {
+	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionBig.class);
+
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	public static final int BLOCK_PER_BUFFER = 1000000;
@@ -92,7 +95,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	@Override
 	public void load(TempDictionarySection other, ProgressListener listener) {
 		this.blocks = new SequenceLog64Big(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
-		System.out.println("numbits:"+BitUtil.log2(other.size()));
+		log.info("numbits:{}", BitUtil.log2(other.size()));
 		Iterator<? extends CharSequence> it = other.getSortedEntries();		
 		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
 		
@@ -106,22 +109,15 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		this.numstrings = 0;
 		
 		filecounter++;
-		String name = ".test"+filecounter+".tmp";
-		File file = new File(name);
-		FileOutputStream out=null;
+		File file;
+		FileOutputStream out;
 		
-			try {
-				if (!file.exists()) {
-					file.createNewFile();
-				}
-				out = new FileOutputStream(file);
-			} catch (FileNotFoundException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+		try {
+			file = File.createTempFile("test", ".tmp");
+			out = new FileOutputStream(file);
+		} catch (IOException e) {
+			throw new RuntimeException("Error creating temporary file.", e);
+		}
 		
 		long byteoutsize = 0;
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);		
@@ -166,13 +162,13 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			//blocks.append(byteOut.size());
 			blocks.append(byteoutsize);
 			// Trim text/blocks
-			blocks.aggresiveTrimToSize();
+			blocks.aggressiveTrimToSize();
 			
 			byteOut.flush();
 			byteOut.writeTo(out);
 			out.close();
 			
-			InputStream in = new FileInputStream(name);
+			InputStream in = new FileInputStream(file);
 			// Read block by block
 			// Read packed data
 			
@@ -190,7 +186,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 				long nextBytePos = blocks.get(nextBlock);
 				
-				//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+				//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 				data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
 				
 				posFirst[buffer] = bytePos;
@@ -204,15 +200,14 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			
 			
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 		finally {
 			try {
 				out.close();
 				file.delete();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				log.error("Unexpected exception.", e);
 			}
 		}
 	}
@@ -282,7 +277,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	
 		ReplazableString tempString = new ReplazableString();
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		int idInBlock = 0;
 		int cshared=0;
 		
@@ -353,11 +348,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		// Copy first string
  		int len = ByteStringUtil.strlen(block, pos);
 		
-		Mutable<Long> delta = new Mutable<Long>(0L);
+		Mutable<Long> delta = new Mutable<>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(block, pos, len);
 		
-		// Copy strings untill we find our's.
+		// Copy strings until we find our's.
 		for(int i=0;i<nstring;i++) {
 			pos+=len+1;
 			pos += VByte.decode(block, pos, delta);
@@ -426,7 +421,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			datasize = data[i].length+ datasize;
 			
 		}
-		System.out.println("datasize:"+datasize);		
+		log.info("datasize:{}", datasize);
 		VByte.encode(out, datasize);
 		VByte.encode(out, blocksize);				
 		out.writeCRC();
@@ -483,7 +478,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 			long nextBytePos = blocks.get(nextBlock);
 			
-			//System.out.println("Loding block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
+			//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 			data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
 			
 			posFirst[buffer] = bytePos;

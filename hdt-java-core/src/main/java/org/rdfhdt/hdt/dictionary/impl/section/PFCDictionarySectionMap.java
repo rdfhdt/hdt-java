@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/section/PFCDictionarySection.java $
  * Revision: $Rev: 94 $
  * Last modified: $Date: 2012-11-20 23:44:36 +0000 (mar, 20 nov 2012) $
@@ -57,12 +57,16 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeable {
+	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionMap.class);
+
 	public static final int TYPE_INDEX = 2;
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	
@@ -75,8 +79,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected Sequence blocks;
 	protected long dataSize;
 
-	private File f;
-	private long startOffset, endOffset;
+	private final File f;
+	private final long startOffset;
+    private long endOffset;
 
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
 		this.f = f;
@@ -250,7 +255,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			}
 			return 0;
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			return 0;
 		}
 	}
@@ -283,7 +288,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			}
 			return new CompactString(tempString).getDelayed();
 		} catch (IOException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			return null;
 		}
 	}
@@ -312,7 +317,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return new Iterator<CharSequence>() {
 			int id;
 
-			ReplazableString tempString = new ReplazableString();
+			final ReplazableString tempString = new ReplazableString();
 			int bytebufferIndex;
 			ByteBuffer buffer = buffers[0].duplicate();
 

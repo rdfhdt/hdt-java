@@ -36,7 +36,7 @@ public class IterAbortable<T> extends IteratorWrapper<T> implements Abortable {
 	{
 		if ( killList == null )
 			return iter ;
-		IterAbortable<T> k = new IterAbortable<T>(iter) ;
+		IterAbortable<T> k = new IterAbortable<>(iter) ;
 		killList.add(k) ;
 		return k ;
 	}

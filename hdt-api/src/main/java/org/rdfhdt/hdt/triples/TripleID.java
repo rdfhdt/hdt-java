@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/triples/TripleID.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -221,7 +221,15 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-	
+
+	/**
+	 * Checks whether any of the components of the triple are "no match" (-1).
+	 * @return
+	 */
+	public boolean isNoMatch() {
+		return subject == -1 || predicate == -1 || object == -1;
+	}
+
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
 	 * @return

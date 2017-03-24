@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/io/IOUtil.java $
  * Revision: $Rev: 194 $
  * Last modified: $Date: 2013-03-04 21:30:01 +0000 (lun, 04 mar 2013) $
@@ -200,7 +200,7 @@ public class IOUtil {
 	 * @return
 	 * @throws IOException
 	 */
-	public static final long readLong(InputStream input) throws IOException {
+	public static long readLong(InputStream input) throws IOException {
 		int n = 0;
 		byte[] readBuffer = new byte[8];
 		while (n < 8) {
@@ -279,7 +279,7 @@ public class IOUtil {
 	 * @param listener
 	 * @return
 	 */
-	public static final byte[] readBuffer(InputStream input, int length, ProgressListener listener) throws IOException {
+	public static byte[] readBuffer(InputStream input, int length, ProgressListener listener) throws IOException {
 		int nRead;
 		int pos=0;
 		byte[] data = new byte[length];
@@ -314,12 +314,12 @@ public class IOUtil {
 		return str;
 	}
 
-	public static final void printBitsln(long val, int bits) {
+	public static void printBitsln(long val, int bits) {
 		printBits(val, bits);
 		System.out.println();
 	}
 
-	public static final void printBits(long val, int bits) {
+	public static void printBits(long val, int bits) {
 		while(bits-- != 0) {
 			System.out.print( ((val>>>bits) & 1) !=0 ? '1' : '0');
 		}

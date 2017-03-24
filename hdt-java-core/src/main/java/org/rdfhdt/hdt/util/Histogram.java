@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL$
  * Revision: $Rev$
  * Last modified: $Date$
@@ -32,10 +32,10 @@ import java.io.PrintStream;
 
 public class Histogram {
 	int[] data;
-	int numBands;
+	final int numBands;
 	double maxObservedValue;
 	double minObservedValue;
-	double maxVal; // For intervals
+	final double maxVal; // For intervals
 	double total;
 	long totalLong;
 	long number;

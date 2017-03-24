@@ -63,12 +63,16 @@ import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class BitmapTriples implements TriplesPrivate {
+	private static final Logger log = LoggerFactory.getLogger(BitmapTriples.class);
+
 	protected TripleComponentOrder order=TripleComponentOrder.SPO;
 	
 	protected Sequence seqY, seqZ, indexZ, predicateCount;
@@ -193,7 +197,7 @@ public class BitmapTriples implements TriplesPrivate {
 			bitZ.append(true);
 		}
 		
-		vectorY.aggresiveTrimToSize();
+		vectorY.aggressiveTrimToSize();
 		vectorZ.trimToSize();
 		
 		// Assign local variables to BitmapTriples Object
@@ -233,6 +237,11 @@ public class BitmapTriples implements TriplesPrivate {
 		if(isClosed) {
 			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
 		}
+		
+		if (getNumberOfElements() == 0 || pattern.isNoMatch()) {
+			return new EmptyTriplesIterator(order);
+		}
+		
 		
 		TripleID reorderedPat = new TripleID(pattern);
 		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
@@ -413,7 +422,7 @@ public class BitmapTriples implements TriplesPrivate {
 			maxCount = count>maxCount ? count : maxCount;
 			objectCount.set(val-1, count);
 		}
-		System.out.println("Count Objects in " + st.stopAndShow() + " Max was: " + maxCount);
+		log.info("Count Objects in {} Max was: {}", st.stopAndShow(), maxCount);
 		st.reset();
 
 		// Calculate bitmap that separates each object sublist.
@@ -424,7 +433,7 @@ public class BitmapTriples implements TriplesPrivate {
 			bitmapIndex.set(tmpCount-1, true);
 		}
 		bitmapIndex.set(seqZ.getNumberOfElements()-1, true);
-		System.out.println("Bitmap in " + st.stopAndShow());
+		log.info("Bitmap in {}", st.stopAndShow());
 		objectCount=null;
 		st.reset();
 
@@ -445,7 +454,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 				objectArray.set(insertBase+insertOffset, posY);
 		}
-		System.out.println("Object references in " + st.stopAndShow());
+		log.info("Object references in {}", st.stopAndShow());
 		objectInsertedCount=null;
 		st.reset();
 
@@ -507,7 +516,7 @@ public class BitmapTriples implements TriplesPrivate {
 			object++;
 		} while(object<=numDifferentObjects);
 
-		System.out.println("Sort object sublists in "+st.stopAndShow());
+		log.info("Sort object sublists in {}", st.stopAndShow());
 		st.reset();
 
 		// Count predicates
@@ -525,7 +534,7 @@ public class BitmapTriples implements TriplesPrivate {
 			predCount.set(val-1, predCount.get(val-1)+1);
 		}
 		predCount.trimToSize();
-		System.out.println("Count predicates in "+st.stopAndShow());
+		log.info("Count predicates in {}", st.stopAndShow());
 		this.predicateCount = predCount;
 		st.reset();
 
@@ -534,7 +543,7 @@ public class BitmapTriples implements TriplesPrivate {
 		this.bitmapIndexZ = bitmapIndex;
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
 		
-		System.out.println("Index generated in "+global.stopAndShow());
+		log.info("Index generated in {}", global.stopAndShow());
 	}
 	
 	private void createIndexObjects() {
@@ -565,7 +574,7 @@ public class BitmapTriples implements TriplesPrivate {
 			
 			List<Pair> inner = list.get((int)valueZ-1);
 			if(inner==null) {
-				inner = new ArrayList<Pair>(1);
+				inner = new ArrayList<>(1);
 				list.set((int)valueZ-1, inner);
 			}
 			
@@ -638,6 +647,7 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	
+	@Override
 	public void generateIndex(ProgressListener listener) {		
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.generate(listener);

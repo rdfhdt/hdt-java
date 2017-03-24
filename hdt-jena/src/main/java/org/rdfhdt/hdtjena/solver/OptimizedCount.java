@@ -2,6 +2,7 @@ package org.rdfhdt.hdtjena.solver;
 
 import java.util.List;
 
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -9,6 +10,7 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphCollection;
+import org.apache.jena.sparql.core.DatasetGraphMapLink;
 import org.apache.jena.sparql.core.DatasetGraphOne;
 import org.apache.jena.sparql.core.PathBlock;
 import org.apache.jena.sparql.core.TriplePath;
@@ -116,6 +118,9 @@ public class OptimizedCount {
 		}
 		TriplePath tp = pb.get(0);
 		Triple triple= tp.asTriple();
+		if(triple==null) {
+			return null;
+		}
 	
 		// Every two components must not be equal to each other. (Forbid Joins)
 		if(triple.getSubject().equals(triple.getPredicate()) ||
@@ -134,7 +139,7 @@ public class OptimizedCount {
 		Graph g=null;
 		if(dataset instanceof DatasetGraphOne ) {
 			g = dataset.getDefaultGraph();
-		} else if(dataset instanceof DatasetGraphCollection) {
+		} else if(dataset instanceof DatasetGraphMapLink) {
 			if(graphName!=null) {
 				g = dataset.getGraph(graphName);
 			} else {
@@ -225,7 +230,7 @@ public class OptimizedCount {
 			}
 		}
 	
-		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count)) );	
-		return new PlanOp(new HDTOptimizeddOp(), engine, new QueryIterYieldN(1, bindingResult));
+		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count), XSDDatatype.XSDinteger) );
+		return new PlanOp(new HDTOptimizedOp(), engine, new QueryIterYieldN(1, bindingResult));
 	}
 }

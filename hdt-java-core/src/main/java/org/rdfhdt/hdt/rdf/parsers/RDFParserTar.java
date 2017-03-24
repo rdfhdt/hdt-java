@@ -12,6 +12,8 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.NonCloseInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Parses a tar file (optionally .tgz or .tar.gz or .tar.bz2) directly, processing each file that contains rdf separately.
@@ -24,6 +26,7 @@ import org.rdfhdt.hdt.util.io.NonCloseInputStream;
  */
 
 public class RDFParserTar implements RDFParserCallback {
+	private static final Logger log = LoggerFactory.getLogger(RDFParserTar.class);
 
 	
 	/* (non-Javadoc)
@@ -36,7 +39,7 @@ public class RDFParserTar implements RDFParserCallback {
 			this.doParse(input, baseUri, notation, callback);
 			input.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception parsing file: {}", fileName, e);
 			throw new ParserException();
 		} 
 	}
@@ -56,14 +59,12 @@ public class RDFParserTar implements RDFParserCallback {
 				if(entry.isFile() && !entry.getName().contains("DS_Store")) {
 					try {
 						RDFNotation guessnot = RDFNotation.guess(entry.getName());
-						System.out.println("Parse from tar: "+entry.getName()+" as "+guessnot);
+						log.info("Parse from tar: {} as {}", entry.getName(), guessnot);
 						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
 
 						parser.doParse(nonCloseIn, baseUri, guessnot, callback);
-					}catch (IllegalArgumentException e1) {
-						e1.printStackTrace();
-					}catch (ParserException e1) {
-						e1.printStackTrace();
+					}catch (IllegalArgumentException | ParserException e1) {
+						log.error("Unexpected exception.", e1);
 					}
 				}
 			}

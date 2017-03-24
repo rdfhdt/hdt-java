@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/tools/org/rdfhdt/hdt/tools/HdtSearch.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.tools;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -44,7 +45,8 @@ import org.rdfhdt.hdt.util.UnicodeEscape;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.internal.Lists;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 
 /**
@@ -53,7 +55,7 @@ import com.beust.jcommander.internal.Lists;
  */
 public class HdtSearch implements ProgressListener {
 	@Parameter(description = "<HDT File>")
-	public List<String> parameters = Lists.newArrayList();
+	public List<String> parameters = new ArrayList<>();
 
 	@Parameter(names = "-version", description = "Prints the HDT version number")
 	public static boolean showVersion;
@@ -112,7 +114,7 @@ public class HdtSearch implements ProgressListener {
 		
 		if(posb==-1) throw new ParserException("Make sure that you included three terms."); // Not found, error.
 		
-		dest.setSubject(line.substring(posa, posb));
+		dest.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 	
 		// SET PREDICATE
 		posa = split+1;
@@ -120,7 +122,7 @@ public class HdtSearch implements ProgressListener {
 		
 		if(posb==-1) throw new ParserException("Make sure that you included three terms.");
 		
-		dest.setPredicate(line.substring(posa, posb));
+		dest.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 		
 		// SET OBJECT
 		posa = split+1;
@@ -140,7 +142,7 @@ public class HdtSearch implements ProgressListener {
 			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
 		}
 
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in, UTF_8));
 		try {
 			TripleString triplePattern = new TripleString();
 

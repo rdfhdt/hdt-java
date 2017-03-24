@@ -22,17 +22,12 @@ import org.apache.jena.query.ResultSet;
 import org.apache.jena.query.ResultSetFormatter;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.NodeIterator;
-import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.rdf.model.impl.ModelCom;
-
-/**
- * 
- */
 
 /**
  * @author mario.arias
@@ -78,7 +73,7 @@ public class JenaHDTTest {
 		
 		String line;
 		while((line = reader.readLine())!=null) {
-			StmtIterator iter = model.listStatements((Resource)null, (Property)null, line);
+			StmtIterator iter = model.listStatements(null, null, line);
 			while (iter.hasNext()) {
 			    Statement stmt      = iter.nextStatement();  // get next statement
 //			    Resource  subject   = stmt.getSubject();     // get the subject
@@ -99,7 +94,7 @@ public class JenaHDTTest {
 		
 		String line;
 		while((line = reader.readLine())!=null) {
-			StmtIterator iter = model.listStatements((Resource)model.getResource(line), (Property)null, (RDFNode)null);
+			StmtIterator iter = model.listStatements(model.getResource(line), null, (RDFNode)null);
 			while (iter.hasNext()) {
 			    Statement stmt      = iter.nextStatement();  // get next statement
 //			    Resource  subject   = stmt.getSubject();     // get the subject

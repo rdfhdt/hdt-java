@@ -71,12 +71,15 @@ import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Basic implementation of HDT interface
  *
  */
 public class HDTImpl implements HDTPrivate {
+	private static final Logger log = LoggerFactory.getLogger(HDTImpl.class);
 
 	private HDTOptions spec;
 
@@ -95,6 +98,7 @@ public class HDTImpl implements HDTPrivate {
         triples = TriplesFactory.createTriples(spec);
 	}
 
+	@Override
 	public void populateHeaderStructure(String baseUri) {
 		if(baseUri==null || baseUri.length()==0) {
 			throw new IllegalArgumentException("baseURI cannot be empty");
@@ -171,7 +175,7 @@ public class HDTImpl implements HDTPrivate {
 				this.baseUri = it.next().getSubject().toString();
 			}
 		} catch (NotFoundException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 
 		// Load dictionary
@@ -254,7 +258,7 @@ public class HDTImpl implements HDTPrivate {
 				this.baseUri = it.next().getSubject().toString();
 			}
 		} catch (NotFoundException e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 		}
 
 		// Load dictionary
@@ -338,7 +342,7 @@ public class HDTImpl implements HDTPrivate {
 				dictionary.stringToId(object, TripleComponentRole.OBJECT)
 			);
 
-		if(triple.getSubject()==-1 || triple.getPredicate()==-1 || triple.getObject()==-1) {
+		if(triple.isNoMatch()) {
 			throw new NotFoundException("String not found in dictionary");
 		}
 		
@@ -503,6 +507,12 @@ public class HDTImpl implements HDTPrivate {
 		isClosed=true;
 		dictionary.close();
 		triples.close();
+	}
+	
+	// For debugging
+	@Override
+	public String toString() {
+		return String.format("HDT[file=%s,#triples=%d]", hdtFileName, triples.getNumberOfElements());
 	}
 	
 	public String getHDTFileName() {

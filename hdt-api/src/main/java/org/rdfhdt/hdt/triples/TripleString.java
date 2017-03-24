@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/iface/org/rdfhdt/hdt/triples/TripleString.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -155,7 +155,7 @@ public class TripleString {
 	}
 	
 	/**
-	 * Checks wether all components are empty.
+	 * Checks whether all components are empty.
 	 * @return
 	 */
 	public boolean isEmpty() {
@@ -163,7 +163,7 @@ public class TripleString {
 	}
 	
 	/**
-	 * Checks wether any component is empty.
+	 * Checks whether any component is empty.
 	 * @return
 	 */
 	public boolean hasEmpty() {
@@ -188,8 +188,8 @@ public class TripleString {
 		if(line.charAt(posa)=='<') posa++;		// Remove <
 		if(line.charAt(posb-1)=='>') posb--;	// Remove >
 		
-		this.setSubject(line.substring(posa, posb));
-	
+		this.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+
 		// SET PREDICATE
 		posa = split+1;
 		posb = split = line.indexOf(' ', posa);
@@ -198,8 +198,8 @@ public class TripleString {
 		if(line.charAt(posa)=='<') posa++;
 		if(posb>posa && line.charAt(posb-1)=='>') posb--;
 		
-		this.setPredicate(line.substring(posa, posb));
-		
+		this.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+
 		// SET OBJECT
 		posa = split+1;
 		posb = line.length();

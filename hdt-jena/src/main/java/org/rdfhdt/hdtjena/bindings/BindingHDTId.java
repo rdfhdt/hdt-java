@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-jena/src/org/rdfhdt/hdtjena/bindings/BindingHDTId.java $
  * Revision: $Rev: 190 $
  * Last modified: $Date: 2013-03-03 11:30:03 +0000 (dom, 03 mar 2013) $
@@ -55,18 +55,18 @@ public class BindingHDTId extends Map2<Var, HDTId>
     // Make from an existing BindingHDTId 
     public BindingHDTId(BindingHDTId other)
     {
-        this(new HashMap<Var, HDTId>(), other, other.getParentBinding());
+        this(new HashMap<>(), other, other.getParentBinding());
     }
     
     // Make from an existing Binding 
     public BindingHDTId(Binding binding)
     {
-        this(new HashMap<Var, HDTId>(), null, binding);
+        this(new HashMap<>(), null, binding);
     }
 
     public BindingHDTId()
     {
-        this(new HashMap<Var, HDTId>(), null, null);
+        this(new HashMap<>(), null, null);
     }
     
     public Binding getParentBinding()    { return parentBinding; } 

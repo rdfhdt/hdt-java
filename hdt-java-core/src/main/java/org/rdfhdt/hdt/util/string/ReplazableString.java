@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/util/string/ReplazableString.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -45,11 +45,13 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	
 	byte [] buffer;
 	int used;
-	/**
-	 * 
-	 */
+
 	public ReplazableString() {
-		buffer = new byte[16*1024];
+		this(128);
+	}
+
+	public ReplazableString(int initialCapacity) {
+		buffer = new byte[initialCapacity];
 		used=0;
 	}
 	
@@ -64,7 +66,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	
 	private void ensureSize(int size) {
 		if(size>buffer.length) {
-			buffer = Arrays.copyOf(buffer, size);
+			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
 	}
 	

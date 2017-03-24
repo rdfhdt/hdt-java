@@ -37,12 +37,15 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
  *
  */
 public class RDFParserSimple implements RDFParserCallback {
+	private static final Logger log = LoggerFactory.getLogger(RDFParserSimple.class);
 
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.RDFCallback)
@@ -96,7 +99,7 @@ public class RDFParserSimple implements RDFParserCallback {
 			}
 			reader.close();
 		}catch(Exception e) {
-			e.printStackTrace();
+			log.error("Unexpected exception.", e);
 			throw new ParserException(e);
 		}
 	}

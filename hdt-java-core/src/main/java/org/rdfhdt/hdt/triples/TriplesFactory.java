@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/triples/TriplesFactory.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.triples;
 
 import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
-import org.rdfhdt.hdt.hdt.TempDictTriplesFactory;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;

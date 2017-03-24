@@ -16,7 +16,7 @@ public class MergedIteratorTest {
 	List<Integer> listA, listB, listC;
 
 	private List<Integer> getList(int[] ints) {
-	    List<Integer> intList = new ArrayList<Integer>();
+	    List<Integer> intList = new ArrayList<>();
 	    for (int index = 0; index < ints.length; index++)
 	    {
 	        intList.add(ints[index]);
@@ -39,12 +39,12 @@ public class MergedIteratorTest {
 	@Test
 	public void testOneEmpty() {
 		
-		Iterator<Integer> it = new MergedIterator<Integer>(listA.iterator(), listB.iterator(), new Comparator<Integer>() {
-			@Override
-			public int compare(Integer o1, Integer o2) {
-				return o2.compareTo(o1);
-			}
-		});
+		Iterator<Integer> it = new MergedIterator<>(listA.iterator(), listB.iterator(), new Comparator<Integer>() {
+            @Override
+            public int compare(Integer o1, Integer o2) {
+                return o2.compareTo(o1);
+            }
+        });
 		
 		Iterator<Integer> itE = listC.iterator();
 	

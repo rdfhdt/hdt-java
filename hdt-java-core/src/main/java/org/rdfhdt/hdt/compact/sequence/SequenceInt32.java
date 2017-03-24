@@ -1,4 +1,4 @@
-/**
+/*
  * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/sequence/SequenceInt32.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
@@ -68,11 +68,13 @@ public class SequenceInt32 implements DynamicSequence {
 		data = newData;
 	}
 	
-	public void trimToSize() {
+	@Override
+    public void trimToSize() {
 		resizeArray(numelements);
 	}
 	
-	public void aggresiveTrimToSize() {
+	@Override
+    public void aggressiveTrimToSize() {
 		trimToSize();
 	}
 
@@ -90,7 +92,8 @@ public class SequenceInt32 implements DynamicSequence {
 		return data[(int)position];
 	}
 	
-	public void set(long position, long value) {
+	@Override
+    public void set(long position, long value) {
 		if(position<0 || position>=data.length) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -99,7 +102,8 @@ public class SequenceInt32 implements DynamicSequence {
 		numelements = (int) Math.max(numelements, position+1);
 	}
 	
-	public void append(long value) {
+	@Override
+    public void append(long value) {
 		assert value>=0 && value<=Integer.MAX_VALUE;
 		
 		if(data.length<numelements+1) {
@@ -165,7 +169,7 @@ public class SequenceInt32 implements DynamicSequence {
 	@Override
 	public void add(Iterator<Long> iterator) {
 		while (iterator.hasNext()) {
-			long value = iterator.next().longValue();
+			long value = iterator.next();
 			append(value);
 		}
 	}
