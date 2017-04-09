@@ -70,12 +70,10 @@ public class DictionaryFactory {
 		String dictImpl = spec.get("tempDictionary.impl");
 		
 		// Implementations available in the Core
-		if(dictImpl==null || "".equals(dictImpl) || MOD_DICT_IMPL_HASH_PSFC.equals(dictImpl)) {
-			return new PSFCTempDictionary(new HashDictionary(spec));
-		}
-
-		if(MOD_DICT_IMPL_HASH.equals(dictImpl)) {
+		if(dictImpl==null || "".equals(dictImpl) || MOD_DICT_IMPL_HASH.equals(dictImpl)) {
 			return new HashDictionary(spec);
+		} else if(MOD_DICT_IMPL_HASH_PSFC.equals(dictImpl)){
+			return new PSFCTempDictionary(new HashDictionary(spec));
 		}
 		
 		// Implementations available in the HDT-Disk module.
@@ -84,11 +82,11 @@ public class DictionaryFactory {
 	
 	public static DictionaryPrivate createDictionary(HDTOptions spec) {
 		String name = spec.get("dictionary.type");
-		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
-			return new PSFCFourSectionDictionary(spec);
-		}
-		else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)){
+		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
 			return new FourSectionDictionary(spec);
+		}
+		else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)){
+			return new PSFCFourSectionDictionary(spec);
 		}
 		else if (DICTIONARY_TYPE_FOUR_SECTION_BIG.equals(name)){
 			return new FourSectionDictionaryBig(spec);
@@ -98,11 +96,10 @@ public class DictionaryFactory {
 	
 	public static DictionaryPrivate createDictionary(ControlInfo ci) {
 		String name = ci.getFormat();
-		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
-			return new PSFCFourSectionDictionary(new HDTSpecification());
-		}
-		else if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
+		if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
 			return new FourSectionDictionary(new HDTSpecification());
+		} else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
+			return new PSFCFourSectionDictionary(new HDTSpecification());
 		}
 		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
