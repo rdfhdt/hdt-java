@@ -27,7 +27,6 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.rdfhdt.hdt.dictionary.TempDictionary;
@@ -43,8 +42,6 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.TriplesFactory;
-import org.rdfhdt.hdt.util.RDFInfo;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 public class TempHDTImporterTwoPass implements TempHDTImporter {
@@ -109,17 +106,6 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 			throws IOException, ParserException {
 		
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-
-		// Fill the specs with missing properties
-		if (!RDFInfo.triplesSet(specs) && 
-				TriplesFactory.TEMP_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
-			//count lines if not user-set and if triples in-mem (otherwise not important info)
-			RDFInfo.setTriples(RDFInfo.countLines(filename, parser, notation), specs);
-			//FIXME setting numberOfLines costs (counting them) but saves memory... what to do??
-			//especially because in two-pass they are counter by DictionaryAppender (but triples object
-			//is instantiated earlier)
-		}
-		RDFInfo.setSizeInBytes(new File(filename).length(), specs); //else just get sizeOfRDF
 
 		// Create Modifiable Instance and parser
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.TWO_PASS);

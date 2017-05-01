@@ -83,14 +83,6 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions spec, ProgressListener listener) throws IOException, ParserException {
-		
-		// Let implementations override the one/two pass.
-		try {
-			HDTFactory.getTempFactory().checkTwoPass(spec);
-		} catch (Exception e) {
-			
-		}
-		
 		//choose the importer
 		String loaderType = spec.get("loader.type");
 		TempHDTImporter loader;
@@ -154,5 +146,4 @@ public class HDTManagerImpl extends HDTManager {
 	protected TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException {
 		return new TripleWriterHDT(baseURI, hdtFormat, outFile, false);
 	}
-	
 }

@@ -27,7 +27,6 @@
 
 package org.rdfhdt.hdt.triples;
 
-import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
@@ -51,15 +50,12 @@ public class TriplesFactory {
 	 * @return TempTriples
 	 */
 	static public TempTriples createTempTriples(HDTOptions spec) {		
-		String triplesImpl = spec.get("tempTriples.impl");
+//		String triplesImpl = spec.get("tempTriples.impl");
 
 		// Implementations available in the Core
-		if (triplesImpl==null || triplesImpl.equals("") || TEMP_TRIPLES_IMPL_LIST.equals(triplesImpl)) {
+//		if (triplesImpl==null || triplesImpl.equals("") || TEMP_TRIPLES_IMPL_LIST.equals(triplesImpl)) {
 			return new TriplesList(spec);
-		}
-		
-		// Implementations available in the HDT-Disk module.
-		return HDTFactory.getTempFactory().getTriples(spec);
+//		}
 	}
 	
 	/**
