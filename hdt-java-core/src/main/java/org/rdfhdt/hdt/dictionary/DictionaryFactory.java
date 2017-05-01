@@ -33,7 +33,6 @@ import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
 import org.rdfhdt.hdt.dictionary.impl.PSFCFourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.PSFCTempDictionary;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
-import org.rdfhdt.hdt.hdt.HDTFactory;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
@@ -67,17 +66,15 @@ public class DictionaryFactory {
 	 * @return Dictionary
 	 */
 	public static TempDictionary createTempDictionary(HDTOptions spec) {
-		String dictImpl = spec.get("tempDictionary.impl");
+		String name = spec.get("tempDictionary.impl");
 		
 		// Implementations available in the Core
-		if(dictImpl==null || "".equals(dictImpl) || MOD_DICT_IMPL_HASH.equals(dictImpl)) {
+		if(name==null || "".equals(name) || MOD_DICT_IMPL_HASH.equals(name)) {
 			return new HashDictionary(spec);
-		} else if(MOD_DICT_IMPL_HASH_PSFC.equals(dictImpl)){
+		} else if(MOD_DICT_IMPL_HASH_PSFC.equals(name)){
 			return new PSFCTempDictionary(new HashDictionary(spec));
 		}
-		
-		// Implementations available in the HDT-Disk module.
-		return HDTFactory.getTempFactory().getDictionary(spec);
+		throw new IllegalFormatException("Implementation of triples not found for "+name);
 	}
 	
 	public static DictionaryPrivate createDictionary(HDTOptions spec) {

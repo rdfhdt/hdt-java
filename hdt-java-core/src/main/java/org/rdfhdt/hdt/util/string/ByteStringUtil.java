@@ -199,49 +199,6 @@ public class ByteStringUtil {
 			throw new IllegalArgumentException("Buffer is not Null-Terminated");
 		}	
 	}
-	
-	public static int append(CharSequence str, int start, byte [] buffer, int bufpos) {
-		byte [] bytes;
-		int len;
-		
-		if(str instanceof DelayedString) {
-			str = ((DelayedString) str).getInternal();
-		}
-		if(str instanceof String) {
-			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
-			len = bytes.length;
-		} else if(str instanceof CompactString) {
-			bytes = ((CompactString) str).getData();
-			len = bytes.length;
-		} else if(str instanceof ReplazableString) {
-			bytes = ((ReplazableString) str).getBuffer();
-			len = ((ReplazableString) str).used;
-		} else {
-			throw new NotImplementedException();
-		}
-//		System.arraycopy(bytes, start, buffer, bufpos, len - start);
-		
-		// Write and remove null characters
-		
-		int cur = start;
-		int ini = start;
-		int written = 0;
-		
-		while(cur<len) {
-			if(bytes[cur]==0) {
-//				out.write(bytes, ini, cur-ini);
-				System.arraycopy(bytes, ini, buffer, bufpos+written, cur-ini);
-				written += (cur-ini);
-				ini = cur+1;
-			}
-			cur++;
-		}
-		if(ini<len) {
-			System.arraycopy(bytes, ini, buffer, bufpos+written, len-ini);
-			written += (len-ini);
-		}
-		return written;
-	}
 
 	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
 		byte [] bytes;

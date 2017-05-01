@@ -196,4 +196,13 @@ public class Iter {
 			it.next();
 		}
 	}
+	
+	public static <T> long count(final Iterator<T> it) {
+		long count=0;
+		while(it.hasNext()){
+			it.next();
+			count++;
+		}
+		return count;
+	}
 }

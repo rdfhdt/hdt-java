@@ -27,7 +27,6 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -45,8 +44,6 @@ import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.TriplesFactory;
-import org.rdfhdt.hdt.util.RDFInfo;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 public class TempHDTImporterOnePass implements TempHDTImporter {
@@ -82,13 +79,6 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			throws IOException, ParserException {
 		
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-		
-		// Fill the specs with missing properties
-		if (!RDFInfo.triplesSet(specs) && TriplesFactory.TEMP_TRIPLES_IMPL_LIST.equals(specs.get("tempTriples.impl"))) {
-			//count lines if not user-set and if triples in-mem (otherwise not important info)
-			RDFInfo.setTriples(RDFInfo.countLines(filename, parser, notation), specs);
-		}
-		RDFInfo.setSizeInBytes(new File(filename).length(), specs); //else just get sizeOfRDF
 		
 		// Create Modifiable Instance
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.ONE_PASS);

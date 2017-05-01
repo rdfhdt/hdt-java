@@ -110,7 +110,8 @@ public class CountInputStream extends InputStream {
 	public void mark(int readlimit) {
 		markTotal = total;
 		markPartial = partial;
-		in.mark(readlimit);
+		if(in.markSupported())
+			in.mark(readlimit);
 	}
 	
 	@Override

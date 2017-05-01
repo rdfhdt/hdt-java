@@ -56,7 +56,7 @@ public class SequenceLog64Big implements DynamicSequence {
 	private static final byte W = 64;
 	private static final int INDEX = 1073741824;
 	
-        LongLargeArray  data;
+    LongLargeArray data;
 	private int numbits;
 	private long numentries=0;
 	private long maxvalue;
@@ -119,17 +119,17 @@ public class SequenceLog64Big implements DynamicSequence {
 	private static long getField(LongLargeArray data, int bitsField, long index) {
 		if(bitsField==0) return 0;
 		
-                long bitPos = index*bitsField;
-                long i= bitPos / W;
-                long j= bitPos % W;
-                long result;
-                if (j+bitsField <= W) {
-                        result = (data.get(i) << (W-j-bitsField)) >>> (W-bitsField);
-                } else {
-                        result = data.get(i) >>> j;
-                        result = result | (data.get(i+1) << ( (W<<1) -j-bitsField)) >>> (W-bitsField);
-                }
-                return result;
+        long bitPos = index*bitsField;
+        long i= bitPos / W;
+        long j= bitPos % W;
+        long result;
+        if (j+bitsField <= W) {
+                result = (data.get(i) << (W-j-bitsField)) >>> (W-bitsField);
+        } else {
+                result = data.get(i) >>> j;
+                result = result | (data.get(i+1) << ( (W<<1) -j-bitsField)) >>> (W-bitsField);
+        }
+        return result;
 	}
 	
 	/** Store a given value in index into array data where every value uses bitsField bits
@@ -185,19 +185,19 @@ public class SequenceLog64Big implements DynamicSequence {
 			numentries++;
 		}
 		
-                // Prepare array
-                numbits = BitUtil.log2(max);
-                long size = numWordsFor(numbits, numentries);
-                data = new LongLargeArray(size);
+        // Prepare array
+        numbits = BitUtil.log2(max);
+        long size = numWordsFor(numbits, numentries);
+        data = new LongLargeArray(size);
 
-                // Save
-                int count = 0;
-                while(elements.hasNext()) {
-                        long element = elements.next();
-                        assert element<=maxvalue;
-                        setField(data, numbits, count, element);
-                        count++;
-                }
+        // Save
+        int count = 0;
+        while(elements.hasNext()) {
+            long element = elements.next();
+            assert element<=maxvalue;
+            setField(data, numbits, count, element);
+            count++;
+        }
 	}
 
 	public void addIntegers(ArrayList<Integer> elements) {
@@ -211,19 +211,19 @@ public class SequenceLog64Big implements DynamicSequence {
 			numentries++;
 		}
 		
-                // Prepare array
-                numbits = BitUtil.log2(max);
-                long size = numWordsFor(numbits, numentries);
-                data = new LongLargeArray(size);
+        // Prepare array
+        numbits = BitUtil.log2(max);
+        long size = numWordsFor(numbits, numentries);
+        data = new LongLargeArray(size);
 
-                // Save
-                int count = 0;
-                for (int i=0;i<elements.size();i++){
-                        long element = elements.get(i).longValue();
-                        assert element<=maxvalue;
-                        setField(data, numbits, count, element);
-                        count++;
-                }
+        // Save
+        int count = 0;
+        for (int i=0;i<elements.size();i++){
+            long element = elements.get(i).longValue();
+            assert element<=maxvalue;
+            setField(data, numbits, count, element);
+            count++;
+        }
 	}
 
 	/* (non-Javadoc)
@@ -231,10 +231,10 @@ public class SequenceLog64Big implements DynamicSequence {
 	 */
 	@Override
 	public long get(long position) {
-		if(position<0 || position>=numentries) {
+//		if(position<0 || position>=numentries) {
 			//System.out.println("pos, numentries:"+position+","+numentries);
 			//throw new IndexOutOfBoundsException();
-		}
+//		}
 		
 		return getField(data, numbits, position);
 	}
@@ -289,7 +289,7 @@ public class SequenceLog64Big implements DynamicSequence {
 			long totalSize = numWordsFor(numbits, numentries);
 			
 			if (totalSize!=data.length()){
-			resizeArray((int)totalSize);
+				resizeArray((int)totalSize);
 			}
 		}
 
