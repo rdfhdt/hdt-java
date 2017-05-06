@@ -81,7 +81,7 @@ public class SequenceInt32 implements DynamicSequence {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.array.Stream#get(int)
+	 * @see hdt.triples.array.Stream#get(long)
 	 */
 	@Override
 	public long get(long position) {
@@ -164,7 +164,7 @@ public class SequenceInt32 implements DynamicSequence {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see hdt.triples.array.Stream#add(int)
+	 * @see hdt.triples.array.Stream#add(long)
 	 */
 	@Override
 	public void add(Iterator<Long> iterator) {

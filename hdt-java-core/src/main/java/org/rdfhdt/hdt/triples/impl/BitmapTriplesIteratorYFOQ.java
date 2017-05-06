@@ -101,11 +101,11 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 				posZ = prevZ = adjZ.find(posY);
 				nextZ = adjZ.last(posY); 
 				
-				x = (int) adjY.findListIndex(posY)+1;
-				y = (int) adjY.get(posY);
-	 			z = (int) adjZ.get(posZ);
+				x = adjY.findListIndex(posY)+1;
+				y = adjY.get(posY);
+	 			z = adjZ.get(posZ);
 			} else {
-				z = (int) adjZ.get(posZ);
+				z = adjZ.get(posZ);
 			}
 			posZ++;	
 		
@@ -134,11 +134,11 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 				prevZ = adjZ.find(posY);
 				posZ = nextZ = adjZ.last(posY); 
 				
-				x = (int) adjY.findListIndex(posY)+1;
-				y = (int) adjY.get(posY);
-	 			z = (int) adjZ.get(posZ);
+				x = adjY.findListIndex(posY)+1;
+				y = adjY.get(posY);
+	 			z = adjZ.get(posZ);
 			} else {
-				z = (int) adjZ.get(posZ);
+				z = adjZ.get(posZ);
 				posZ--;
 			}
 			
@@ -158,9 +158,9 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 			posZ = prevZ = adjZ.find(posY);
 			nextZ = adjZ.last(posY);
 			
-			x = (int) adjY.findListIndex(posY)+1;
-			y = (int) adjY.get(posY);
-	        z = (int) adjZ.get(posZ);
+			x = adjY.findListIndex(posY)+1;
+			y = adjY.get(posY);
+	        z = adjZ.get(posZ);
 		}
 
 		/* (non-Javadoc)

@@ -59,7 +59,7 @@ public class DictionaryCacheLRI<T> implements DictionaryCache<T> {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
+	 * @see hdt.jena.DictionaryNodeCache#setNode(long, T)
 	 */
 	@Override
 	public void put(long id, T node) {

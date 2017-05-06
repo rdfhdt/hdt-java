@@ -43,7 +43,7 @@ public class DictionaryCacheArrayWeak<T> implements DictionaryCache<T> {
 	}
 	
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
+	 * @see hdt.jena.DictionaryNodeCache#getNode(long)
 	 */
 	@Override
 	public T get(long id) {

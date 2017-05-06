@@ -48,7 +48,7 @@ public class DictionaryCacheArray<T> implements DictionaryCache<T> {
 	}
 	
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
+	 * @see hdt.jena.DictionaryNodeCache#getNode(long)
 	 */
 	@SuppressWarnings("unchecked")
 	@Override

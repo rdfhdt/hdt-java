@@ -152,9 +152,9 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	public TripleID next() {
 	    long posY = adjIndex.get(posIndex);
 
-	    z = patZ!=0 ? patZ : (int)adjIndex.findListIndex(posIndex)+1;
-	    y = patY!=0 ? patY : (int) adjY.get(posY);
-	    x = (int) adjY.findListIndex(posY)+1;
+	    z = patZ!=0 ? patZ : adjIndex.findListIndex(posIndex)+1;
+	    y = patY!=0 ? patY : adjY.get(posY);
+	    x = adjY.findListIndex(posY)+1;
 
 	    posIndex++;
 
@@ -179,9 +179,9 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 
 		long posY = adjIndex.get(posIndex);
 
-		z = patZ!=0 ? patZ : (int)adjIndex.findListIndex(posIndex)+1;
-		y = patY!=0 ? patY : (int) adjY.get(posY);
-		x = (int) adjY.findListIndex(posY)+1;
+		z = patZ!=0 ? patZ : adjIndex.findListIndex(posIndex)+1;
+		y = patY!=0 ? patY : adjY.get(posY);
+		x = adjY.findListIndex(posY)+1;
 
 		updateOutput();
 		return returnTriple;
@@ -220,7 +220,7 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.iterator.IteratorTripleID#goTo(int)
+	 * @see hdt.iterator.IteratorTripleID#goTo(long)
 	 */
 	@Override
 	public void goTo(long pos) {

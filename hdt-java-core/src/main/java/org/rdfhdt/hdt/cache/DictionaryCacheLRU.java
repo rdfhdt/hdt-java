@@ -41,7 +41,7 @@ public class DictionaryCacheLRU<T> implements DictionaryCache<T> {
 	}
 	
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
+	 * @see hdt.jena.DictionaryNodeCache#getNode(long)
 	 */
 	@Override
 	public T get(long id) {
@@ -49,7 +49,7 @@ public class DictionaryCacheLRU<T> implements DictionaryCache<T> {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.T)
+	 * @see hdt.jena.DictionaryNodeCache#setNode(long, T)
 	 */
 	@Override
 	public void put(long id, T node) {

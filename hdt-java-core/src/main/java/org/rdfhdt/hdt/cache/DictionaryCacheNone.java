@@ -34,7 +34,7 @@ package org.rdfhdt.hdt.cache;
 public class DictionaryCacheNone<T> implements DictionaryCache<T> {
 
 	/* (non-Javadoc)
-	 * @see hdt.jena.DictionaryNodeCache#get(int)
+	 * @see hdt.jena.DictionaryNodeCache#get(long)
 	 */
 	@Override
 	public T get(long id) {
