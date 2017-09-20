@@ -65,7 +65,6 @@ import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
-import org.rdfhdt.hdt.triples.impl.BitmapTriplesIterator;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
