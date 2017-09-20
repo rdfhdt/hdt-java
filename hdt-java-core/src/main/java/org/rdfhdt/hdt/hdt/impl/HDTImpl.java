@@ -42,6 +42,7 @@ import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -60,9 +61,11 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
+import org.rdfhdt.hdt.triples.impl.BitmapTriplesIterator;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -315,7 +318,36 @@ public class HDTImpl implements HDTPrivate {
 			);
 
 		if(triple.getSubject()==-1 || triple.getPredicate()==-1 || triple.getObject()==-1) {
-			throw new NotFoundException("String not found in dictionary");
+			//throw new NotFoundException("String not found in dictionary");
+			return new IteratorTripleString() {
+				@Override
+				public TripleString next() {
+					return null;
+				}
+				@Override
+				public boolean hasNext() {
+					return false;
+				}
+				@Override
+				public TripleString previous() {
+					return null;
+				}
+				@Override
+				public ResultEstimationType numResultEstimation() {
+					return ResultEstimationType.EXACT;
+				}
+				@Override
+				public boolean hasPrevious() {
+					return false;
+				}
+				@Override
+				public void goToStart() {
+				}
+				@Override
+				public long estimatedNumResults() {
+					return 0;
+				}
+			};
 		}
 
 		return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
