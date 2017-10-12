@@ -129,4 +129,13 @@ class PredicateIndexArray implements PredicateIndex {
 		
 		array = new SequenceLog64Map(input, f);
 	}
+	
+	@Override
+	public void close() throws IOException {
+		bitmap=null;
+		if(array!=null) {
+			array.close();
+		}
+		array=null;
+	}
 }

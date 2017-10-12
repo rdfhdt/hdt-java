@@ -38,6 +38,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Paths;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -72,6 +73,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected int blocksize;
 	protected int numstrings;
 	protected Sequence blocks;
+	protected FileInputStream fis; 
 	protected long dataSize;
 
 	private File f;
@@ -109,7 +111,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		endOffset = input.getTotalBytes();
 
 		// Read packed data
-		ch = new FileInputStream(f).getChannel();
+		ch = FileChannel.open(Paths.get(f.toString()));
 		int block = 0;
 		int buffer = 0;
 		long numBlocks = blocks.getNumberOfElements();
@@ -350,6 +352,9 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 
 	@Override
 	public void close() throws IOException {
+		blocks.close();
+		buffers = null;
+		System.gc();
 		ch.close();
 	}
 

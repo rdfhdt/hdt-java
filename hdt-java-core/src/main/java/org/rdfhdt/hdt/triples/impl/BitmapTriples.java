@@ -773,6 +773,9 @@ public class BitmapTriples implements TriplesPrivate {
 		if(predicateCount!=null) {
 			predicateCount.close(); predicateCount=null;
 		}
+		if(predicateIndex!=null) {
+			predicateIndex.close(); predicateIndex=null;
+		}
 	}
 
 	public TripleComponentOrder getOrder() {

@@ -19,4 +19,6 @@ public interface PredicateIndex {
 	void mapIndex(CountInputStream input, File f, ProgressListener listener) throws IOException;
 	
 	void generate(ProgressListener listener);
+	
+	void close() throws IOException;
 }

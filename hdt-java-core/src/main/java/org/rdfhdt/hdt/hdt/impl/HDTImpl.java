@@ -437,30 +437,36 @@ public class HDTImpl implements HDTPrivate {
 			ff = new File(indexName);
 		}
 		
+		CountInputStream in =null;
 		try {
-			CountInputStream in = new CountInputStream(new BufferedInputStream(new FileInputStream(ff)));
+			in = new CountInputStream(new BufferedInputStream(new FileInputStream(ff)));
 			ci.load(in);
 			if(isMapped) {
 				triples.mapIndex(in, new File(indexName), ci, listener);
 			} else {
 				triples.loadIndex(in, ci, listener);
 			}
-			in.close();
+			//in.close();
 		} catch (Exception e) {
 			System.out.println("Could not read .hdt.index, Generating a new one.");
 
 			// GENERATE
 			triples.generateIndex(listener);
 
+			FileOutputStream out=null;
 			// SAVE
 			try {
-				FileOutputStream out = new FileOutputStream(versionName);
+				out = new FileOutputStream(versionName);
 				ci.clear();
 				triples.saveIndex(out, ci, listener);
 				out.close();
 			} catch (IOException e2) {
 
+			} finally {
+				IOUtil.closeQuietly(out);
 			}
+		} finally {
+			IOUtil.closeQuietly(in);
 		}
 	}
 
