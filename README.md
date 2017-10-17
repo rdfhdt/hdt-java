@@ -17,9 +17,9 @@ It provides several components:
 
 ## Compiling
 
-Use mvn install to let Apache Maven install the required jars in your system.
+Use `mvn install` to let Apache Maven install the required jars in your system.
 
-You can also run mvn assembly:single under hdt-java-package to generate a distribution directory with all the jars and launcher scripts.
+You can also run `mvn assembly:single` under hdt-java-package to generate a distribution directory with all the jars and launcher scripts.
 
 
 ## Usage
@@ -31,18 +31,18 @@ Please refer to hdt-java-package/README for more information on how to use the l
 
 Each module has a different License. Core is LGPL, examples and tools are Apache.
 
-hdt-api: Apache License
-hdt-java-cli (Commandline tools and examples): Apache License
-hdt-java-core: Lesser General Public License
-hdt-jena: Lesser General Public License
-hdt-fuseki: Apache License
+* `hdt-api`: Apache License
+* `hdt-java-cli`: (Commandline tools and examples): Apache License
+* `hdt-java-core`: Lesser General Public License
+* `hdt-jena`: Lesser General Public License
+* `hdt-fuseki`: Apache License
 
 
 ## Authors
 
-Mario Arias <mario.arias@gmailcom>
-Javier D. Fernandez <jfergar@infor.uva.es>
-Miguel A. Martinez-Prieto <migumar2@infor.uva.es>
+* Mario Arias <mario.arias@gmailcom>
+* Javier D. Fernandez <jfergar@infor.uva.es>
+* Miguel A. Martinez-Prieto <migumar2@infor.uva.es>
 
 
 ## Acknowledgements
