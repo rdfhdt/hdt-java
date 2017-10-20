@@ -26,6 +26,7 @@
 
 package org.rdfhdt.hdtjena;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.apache.jena.assembler.Assembler;
@@ -59,6 +60,11 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 	{
 		String file = GraphUtils.getStringValue(root, HDTJenaConstants.pFileName) ;
 		boolean loadInMemory = Boolean.parseBoolean(GraphUtils.getStringValue(root, HDTJenaConstants.pKeepInMemory));
+		
+		// .hdt file of this graph doesn't exist.
+		if (!new File (file).isFile ())
+			return null;
+		
 		try {
 			// FIXME: Read more properties. Cache config?
 			HDT hdt;
