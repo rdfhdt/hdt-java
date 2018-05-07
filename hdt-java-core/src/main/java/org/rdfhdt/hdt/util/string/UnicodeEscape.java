@@ -83,7 +83,7 @@ public class UnicodeEscape {
 				
 				char prev = label.charAt(i-1);
 				if(curr=='@' && prev=='"') {
-					last = i-2;
+					last = i-1;
 					break;
 				}
 				if(curr=='^' && prev=='^') {
