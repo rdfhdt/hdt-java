@@ -829,5 +829,9 @@ public class BitmapTriples implements TriplesPrivate {
 	public Bitmap getBitmapZ() {
 		return bitmapZ;
 	}
+	
+	public Bitmap getBitmapIndex(){
+		return bitmapIndexZ;
+	}
 }
 
