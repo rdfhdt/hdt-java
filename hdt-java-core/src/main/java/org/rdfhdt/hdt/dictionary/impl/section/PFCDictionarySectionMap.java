@@ -77,6 +77,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected int blocksize;
 	protected int numstrings;
 	protected Sequence blocks;
+	protected FileInputStream fis; 
 	protected long dataSize;
 
 	private final File f;

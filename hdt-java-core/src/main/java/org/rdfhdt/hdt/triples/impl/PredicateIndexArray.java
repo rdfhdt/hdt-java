@@ -147,5 +147,4 @@ class PredicateIndexArray implements PredicateIndex {
 		}
 		array=null;
 	}
-
 }

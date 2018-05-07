@@ -44,6 +44,7 @@ import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -63,6 +64,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
@@ -343,7 +345,28 @@ public class HDTImpl implements HDTPrivate {
 			);
 
 		if(triple.isNoMatch()) {
-			throw new NotFoundException("String not found in dictionary");
+			//throw new NotFoundException("String not found in dictionary");
+			return new IteratorTripleString() {
+				@Override
+				public TripleString next() {
+					return null;
+				}
+				@Override
+				public boolean hasNext() {
+					return false;
+				}
+				@Override
+				public ResultEstimationType numResultEstimation() {
+					return ResultEstimationType.EXACT;
+				}
+				@Override
+				public void goToStart() {
+				}
+				@Override
+				public long estimatedNumResults() {
+					return 0;
+				}
+			};
 		}
 		
 		if(isMapped) {

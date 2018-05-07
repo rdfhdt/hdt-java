@@ -226,7 +226,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			int mid = (low + high) >>> 1;
 			
 			int cmp;
-			if(max==high) {
+			if(mid==max) {
 				cmp = -1;
 			} else {
 				cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
@@ -304,7 +304,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				cshared += ByteStringUtil.longestCommonPrefix(tempString, str, cshared);
 				
 				if((cshared==str.length()) && (tempString.length()==str.length())) {
-					break;
+					return idInBlock;
 				}
 			} else {
 				// We have less common characters than before, 
