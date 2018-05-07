@@ -69,6 +69,7 @@ class PredicateIndexArray implements PredicateIndex {
 	public void generate(ProgressListener listener) {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
+		@SuppressWarnings("resource")
 		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
 	
 	    long maxCount = 0;
@@ -101,7 +102,7 @@ class PredicateIndexArray implements PredicateIndex {
 	    bitmap.set(triples.getSeqY().getNumberOfElements()-1, true);
         log.info("Predicate Bitmap in {}", st.stopAndShow());
 	    st.reset();
-
+	    IOUtil.closeQuietly(predCount);
 	    predCount=null;
 	    
 	    
@@ -146,5 +147,4 @@ class PredicateIndexArray implements PredicateIndex {
 		}
 		array=null;
 	}
-
 }

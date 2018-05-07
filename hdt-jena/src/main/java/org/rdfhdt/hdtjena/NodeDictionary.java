@@ -55,6 +55,7 @@ public class NodeDictionary {
 
 	private final Dictionary dictionary;
 
+	@SuppressWarnings("unchecked")
 	private final DictionaryCache<Node> cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")

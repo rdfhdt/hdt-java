@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.Random;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -20,9 +19,8 @@ public class CRCStreamTest {
 		ByteArrayOutputStream byteStrOut = new ByteArrayOutputStream(size+10);
 		
 		CRCOutputStream crcStrmOut = new CRCOutputStream(byteStrOut, generator);
-		Random r = new Random();
 		for(int i=0;i<size;i++) {
-			crcStrmOut.write(r.nextInt()&0xFF);
+			crcStrmOut.write(i&0xFF);
 		}
 		crcStrmOut.writeCRC();
 		crcStrmOut.close();

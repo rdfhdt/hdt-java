@@ -97,13 +97,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		this.blocks = new SequenceLog64Big(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		log.info("numbits:{}", BitUtil.log2(other.size()));
 		Iterator<? extends CharSequence> it = other.getSortedEntries();		
-		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
+		this.load((Iterator<? extends CharSequence>)it, other.getNumberOfElements(), listener);
 		
 	}
 	
-	
-	
-	public void load(Iterator<CharSequence> it, long numentries, ProgressListener listener)  {		
+	public void load(Iterator<? extends CharSequence> it, long numentries, ProgressListener listener)  {		
 		
 		this.blocks = new SequenceLog64Big(64, numentries/blocksize);
 		this.numstrings = 0;
@@ -228,7 +226,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			int mid = (low + high) >>> 1;
 			
 			int cmp;
-			if(max==high) {
+			if(mid==max) {
 				cmp = -1;
 			} else {
 				cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
@@ -306,7 +304,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				cshared += ByteStringUtil.longestCommonPrefix(tempString, str, cshared);
 				
 				if((cshared==str.length()) && (tempString.length()==str.length())) {
-					break;
+					return idInBlock;
 				}
 			} else {
 				// We have less common characters than before, 

@@ -42,6 +42,10 @@ public class HDTId {
 	}
 	
 	public Node getNode() {
+		if(role == null) {
+			// Note: role=null means it does not belong to the HDT
+			return null;
+		}
 		if (node == null) {
 			node = dict.getNode(id, role);
 		}

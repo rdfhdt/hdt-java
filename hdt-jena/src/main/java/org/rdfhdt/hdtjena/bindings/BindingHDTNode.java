@@ -22,8 +22,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.jena.atlas.logging.Log;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.binding.Binding;
@@ -113,7 +111,7 @@ public class BindingHDTNode extends BindingBase
             return id.getNode();
         } catch (Exception ex)
         {
-            Log.fatal(this, String.format("get1(%s)", var), ex) ;
+        	ex.printStackTrace();
             return null ;
         }
     }

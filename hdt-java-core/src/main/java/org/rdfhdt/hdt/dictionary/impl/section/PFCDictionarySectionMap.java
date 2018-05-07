@@ -77,12 +77,14 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected int blocksize;
 	protected long numstrings;
 	protected Sequence blocks;
+	protected FileInputStream fis; 
 	protected long dataSize;
 
 	private final File f;
 	private final long startOffset;
     private long endOffset;
 
+	@SuppressWarnings("resource")
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
 		this.f = f;
 		startOffset=input.getTotalBytes();

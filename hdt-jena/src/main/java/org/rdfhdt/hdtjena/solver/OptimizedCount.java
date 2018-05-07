@@ -9,7 +9,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphCollection;
 import org.apache.jena.sparql.core.DatasetGraphMapLink;
 import org.apache.jena.sparql.core.DatasetGraphOne;
 import org.apache.jena.sparql.core.PathBlock;
@@ -213,7 +212,7 @@ public class OptimizedCount {
 			if(patternID.isEmpty()) {
 				// All results
 				count = hdtg.getHDT().getTriples().getNumberOfElements();
-			} else if(patternID.isValid()) {
+			} else if(!patternID.isNoMatch()) {
 				// Search triple pattern
 				IteratorTripleID it = hdtg.getHDT().getTriples().search(patternID);
 				if(it.numResultEstimation()==ResultEstimationType.EXACT) {

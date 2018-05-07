@@ -61,6 +61,7 @@ import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.slf4j.Logger;
@@ -129,8 +130,12 @@ public class BitmapTriples implements TriplesPrivate {
 
 		long number = it.estimatedNumResults();
 		
+		@SuppressWarnings("resource")
 		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(number), number);
+		
+		@SuppressWarnings("resource")
 		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(number), number);
+		
 		ModifiableBitmap bitY = new Bitmap375(number);
 		ModifiableBitmap bitZ = new Bitmap375(number);
 		
@@ -402,6 +407,7 @@ public class BitmapTriples implements TriplesPrivate {
 		long maxCount = 0;
 		long numDifferentObjects = 0;
 		long numReservedObjects = 8192;
+		@SuppressWarnings("resource")
 		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
 			long val = seqZ.get(i);
@@ -434,6 +440,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 		bitmapIndex.set(seqZ.getNumberOfElements()-1, true);
 		log.info("Bitmap in {}", st.stopAndShow());
+		IOUtil.closeQuietly(objectCount);
 		objectCount=null;
 		st.reset();
 
@@ -455,19 +462,20 @@ public class BitmapTriples implements TriplesPrivate {
 				objectArray.set(insertBase+insertOffset, posY);
 		}
 		log.info("Object references in {}", st.stopAndShow());
+		IOUtil.closeQuietly(objectInsertedCount);
 		objectInsertedCount=null;
 		st.reset();
 
 		
 		long object=1;
 		long first = 0;
-		long last = bitmapIndex.select1(object)+1;
+		long last = bitmapIndex.selectNext1(first)+1;
 		do {
 			long listLen = last-first;
 
 			// Sublists of one element do not need to be sorted.
 
-			// Hard-coded size-2 for speed (They are quite common).
+			// Hard-coded size 2 for speed (They are quite common).
 			if(listLen==2) {
 				long aPos = objectArray.get(first);
 				long a = seqY.get(aPos);
@@ -481,6 +489,7 @@ public class BitmapTriples implements TriplesPrivate {
 				class Pair {
 					int valueY;
 					int positionY;
+					@Override public String toString() { return String.format("%d %d", valueY,positionY); }
 				};
 				
 				// FIXME: Sort directly without copying?
@@ -495,24 +504,22 @@ public class BitmapTriples implements TriplesPrivate {
 				}
 
 				// Sort
-				Collections.sort(list, new Comparator<Pair>() {
-					@Override
-					public int compare(Pair o1, Pair o2) {
+				Collections.sort(list, (Pair o1, Pair o2)->{
 						if(o1.valueY==o2.valueY) {
 							return o1.positionY-o2.positionY;
 						}
 						return o1.valueY-o2.valueY;
-					}
-				});
+					});
 				
 				// Copy back
 				for(long i=first; i<last;i++) {
-					objectArray.set(i, list.get((int)(i-first)).positionY);
+					Pair pair = list.get((int)(i-first));
+					objectArray.set(i, pair.positionY);
 				}
 			}
 
 			first = last;
-			last = bitmapIndex.select1(object)+1;
+			last = bitmapIndex.selectNext1(first)+1;
 			object++;
 		} while(object<=numDifferentObjects);
 
@@ -546,6 +553,7 @@ public class BitmapTriples implements TriplesPrivate {
 		log.info("Index generated in {}", global.stopAndShow());
 	}
 	
+	@SuppressWarnings("unused")
 	private void createIndexObjects() {
 		// FIXME: Fast but very memory inefficient.
 		class Pair {
@@ -828,6 +836,10 @@ public class BitmapTriples implements TriplesPrivate {
 
 	public Bitmap getBitmapZ() {
 		return bitmapZ;
+	}
+	
+	public Bitmap getBitmapIndex(){
+		return bitmapIndexZ;
 	}
 }
 
