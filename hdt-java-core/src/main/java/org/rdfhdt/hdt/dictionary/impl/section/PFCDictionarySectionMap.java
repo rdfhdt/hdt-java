@@ -83,6 +83,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	private final long startOffset;
     private long endOffset;
 
+	@SuppressWarnings("resource")
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
 		this.f = f;
 		startOffset=input.getTotalBytes();

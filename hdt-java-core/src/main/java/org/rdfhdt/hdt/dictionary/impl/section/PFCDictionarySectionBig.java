@@ -97,13 +97,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		this.blocks = new SequenceLog64Big(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		log.info("numbits:{}", BitUtil.log2(other.size()));
 		Iterator<? extends CharSequence> it = other.getSortedEntries();		
-		this.load((Iterator<CharSequence>)it, other.getNumberOfElements(), listener);
+		this.load((Iterator<? extends CharSequence>)it, other.getNumberOfElements(), listener);
 		
 	}
 	
-	
-	
-	public void load(Iterator<CharSequence> it, long numentries, ProgressListener listener)  {		
+	public void load(Iterator<? extends CharSequence> it, long numentries, ProgressListener listener)  {		
 		
 		this.blocks = new SequenceLog64Big(64, numentries/blocksize);
 		this.numstrings = 0;

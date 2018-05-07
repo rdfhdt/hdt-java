@@ -22,11 +22,9 @@ import static org.apache.jena.fuseki.Fuseki.serverLog;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
-import org.apache.jena.atlas.io.IO;
 import org.apache.jena.atlas.lib.FileOps;
 import org.apache.jena.atlas.lib.StrUtils;
 import org.apache.jena.atlas.logging.LogCtl ;
@@ -35,10 +33,18 @@ import org.apache.jena.fuseki.mgt.ManagementServer;
 import org.apache.jena.fuseki.server.FusekiConfig;
 import org.apache.jena.fuseki.server.SPARQLServer;
 import org.apache.jena.fuseki.server.ServerConfig;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.query.ARQ;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.RDFLanguages;
 import org.apache.jena.riot.SysRIOT;
+import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.DatasetGraphFactory;
+import org.apache.jena.tdb.TDB;
+import org.apache.jena.tdb.TDBFactory;
+import org.apache.jena.tdb.sys.Names;
 import org.eclipse.jetty.server.Server;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
@@ -49,16 +55,6 @@ import arq.cmdline.CmdARQ;
 import arq.cmdline.ModDatasetAssembler;
 import jena.cmd.ArgDecl ;
 import jena.cmd.CmdException ;
-
-import org.apache.jena.graph.Graph;
-import org.apache.jena.query.ARQ;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.sparql.core.DatasetGraph;
-import org.apache.jena.sparql.core.DatasetGraphFactory;
-import org.apache.jena.tdb.TDB;
-import org.apache.jena.tdb.TDBFactory;
-import org.apache.jena.tdb.sys.Names;
-import org.apache.jena.tdb.transaction.TransactionManager;
 
 /**
  * 
@@ -199,9 +195,9 @@ public class FusekiHDTCmd extends CmdARQ
     {
         super(argv) ;
         
-        if ( false )
-            // Consider ...
-            TransactionManager.QueueBatchSize =  TransactionManager.QueueBatchSize / 2 ;
+//        if ( false )
+//            // Consider ...
+//            TransactionManager.QueueBatchSize =  TransactionManager.QueueBatchSize / 2 ;
         
         getUsage().startCategory("Fuseki") ;
         addModule(modDataset) ;
@@ -274,11 +270,11 @@ public class FusekiHDTCmd extends CmdARQ
         if ( contains(argMem) )
         {
             log.info("Dataset: in-memory") ;
-            dsg = DatasetGraphFactory.createMem() ;
+            dsg = DatasetGraphFactory.createGeneral() ;
         }
         if ( contains(argFile) )
         {
-            dsg = DatasetGraphFactory.createMem() ;
+            dsg = DatasetGraphFactory.createGeneral() ;
             // replace by RiotLoader after ARQ refresh.
             String filename = getValue(argFile) ;
             log.info("Dataset: in-memory: load file: {}", filename);
@@ -288,7 +284,6 @@ public class FusekiHDTCmd extends CmdARQ
             Lang language = RDFLanguages.filenameToLang(filename) ;
             if ( language == null )
                 throw new CmdException("Can't guess language for file: "+filename) ;
-            InputStream input = IO.openFile(filename) ; 
             
             if ( RDFLanguages.isQuads(language) )
                 RDFDataMgr.read(dsg, filename) ;

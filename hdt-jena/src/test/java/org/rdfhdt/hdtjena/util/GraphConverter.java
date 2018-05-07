@@ -1,5 +1,8 @@
 package org.rdfhdt.hdtjena.util;
 
+import java.io.IOException;
+import java.util.Iterator;
+
 import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.query.Dataset;
@@ -9,15 +12,12 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sparql.core.DatasetGraph;
 import org.apache.jena.sparql.core.DatasetGraphFactory;
 import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.parsers.JenaModelIterator;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdtjena.HDTGraph;
-
-import java.io.IOException;
-import java.util.Iterator;
 
 public class GraphConverter {
 
@@ -37,9 +37,10 @@ public class GraphConverter {
     private static HDTGraph toHDT(Graph graph) {
         Model model = ModelFactory.createModelForGraph(graph);
         IteratorTripleString tripleIter = new JenaModelIterator(model);
-        HDT hdt;
+        HDTPrivate hdt;
         try {
-            hdt = HDTManager.generateHDT(tripleIter, "http://example.com", new HDTSpecification(), null);
+            hdt = (HDTPrivate) HDTManager.generateHDT(tripleIter, "http://example.com", new HDTSpecification(), null);
+            hdt.loadOrCreateIndex(null);
         } catch (IOException | ParserException e) {
             throw new RuntimeException(e);
         }

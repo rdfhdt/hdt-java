@@ -146,6 +146,10 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 			z1 = o1.getSubject();
 			z2 = o2.getSubject();
 			break;
+		case Unknown:
+			throw new IllegalArgumentException("Cannot change order of triple if order is unknown.");
+		default:
+			break;
 		}
 
 		int result = x1 - x2;

@@ -442,6 +442,10 @@ public class HDTImpl implements HDTPrivate {
 	 */
 	@Override
 	public void loadOrCreateIndex(ProgressListener listener) {
+		if(triples.getNumberOfElements()==0) {
+			// We need no index.
+			return;
+		}
 		ControlInfo ci = new ControlInformation();
 		String indexName = hdtFileName+ HDTVersion.get_index_suffix("-");
 		indexName = indexName.replaceAll("\\.hdt\\.gz", "hdt");
@@ -464,7 +468,7 @@ public class HDTImpl implements HDTPrivate {
 			}
 		} catch (Exception e) {
 			if(e instanceof FileNotFoundException) {
-				System.out.println("The .hdt.index doesn't exist, generating a new one.");
+//				System.out.println("The .hdt.index doesn't exist, generating a new one.");
 			} else {				
 				System.out.println("Error reading .hdt.index, generating a new one. The error was: "+e.getMessage());
 				e.printStackTrace();
@@ -475,18 +479,20 @@ public class HDTImpl implements HDTPrivate {
 			triples.generateIndex(listener);
 
 			// SAVE
-			FileOutputStream out=null;
-			try {
-				out = new FileOutputStream(versionName);
-				ci.clear();
-				triples.saveIndex(out, ci, listener);
-				out.close();
-				System.out.println("Index generated and saved in "+st.stopAndShow());
-			} catch (IOException e2) {
-				System.err.println("Error writing index file.");
-				e2.printStackTrace();
-			} finally {
-				IOUtil.closeQuietly(out);
+			if(this.hdtFileName!=null) {
+				FileOutputStream out=null;
+				try {
+					out = new FileOutputStream(versionName);
+					ci.clear();
+					triples.saveIndex(out, ci, listener);
+					out.close();
+					System.out.println("Index generated and saved in "+st.stopAndShow());
+				} catch (IOException e2) {
+					System.err.println("Error writing index file.");
+					e2.printStackTrace();
+				} finally {
+					IOUtil.closeQuietly(out);
+				}
 			}
 		} finally {
 			IOUtil.closeQuietly(in);

@@ -28,9 +28,6 @@ package org.rdfhdt.hdtjena;
 
 import java.util.Map;
 
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.Query;
@@ -58,6 +55,7 @@ public class NodeDictionary {
 
 	private final Dictionary dictionary;
 
+	@SuppressWarnings("unchecked")
 	private final DictionaryCache<Node> cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")

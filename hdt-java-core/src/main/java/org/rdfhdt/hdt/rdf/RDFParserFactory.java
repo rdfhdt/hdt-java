@@ -60,7 +60,12 @@ public class RDFParserFactory {
 				return new RDFParserTar();
 			case RAR:
 				return new RDFParserRAR();
-		}		
+			case JSONLD:
+				// FIXME: Implement
+				throw new NotImplementedException("RDFParserJSONLD not implemented");
+			default:
+				break;
+		}
 
 		throw new NotImplementedException("Parser not found for notation: "+notation);		
 	}

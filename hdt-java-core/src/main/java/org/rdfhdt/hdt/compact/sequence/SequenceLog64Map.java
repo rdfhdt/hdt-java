@@ -78,6 +78,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		this(in, f, false);
 	}
 	
+	@SuppressWarnings("resource")
 	private SequenceLog64Map(CountInputStream in, File f, boolean closeInput) throws IOException {
 		CRCInputStream crcin = new CRCInputStream(in, new CRC8());
 		

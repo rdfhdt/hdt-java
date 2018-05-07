@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.iterator;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.DictionaryUtil;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;

@@ -75,7 +75,7 @@ public interface Dictionary extends Closeable {
 	long size();
 	
 	/**
-	 * Returns the number of subjects in the dictionary.
+	 * Returns the number of subjects in the dictionary. Note: Includes shared.
 	 */
 	long getNsubjects();
 	
@@ -85,7 +85,7 @@ public interface Dictionary extends Closeable {
 	long getNpredicates();
 	
 	/**
-	 * Returns the number of objects in the dictionary.
+	 * Returns the number of objects in the dictionary. Note: Includes shared
 	 */
 	long getNobjects();
 	

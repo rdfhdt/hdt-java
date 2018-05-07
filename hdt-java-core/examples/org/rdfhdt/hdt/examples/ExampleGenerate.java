@@ -1,9 +1,4 @@
 /*
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/examples/org/rdfhdt/hdt/examples/ExampleGenerate.java $
- * Revision: $Rev: 191 $
- * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
- * Last modified by: $Author: mario.arias $
- *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
@@ -22,7 +17,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.examples;

@@ -33,7 +33,6 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 
 

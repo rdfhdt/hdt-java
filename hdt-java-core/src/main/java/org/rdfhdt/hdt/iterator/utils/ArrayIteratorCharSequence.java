@@ -2,7 +2,7 @@ package org.rdfhdt.hdt.iterator.utils;
 
 import java.util.Iterator;
 
-public class ArrayIteratorCharSequence<CharSequence> implements Iterator<CharSequence> {
+public class ArrayIteratorCharSequence implements Iterator<CharSequence> {
 
 	CharSequence [] arr;
 	int pos, max;

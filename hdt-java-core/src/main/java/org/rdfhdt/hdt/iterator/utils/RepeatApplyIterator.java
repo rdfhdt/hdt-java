@@ -4,8 +4,6 @@ import java.io.Closeable;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import org.apache.jena.sparql.util.Utils;
-
 public abstract class RepeatApplyIterator<T> implements Iterator<T>, Closeable
 {
     private Iterator<T> input ;

@@ -221,7 +221,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-
+	
 	/**
 	 * Checks whether any of the components of the triple are "no match" (-1).
 	 * @return

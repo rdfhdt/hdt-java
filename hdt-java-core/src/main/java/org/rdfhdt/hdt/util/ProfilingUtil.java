@@ -38,6 +38,7 @@ import com.sun.management.HotSpotDiagnosticMXBean;
  * @author mario.arias
  *
  */
+@SuppressWarnings("restriction")
 public class ProfilingUtil {
 	// This is the name of the HotSpot Diagnostic MBean
 	private static final String HOTSPOT_BEAN_NAME =	"com.sun.management:type=HotSpotDiagnostic";
