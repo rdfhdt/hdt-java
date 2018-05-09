@@ -28,9 +28,9 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
     <jdk.version>1.8</jdk.version>
-    <jena.version>3.2.0</jena.version>
-    <jena-jdk.version>1.8</jena-jdk.version>
+    <jena.version>3.7.0</jena.version>
     <logback.version>1.1.7</logback.version>
+    <slf4j.version>1.7.12</slf4j.version>
   </properties>
 
   <scm>
@@ -161,7 +161,7 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
-        <version>1.7.12</version>
+        <version>${slf4j.version}</version>
       </dependency>
       <dependency>
         <groupId>pl.edu.icm</groupId>
