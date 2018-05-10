@@ -30,7 +30,7 @@ public class OptimizedCountTest {
 	public void setUp() throws Exception {
 		HDT hdt = HDTManager.generateHDT(new DummyIteratorTripleString(), "http://www.rdfhdt.org", new HDTSpecification(), null);
 		graph =new HDTGraph(hdt, true);
-		dataset = DatasetGraphFactory.createOneGraph(graph);
+		dataset = DatasetGraphFactory.wrap(graph);
 	}
 
 	private Plan getPlan(String sparql) {

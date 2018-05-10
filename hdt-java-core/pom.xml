@@ -26,10 +26,7 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-arq</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.rdfhdt</groupId>
             <artifactId>hdt-api</artifactId>
@@ -46,6 +43,10 @@
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
         </dependency>
         <dependency>
             <groupId>pl.edu.icm</groupId>

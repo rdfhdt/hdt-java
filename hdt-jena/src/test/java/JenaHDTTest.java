@@ -66,48 +66,51 @@ public class JenaHDTTest {
 	}
 	
 	public static void findObjects(Model model, String label) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(new File("objects2.txt")));
-		PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
-		
-		StopWatch st = new StopWatch();
-		
-		String line;
-		while((line = reader.readLine())!=null) {
-			StmtIterator iter = model.listStatements(null, null, line);
-			while (iter.hasNext()) {
-			    Statement stmt      = iter.nextStatement();  // get next statement
-//			    Resource  subject   = stmt.getSubject();     // get the subject
-//			    Property  predicate = stmt.getPredicate();   // get the predicate
-//			    RDFNode   object    = stmt.getObject();      // get the object
-			    
-			    out.println(stmt);
-			} 
+		try(BufferedReader reader = new BufferedReader(new FileReader(new File("objects2.txt")))) {
+			PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
+
+			StopWatch st = new StopWatch();
+
+			String line;
+			while((line = reader.readLine())!=null) {
+				StmtIterator iter = model.listStatements(null, null, line);
+				while (iter.hasNext()) {
+					Statement stmt      = iter.nextStatement();  // get next statement
+					//			    Resource  subject   = stmt.getSubject();     // get the subject
+					//			    Property  predicate = stmt.getPredicate();   // get the predicate
+					//			    RDFNode   object    = stmt.getObject();      // get the object
+
+					out.println(stmt);
+				} 
+			}
+			System.out.println(label+st.stopAndShow());
 		}
-		System.out.println(label+st.stopAndShow());
 	}
 	
 	public static void findSubjects(Model model, String label) throws IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(new File("subjects2.txt")));
-		PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
-		
-		StopWatch st = new StopWatch();
-		
-		String line;
-		while((line = reader.readLine())!=null) {
-			StmtIterator iter = model.listStatements(model.getResource(line), null, (RDFNode)null);
-			while (iter.hasNext()) {
-			    Statement stmt      = iter.nextStatement();  // get next statement
-//			    Resource  subject   = stmt.getSubject();     // get the subject
-//			    Property  predicate = stmt.getPredicate();   // get the predicate
-//			    RDFNode   object    = stmt.getObject();      // get the object
-			    
-			    out.println(stmt);
-			} 
+		try(BufferedReader reader = new BufferedReader(new FileReader(new File("subjects2.txt")))){
+			PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
+
+			StopWatch st = new StopWatch();
+
+			String line;
+			while((line = reader.readLine())!=null) {
+				StmtIterator iter = model.listStatements(model.getResource(line), null, (RDFNode)null);
+				while (iter.hasNext()) {
+					Statement stmt      = iter.nextStatement();  // get next statement
+					//			    Resource  subject   = stmt.getSubject();     // get the subject
+					//			    Property  predicate = stmt.getPredicate();   // get the predicate
+					//			    RDFNode   object    = stmt.getObject();      // get the object
+
+					out.println(stmt);
+				} 
+			}
+			System.out.println(label+st.stopAndShow());
 		}
-		System.out.println(label+st.stopAndShow());
 	}
 	
 	public static void iterateTriples(Model model, String label) {
+		@SuppressWarnings("unused")
 		PrintWriter out = new PrintWriter(DummyOutputStream.getInstance());
 		
 		// list the statements in the Model
@@ -115,7 +118,8 @@ public class JenaHDTTest {
 		
 		StmtIterator iter = model.listStatements();//(Resource)null, model.getProperty("http://www.geonames.org/ontology#alternateName"), (RDFNode)null);
 		while (iter.hasNext()) {
-		    Statement stmt      = iter.nextStatement();  // get next statement
+		    @SuppressWarnings("unused")
+			Statement stmt      = iter.nextStatement();  // get next statement
 //		    Resource  subject   = stmt.getSubject();     // get the subject
 //		    Property  predicate = stmt.getPredicate();   // get the predicate
 //		    RDFNode   object    = stmt.getObject();      // get the object
@@ -177,6 +181,7 @@ public class JenaHDTTest {
 		System.out.println("Total time: "+st.stopAndGet());
 	}
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception {
 		
 		StopWatch st = new StopWatch();

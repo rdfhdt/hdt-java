@@ -11,10 +11,6 @@
     <version>2.1-SNAPSHOT</version>
   </parent>
 
-  <properties>
-    <jdk.version>${jena-jdk.version}</jdk.version>
-  </properties>
-
   <dependencies>
     <dependency>
         <groupId>org.rdfhdt</groupId>

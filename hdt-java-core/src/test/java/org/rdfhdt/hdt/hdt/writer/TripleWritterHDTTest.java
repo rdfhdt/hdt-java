@@ -1,13 +1,16 @@
 package org.rdfhdt.hdt.hdt.writer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import java.io.File;
 import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
@@ -22,7 +25,10 @@ public class TripleWritterHDTTest {
 	@Test
 	public void test() {
 		try {
-			final TripleWriterHDT wr = new TripleWriterHDT("http://example.org", new HDTSpecification(), "out.hdt", false);
+			File file = new File("out.hdt");
+			file.deleteOnExit();
+			
+			final TripleWriterHDT wr = new TripleWriterHDT("http://example.org", new HDTSpecification(), file.toString(), false);
 			
 			RDFParserCallback pars = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES);
 			pars.doParse("data/test.nt", "http://example.org", RDFNotation.NTRIPLES, new RDFParserCallback.RDFCallback() {	
@@ -36,8 +42,13 @@ public class TripleWritterHDTTest {
 					}
 				}
 			});
-			
 			wr.close();
+			
+			HDT hdt = HDTManager.loadHDT(file.toString());
+			assertEquals("Successfully loaded HDT with same number of triples", 10, hdt.getTriples().getNumberOfElements());
+			
+			// Delete temp file
+			file.delete();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
