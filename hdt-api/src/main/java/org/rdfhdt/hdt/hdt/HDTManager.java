@@ -1,4 +1,4 @@
-	package org.rdfhdt.hdt.hdt;
+package org.rdfhdt.hdt.hdt;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -225,6 +225,20 @@ public abstract class HDTManager {
 		return HDTManager.getInstance().doGetHDTWriter(outFile, baseURI, hdtFormat);
 	}
 
+	/**
+	 * Create an HDT file from two HDT files by joining the triples.
+	 * @param location where the new HDT file is stored
+	 * @param hdtFileName1 First hdt file name
+	 * @param hdtFileName2 Second hdt file name
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return
+	 * @throws IOException
+	 */
+	public static HDT catHDT(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doHDTCat(location, hdtFileName1, hdtFileName2, hdtFormat, listener);
+	}
+
 	// Abstract methods for the current implementation
 	protected abstract HDTOptions doReadOptions(String file) throws IOException;
 	protected abstract HDT doLoadHDT(String hdtFileName, ProgressListener listener) throws IOException;
@@ -238,4 +252,6 @@ public abstract class HDTManager {
 	protected abstract HDT doGenerateHDT(Iterator<TripleString> iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException;
+	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+
 }

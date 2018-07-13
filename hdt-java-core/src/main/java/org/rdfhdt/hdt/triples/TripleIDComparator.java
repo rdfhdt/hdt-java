@@ -58,7 +58,7 @@ public class TripleIDComparator implements Comparator<TripleID>, Serializable {
 	 * @param order
 	 *            The order to compare with
 	 */
-	private TripleIDComparator(TripleComponentOrder order) {
+	public TripleIDComparator(TripleComponentOrder order) {
 		super();
 		this.order = order;
 	}

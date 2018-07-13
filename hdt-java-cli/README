@@ -1,0 +1,27 @@
+#HDT-java-cli
+
+This module contains some command line tool to manipulate hdt files namely:
+
+- rdf2hdt: allows to compress an RDF file in N-triples, turtle and other popular formats to HDT
+
+./bin/rdf2hdt.sh file.nt file.hdt
+
+- hdt2rdf: allows to decompress an RDF file from HDT to N-triples
+
+./bin/hdt2rdf.sh  file.hdt file.nt
+
+- hdtSearch: allows to search fast for triple patterns over HDT files
+
+./bin/hdtSearch.sh  file.hdt
+
+- hdtCat: allows to merge two HDT files to one HDT file
+
+./bin/hdtCat.sh file.hdt file2.hdt fileCat.hdt
+
+- hdtInfo: shows some statistics of the RDF file
+
+./bin/hdtInfo.sh file.hdt
+
+- hdtVerify: checks if the HDT file is correct
+
+./bin/hdtVerify.sh file.hdt

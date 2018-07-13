@@ -19,6 +19,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.TripleWriter;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.StopWatch;
 
 public class HDTManagerImpl extends HDTManager {
 
@@ -145,5 +146,16 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	protected TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException {
 		return new TripleWriterHDT(baseURI, hdtFormat, outFile, false);
+	}
+
+	@Override
+	public HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		StopWatch st = new StopWatch();
+		HDT hdt1 = doMapHDT(hdtFileName1, listener);
+		HDT hdt2 = doMapHDT(hdtFileName2, listener);
+		HDTImpl hdt = new HDTImpl(new HDTSpecification());
+		hdt.cat(location, hdt1, hdt2, listener);
+		System.out.println("HDT file joint in: "+st.stopAndShow());
+		return hdt;
 	}
 }

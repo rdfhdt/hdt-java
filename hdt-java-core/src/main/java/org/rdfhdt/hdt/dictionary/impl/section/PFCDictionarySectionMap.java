@@ -39,6 +39,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -62,7 +63,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
- *
+ * @author Dennis Diefenbach
  */
 public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeable {
 	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionMap.class);
@@ -311,49 +312,51 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return numstrings;
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.DictionarySection#getEntries()
-	 */
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
-		return new Iterator<CharSequence>() {
-			long id = 0;
+		if (buffers[0]==null){
+			return Collections.emptyIterator();
+		} else {
+			return new Iterator<CharSequence>() {
+				long id = 0;
 
-			final ReplazableString tempString = new ReplazableString();
-			int bytebufferIndex;
-			ByteBuffer buffer = buffers[0].duplicate();
+				final ReplazableString tempString = new ReplazableString();
+				int bytebufferIndex;
 
-			@Override
-			public boolean hasNext() {
-				return id<getNumberOfElements();
-			}
+				ByteBuffer buffer = buffers[0].duplicate();
 
-			@Override
-			public CharSequence next() {
-				if(!buffer.hasRemaining()) {
-					buffer = buffers[++bytebufferIndex].duplicate();
-					buffer.rewind();
+				@Override
+				public boolean hasNext() {
+					return id<getNumberOfElements();
 				}
-				try {
-					if((id%blocksize)==0) {
-						tempString.replace(buffer, 0);
-					} else {				
-						long delta = VByte.decode(buffer);
-						tempString.replace(buffer, (int) delta);
+
+				@Override
+				public CharSequence next() {
+					if(!buffer.hasRemaining()) {
+						buffer = buffers[++bytebufferIndex].duplicate();
+						buffer.rewind();
 					}
-					id++;
-					return new CompactString(tempString).getDelayed();
+					try {
+						if((id%blocksize)==0) {
+							tempString.replace(buffer, 0);
+						} else {
+							long delta = VByte.decode(buffer);
+							tempString.replace(buffer, (int) delta);
+						}
+						id++;
+						return new CompactString(tempString).getDelayed();
 //					return tempString.toString();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
 				}
-			}
 
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
 	}
 
 	@Override
