@@ -12,7 +12,7 @@ import java.util.Iterator;
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
 
-public class UtilDictionary {
+public class Utility {
 
     public static void printDictionary(Dictionary d){
         Iterator i = d.getShared().getSortedEntries();

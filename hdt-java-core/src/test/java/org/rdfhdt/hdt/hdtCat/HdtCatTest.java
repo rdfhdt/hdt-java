@@ -7,7 +7,7 @@ import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.hdtCat.utils.UtilDictionary;
+import org.rdfhdt.hdt.hdtCat.utils.Utility;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
@@ -37,8 +37,10 @@ public class HdtCatTest implements ProgressListener {
                 HDT hdtCatNew = HDTManager.catHDT(theDir.getAbsolutePath(), hdt1_location, hdt2_location, new HDTSpecification(), null);
 
                 //HDTCat hdtCatNew = new HDTCat(new HDTSpecification(),hdt1,hdt2,this);
-                UtilDictionary.printDictionary(hdtCatNew.getDictionary());
-                UtilDictionary.compareDictionary(hdtCatOld.getDictionary(), hdtCatNew.getDictionary());
+                Utility.printDictionary(hdtCatNew.getDictionary());
+                Utility.compareDictionary(hdtCatOld.getDictionary(), hdtCatNew.getDictionary());
+                Utility.printTriples(hdtCatNew);
+                Utility.compareTriples(hdtCatOld,hdtCatNew);
 
                 try {
                     Iterator it = hdtCatOld.search("", "", "");
@@ -149,62 +151,14 @@ public class HdtCatTest implements ProgressListener {
         help(file1,file2,concat);
     }
 
-//    @Test
-//    public void cat13() {
-//        ClassLoader classLoader = getClass().getClassLoader();
-//        try {
-//            HDT hdt1 = HDTManager.mapHDT("/Users/Dennis/IdeaProjects/hdt-java/hdt-java-cli/lubm.1-4000Cat.hdt");
-//            System.out.println(hdt1.getDictionary().getNshared());
-//
-//            IteratorTripleString it = hdt1.search("","","");
-//            int count = 0;
-//            while (it.hasNext()){
-//                it.next();
-//                count ++;
-//                if (count%1000==0){
-//                    System.out.println(count);
-//                }
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (NotFoundException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
-
-//    @Test
-//    public void cat14() {
-//
-//        ClassLoader classLoader = getClass().getClassLoader();
-//        File file1 = new File(classLoader.getResource("wikidata.nt").getFile());
-//        File file2 = new File(classLoader.getResource("example17.nt").getFile());
-//        File concat = new File(classLoader.getResource("example16+17.nt").getFile());
-//        HDT hdt1 = null;
-//        HDT hdt2 = null;
-//        try {
-//            hdt1 = HDTManager.generateHDT(file1.getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
-//            hdt2 = HDTManager.generateHDT(file2.getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
-//            HDT hdtCatOld = HDTManager.generateHDT(concat.getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
-//            HDTCat hdtCatNew = new HDTCat(new HDTSpecification(),hdt1,hdt2,this);
-//
-//            File concatSave = new File(classLoader.getResource("example4+5Save.nt").getFile());
-//            hdtCatNew.saveToHDT(concatSave.getAbsolutePath(),this);
-//
-//            IteratorTripleString it = hdt1.search("","","");
-//            int count = 0;
-//            while (it.hasNext()){
-//                it.next();
-//                count ++;
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        } catch (NotFoundException e) {
-//            e.printStackTrace();
-//        } catch (ParserException e) {
-//            e.printStackTrace();
-//        }
-//    }
+    @Test
+    public void cat11() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        String file1 = classLoader.getResource("example1.nt").getFile();
+        String file2 = classLoader.getResource("example1.nt").getFile();
+        String concat = classLoader.getResource("example1.nt").getFile();
+        help(file1,file2,concat);
+    }
 
     @Override
     public void notifyProgress(float level, String message) {

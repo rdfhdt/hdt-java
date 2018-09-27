@@ -28,6 +28,8 @@
 package org.rdfhdt.hdt.triples;
 
 import java.io.Serializable;
+import java.util.Objects;
+
 import org.rdfhdt.hdt.util.LongCompare;
 
 
@@ -157,8 +159,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	public String toString() {
 		return Long.toString(subject) + " " + predicate + " " + object;
 	}
-	
+
+
 	public boolean equals(TripleID other) {
+		System.out.println(!( subject!=other.subject || predicate!=other.predicate || object!=other.object ));
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
 	}
 
@@ -247,4 +251,18 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		return 48;
 	}
 
+	@Override
+	public boolean equals(Object o) {
+		if (o == this) return true;
+		if (!(o instanceof TripleID)) {
+			return false;
+		}
+		TripleID other = (TripleID) o;
+		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
+	}
+
+	@Override
+	public int hashCode() {
+		return (int) (subject * 13 + predicate * 17 + object * 31);
+	}
 }
