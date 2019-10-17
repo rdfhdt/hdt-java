@@ -42,11 +42,11 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 	private final BitmapTriples triples;
 	private final TripleID pattern;
     private final TripleID returnTriple;
-	private final int patZ;
+	private final long patZ;
 	
 	private AdjacencyList adjY, adjZ;
 	long posZ;
-	private int x, y, z;
+	private long x, y, z;
 	
 	BitmapTriplesIteratorZ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
@@ -87,9 +87,9 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 		long posY = adjZ.findListIndex(posZ);
 		
 		// Set full triple
-		z = (int) adjZ.get(posZ);
-		y = (int) adjY.get(posY);
-		x = (int) adjY.findListIndex(posY)+1;
+		z = adjZ.get(posZ);
+		y = adjY.get(posY);
+		x = adjY.findListIndex(posY)+1;
 		
 		// Go forward finding next appearance
 		posZ = adjZ.findNextAppearance(posZ+1, patZ);

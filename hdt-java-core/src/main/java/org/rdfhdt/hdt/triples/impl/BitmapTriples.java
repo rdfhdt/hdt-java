@@ -139,9 +139,9 @@ public class BitmapTriples implements TriplesPrivate {
 		ModifiableBitmap bitY = new Bitmap375(number);
 		ModifiableBitmap bitZ = new Bitmap375(number);
 		
-		int lastX=0, lastY=0, lastZ=0;
-		int x, y, z;
-		int numTriples=0;
+		long lastX=0, lastY=0, lastZ=0;
+		long x, y, z;
+		long numTriples=0;
 		
 		while(it.hasNext()) {
 			TripleID triple = it.next();

@@ -9,8 +9,8 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 
 public interface PredicateIndex {
-	public long getNumOcurrences(int pred);
-	public long getBase(int pred);
+	public long getNumOcurrences(long pred);
+	public long getBase(long pred);
 	public long getOccurrence(long base, long occ);
 	
 	public void load(InputStream in) throws IOException;

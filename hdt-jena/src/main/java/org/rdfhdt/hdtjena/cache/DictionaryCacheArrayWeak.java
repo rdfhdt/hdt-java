@@ -48,8 +48,8 @@ public class DictionaryCacheArrayWeak implements DictionaryCache {
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public Node get(int id) {
-		Reference<Node> ref = array[id-1];
+	public Node get(long id) {
+		Reference<Node> ref = array[(int) (id-1)];
 		if(ref!=null) {
 			return ref.get();
 		}
@@ -58,12 +58,12 @@ public class DictionaryCacheArrayWeak implements DictionaryCache {
 	}
 	
 	@Override
-    public void put(int id, Node node) {
-		array[id-1] = new WeakReference<>(node);
+    public void put(long id, Node node) {
+		array[(int) (id-1)] = new WeakReference<>(node);
 	}
 
 	@Override
-	public int size() {
+	public long size() {
 		// Can't estimate. We don't know how many the GC disposed.
 		return 0;
 	}

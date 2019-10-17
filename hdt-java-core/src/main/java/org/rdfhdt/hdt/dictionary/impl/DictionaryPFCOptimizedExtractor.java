@@ -6,7 +6,7 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 
 public class DictionaryPFCOptimizedExtractor {
 	private final PFCOptimizedExtractor shared, subjects, predicates, objects;
-	private final int numshared;
+	private final long numshared;
 	
 	public DictionaryPFCOptimizedExtractor(FourSectionDictionary origDict) {
 		numshared=(int) origDict.getNshared();
@@ -16,13 +16,13 @@ public class DictionaryPFCOptimizedExtractor {
 		objects = new PFCOptimizedExtractor((PFCDictionarySectionMap) origDict.objects);
 	}
 
-	public CharSequence idToString(int id, TripleComponentRole role) {
+	public CharSequence idToString(long id, TripleComponentRole role) {
 		PFCOptimizedExtractor section = getSection(id, role);
-		int localId = getLocalId(id, role);
+		long localId = getLocalId(id, role);
 		return section.extract(localId);
 	}
 	
-	private PFCOptimizedExtractor getSection(int id, TripleComponentRole role) {
+	private PFCOptimizedExtractor getSection(long id, TripleComponentRole role) {
 		switch (role) {
 		case SUBJECT:
 			if(id<=numshared) {
@@ -43,7 +43,7 @@ public class DictionaryPFCOptimizedExtractor {
 	}
 
 	
-	private int getLocalId(int id, TripleComponentRole position) {
+	private long getLocalId(long id, TripleComponentRole position) {
 		switch (position) {
 		case SUBJECT:
 		case OBJECT:

@@ -36,7 +36,7 @@ public class DictionaryCacheArray implements DictionaryCache {
 
 	private Node[] array;
 	final int capacity;
-	int numentries;
+	long numentries;
 	
 	public DictionaryCacheArray(int capacity) {
 		array = null;
@@ -48,29 +48,29 @@ public class DictionaryCacheArray implements DictionaryCache {
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public Node get(int id) {
+	public Node get(long id) {
 		if(array==null) {
 			return null;
 		}
 		if(id>array.length) {
 			throw new IndexOutOfBoundsException();
 		}
-		return array[id-1];
+		return array[(int) (id-1)];
 	}
 	
 	@Override
-    public void put(int id, Node node) {
+    public void put(long id, Node node) {
 		if(array==null) {
 			array = new Node[capacity];
 		}
-		if(array[id-1]==null) {
+		if(array[(int) (id-1)]==null) {
 			numentries++;
 		}
-		array[id-1] = node;
+		array[(int) (id-1)] = node;
 	}
 
 	@Override
-	public int size() {
+	public long size() {
 		return numentries;
 	}
 

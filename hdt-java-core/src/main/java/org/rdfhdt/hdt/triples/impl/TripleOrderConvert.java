@@ -108,17 +108,17 @@ public class TripleOrderConvert {
         boolean swap3 = swap3tab[from.ordinal() - 1][to.ordinal() - 1];
 		
         if(swap1){
-            int tmp = triple.getSubject();
+            long tmp = triple.getSubject();
             triple.setSubject(triple.getPredicate());
             triple.setPredicate(tmp);
         }
         if(swap2){
-            int tmp = triple.getSubject();
+            long tmp = triple.getSubject();
             triple.setSubject(triple.getObject());
             triple.setObject(tmp);
         }
         if(swap3){
-            int tmp = triple.getPredicate();
+            long tmp = triple.getPredicate();
             triple.setPredicate(triple.getObject());
             triple.setObject(tmp);
         }

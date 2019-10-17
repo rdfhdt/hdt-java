@@ -41,14 +41,14 @@ import org.apache.jena.graph.Node;
  */
 public class DictionaryCacheLRI implements DictionaryCache {
 
-	private final Map<Integer, Node> cache;
-	private final int [] arr;
+	private final Map<Long, Node> cache;
+	private final long [] arr;
 	private int ptr;
 	private final int size;
 	
 	public DictionaryCacheLRI(int size) {
 		this.size = size;
-		arr = new int[size];
+		arr = new long[size];
 		cache = new ConcurrentHashMap<>(size);
 	}
 		
@@ -56,7 +56,7 @@ public class DictionaryCacheLRI implements DictionaryCache {
 	 * @see hdt.jena.DictionaryNodeCache#getNode(int)
 	 */
 	@Override
-	public Node get(int id) {
+	public Node get(long id) {
 		return cache.get(id);
 	}
 
@@ -64,7 +64,7 @@ public class DictionaryCacheLRI implements DictionaryCache {
 	 * @see hdt.jena.DictionaryNodeCache#setNode(int, com.hp.hpl.jena.graph.Node)
 	 */
 	@Override
-	public void put(int id, Node node) {
+	public void put(long id, Node node) {
 		cache.put(id, node);
 		if(cache.size()>size) {
 			cache.remove(arr[ptr]);
@@ -76,7 +76,7 @@ public class DictionaryCacheLRI implements DictionaryCache {
 	}
 
 	@Override
-	public int size() {
+	public long size() {
 		return cache.size();
 	}
 

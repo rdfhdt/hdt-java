@@ -65,8 +65,7 @@ public class HDTStatistics implements GraphStatisticsHandler {
 				return triples.getNumberOfElements();
 			}
 
-
-			int s, p, o;
+			long s, p, o;
 			s = nodeDictionary.getIntID(subject, TripleComponentRole.SUBJECT);
 			p = nodeDictionary.getIntID(predicate, TripleComponentRole.PREDICATE);
 			o = nodeDictionary.getIntID(object, TripleComponentRole.OBJECT);

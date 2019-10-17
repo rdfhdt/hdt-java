@@ -56,12 +56,12 @@ public class PSFCFourSectionDictionary extends FourSectionDictionary {
     }
 
     @Override
-    public int stringToId(CharSequence str, TripleComponentRole position) {
+    public long stringToId(CharSequence str, TripleComponentRole position) {
         return super.stringToId(encode(str), position);
     }
 
     @Override
-    public CharSequence idToString(int id, TripleComponentRole position) {
+    public CharSequence idToString(long id, TripleComponentRole position) {
         return decode(super.idToString(id, position));
     }
 

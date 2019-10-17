@@ -112,33 +112,25 @@ public class HashDictionary extends BaseTempDictionary {
 		
 		// Update mappings with new IDs
 		st.reset();
-		for(int j=0;j<mapSubj.size();j++) {
+		for(long j=0;j<mapSubj.size();j++) {
 			mapSubj.setNewID(j, this.stringToId(mapSubj.getString(j), TripleComponentRole.SUBJECT));
 //			System.out.print("Subj Old id: "+(j+1) + " New id: "+ mapSubj.getNewID(j)+ " STR: "+mapSubj.getString(j));
 		}
 		
-		for(int j=0;j<mapPred.size();j++) {
+		for(long j=0;j<mapPred.size();j++) {
 			mapPred.setNewID(j, this.stringToId(mapPred.getString(j), TripleComponentRole.PREDICATE));
 //			System.out.print("Pred Old id: "+(j+1) + " New id: "+ mapPred.getNewID(j)+ " STR: "+mapPred.getString(j));
 		}
 		
-		for(int j=0;j<mapObj.size();j++) {
+		for(long j=0;j<mapObj.size();j++) {
 			mapObj.setNewID(j, this.stringToId(mapObj.getString(j), TripleComponentRole.OBJECT));
 			//System.out.print("Obj Old id: "+(j+1) + " New id: "+ mapObj.getNewID(j)+ " STR: "+mapObj.getString(j));
 		}
 		//System.out.println("Update mappings in "+st.stopAndShow());
 		 
 		// Replace old IDs with news
-		st.reset();
-		Iterator<TripleID> iteratorTriples = triples.searchAll();
-		while(iteratorTriples.hasNext()) {
-			TripleID triple = iteratorTriples.next();
-			triples.update(triple, 
-					mapSubj.getNewID(triple.getSubject()-1),
-					mapPred.getNewID(triple.getPredicate()-1),
-					mapObj.getNewID(triple.getObject()-1)
-			);
-		}
+		triples.replaceAllIds(mapSubj, mapPred, mapObj);
+		
 		//System.out.println("Replace IDs in "+st.stopAndShow());
 		
 		isOrganized = true;

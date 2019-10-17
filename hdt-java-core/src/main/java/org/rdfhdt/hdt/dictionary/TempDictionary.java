@@ -68,7 +68,7 @@ public interface TempDictionary extends Closeable {
 	 * @param position
 	 *            TriplePosition to be inserted in
 	 */
-	int insert(CharSequence str, TripleComponentRole position);
+	long insert(CharSequence str, TripleComponentRole position);
 
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections).
@@ -96,5 +96,5 @@ public interface TempDictionary extends Closeable {
 	 * @param role
 	 * @return
 	 */
-	int stringToId(CharSequence subject, TripleComponentRole role);
+	public long stringToId(CharSequence subject, TripleComponentRole role);
 }

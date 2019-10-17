@@ -23,6 +23,7 @@
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
  *   Alejandro Andres:          fuzzy.alej@gmail.com
+ *   Dennis Diefenbach:         dennis.diefenbach@univ-st-etienne.fr
  */
 
 package org.rdfhdt.hdt.hdt.impl;
@@ -36,6 +37,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Date;
 import java.util.zip.GZIPInputStream;
 
@@ -44,10 +47,13 @@ import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryCat;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
@@ -61,6 +67,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -68,6 +75,8 @@ import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
+import org.rdfhdt.hdt.triples.impl.BitmapTriplesCat;
+import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorCat;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -141,9 +150,6 @@ public class HDTImpl implements HDTPrivate {
 		header.insert(publicationInfoNode, HDTVocabulary.DUBLIN_CORE_ISSUED, StringUtil.formatDate(new Date()));
 	}
 
-	/**
-	 * @param spec2
-	 */
 	public HDTImpl(HDTOptions spec) {
 		this.spec = spec;
 
@@ -554,5 +560,70 @@ public class HDTImpl implements HDTPrivate {
 
 	public boolean isMapped() {
 		return isMapped;
+	}
+
+    /**
+     * Merges two hdt files hdt1 and hdt2 on disk at location
+     * @param location
+     * @param hdt1
+     * @param hdt2
+     * @param listener
+     */
+	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener){
+		try {
+			System.out.println("Generating dictionary");
+			FourSectionDictionaryCat dictionaryCat = new FourSectionDictionaryCat(location);
+			dictionaryCat.cat(hdt1.getDictionary(),hdt2.getDictionary(), listener);
+			//map the generated dictionary
+			ControlInfo ci2 = new ControlInformation();
+			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
+			FourSectionDictionaryBig dictionary = new FourSectionDictionaryBig(new HDTSpecification());
+			fis.mark(1024);
+			ci2.load(fis);
+			fis.reset();
+			dictionary.mapFromFile(fis, new File(location + "dictionary"),null);
+			this.dictionary = dictionary;
+			System.out.println("Generating triples");
+			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(),hdt2.getTriples(),dictionaryCat);
+			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
+			bitmapTriplesCat.cat(it,listener);
+			//Delete the mappings since they are not necessary anymore
+			Files.delete(Paths.get(location+"P1"));
+			Files.delete(Paths.get(location+"P1"+"Types"));
+			Files.delete(Paths.get(location+"P2"));
+			Files.delete(Paths.get(location+"P2"+"Types"));
+            Files.delete(Paths.get(location+"SH1"));
+            Files.delete(Paths.get(location+"SH1"+"Types"));
+            Files.delete(Paths.get(location+"SH2"));
+            Files.delete(Paths.get(location+"SH2"+"Types"));
+			Files.delete(Paths.get(location+"S1"));
+			Files.delete(Paths.get(location+"S1"+"Types"));
+			Files.delete(Paths.get(location+"S2"));
+			Files.delete(Paths.get(location+"S2"+"Types"));
+			Files.delete(Paths.get(location+"O1"));
+			Files.delete(Paths.get(location+"O1"+"Types"));
+			Files.delete(Paths.get(location+"O2"));
+			Files.delete(Paths.get(location+"O2"+"Types"));
+			//map the triples
+			CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
+			ci2 = new ControlInformation();
+			ci2.clear();
+			fis2.mark(1024);
+			ci2.load(fis2);
+			fis2.reset();
+			triples = TriplesFactory.createTriples(ci2);
+			triples.mapFromFile(fis2,new File(location + "triples"),null);
+            Files.delete(Paths.get(location+"mapping_back_1"));
+            Files.delete(Paths.get(location+"mapping_back_2"));
+            Files.delete(Paths.get(location+"mapping_back_type_1"));
+            Files.delete(Paths.get(location+"mapping_back_type_2"));
+			System.out.println("Generating header");
+			this.header = HeaderFactory.createHeader(spec);
+			this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

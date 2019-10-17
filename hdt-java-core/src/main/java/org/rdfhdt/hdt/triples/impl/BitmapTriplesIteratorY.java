@@ -44,14 +44,13 @@ import org.rdfhdt.hdt.triples.TripleID;
 public class BitmapTriplesIteratorY implements IteratorTripleID {
 
 	private final BitmapTriples triples;
-	private final TripleID pattern;
-    private final TripleID returnTriple;
-	private final int patY;
+	private final TripleID pattern, returnTriple;
+	private final long patY;
 	
 	private AdjacencyList adjY, adjZ;
 	long posY, posZ;
 	private long prevY, nextY, prevZ, nextZ;
-	private int x, y, z;
+	private long x, y, z;
 	
 	public BitmapTriplesIteratorY(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
@@ -96,11 +95,11 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 			posZ = prevZ = adjZ.find(posY);
 			nextZ = adjZ.last(posY); 
 			
-			x = (int) adjY.findListIndex(posY)+1;
-			y = (int) adjY.get(posY);
- 			z = (int) adjZ.get(posZ);
+			x = adjY.findListIndex(posY)+1;
+			y = adjY.get(posY);
+ 			z = adjZ.get(posZ);
 		} else {
-			z = (int) adjZ.get(posZ);
+			z = adjZ.get(posZ);
 		}
 		posZ++;	
 	
@@ -130,12 +129,12 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 			posZ = prevZ = adjZ.find(posY);
 			nextZ = adjZ.last(posY); 
 			
-			x = (int) adjY.findListIndex(posY)+1;
-			y = (int) adjY.get(posY);
- 			z = (int) adjZ.get(posZ);
+			x = adjY.findListIndex(posY)+1;
+			y = adjY.get(posY);
+ 			z = adjZ.get(posZ);
 		} else {
 			posZ--;
-			z = (int) adjZ.get(posZ);
+			z = adjZ.get(posZ);
 		}
 		
 		updateOutput();
@@ -155,9 +154,9 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 		posZ = prevZ = adjZ.find(posY);
 		nextZ = adjZ.last(posY);
 		
-		x = (int) adjY.findListIndex(posY)+1;
-		y = (int) adjY.get(posY);
-        z = (int) adjZ.get(posZ);
+		x = adjY.findListIndex(posY)+1;
+		y = adjY.get(posY);
+        z = adjZ.get(posZ);
 	}
 
 	/* (non-Javadoc)

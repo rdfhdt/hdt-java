@@ -22,7 +22,6 @@
  *   Mario Arias:               mario.arias@deri.org
  *   Javier D. Fernandez:       jfergar@infor.uva.es
  *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.triples.impl;
@@ -34,7 +33,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 
+import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -47,7 +48,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.TripleIDComparator;
+import org.rdfhdt.hdt.triples.TripleIDComparatorInt;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.RDFInfo;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -60,9 +61,9 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
  * 
  */
 public class TriplesList implements TempTriples {
-
+	
 	/** The array to hold the triples */
-	private ArrayList<TripleID> arrayOfTriples;
+	private ArrayList<TripleIDInt> arrayOfTriples;
 
 	/** The order of the triples */
 	private TripleComponentOrder order;
@@ -81,7 +82,7 @@ public class TriplesList implements TempTriples {
 		//precise allocation of the array (minimal memory wasting)
 		long numTriples = RDFInfo.getTriples(specification);
 		numTriples = (numTriples>0)?numTriples:100;
-		this.arrayOfTriples = new ArrayList<>((int) numTriples);
+		this.arrayOfTriples = new ArrayList<TripleIDInt>((int)numTriples);
 
 		//choosing starting(or default) component order
 		String orderStr = specification.get("triplesOrder");
@@ -99,7 +100,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public boolean reallocateIfEmpty(int numTriples){
 		if (arrayOfTriples.isEmpty()) {
-			arrayOfTriples = new ArrayList<>(numTriples);
+			arrayOfTriples = new ArrayList<TripleIDInt>(numTriples);
 			return true;
 		} else {
 			return false;
@@ -166,7 +167,7 @@ public class TriplesList implements TempTriples {
 
 		DataOutputStream dout = new DataOutputStream(output);
 		int count = 0;
-		for (TripleID triple : arrayOfTriples) {
+		for (TripleIDInt triple : arrayOfTriples) {
 			if(triple.isValid()) {
 				dout.writeInt(triple.getSubject());
 				dout.writeInt(triple.getPredicate());
@@ -190,7 +191,7 @@ public class TriplesList implements TempTriples {
 		int numRead=0;
 		
 		while(numRead<totalTriples) {
-			arrayOfTriples.add(new TripleID(IOUtil.readInt(input), IOUtil.readInt(input), IOUtil.readInt(input)));
+			arrayOfTriples.add(new TripleIDInt(IOUtil.readInt(input), IOUtil.readInt(input), IOUtil.readInt(input)));
 			numRead++;
 			numValidTriples++;
 			ListenerUtil.notifyCond(listener, "Loading TriplesList", numRead, totalTriples);
@@ -208,7 +209,7 @@ public class TriplesList implements TempTriples {
 	public void load(TempTriples input, ProgressListener listener) {
 		IteratorTripleID iterator = input.searchAll();
 		while (iterator.hasNext()) {
-			arrayOfTriples.add(iterator.next());
+			arrayOfTriples.add(new TripleIDInt(iterator.next()));
 			numValidTriples++;
 		}
 
@@ -241,7 +242,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public boolean insert(TripleID... triples) {
 		for (TripleID triple : triples) {
-			arrayOfTriples.add(new TripleID(triple));
+			arrayOfTriples.add(new TripleIDInt(triple));
 			numValidTriples++;
 		}
 		sorted = false;
@@ -252,19 +253,9 @@ public class TriplesList implements TempTriples {
 	 * @see hdt.triples.TempTriples#insert(int, int, int)
 	 */
 	@Override
-	public boolean insert(int subject, int predicate, int object) {
-		arrayOfTriples.add(new TripleID(subject,predicate,object));
+	public boolean insert(long subject, long predicate, long object) {
+		arrayOfTriples.add(new TripleIDInt(subject,predicate,object));
 		numValidTriples++;
-		sorted = false;
-		return true;
-	}
-
-	@Override
-	public boolean update(TripleID triple, int subj, int pred, int obj) {
-		if (triple==null)
-			return false;
-
-		triple.setAll(subj, pred, obj);
 		sorted = false;
 		return true;
 	}
@@ -277,7 +268,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public boolean remove(TripleID... patterns) {
 		boolean removed = false;
-		for(TripleID triple : arrayOfTriples){
+		for(TripleIDInt triple : arrayOfTriples){
 			for(TripleID pattern : patterns) {
 				if(triple.match(pattern)) {
 					triple.clear();
@@ -299,7 +290,7 @@ public class TriplesList implements TempTriples {
 	@Override
 	public void sort(ProgressListener listener) {
 		if(!sorted) {
-			Collections.sort(arrayOfTriples, TripleIDComparator.getComparator(order));
+			Collections.sort(arrayOfTriples, TripleIDComparatorInt.getComparator(order));
 		}
 		sorted = true;
 	}
@@ -430,7 +421,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get(pos++);
+			return triplesList.arrayOfTriples.get((int)pos++).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -446,7 +437,7 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get(--pos);
+			return triplesList.arrayOfTriples.get((int)--pos).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -512,4 +503,16 @@ public class TriplesList implements TempTriples {
 	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {		
 	}
 
+	@Override
+	public void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj) {
+		sorted=false;
+		for(TripleIDInt triple : arrayOfTriples) {
+			triple.setAll( 
+					(int)mapSubj.getNewID(triple.getSubject()-1),
+					(int)mapPred.getNewID(triple.getPredicate()-1),
+					(int)mapObj.getNewID(triple.getObject()-1)
+				);
+		}
+	}
+	
 }

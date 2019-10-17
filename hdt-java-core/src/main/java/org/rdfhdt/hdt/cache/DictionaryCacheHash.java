@@ -35,15 +35,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DictionaryCacheHash<T> implements DictionaryCache<T> {
 
-	private Map<Integer, T> hash = new ConcurrentHashMap<Integer, T>();
+	private Map<Long, T> hash = new ConcurrentHashMap<>();
 	
 	@Override
-	public T get(int id) {
+	public T get(long id) {
 		return hash.get(id);
 	}
 
 	@Override
-	public void put(int id, T node) {
+	public void put(long id, T node) {
 		hash.put(id, node);
 	}
 

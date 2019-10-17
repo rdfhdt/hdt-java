@@ -227,7 +227,7 @@ public class SequenceLog64Big implements DynamicSequence {
 	}
 
 	/* (non-Javadoc)
-	 * @see hdt.triples.array.Stream#get(int)
+	 * @see hdt.triples.array.Stream#get(long)
 	 */
 	@Override
 	public long get(long position) {

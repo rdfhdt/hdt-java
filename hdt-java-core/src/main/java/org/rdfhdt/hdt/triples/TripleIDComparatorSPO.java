@@ -29,6 +29,8 @@ package org.rdfhdt.hdt.triples;
 
 import java.util.Comparator;
 
+import org.rdfhdt.hdt.util.LongCompare;
+
 
 /**
  * Comparator between triples, based on the TripleComponentOrder
@@ -53,13 +55,13 @@ public final class TripleIDComparatorSPO implements Comparator<TripleID> {
 	@Override
 	public int compare(TripleID o1, TripleID o2) {
 
-		int result = o1.getSubject() - o2.getSubject();
+		int result = LongCompare.compare(o1.getSubject(), o2.getSubject());
 
 		if (result == 0) {
-			result = o1.getPredicate() - o2.getPredicate();
+			result = LongCompare.compare(o1.getPredicate(), o2.getPredicate());
 			if (result == 0) {
 				// The third component is different?
-				return o1.getObject() - o2.getObject();
+				return LongCompare.compare(o1.getObject(), o2.getObject());
 			} else {
 				// the second component is different
 				return result;

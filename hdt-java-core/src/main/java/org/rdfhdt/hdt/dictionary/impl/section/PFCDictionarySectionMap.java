@@ -39,6 +39,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -62,7 +63,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * @author mario.arias
- *
+ * @author Dennis Diefenbach
  */
 public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeable {
 	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionMap.class);
@@ -75,7 +76,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected ByteBuffer [] buffers; // Encoded sequence
 	long [] posFirst;	// Global byte position of the start of each buffer
 	protected int blocksize;
-	protected int numstrings;
+	protected long numstrings;
 	protected Sequence blocks;
 	protected FileInputStream fis; 
 	protected long dataSize;
@@ -98,7 +99,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 		
 		// Read vars
-		numstrings = (int) VByte.decode(crcin);
+		numstrings = VByte.decode(crcin);
 		dataSize = VByte.decode(crcin);
 		blocksize = (int) VByte.decode(crcin);		
 	
@@ -118,11 +119,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 
 		// Read packed data
 		ch = FileChannel.open(Paths.get(f.toString()));
-		int block = 0;
+		long block = 0;
 		int buffer = 0;
 		long numBlocks = blocks.getNumberOfElements();
 		long bytePos = 0;
-		long numBuffers = 1+numBlocks/BLOCKS_PER_BYTEBUFFER;
+		long numBuffers = 1L+numBlocks/BLOCKS_PER_BYTEBUFFER;
 		buffers = new ByteBuffer[(int)numBuffers ];
 		posFirst = new long[(int)numBuffers];
 		
@@ -145,24 +146,24 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 	}
 
-	protected int locateBlock(CharSequence str) {
+	private long locateBlock(CharSequence str) {
 		if(blocks.getNumberOfElements()==0) {
 			return -1;
 		}
 		
-		int low = 0;
-		int high = (int)blocks.getNumberOfElements()-1;
-		int max = high;
+		long low = 0;
+		long high = blocks.getNumberOfElements()-1;
+		long max = high;
 		
 		while (low <= high) {
-			int mid = low + (high - low)/2;
+			long mid = low + (high - low)/2;
 		
 			int cmp;
 			if(mid==max) {
 				cmp=-1;
 			} else {
-				ByteBuffer buffer = buffers[mid/BLOCKS_PER_BYTEBUFFER];
-				cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[mid/BLOCKS_PER_BYTEBUFFER]));
+				ByteBuffer buffer = buffers[(int) (mid/BLOCKS_PER_BYTEBUFFER)];
+				cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[(int) (mid/BLOCKS_PER_BYTEBUFFER)]));
 			}
 			if (cmp<0) {
 				high = mid - 1;
@@ -180,12 +181,12 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	 * @see hdt.dictionary.DictionarySection#locate(java.lang.CharSequence)
 	 */
 	@Override
-	public int locate(CharSequence str) {
+	public long locate(CharSequence str) {
 		if(buffers==null || blocks==null) {
 			return 0;
 		}
 		
-		int blocknum = locateBlock(str);
+		long blocknum = locateBlock(str);
 		if(blocknum>=0) {
 			// Located exactly
 			return (blocknum*blocksize)+1;
@@ -194,7 +195,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				int idblock = locateInBlock(blocknum, str);
+				long idblock = locateInBlock(blocknum, str);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -205,7 +206,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return 0;
 	}
 	
-	public int locateInBlock(int block, CharSequence str) {
+	public int locateInBlock(long block, CharSequence str) {
 		if(block>=blocks.getNumberOfElements()) {
 			return 0;
 		}
@@ -217,8 +218,8 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 //		dumpBlock(block);
 
-		ByteBuffer buffer = buffers[block/BLOCKS_PER_BYTEBUFFER].duplicate();
-		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
+		ByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
+		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
 		
 		try {
 			if(!buffer.hasRemaining()) {
@@ -266,7 +267,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
-	public CharSequence extract(int id) {
+	public CharSequence extract(long id) {
 		if(buffers==null || blocks==null) {
 			return null;
 		}
@@ -275,16 +276,16 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			return null;
 		}
 		
-		int block = (id-1)/blocksize;
-		ByteBuffer buffer = buffers[block/BLOCKS_PER_BYTEBUFFER].duplicate();
-		buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
+		long block = (id-1)/blocksize;
+		ByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
+		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
 		
 		try {
 			ReplazableString tempString = new ReplazableString();
 			tempString.replace(buffer,0);
 
-			int stringid = (id-1)%blocksize;
-			for(int i=0;i<stringid;i++) {
+			long stringid = (id-1)%blocksize;
+			for(long i=0;i<stringid;i++) {
 				long delta = VByte.decode(buffer);
 				tempString.replace(buffer, (int) delta);
 			}
@@ -307,136 +308,55 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	 * @see hdt.dictionary.DictionarySection#getNumberOfElements()
 	 */
 	@Override
-	public int getNumberOfElements() {
+	public long getNumberOfElements() {
 		return numstrings;
 	}
 
-	/* (non-Javadoc)
-	 * @see hdt.dictionary.DictionarySection#getEntries()
-	 */
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
-		return new Iterator<CharSequence>() {
-			int id;
+		if (buffers[0]==null){
+			return Collections.emptyIterator();
+		} else {
+			return new Iterator<CharSequence>() {
+				long id = 0;
 
-			final ReplazableString tempString = new ReplazableString();
-			int bytebufferIndex;
-			ByteBuffer buffer = buffers[0].duplicate();
+				final ReplazableString tempString = new ReplazableString();
+				int bytebufferIndex;
 
-			@Override
-			public boolean hasNext() {
-				return id<getNumberOfElements();
-			}
+				ByteBuffer buffer = buffers[0].duplicate();
 
-			@Override
-			public CharSequence next() {
-				if(!buffer.hasRemaining()) {
-					buffer = buffers[++bytebufferIndex].duplicate();
-					buffer.rewind();
+				@Override
+				public boolean hasNext() {
+					return id<getNumberOfElements();
 				}
-				try {
-					if((id%blocksize)==0) {
-						tempString.replace(buffer, 0);
-					} else {				
-						long delta = VByte.decode(buffer);
-						tempString.replace(buffer, (int) delta);
+
+				@Override
+				public CharSequence next() {
+					if(!buffer.hasRemaining()) {
+						buffer = buffers[++bytebufferIndex].duplicate();
+						buffer.rewind();
 					}
-					id++;
-					return new CompactString(tempString).getDelayed();
-//					return tempString.toString();
-				} catch (IOException e) {
-					throw new RuntimeException(e);
-				}
-			}
-
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
-	}
-	
-	public Iterator<CharSequence> getSortedEntries(final Iterator<Integer> in) {
-		return new Iterator<CharSequence>() {
-			int id = 0;
-
-			ReplazableString tempString = new ReplazableString();
-			int bytebufferIndex=0;
-			ByteBuffer buffer = buffers[0].duplicate();
-
-			@Override
-			public boolean hasNext() {
-				return in.hasNext();
-			}
-
-			@Override
-			public CharSequence next() {
-				int target = in.next();
-				
-				if(target<1 || target>numstrings) {
-					throw new IndexOutOfBoundsException("Trying to access position "+target+ " but PFC has "+numstrings+" elements.");
-				}
-							
-				if(target<( (id%blocksize)+blocksize) ) {
-					// If the searched string is in the current block, just continue
-					
-					while(id<target) {
-						if(!buffer.hasRemaining()) {
-							buffer = buffers[++bytebufferIndex].duplicate();
-							buffer.rewind();
-						}
-						try {
-							if((id%blocksize)==0) {
-								tempString.replace(buffer, 0);
-							} else {				
-								long delta = VByte.decode(buffer);
-								tempString.replace(buffer, (int) delta);
-							}
-							id++;
-							
-							if(id==target) {
-								return new CompactString(tempString).getDelayed();
-//								return tempString.toString();
-							}
-						} catch (IOException e) {
-							throw new RuntimeException(e);
-						}
-					}
-					// Should not reach here.
-					throw new RuntimeException("Not found");
-				
-				} else {
-					// The searched string is in another block, seek directly to that one.
-					
-					id = target;
-					
-					int block = (target-1)/blocksize;
-					bytebufferIndex = block/BLOCKS_PER_BYTEBUFFER;
-					buffer = buffers[bytebufferIndex++].duplicate();
-					buffer.position((int)(blocks.get(block)-posFirst[block/BLOCKS_PER_BYTEBUFFER]));
-
 					try {
-						tempString = new ReplazableString();
-						tempString.replace(buffer,0);
-
-						int stringid = (target-1)%blocksize;
-						for(int i=0;i<stringid;i++) {
+						if((id%blocksize)==0) {
+							tempString.replace(buffer, 0);
+						} else {
 							long delta = VByte.decode(buffer);
 							tempString.replace(buffer, (int) delta);
 						}
+						id++;
 						return new CompactString(tempString).getDelayed();
+//					return tempString.toString();
 					} catch (IOException e) {
-						e.printStackTrace();
-						return null;
+						throw new RuntimeException(e);
 					}
 				}
-			}
 
-			@Override
-			public void remove() {
-				throw new UnsupportedOperationException();
-			}
-		};
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+		}
 	}
 
 	@Override

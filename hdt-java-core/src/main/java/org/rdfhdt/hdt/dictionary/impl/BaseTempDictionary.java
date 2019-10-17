@@ -62,7 +62,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 	 * @see hdt.dictionary.Dictionary#insert(java.lang.String, datatypes.TripleComponentRole)
 	 */
 	@Override
-	public int insert(CharSequence str, TripleComponentRole position) {
+	public long insert(CharSequence str, TripleComponentRole position) {
 		switch(position) {
 		case SUBJECT:
 			isOrganized = false;
@@ -154,7 +154,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		return shared;
 	}
 	
-	protected int getGlobalId(int id, DictionarySectionRole position) {
+	protected long getGlobalId(long id, DictionarySectionRole position) {
 		switch (position) {
 		case SUBJECT:
 		case OBJECT:
@@ -172,13 +172,13 @@ public abstract class BaseTempDictionary implements TempDictionary {
 	 * @see hdt.dictionary.Dictionary#stringToId(java.lang.CharSequence, datatypes.TripleComponentRole)
 	 */
 	@Override
-	public int stringToId(CharSequence str, TripleComponentRole position) {
+	public long stringToId(CharSequence str, TripleComponentRole position) {
 
 		if(str==null || str.length()==0) {
 			return 0;
 		}
 
-		int ret;
+		long ret=0;
 		switch(position) {
 		case SUBJECT:
 			ret = shared.locate(str);

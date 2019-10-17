@@ -61,6 +61,13 @@
       <organization>DataWeb Research. University of Valladolid.</organization>
       <organizationUrl>http://dataweb.infor.uva.es</organizationUrl>
     </developer>
+    <developer>
+      <id>dennis.diefenbach</id>
+      <name>Dennis Diefenbach</name>
+      <email>dennis.diefenbach@univ-st-etienne.fr</email>
+      <organization>University of Saint-Etienne</organization>
+      <organizationUrl>http://univ-st-etienne.fr/</organizationUrl>
+    </developer>
   </developers>
 
   <profiles>

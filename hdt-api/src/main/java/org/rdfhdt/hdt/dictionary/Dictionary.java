@@ -51,7 +51,7 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the id in the dictionary
 	 * @return String
 	 */
-	CharSequence idToString(int id, TripleComponentRole position);
+	public CharSequence idToString(long id, TripleComponentRole position);
 	
 	/**
 	 * Returns the id for a given string
@@ -62,54 +62,54 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the string in the dictionary
 	 * @return int
 	 */
-	int stringToId(CharSequence str, TripleComponentRole position);
+	public long stringToId(CharSequence str, TripleComponentRole position);
 
 	/**
 	 * Returns the number of elements in the dictionary
 	 */
-	long getNumberOfElements();
+	public long getNumberOfElements();
 
 	/**
 	 * Return the combined size of the sections of the dictionary (in bytes)
 	 */
-	long size();
+	public long size();
 	
 	/**
 	 * Returns the number of subjects in the dictionary. Note: Includes shared.
 	 */
-	long getNsubjects();
+	public long getNsubjects();
 	
 	/**
 	 * Returns the number of predicates in the dictionary.
 	 */
-	long getNpredicates();
+	public long getNpredicates();
 	
 	/**
 	 * Returns the number of objects in the dictionary. Note: Includes shared
 	 */
-	long getNobjects();
+	public long getNobjects();
 	
 	/**
 	 * Returns the number of subjects/objects in the dictionary.
 	 */
-	long getNshared();
+	public long getNshared();
 		
-	DictionarySection getSubjects();
+	public DictionarySection getSubjects();
 	
-	DictionarySection getPredicates();
+	public DictionarySection getPredicates();
 	
-	DictionarySection getObjects();
+	public DictionarySection getObjects();
 	
-	DictionarySection getShared();
+	public DictionarySection getShared();
 	
 	/**
 	 * Fills the header with information from the dictionary
 	 */
-	void populateHeader(Header header, String rootNode);
+	public void populateHeader(Header header, String rootNode);
 	
 	/**
 	 * Returns the type of the dictionary (the way it is written onto file/held in memory)
 	 * @return
 	 */
-	String getType();
+	public String getType();
 }

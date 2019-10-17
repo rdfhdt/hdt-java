@@ -2,10 +2,10 @@ package org.rdfhdt.hdt.iterator.utils;
 
 import java.util.Iterator;
 
-public class RangeIterator implements Iterator<Integer> {
+public class RangeIterator implements Iterator<Long> {
 
-	int pos;
-	int max;
+	long pos;
+	long max;
 	
 	public RangeIterator(int min, int max) {
 		this.pos = min;
@@ -18,7 +18,7 @@ public class RangeIterator implements Iterator<Integer> {
 	}
 
 	@Override
-	public Integer next() {
+	public Long next() {
 		return pos++;
 	}
 
