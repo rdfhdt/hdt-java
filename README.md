@@ -9,7 +9,7 @@ HDT-lib is a Java Library that implements the W3C Submission (http://www.w3.org/
 It provides several components:
 - hdt-java-api: Abstract interface for dealing with HDT files.
 - hdt-java-core: Core library for accessing HDT files programmatically from java. It allows creating HDT files from RDF and converting HDT files back to RDF. It also provides a Search interface to find triples that match a specific triple pattern.
-- hdt-java-cli: Commandline tools to convert RDF to HDT and access HDT files from a terminal.
+- hdt-java-cli: Commandline tools to convert RDF to HDT, merge two HDT files and access HDT files from a terminal.
 - hdt-jena: Jena integration. Provides a Jena Graph implementation that allows accessing HDT files as normal Jena Models. In turn, this can be used with Jena ARQ to provide more advanced searches, such as SPARQL, and even setting up SPARQL Endpoints with Fuseki.
 - hdt-java-package: Generates a package with all the components and launcher scripts.
 - hdt-fuseki: Packages Apache Jena Fuseki with the HDT jars and a fast launcher, to start a SPARQL endpoint out of HDT files very easily.
@@ -43,8 +43,9 @@ Each module has a different License. Core is LGPL, examples and tools are Apache
 * Mario Arias <mario.arias@gmailcom>
 * Javier D. Fernandez <jfergar@infor.uva.es>
 * Miguel A. Martinez-Prieto <migumar2@infor.uva.es>
-
+* Dennis Diefenbach <dennis.diefenbach@univ-st-etienne.fr>
+* Jose Gimenez Garcia: <jose.gimenez.garcia@univ-st-etienne.fr>
 
 ## Acknowledgements
 
-RDF/HDT is a project developed by the Insight Centre for Data Analytics (www.insight-centre.org), University of Valladolid (www.uva.es), University of Chile (www.uchile.cl). Funded by Science Foundation Ireland: Grant No. SFI/08/CE/I1380, Lion-II; the Spanish Ministry of Economy and Competitiveness (TIN2009-14009-C02-02); and Chilean Fondecyt's 1110287 and 1-110066.
+RDF/HDT is a project developed by the Insight Centre for Data Analytics (www.insight-centre.org), University of Valladolid (www.uva.es), University of Chile (www.uchile.cl). Funded by Science Foundation Ireland: Grant No. SFI/08/CE/I1380, Lion-II; the Spanish Ministry of Economy and Competitiveness (TIN2009-14009-C02-02); Chilean Fondecyt's 1110287 and 1-110066; and the European Union's Horizon 2020 research and innovation program under the Marie Sklodowska-Curie grant agreement No 642795.
