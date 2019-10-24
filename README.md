@@ -1,5 +1,10 @@
 [![Join the chat at https://gitter.im/rdfhdt](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/rdfhdt)
 
+# Performance enhancement
+
+- Faster n-triples parsing (around 10%): string matching vs regexp
+- Fast SPARQL Query Answering (observed 30% on large queries): removed an exception in critical section
+
 # HDT Library, Java Implementation. http://www.rdfhdt.org
 
 ## Overview
