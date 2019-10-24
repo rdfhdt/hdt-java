@@ -29,6 +29,7 @@
 
     <jdk.version>1.8</jdk.version>
     <jena.version>3.13.1</jena.version>
+    <jena-fuseki1.version>3.9.0</jena-fuseki1.version>
     <logback.version>1.2.3</logback.version>
     <slf4j.version>1.7.28</slf4j.version>
   </properties>
@@ -158,7 +159,7 @@
       <dependency>
         <groupId>org.apache.jena</groupId>
         <artifactId>jena-fuseki1</artifactId>
-        <version>${jena.version}</version>
+        <version>${jena-fuseki1.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>
