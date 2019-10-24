@@ -178,7 +178,7 @@ public class TripleString {
 		int split, posa, posb;
 		this.clear();
 
-		line = line.replaceAll("\\t"," ");
+		line = line.replace("\\t"," ");
 		
 		// SET SUBJECT
 		posa = 0;

@@ -34,6 +34,7 @@ import java.util.Arrays;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.SortUtils;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
@@ -331,9 +332,9 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		// Search superblock (binary Search)
 		int superBlockIndex;
 		if(superBlocksLong!=null) {
-			superBlockIndex = Arrays.binarySearch(superBlocksLong, x);
+			superBlockIndex = SortUtils.binarySearch(superBlocksLong, x);
 		} else {
-			superBlockIndex = Arrays.binarySearch(superBlocksInt, (int)x);
+			superBlockIndex = SortUtils.binarySearch(superBlocksInt, (int)x);
 		}
 		if(superBlockIndex<0) {
 			// Not found exactly, gives the position where it should be inserted
