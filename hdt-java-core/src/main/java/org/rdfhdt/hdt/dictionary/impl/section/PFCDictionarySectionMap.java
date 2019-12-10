@@ -363,7 +363,6 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	public void close() throws IOException {
 		blocks.close();
 		buffers = null;
-		System.gc();
 		ch.close();
 	}
 

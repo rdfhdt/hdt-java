@@ -274,7 +274,6 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	@Override
 	public void close() throws IOException {
 		buffers=null;
-		System.gc();
 		ch.close();
 	}
 }
