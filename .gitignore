@@ -5,3 +5,7 @@ hdt-fuseki/config-hdt.ttl
 # IntelliJ IDEA project files
 .idea
 *.iml
+
+# Eclipse
+.settings/
+.classpath
