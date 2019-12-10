@@ -10,3 +10,8 @@ Compiling
 
 Just run "mvn compile" and let Maven do the magic.
 
+
+Garbage Collection
+==================
+
+For versions > 2.1.1, `System.gc()` is no longer called on close. Developers should just manually invoke it after `hdt.close()`, if they for instance are using HDT close to JVM resource limits.
