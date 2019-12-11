@@ -26,7 +26,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
     <jdk.version>1.8</jdk.version>
     <jena.version>3.13.1</jena.version>
     <jena-fuseki1.version>3.9.0</jena-fuseki1.version>
