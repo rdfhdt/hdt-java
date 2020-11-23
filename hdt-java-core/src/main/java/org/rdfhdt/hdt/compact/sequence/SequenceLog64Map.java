@@ -226,14 +226,14 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		
 		out.setCRC(new CRC32());
 		
-		int numwords = (int)SequenceLog64.numWordsFor(numbits, numentries);	
-		for(int i=0;i<numwords-1;i++) {
+		long numwords = SequenceLog64.numWordsFor(numbits, numentries);	
+		for(long i=0;i<numwords-1;i++) {
 			IOUtil.writeLong(out, getWord(i));
 		}
 		
 		if(numwords>0) {
 			// Write only used bits from last entry (byte aligned, little endian)
-			int lastWordUsedBits = SequenceLog64.lastWordNumBits(numbits, numentries);
+			long lastWordUsedBits = SequenceLog64.lastWordNumBits(numbits, numentries);
 			BitUtil.writeLowerBitsByteAligned(lastword, lastWordUsedBits, out);
 		}
 		
