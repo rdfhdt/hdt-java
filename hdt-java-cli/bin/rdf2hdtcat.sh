@@ -7,13 +7,13 @@ function showhelp {
 	echo
 	echo "Usage $0 [OPTION]"
 	echo
-    echo "  -c, --catscript location of hdtCat script (bin/hdtCat.sh by default)"
+    echo "  -c, --catscript location of hdtCat script  (assuming it's in PATH by by default)"
     echo "  -i, --input     input file (input.rdf by default)"
 	echo "  -h, --help      shows this help and exits"
 	echo "  -n, --number    number of files to split FILE (2 by default)"
     echo "  -o, --output    output file (output.hdt by default)"
     echo "  -p, --parallel  number of threads to serialize RDF into HDT in parallel (1 by default)"
-    echo "  -r, --rdf2hdt   location of rdf2hdt script (bin/hdt2rdf.sh by deafult)"
+    echo "  -r, --rdf2hdt   location of rdf2hdt script (assuming it's in PATH by default)"
 	echo
 }
 
@@ -30,7 +30,7 @@ getopt --test > /dev/null
 if [[ $? -eq 4 ]]; then
     # enhanced getopt works
     OPTIONS=c:i:hn:o:p:r:
-	LONGOPTIONS=cat:,input:,help,number:,output:,parallel:,rdf2hdr:
+    LONGOPTIONS=cat:,input:,help,number:,output:,parallel:,rdf2hdt:
     COMMAND=$(getopt -o $OPTIONS -l $LONGOPTIONS -n "$0" -- "$@")
     if [[ $? -ne 0 ]]; then
     	exit 2
@@ -82,14 +82,26 @@ lines=($total_lines+$splits-1)/$splits #Set number of lines rounding up
 
 split -l $lines $input "$input"_split_
 
-echo "******************************************************************************************************************"
+echo "***************************************************************"
 echo "Serializing into HDT $splits files using $threads threads"
-echo "******************************************************************************************************************"
+echo "***************************************************************"
 echo -n "$input"_split_* | xargs -I{} -d' ' -P$threads $rdf2hdt {} {}_"$splits".hdt
 
 for (( i=$splits; i>1; i=i/2 )); do
-    echo "******************************************************************************************************************"
+    echo "***************************************************************"
     echo "Merging $i hdt files: " "$input"_split_*_"$i".hdt
-    echo "******************************************************************************************************************"
+    echo "***************************************************************"
     echo -n "$input"_split_*_"$i".hdt | xargs -d' ' -n2 -P$threads bash -c 'temp=${2%_*.hdt} ; bin/hdtCat.sh $1 $2 ${1%_*.hdt}_${temp#*split_}_$0.hdt' $((i/2))
+    command='temp=${2%_*.hdt} ; '$hdtCat' $1 $2 ${1%_*.hdt}_${temp#*split_}_$0.hdt'
+    echo -n "$input"_split_*_"$i".hdt | xargs -d' ' -n2 -P$threads bash -c "$command" $((i/2))
 done
+
+echo "***************************************************************"
+echo "Moving output to '$output' file"
+echo "***************************************************************"
+mv "$input"_split*_1.hdt "$output"
+
+echo "***************************************************************"
+echo "Cleaning up split files"
+echo "***************************************************************"
+rm "$input"_split_*
