@@ -95,8 +95,8 @@
   </profiles>
 
   <issueManagement>
-    <system>Google Code</system>
-    <url>https://code.google.com/p/hdt-java/issues/list</url>
+    <system>Github</system>
+    <url>https://github.com/rdfhdt/hdt-java/issues</url>
   </issueManagement>
 
   <dependencyManagement>
