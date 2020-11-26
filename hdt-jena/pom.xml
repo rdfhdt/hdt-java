@@ -11,6 +11,15 @@
     <version>2.1.1-SNAPSHOT</version>
   </parent>
 
+  <licenses>
+    <license>
+        <name>
+            GNU Library or Lesser General Public License (LGPL) 3.0
+        </name>
+        <url>http://www.gnu.org/licenses/lgpl.html</url>
+    </license>
+  </licenses>
+
   <dependencies>
     <dependency>
         <groupId>org.rdfhdt</groupId>
