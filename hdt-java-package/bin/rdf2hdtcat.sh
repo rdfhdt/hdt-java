@@ -85,7 +85,7 @@ split -l $lines $input "$input"_split_
 echo "***************************************************************"
 echo "Serializing into HDT $splits files using $threads threads"
 echo "***************************************************************"
-echo -n "$input"_split_* | xargs -I{} -d' ' -P$threads $rdf2hdt {} {}_"$splits".hdt
+echo -n "$input"_split_* | xargs -I{} -d' ' -P$threads $rdf2hdt -rdftype ntriples {} {}_"$splits".hdt
 
 for (( i=$splits; i>1; i=i/2 )); do
     echo "***************************************************************"
