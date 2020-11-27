@@ -25,7 +25,7 @@ import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 
 
 /**
- * @author Dennis Diefenbach & Jose Gimenez Garcia
+ * @author Dennis Diefenbach &amp; Jose Gimenez Garcia
  */
 public class CatMappingBack {
     private String location;

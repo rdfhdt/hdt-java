@@ -44,7 +44,7 @@ public interface Sequence extends Closeable {
 	/**
 	 * Adds an element to the array
 	 * 
-	 * @param element
+	 * @param elements
 	 *            The element to be added to the array
 	 */
 	void add(Iterator<Long> elements);

@@ -168,7 +168,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Compare TripleID to another one using SPO Order. 
-	 * To compare using other orders use {@link TripleStringComparator} 
+	 * To compare using other orders use @see org.rdfhdt.hdt.triples.TripleStringComparator
 	 */
 	@Override
 	public int compareTo(TripleID other) {

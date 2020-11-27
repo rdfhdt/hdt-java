@@ -71,8 +71,6 @@ public class CRC8 implements CRC {
      * Update the CRC value with a byte data.
      *
      * @param data  The byte data
-     * @param crc   The starting CRC value
-     * @return      The updated CRC value
      */
     @Override
     public void update(byte data) {

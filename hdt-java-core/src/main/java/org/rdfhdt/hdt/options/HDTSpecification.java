@@ -39,7 +39,7 @@ public class HDTSpecification extends HDTOptionsBase {
 	/**
 	 * Default constructor, reads the file config.properties
 	 * 
-	 * @throws IOException
+	 *
 	 */
 	public HDTSpecification() {
 		super();

@@ -17,7 +17,7 @@ public class NonCloseInputStream extends InputStream {
 	private final InputStream in;
 	
 	/**
-	 * @param parent
+	 * @param input
 	 */
 	public NonCloseInputStream(InputStream input) {
 		this.in = input;

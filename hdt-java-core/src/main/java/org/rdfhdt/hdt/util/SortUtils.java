@@ -1,15 +1,36 @@
 package org.rdfhdt.hdt.util;
 
 public class SortUtils {
+
 	/**
-	 * Searches a sorted int array for a specified value, using an optimized
+	 * Searches a sorted long array for a specified value, using an optimized
 	 * binary search algorithm (which tries to guess smart pivots). The result
 	 * is unspecified if the array is not sorted. The method returns an index
 	 * where key was found in the array. If the array contains duplicates, this
 	 * might not be the first occurrence.
-	 * 
-	 * @see java.util.Arrays.sort(int[])
-	 * @see java.util.Arrays.binarySearch(int[])
+	 *
+	 * @see java.util.Arrays#sort(int[])
+	 * @see java.util.Arrays#binarySearch(int[] a, int key)
+	 * @param array
+	 *            sorted array of integers
+	 * @param key
+	 *            value to search for in the array
+	 * @return index of an occurrence of key in array, or -(insertionIndex + 1)
+	 *         if key is not contained in array (&lt;i&gt;insertionIndex&lt;/i&gt; is
+	 *         then the index at which key could be inserted).
+	 */
+	public static final int binarySearch(long[] array, long key) {
+		return binarySearch(array, key, 0, array.length);
+	}
+	/**
+	 * Searches a sorted long array for a specified value, using an optimized
+	 * binary search algorithm (which tries to guess smart pivots). The result
+	 * is unspecified if the array is not sorted. The method returns an index
+	 * where key was found in the array. If the array contains duplicates, this
+	 * might not be the first occurrence.
+	 *
+	 * @see java.util.Arrays#sort(int[])
+	 * @see java.util.Arrays#binarySearch(int[] a, int key)
 	 * @param array
 	 *            sorted array of integers
 	 * @param key
@@ -19,13 +40,9 @@ public class SortUtils {
 	 * @param length
 	 *            number of valid values in the array
 	 * @return index of an occurrence of key in array, or -(insertionIndex + 1)
-	 *         if key is not contained in array (&lt;i>insertionIndex&lt;/i> is
+	 *         if key is not contained in array (&lt;i&gt;insertionIndex&lt;/i&gt; is
 	 *         then the index at which key could be inserted).
 	 */
-
-	public static final int binarySearch(long[] array, long key) {
-		return binarySearch(array, key, 0, array.length);
-	}
 
 	public static final int binarySearch(long[] array, long key, int offset, int length) {// min,
 																							// int
@@ -98,9 +115,9 @@ public class SortUtils {
 	 * is unspecified if the array is not sorted. The method returns an index
 	 * where key was found in the array. If the array contains duplicates, this
 	 * might not be the first occurrence.
-	 * 
-	 * @see java.util.Arrays.sort(int[])
-	 * @see java.util.Arrays.binarySearch(int[])
+	 *
+	 * @see java.util.Arrays#sort(int[])
+	 * @see java.util.Arrays#binarySearch(int[] a, int key)
 	 * @param array
 	 *            sorted array of integers
 	 * @param key
@@ -110,7 +127,7 @@ public class SortUtils {
 	 * @param length
 	 *            number of valid values in the array
 	 * @return index of an occurrence of key in array, or -(insertionIndex + 1)
-	 *         if key is not contained in array (&lt;i>insertionIndex&lt;/i> is
+	 *         if key is not contained in array (&lt;i&gt;insertionIndex&lt;/i&gt; is
 	 *         then the index at which key could be inserted).
 	 */
 	public static final int binarySearch(int[] array, int key, int offset, int length) {// min,

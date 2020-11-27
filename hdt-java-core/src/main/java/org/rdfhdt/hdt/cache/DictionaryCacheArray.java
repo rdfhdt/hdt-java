@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.cache;
 
 /**
  * 
- * Cache using an array. Assumes valid id>0
+ * Cache using an array. Assumes valid id&gt;0
  * 
  * @author mario.arias
  *

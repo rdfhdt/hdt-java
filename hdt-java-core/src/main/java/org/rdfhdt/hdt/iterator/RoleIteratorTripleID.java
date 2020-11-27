@@ -45,8 +45,8 @@ public class RoleIteratorTripleID implements Iterator<Long> {
 	final Iterator<TripleID> iterator;
 
 	/**
+	 * @param iterator
 	 * @param position
-	 * @param array
 	 */
 	public RoleIteratorTripleID(Iterator<TripleID> iterator, TripleComponentRole position) {
 		this.position = position;

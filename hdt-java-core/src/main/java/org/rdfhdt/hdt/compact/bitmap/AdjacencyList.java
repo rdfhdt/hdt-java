@@ -54,8 +54,8 @@ public class AdjacencyList {
 	/**
 	 * Find pos of the list x
 	 * 
-	 * @param x
-	 * @return
+	 * @param x list
+	 * @return position of the list
 	 */
 	public final long find(long x) {
 		return x <= 0 ? 0 : bitmap.select1(x) + 1;
@@ -67,9 +67,9 @@ public class AdjacencyList {
 
 	/**
 	 * Find the last pos of the list x
-	 * 
-	 * @param x
-	 * @return
+	 *
+	 * @param x list
+	 * @return last position of the list
 	 */
 	public final long last(long x) {
 		return bitmap.select1(x + 1);
@@ -78,10 +78,9 @@ public class AdjacencyList {
 	/**
 	 * Find element y, in the list x
 	 * 
-	 * @param x
-	 * @param y
-	 * @return
-	 * @throws NotFoundException
+	 * @param x list of elements
+	 * @param y element to look for
+	 * @return index of element y
 	 */
 	public final long find(long x, long y) {
 		// Find first and last element of the list.
@@ -94,8 +93,8 @@ public class AdjacencyList {
 	/**
 	 * Find to which list x does the element at globalpos belongs
 	 * 
-	 * @param globalpos
-	 * @return
+	 * @param globalpos global position of element
+	 * @return list
 	 */
 	public final long findListIndex(long globalpos) {
 		return bitmap.rank1(globalpos - 1);
@@ -104,7 +103,7 @@ public class AdjacencyList {
 	/**
 	 * Count how many lists there are
 	 * 
-	 * @return
+	 * @return number of lists
 	 */
 	public final long countListsX() {
 		return bitmap.countOnes();
@@ -113,8 +112,8 @@ public class AdjacencyList {
 	/**
 	 * Count the number of items in list x
 	 * 
-	 * @param x
-	 * @return
+	 * @param x list
+	 * @return number of items
 	 */
 	public long countItemsY(long x) {
 		return last(x) - find(x) + 1;
@@ -205,9 +204,9 @@ public class AdjacencyList {
 
 	/**
 	 * Finds the previous appearance of the element "element" starting at global
-	 * pos: "oldpos" inclusive.
+	 * pos: "old" inclusive.
 	 * 
-	 * @param oldpos
+	 * @param old
 	 *            Old global position to start searching.
 	 * @param element
 	 *            Element to be searched

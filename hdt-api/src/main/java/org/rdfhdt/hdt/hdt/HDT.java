@@ -78,7 +78,7 @@ public interface HDT extends RDFAccess,Closeable {
 	/**
 	 * Saves to a file in HDT format
 	 * 
-	 * @param output
+	 * @param fileName
 	 *            The OutputStream to save to
 	 */
 	void saveToHDT(String fileName, ProgressListener listener) throws IOException;

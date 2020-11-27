@@ -40,9 +40,7 @@ public class TripleStringComparator implements Comparator<TripleString> {
 
 	/**
 	 * Basic constructor
-	 * 
-	 * @param order
-	 *            The order to compare with
+	 *
 	 */
 	public TripleStringComparator() {
 		super();

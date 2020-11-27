@@ -74,8 +74,8 @@ public class TriplesListLong implements TempTriples {
 	/**
 	 * Constructor, given an order to sort by
 	 * 
-	 * @param order
-	 *            The order to sort by
+	 * @param specification
+	 *            The specification to sort by
 	 */
 	public TriplesListLong(HDTOptions specification) {
 

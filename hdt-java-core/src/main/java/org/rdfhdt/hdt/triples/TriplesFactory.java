@@ -61,7 +61,7 @@ public class TriplesFactory {
 	/**
 	 * Creates a new Triples based on an HDTOptions
 	 * 
-	 * @param specification
+	 * @param spec
 	 *            The HDTOptions to read
 	 * @return Triples
 	 */
@@ -82,8 +82,8 @@ public class TriplesFactory {
 	/**
 	 * Creates a new Triples based on a ControlInformation
 	 * 
-	 * @param specification
-	 *            The HDTOptions to read
+	 * @param ci
+	 *            The ControlInfo to read
 	 * @return Triples
 	 */
 	public static TriplesPrivate createTriples(ControlInfo ci) {

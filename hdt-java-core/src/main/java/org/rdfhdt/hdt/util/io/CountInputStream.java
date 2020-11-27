@@ -43,7 +43,7 @@ public class CountInputStream extends InputStream {
 	long markPartial;
 	
 	/**
-	 * @param parent
+	 * @param input
 	 */
 	public CountInputStream(InputStream input) {
 		this.in = input;

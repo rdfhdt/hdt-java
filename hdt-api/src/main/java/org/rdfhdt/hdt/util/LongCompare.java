@@ -1,7 +1,7 @@
 package org.rdfhdt.hdt.util;
 
 /**
- * Compare Longs, now available as Long.compare in Java 7, but not on <=Java6
+ * Compare Longs, now available as Long.compare in Java 7, but not on &lt;=Java6
  * 
  * @author mario.arias
  *

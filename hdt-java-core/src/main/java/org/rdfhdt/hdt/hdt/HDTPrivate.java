@@ -24,8 +24,8 @@ public interface HDTPrivate extends HDT {
 	/**
 	 * Loads a HDT file
 	 * 
-	 * @param input
-	 *            InputStream to read from
+	 * @param fileName
+	 *            Filepath String to read from
 	 */
 	void loadFromHDT(String fileName, ProgressListener listener) throws IOException;
 	

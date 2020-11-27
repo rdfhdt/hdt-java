@@ -75,7 +75,7 @@ public interface Bitmap {
     
     /**
      * Find the position where n zeros have appeared up to that position.
-     * @param x
+     * @param n
      * @return
      */
     long select0(long n);

@@ -173,7 +173,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/**
 	 * Compare TripleID to another one using SPO Order. 
-	 * To compare using other orders use {@link TripleStringComparator} 
+	 * To compare using other orders use @see TripleStringComparator
 	 */
 	@Override
 	public int compareTo(TripleIDInt other) {

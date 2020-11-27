@@ -250,8 +250,8 @@ public class IOUtil {
 
 	/**
 	 * Read int, little endian
-	 * @param input
-	 * @return
+	 * @param in input
+	 * @return integer
 	 * @throws IOException
 	 */
 	public static int readInt(InputStream in) throws IOException {
@@ -274,8 +274,8 @@ public class IOUtil {
 	}
 
 	/**
-	 * @param din
-	 * @param bytes
+	 * @param input din
+	 * @param length bytes
 	 * @param listener
 	 * @return
 	 */

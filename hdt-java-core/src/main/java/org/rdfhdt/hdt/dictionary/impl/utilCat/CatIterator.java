@@ -30,7 +30,7 @@ import java.util.Iterator;
 
 
 /**
- * @author Dennis Diefenbach & Jose Gimenez Garcia
+ * @author Dennis Diefenbach &amp; Jose Gimenez Garcia
  */
 public class CatIterator implements Iterator<Integer> {
     ArrayList<IteratorPlusInt> list;

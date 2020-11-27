@@ -8,7 +8,7 @@ import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
- * Iterator implementation to iterate over a List<TripleID> object
+ * Iterator implementation to iterate over a List&lt;TripleID&gt; object
  * 
  * @author mario.arias
  *
