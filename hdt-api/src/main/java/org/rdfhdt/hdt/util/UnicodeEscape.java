@@ -35,9 +35,9 @@ public class UnicodeEscape {
 
     /**
      * Escapes a Unicode string to an all-ASCII character sequence. Any special
-     * characters are escaped using backslashes (<tt>"</tt> becomes <tt>\"</tt>,
+     * characters are escaped using backslashes (<code>"</code> becomes <code>\"</code>,
      * etc.), and non-ascii/non-printable characters are escaped using Unicode
-     * escapes (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>).
+     * escapes (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>).
      */
     public static String escapeString(String label) {
         try {
@@ -52,9 +52,9 @@ public class UnicodeEscape {
 
     /**
      * Escapes a Unicode string to an all-ASCII character sequence. Any special
-     * characters are escaped using backslashes (<tt>"</tt> becomes <tt>\"</tt>,
+     * characters are escaped using backslashes (<code>"</code> becomes <code>\"</code>,
      * etc.), and non-ascii/non-printable characters are escaped using Unicode
-     * escapes (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>).
+     * escapes (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>).
      * 
      * @throws IOException
      */
@@ -135,9 +135,9 @@ public class UnicodeEscape {
     
     /**
      * Unescapes an escaped Unicode string. Any Unicode sequences
-     * (<tt>&#x5C;uxxxx</tt> and <tt>&#x5C;Uxxxxxxxx</tt>) are restored to the
+     * (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>) are restored to the
      * value indicated by the hexadecimal argument and any backslash-escapes
-     * (<tt>\"</tt>, <tt>\\</tt>, etc.) are decoded to their original form.
+     * (<code>\"</code>, <code>\\</code>, etc.) are decoded to their original form.
      * 
      * @param s An escaped Unicode string.
      * @return The unescaped string.
