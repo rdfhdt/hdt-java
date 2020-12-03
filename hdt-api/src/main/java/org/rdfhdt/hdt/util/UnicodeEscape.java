@@ -1,6 +1,5 @@
 package org.rdfhdt.hdt.util;
 
-
 import java.io.IOException;
 
 public class UnicodeEscape {
