@@ -48,4 +48,18 @@ public final class DelayedString implements CharSequence {
 		return str;
 	}
 
+	@Override
+	public int hashCode() {
+		ensure();
+		return str.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if ((obj instanceof CharSequence)) {
+			ensure();
+			return str.equals(obj);
+		}
+		return false;
+	}
 }
