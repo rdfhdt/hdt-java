@@ -126,11 +126,25 @@ public class TripleString {
 		this.predicate = predicate;
 		this.object = object;
 	}
-	
-	public boolean equals(TripleString other) {
-		return !( !subject.equals(other.subject) || !predicate.equals(other.predicate) || !object.equals(other.object) );
+
+	@Override
+	public boolean equals(Object other) {
+		if (other instanceof TripleString) {
+			TripleString ts = (TripleString) other;
+			return subject.equals(ts.subject) && predicate.equals(ts.predicate)
+					&& object.equals(ts.object);
+		}
+		return false;
 	}
-	
+
+	@Override public int hashCode() {
+		// Same as Objects.hashCode(subject, predicate, object), with fewer calls
+		int s = subject   == null ? 0 : subject.hashCode();
+		int p = predicate == null ? 0 : predicate.hashCode();
+		int o = object    == null ? 0 : object.hashCode();
+		return 31 * (31 * (31 * s) + p) + o;
+	}
+
 	/**
 	 * Check whether this triple matches a pattern. A pattern is just a TripleString where each empty component means <em>any</em>.
 	 * @param pattern
