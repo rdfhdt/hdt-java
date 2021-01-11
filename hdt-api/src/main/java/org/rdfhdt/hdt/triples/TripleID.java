@@ -162,7 +162,6 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 
 	public boolean equals(TripleID other) {
-		System.out.println(!( subject!=other.subject || predicate!=other.predicate || object!=other.object ));
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
 	}
 
