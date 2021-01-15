@@ -53,10 +53,12 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki1</artifactId>
-    </dependency>
+	<dependency>
+    	<groupId>org.apache.jena</groupId>
+    	<artifactId>jena-fuseki-webapp</artifactId>
+    	<version>${jena-fuseki.version}</version>
+	</dependency>
+
 
   </dependencies>
 
