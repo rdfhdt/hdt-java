@@ -18,6 +18,7 @@
 
 package org.rdfhdt.hdtjena.junit;
 
+import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
 import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -53,7 +54,6 @@ import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.NodeFunctions;
 import org.apache.jena.sparql.junit.QueryTestException;
-import org.apache.jena.sparql.junit.TestItem;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.resultset.SPARQLResult;
 import org.apache.jena.sparql.util.DatasetUtils;
@@ -83,7 +83,7 @@ public class HDTQueryTest implements ScriptTest {
 
     private final int testNumber = testCounter++;
     private final String testName;
-    private final TestItem testItem;
+    private final QueryTestItem testItem;
 
     private SPARQLResult results;    // Maybe null if no testing of results
 
@@ -96,7 +96,7 @@ public class HDTQueryTest implements ScriptTest {
                 || testType.equals(TestManifest.ReducedCardinalityTest);
     }
 
-    public HDTQueryTest(String testName, TestItem testItem) {
+    public HDTQueryTest(String testName, QueryTestItem testItem) {
         this.testName = Objects.requireNonNull(testName);
         this.testItem = Objects.requireNonNull(testItem);
     }
@@ -150,7 +150,6 @@ public class HDTQueryTest implements ScriptTest {
         // Switch warnings off for things that do occur in the scripted test suites
         NodeValue.VerboseWarnings = false;
         E_Function.WarnOnUnknownFunction = false;
-        CheckerLiterals.WarnOnBadLiterals = false;
 
         // SPARQL and ARQ tests are done with no value matching (for query execution and results testing)
         SystemARQ.UsePlainGraph = true;
@@ -163,11 +162,10 @@ public class HDTQueryTest implements ScriptTest {
         // Restore default settings
         NodeValue.VerboseWarnings = true;
         E_Function.WarnOnUnknownFunction = true;
-        CheckerLiterals.WarnOnBadLiterals = true;
         SystemARQ.UsePlainGraph = false;
     }
 
-    private Dataset setUpDataset(Query query, TestItem testItem) {
+    private Dataset setUpDataset(Query query, QueryTestItem testItem) {
         try {
             if (query.hasDatasetDescription() && doesTestItemHaveDataset(testItem)) {
                 // Only warn if there are results to test
@@ -196,7 +194,7 @@ public class HDTQueryTest implements ScriptTest {
         }
     }
 
-    private Query queryFromTestItem(TestItem testItem) {
+    private Query queryFromTestItem(QueryTestItem testItem) {
         if (testItem.getQueryFile() == null) {
             fail("Query test file is null");
         }
@@ -204,7 +202,7 @@ public class HDTQueryTest implements ScriptTest {
         return QueryFactory.read(testItem.getQueryFile(), null, testItem.getFileSyntax());
     }
 
-    private static boolean doesTestItemHaveDataset(TestItem testItem) {
+    private static boolean doesTestItemHaveDataset(QueryTestItem testItem) {
         return (testItem.getDefaultGraphURIs() != null && testItem.getDefaultGraphURIs().size() > 0)
                 ||
                 (testItem.getNamedGraphURIs() != null && testItem.getNamedGraphURIs().size() > 0);

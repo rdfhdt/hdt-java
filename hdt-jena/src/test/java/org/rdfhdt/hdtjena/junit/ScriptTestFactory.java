@@ -18,23 +18,22 @@
 
 package org.rdfhdt.hdtjena.junit;
 
-import org.apache.jena.query.Syntax;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.sparql.junit.QueryTestException;
-import org.apache.jena.sparql.junit.TestItem;
-import org.apache.jena.sparql.junit.TestQueryUtils;
-import org.apache.jena.sparql.vocabulary.TestManifest;
-import org.apache.jena.sparql.vocabulary.TestManifestUpdate_11;
-import org.apache.jena.sparql.vocabulary.TestManifestX;
-import org.apache.jena.sparql.vocabulary.TestManifest_11;
-import org.apache.jena.util.junit.Manifest;
-import org.apache.jena.util.junit.TestUtils;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+
+import org.apache.jena.util.junit.ManifestOld;
+import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
+import org.apache.jena.query.Syntax;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.sparql.junit.QueryTestException;
+import org.apache.jena.sparql.vocabulary.TestManifest;
+import org.apache.jena.sparql.vocabulary.TestManifestUpdate_11;
+import org.apache.jena.sparql.vocabulary.TestManifestX;
+import org.apache.jena.sparql.vocabulary.TestManifest_11;
+import org.apache.jena.util.junit.TestUtils;
 
 public class ScriptTestFactory {
     private static final List<Resource> IGNORE = Arrays.asList(
@@ -61,7 +60,7 @@ public class ScriptTestFactory {
     public List<ScriptTest> load(String manifestUri) {
         List<ScriptTest> tests = new ArrayList<>();
 
-        Manifest m = new Manifest(manifestUri);
+        ManifestOld m = new ManifestOld(manifestUri);
         String manifestName = join(groupName, TestUtils.safeName(m.getName() != null ? m.getName() : manifestUri));
 
         // Recur
@@ -86,7 +85,7 @@ public class ScriptTestFactory {
             return null;
         }
 
-        Syntax querySyntax = TestQueryUtils.getQuerySyntax(manifest);
+        Syntax querySyntax = Syntax.make(TestUtils.getLiteralOrURI(manifest, TestManifestX.querySyntax));
         if (querySyntax != null) {
             if (!querySyntax.equals(Syntax.syntaxARQ) &&
                     !querySyntax.equals(Syntax.syntaxSPARQL_10) &&
@@ -95,7 +94,7 @@ public class ScriptTestFactory {
             }
         }
 
-        TestItem item = TestItem.create(entry, TestManifest.QueryEvaluationTest);
+        QueryTestItem item = QueryTestItem.create(entry, TestManifest.QueryEvaluationTest);
 
         Resource testType = item.getTestType();
         if (testType == null) {

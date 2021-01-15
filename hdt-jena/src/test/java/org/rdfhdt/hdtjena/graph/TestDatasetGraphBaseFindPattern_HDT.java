@@ -12,7 +12,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import static org.apache.jena.atlas.junit.BaseTest.assertEqualsUnordered;
+import static org.apache.jena.atlas.junit.AssertExtra.assertEqualsUnordered;
 
 public class TestDatasetGraphBaseFindPattern_HDT extends TestDatasetGraphBaseFindPattern_Mem {
 
