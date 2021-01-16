@@ -32,39 +32,37 @@ import java.util.Iterator;
 
 /**
  * Interface that specifies the basic methods for a dictionary section
- * 
+ *
  * @author mario.arias, Eugen
  *
  */
 public interface DictionarySection extends Closeable {
-	
+
 	/**
 	 * Find a String and return its ID.
 	 * @param s
-	 * @return
 	 */
 	public long locate(CharSequence s);
-	
+
 	/**
 	 * Find the String associated to a given ID
 	 * @param pos
-	 * @return
 	 */
 	public CharSequence extract(long pos);
-	
+
 	/**
 	 * Size in bytes of the strings held in the dictionary section.
 	 */
 	long size();
-	
+
 	/**
 	 * Number of entries in the dictionary section.
 	 */
 	public long getNumberOfElements();
-	
+
 	/**
 	 * Iterator over all entries in the dictionary, sorted lexicographically.
 	 */
 	Iterator<? extends CharSequence> getSortedEntries();
-	
+
 }

@@ -24,16 +24,17 @@ import org.slf4j.LoggerFactory;
 
 class PredicateIndexArray implements PredicateIndex {
 	private static final Logger log = LoggerFactory.getLogger(PredicateIndexArray.class);
-	
+
 	BitmapTriples triples;
 	Sequence array;
 	Bitmap bitmap;
-	
+
 	public PredicateIndexArray(BitmapTriples triples) {
 		this.triples = triples;
 	}
-	
-	public long getBase(long pred) {
+
+	@Override
+    public long getBase(long pred) {
 		if(pred<=1) {
 			return 0;
 		}
@@ -44,34 +45,34 @@ class PredicateIndexArray implements PredicateIndex {
 	public long getNumOcurrences(long pred) {
 		return bitmap.select1(pred)-bitmap.select1(pred-1);
 	}
-	
+
 	@Override
 	public long getOccurrence(long base, long occ) {
 		return array.get(base+occ-1);
 	}
-	
+
 	@Override
 	public void load(InputStream input) throws IOException {
 		bitmap = BitmapFactory.createBitmap(input);
 		bitmap.load(input, null);
-		
+
 		array = SequenceFactory.createStream(input);
 		array.load(input, null);
 	}
-	
+
 	@Override
 	public void save(OutputStream out) throws IOException {
-		bitmap.save(out, null);	
+		bitmap.save(out, null);
 		array.save(out, null);
 	}
-	
+
 	@Override
 	public void generate(ProgressListener listener) {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
 		@SuppressWarnings("resource")
 		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
-	
+
 	    long maxCount = 0;
 	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
 	        // Read value
@@ -90,7 +91,7 @@ class PredicateIndexArray implements PredicateIndex {
 	        ListenerUtil.notifyCond(iListener,  "Counting appearances of predicates", i, triples.getSeqY().getNumberOfElements(), 20000);
 	    }
 	    predCount.aggressiveTrimToSize();
-	    
+
 	    // Convert predicate count to bitmap
 	    Bitmap375 bitmap = new Bitmap375(triples.getSeqY().getNumberOfElements());
 	    long tempCountPred=0;
@@ -104,8 +105,8 @@ class PredicateIndexArray implements PredicateIndex {
 	    st.reset();
 	    IOUtil.closeQuietly(predCount);
 	    predCount=null;
-	    
-	    
+
+
 	    // Create predicate index
 	    SequenceLog64 array = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
 	    array.resize(triples.getSeqY().getNumberOfElements());
@@ -121,7 +122,7 @@ class PredicateIndexArray implements PredicateIndex {
 	            insertArray.set(predicateValue-1, insertOffset+1);
 
 	            array.set(insertBase+insertOffset, i);
-	            
+
 	            ListenerUtil.notifyCond(iListener,  "Generating predicate references", i, triples.getSeqY().getNumberOfElements(), 100000);
 	    }
 	    IOUtil.closeQuietly(insertArray);
@@ -135,7 +136,7 @@ class PredicateIndexArray implements PredicateIndex {
 	public void mapIndex(CountInputStream input, File f, ProgressListener listener) throws IOException {
 		bitmap = BitmapFactory.createBitmap(input);
 		bitmap.load(input, null);
-		
+
 		array = new SequenceLog64Map(input, f);
 	}
 

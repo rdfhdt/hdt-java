@@ -41,78 +41,65 @@ public interface Bitmap {
 	/**
 	 * Get the value of the bit at position pos
 	 * @param pos
-	 * @return
 	 */
 	boolean access(long pos);
-	
+
 	/**
 	 * Count the number of ones up to position pos (included)
 	 * @param pos
-	 * @return
 	 */
     long rank1(long pos);
-    
+
     /**
      * Count the number of zeros up to position pos (included)
      * @param pos
-     * @return
      */
     long rank0(long pos);
-    
+
     /**
      * Return the position of the next 1 after position start.
      * @param start
-     * @return
      */
     long selectPrev1(long start);
-    
+
     /**
      * Return the position of the previous 1 before position start.
      * @param start
-     * @return
      */
     long selectNext1(long start);
-    
+
     /**
      * Find the position where n zeros have appeared up to that position.
      * @param n
-     * @return
      */
     long select0(long n);
-    
+
     /**
      * Find the position where n ones have appeared up to that position.
      * @param n
-     * @return
      */
     long select1(long n);
-    
+
     /**
      * Get number of total bits in the data structure
-     * 
-     * @return
      */
     long getNumBits();
-    
+
     /**
      * Count the number of total ones in the data structure.
-     * @return
      */
     long countOnes();
-    
-    /** 
+
+    /**
      * Count the number of total zeros in the data structure.
-     * 
-     * @return
      */
     long countZeros();
-    
+
     /**
      * Estimate the size in bytes of the total data structure.
-     * @return
      */
     long getSizeBytes();
-    
+
     /**
      * Dump Bitmap into an OutputStream
      * @param output
@@ -120,7 +107,7 @@ public interface Bitmap {
      * @throws IOException
      */
 	void save(OutputStream output, ProgressListener listener) throws IOException;
-	
+
 	/**
 	 * Load Bitmap from an InputStream
 	 * @param input
@@ -128,10 +115,9 @@ public interface Bitmap {
 	 * @throws IOException
 	 */
 	void load(InputStream input, ProgressListener listener) throws IOException;
-	
+
 	/**
 	 * Return the type of the data structure as defined in HDTVocabulary
-	 * @return
 	 */
 	String getType();
 }

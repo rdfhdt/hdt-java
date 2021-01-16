@@ -31,7 +31,7 @@ import org.rdfhdt.hdt.triples.TripleID;
 
 /**
  * TripleID holds a triple as integers
- * 
+ *
  */
 public final class TripleIDInt implements Comparable<TripleIDInt> {
 
@@ -48,7 +48,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param subject
 	 *            The subject
 	 * @param predicate
@@ -62,14 +62,14 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		this.predicate = predicate;
 		this.object = object;
 	}
-	
+
 	public TripleIDInt(long subject, long predicate, long object) {
 		super();
 		this.subject = (int)subject;
 		this.predicate = (int)predicate;
 		this.object = (int)object;
 	}
-	
+
 	/**
 	 * Build a TripleID as a copy of another one.
 	 * @param other
@@ -84,7 +84,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	public TripleIDInt(TripleID other) {
 		this.subject = (int)other.getSubject();
 		this.predicate = (int)other.getPredicate();
-		this.object = (int)other.getObject();		
+		this.object = (int)other.getObject();
 	}
 
 	/**
@@ -143,7 +143,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		this.predicate = predicate;
 		this.object = object;
 	}
-	
+
 	public void assign(TripleIDInt replacement) {
 		subject = replacement.getSubject();
         object = replacement.getObject();
@@ -159,20 +159,20 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
 		return "" + subject + " " + predicate + " " + object;
 	}
-	
+
 	public boolean equals(TripleIDInt other) {
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
 	}
 
 	/**
-	 * Compare TripleID to another one using SPO Order. 
+	 * Compare TripleID to another one using SPO Order.
 	 * To compare using other orders use @see TripleStringComparator
 	 */
 	@Override
@@ -190,10 +190,10 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
                  return result;
          }
 	}
-	
+
 	/**
 	 * Check whether this triple matches a pattern of TripleID. 0 acts as a wildcard
-	 * 
+	 *
 	 * @param pattern
 	 *            The pattern to match against
 	 * @return boolean
@@ -215,10 +215,9 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Check whether all the components of the triple are empty (zero).
-	 * @return
 	 */
 	public boolean isEmpty() {
 		return !(subject != 0 || predicate != 0 || object != 0);
@@ -226,27 +225,25 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/**
 	 * Check whether none of the components of the triple are empty.
-	 * @return
 	 */
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-	
+
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
-	 * @return
 	 */
 	public String getPatternString() {
 		return "" +
-			(subject==0   ? '?' : 'S') + 
+			(subject==0   ? '?' : 'S') +
 			(predicate==0 ? '?' : 'P') +
 			(object==0    ? '?' : 'O');
 	}
-	
+
 	public TripleID asTripleID() {
 		return new TripleID(subject,predicate,object);
 	}
-	
+
 	/** size of one TripleID in memory */
 	public static int size(){
 		return 24;

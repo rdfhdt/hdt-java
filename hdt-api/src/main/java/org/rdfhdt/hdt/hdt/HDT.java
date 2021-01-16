@@ -40,36 +40,36 @@ import org.rdfhdt.hdt.triples.Triples;
 
 /**
  * Interface that specifies the methods for a HDT implementation
- * 
+ *
  * @author mario.arias
- * 
+ *
  */
 public interface HDT extends RDFAccess,Closeable {
 
 	/**
 	 * Gets the header of the HDT
-	 * 
+	 *
 	 * @return Header
 	 */
 	Header getHeader();
 
 	/**
 	 * Gets the dictionary of the HDT
-	 * 
+	 *
 	 * @return Dictionary
 	 */
 	Dictionary getDictionary();
 
 	/**
 	 * Gets the triples of the HDT
-	 * 
+	 *
 	 * @return Triples
 	 */
 	Triples getTriples();
-		
+
 	/**
 	 * Saves to OutputStream in HDT format
-	 * 
+	 *
 	 * @param output
 	 *            The OutputStream to save to
 	 */
@@ -77,21 +77,19 @@ public interface HDT extends RDFAccess,Closeable {
 
 	/**
 	 * Saves to a file in HDT format
-	 * 
+	 *
 	 * @param fileName
 	 *            The OutputStream to save to
 	 */
 	void saveToHDT(String fileName, ProgressListener listener) throws IOException;
-	
+
 	/**
 	 * Returns the size of the Data Structure in bytes.
-	 * @return
 	 */
 	long size();
-	
+
 	/**
 	 * Get the Base URI for the Dataset.
-	 * @return
 	 */
 	String getBaseURI();
 

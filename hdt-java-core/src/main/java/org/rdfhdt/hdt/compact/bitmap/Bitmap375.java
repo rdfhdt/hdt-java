@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.compact.bitmap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -39,33 +38,33 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 
 /**
  * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
- * 
+ *
  * index -&gt; O(n)
  * rank1 -&gt; O(1)
  * select1 -&gt; O(log log n)
- * 
+ *
  * @author mario.arias
  *
  */
 public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	// Constants
 	private static final int BLOCKS_PER_SUPER = 4;
-	
+
 	// Variables
 	private long pop;
 	private long [] superBlocksLong;
 	private int [] superBlocksInt;
 	private byte [] blocks;
 	private boolean indexUpToDate;
-    
+
 	public Bitmap375() {
 		super();
 	}
-	
+
 	public Bitmap375(long nbits) {
 		super(nbits);
 	}
-	
+
 	public Bitmap375(long nbits, InputStream in) throws IOException {
 		this.numbits = nbits;
 		int numwords = (int)numWords(numbits);
@@ -73,14 +72,14 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		for(int i=0;i<numwords-1;i++) {
 			words[i] = IOUtil.readLong(in);
 		}
-		
+
 		if(numwords>0) {
 			// Read only used bits from last entry (byte aligned, little endian)
 			int lastWordUsedBits = lastWordNumBits(numbits);
 			words[numwords-1] = BitUtil.readLowerBitsByteAligned(lastWordUsedBits, in);
 		}
 	}
-	
+
 	public void dump() {
 		int count = (int) numWords(this.numbits);
 		for(int i=0;i<count;i++) {
@@ -88,7 +87,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			IOUtil.printBitsln(words[i], 64);
 		}
 	}
-	
+
 	public void updateIndex() {
 		trimToSize();
 		if(numbits>Integer.MAX_VALUE) {
@@ -97,10 +96,10 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			superBlocksInt = new int[1+(words.length-1)/BLOCKS_PER_SUPER];
 		}
 		blocks = new byte[words.length];
-	
+
 		long countBlock=0, countSuperBlock=0;
 		int blockIndex=0, superBlockIndex=0;
-		
+
 		while(blockIndex<words.length) {
 			if((blockIndex%BLOCKS_PER_SUPER)==0) {
 				countSuperBlock += countBlock;
@@ -114,14 +113,14 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 					}
 				}
 				countBlock = 0;
-			}		
+			}
 			blocks[blockIndex] = (byte) countBlock;
 			countBlock += Long.bitCount(words[blockIndex]);
 			blockIndex++;
 		}
-		pop = countSuperBlock+countBlock; 
+		pop = countSuperBlock+countBlock;
 		indexUpToDate = true;
-		
+
 //		for(int i=0;i<words.length;i++) {
 //			if((i%BLOCKS_PER_SUPER)==0) {
 //				int superB = i/BLOCKS_PER_SUPER;
@@ -145,10 +144,10 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         if(wordIndex>=words.length) {
         	return false;
         }
-        
+
         return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
-	
+
 	@Override
 	public void set(long bitIndex, boolean value) {
 		indexUpToDate=false;
@@ -169,7 +168,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		if(pos>=numbits) {
 			return pop;
 		}
-		
+
 		long superBlockIndex = pos/(BLOCKS_PER_SUPER*W);
 		long superBlockRank;
 		if(superBlocksLong!=null) {
@@ -177,14 +176,14 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		} else {
 			superBlockRank = superBlocksInt[(int)superBlockIndex];
 		}
-		
+
 		long blockIndex = pos/W;
 		long blockRank = 0xFF & blocks[(int)blockIndex];
-		
+
 		long chunkIndex = W-1-pos%W;
 		long block = words[(int)blockIndex] << chunkIndex;
 		long chunkRank = Long.bitCount(block);
-		
+
 		return superBlockRank + blockRank + chunkRank;
 	}
 
@@ -195,7 +194,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	public long rank0(long pos) {
 		return pos+1L-rank1(pos);
 	}
-	
+
     private static int binarySearch0(long[] a, int fromIndex, int toIndex, long key) {
         int low = fromIndex;
         int high = toIndex - 1;
@@ -213,7 +212,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         }
         return -(low + 1);  // key not found.
     }
-    
+
     private static int binarySearch0(int[] a, int fromIndex, int toIndex, long key) {
         int low = fromIndex;
         int high = toIndex - 1;
@@ -263,9 +262,9 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			// If found exact, we need to check previous block.
 			superBlockIndex--;
 		}
-		
+
 		long countdown;
-		
+
 		if(superBlocksLong!=null) {
 			// If there is a run of many ones, two correlative superblocks may have the same value,
 			// We need to position at the first of them.
@@ -284,7 +283,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			countdown = x-(superBlockIndex*BLOCKS_PER_SUPER*W-superBlocksInt[superBlockIndex]);
 		}
 		int blockIdx = superBlockIndex * BLOCKS_PER_SUPER;
-	
+
 		// Search block
 		while(true) {
 			if(blockIdx>= (superBlockIndex+1) * BLOCKS_PER_SUPER || blockIdx>=blocks.length) {
@@ -302,20 +301,20 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			blockIdx=0;
 		}
 		countdown = countdown - (0xFF & ((blockIdx%BLOCKS_PER_SUPER)*W - blocks[blockIdx]));
-		
+
 		// Search bit inside block
 		int bitpos = BitUtil.select0(words[blockIdx], (int)countdown);
-		
+
 		return ((long)blockIdx) * W + bitpos - 1;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.compact.bitmap.Bitmap#select1(long)
 	 */
 	@Override
 	public long select1(long x) {
 		//System.out.println("\t**Select1 for: "+ x);
-		
+
 		if(x<0) {
 			return -1;
 		}
@@ -328,7 +327,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		if(numbits==0) {
 			return 0;
 		}
-		
+
 		// Search superblock (binary Search)
 		int superBlockIndex;
 		if(superBlocksLong!=null) {
@@ -343,7 +342,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			// If found exact, we need to check previous block.
 			superBlockIndex--;
 		}
-		
+
 		long countdown;
 		if(superBlocksLong!=null) {
 			// If there is a run of many zeros, two correlative superblocks may have the same value,
@@ -358,7 +357,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			while(superBlockIndex>0 && (superBlocksInt[superBlockIndex]>=x)) {
 				superBlockIndex--;
 			}
-			countdown = x-superBlocksInt[superBlockIndex];			
+			countdown = x-superBlocksInt[superBlockIndex];
 		}
 		int blockIdx = superBlockIndex * BLOCKS_PER_SUPER;
 
@@ -379,13 +378,13 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 			blockIdx=0;
 		}
 		countdown = countdown - (0xFF & blocks[blockIdx]);
-		
+
 		// Search bit inside block
 		int bitpos = BitUtil.select1(words[blockIdx], (int)countdown);
-		
+
 		return ((long)blockIdx) * W + bitpos - 1;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.compact.bitmap.Bitmap#countOnes()
 	 */
@@ -401,26 +400,26 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	public long countZeros() {
 		return numbits-countOnes();
 	}
-	
+
 	@Override
 	public long getRealSizeBytes() {
 		updateIndex();
-		
+
 		long accum = super.getRealSizeBytes();
-		
+
 		if(superBlocksLong!=null) {
 			accum+=superBlocksLong.length*8;
 		}
-		
+
 		if(superBlocksInt!=null) {
 			accum+=superBlocksInt.length*4;
 		}
-		
+
 		accum+=blocks.length;
-		
+
 		return accum;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.compact.bitmap.Bitmap#getType()
 	 */

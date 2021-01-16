@@ -33,35 +33,34 @@ import org.rdfhdt.hdt.header.Header;
 
 /**
  * Interface for Triples implementation.
- * 
+ *
  */
 public interface Triples extends Closeable {
 	/**
 	 * Iterates over all triples. Equivalent to this.search(new TripleID());
-	 * @return
 	 */
 	IteratorTripleID searchAll();
-	
+
 	/**
 	 * Iterates over all triples that match the pattern.
-	 * 
+	 *
 	 * @param pattern
 	 *            The pattern to match against
-	 * @return IteratorTripleID 
-	 * 
+	 * @return IteratorTripleID
+	 *
 	 */
 	IteratorTripleID search(TripleID pattern);
-	
+
 	/**
 	 * Returns the total number of triples
-	 * 
+	 *
 	 * @return int
 	 */
 	long getNumberOfElements();
 
 	/**
 	 * Returns the size in bytes of the internal representation
-	 * 
+	 *
 	 * @return int
 	 */
 	long size();
@@ -72,10 +71,9 @@ public interface Triples extends Closeable {
 	 * @param rootNode
 	 */
 	void populateHeader(Header head, String rootNode);
-	
+
 	/**
 	 * Returns a unique identifier of this Triples Implementation
-	 * @return
 	 */
 	String getType();
 }

@@ -27,35 +27,32 @@
 
 package org.rdfhdt.hdt.triples;
 
-import org.rdfhdt.hdt.enums.ResultEstimationType;
-import org.rdfhdt.hdt.triples.TripleString;
-
 import java.util.Iterator;
+
+import org.rdfhdt.hdt.enums.ResultEstimationType;
 
 /**
  * Iterator of TripleStrings based on IteratorTripleID
- * 
+ *
  */
 public interface IteratorTripleString extends Iterator<TripleString> {
 
-	/** 
+	/**
 	 * Point the cursor to the first element of the data structure.
 	 */
 	void goToStart();
-	
-	/** 
+
+	/**
 	 * Returns the number of estimated results of the Iterator.
 	 * It is usually more efficient than going through all the results.
-	 * 
+	 *
 	 * @return Number of estimated results.
 	 */
 	long estimatedNumResults();
-	
+
 	/**
 	 * Returns the accuracy of the estimation of number of results as returned
 	 * by estimatedNumResults()
-	 * 
-	 * @return
 	 */
 	ResultEstimationType numResultEstimation();
 }

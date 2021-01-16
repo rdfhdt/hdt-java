@@ -453,10 +453,10 @@ public class FourSectionDictionaryCat {
                 Iterator<Pair<Integer,Integer>> iteratorCommonShared2Subjects1 = new CatCommon(dictionaryHdt2.getShared().getSortedEntries(), dictionaryHdt1.getSubjects().getSortedEntries());
                 Iterator<Pair<Integer,Integer>> iteratorCommonShared2Objects1 = new CatCommon(dictionaryHdt2.getShared().getSortedEntries(), dictionaryHdt1.getObjects().getSortedEntries());
 
-                Pair<Integer,Integer> commonShared1Subjects2 = new Pair(-1,-1);
-                Pair<Integer,Integer> commonShared1Objects2 = new Pair(-1,-1);
-                Pair<Integer,Integer> commonShared2Subjects1 = new Pair(-1,-1);
-                Pair<Integer,Integer> commonShared2Objects1 = new Pair(-1,-1);
+                Pair<Integer,Integer> commonShared1Subjects2 = new Pair<>(-1,-1);
+                Pair<Integer,Integer> commonShared1Objects2 = new Pair<>(-1,-1);
+                Pair<Integer,Integer> commonShared2Subjects1 = new Pair<>(-1,-1);
+                Pair<Integer,Integer> commonShared2Objects1 = new Pair<>(-1,-1);
                 if (iteratorCommonShared1Subjects2.hasNext()){
                     commonShared1Subjects2 = iteratorCommonShared1Subjects2.next();
                 }

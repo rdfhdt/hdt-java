@@ -52,7 +52,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 
 	private RDFCallback callback;
 	private TripleString triple = new TripleString();
-	
+
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
@@ -76,17 +76,18 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
 					break;
 				default:
-					throw new NotImplementedException("Parser not found for format "+notation);	
+					throw new NotImplementedException("Parser not found for format "+notation);
 			}
 		} catch (FileNotFoundException e) {
 			throw new ParserException(e);
 		} catch (Exception e) {
 			log.error("Unexpected exception parsing file: {}", fileName, e);
 			throw new ParserException(e);
-		}	
+		}
 	}
-	
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+
+	@Override
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		this.callback = callback;
 		try {
 			switch(notation) {
@@ -95,7 +96,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					break;
 				case NQUAD:
 					RDFDataMgr.parse(this, input, Lang.NQUADS);
-					break;					
+					break;
 				case RDFXML:
 					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
 					break;
@@ -104,18 +105,18 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
 					break;
 				default:
-					throw new NotImplementedException("Parser not found for format "+notation);	
+					throw new NotImplementedException("Parser not found for format "+notation);
 			}
 		} catch (Exception e) {
 			log.error("Unexpected exception.", e);
 			throw new ParserException(e);
-		}	
+		}
 	}
 
 	 @Override
      public void start() {
              // TODO Auto-generated method stub
-             
+
      }
 
      @Override
@@ -124,7 +125,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					 JenaNodeFormatter.format(parsedTriple.getSubject()),
 					 JenaNodeFormatter.format(parsedTriple.getPredicate()),
 					 JenaNodeFormatter.format(parsedTriple.getObject()));
-    	 callback.processTriple(triple, 0);              
+    	 callback.processTriple(triple, 0);
      }
 
      @Override
@@ -133,7 +134,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 					 JenaNodeFormatter.format(quad.getSubject()),
 					 JenaNodeFormatter.format(quad.getPredicate()),
 					 JenaNodeFormatter.format(quad.getObject()));
-    	 callback.processTriple(triple, 0);              
+    	 callback.processTriple(triple, 0);
      }
 
      @Override
@@ -149,7 +150,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
      @Override
      public void finish() {
              // TODO Auto-generated method stub
-             
+
      }
 
 

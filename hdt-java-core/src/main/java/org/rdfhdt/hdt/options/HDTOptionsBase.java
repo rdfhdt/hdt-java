@@ -38,28 +38,27 @@ public class HDTOptionsBase implements HDTOptions {
     final Properties properties;
 
 	/**
-	 * 
+	 *
 	 */
 	public HDTOptionsBase() {
 		properties = new Properties();
 	}
-	
+
 	/**
 	 * Gets a property value from a property key
-	 * 
+	 *
 	 * @param key
-	 * @return
 	 */
 	@Override
     public String get(String key) {
 		return properties.getProperty(key);
 	}
-	
+
 	@Override
     public void set(String key, String value) {
 		properties.setProperty(key, value);
 	}
-	
+
 	@Override
     public void setOptions(String options) {
 		for(String item : options.split(";")) {
@@ -74,7 +73,6 @@ public class HDTOptionsBase implements HDTOptions {
 
 	/**
 	 * @param string
-	 * @return
 	 */
 	@Override
     public long getInt(String string) {
@@ -84,14 +82,14 @@ public class HDTOptionsBase implements HDTOptions {
 		}
 		return 0;
 	}
-	
+
 	@Override
     public void setInt(String key, long value) {
 		properties.setProperty(key, Long.toString(value));
 	}
-	
 
-	
+
+
 	@Override
     public void clear() {
 		properties.clear();

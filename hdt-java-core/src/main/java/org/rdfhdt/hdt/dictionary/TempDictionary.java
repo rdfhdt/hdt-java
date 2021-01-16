@@ -34,35 +34,35 @@ import org.rdfhdt.hdt.triples.TempTriples;
 
 /**
  * Interface that specifies the methods for a dictionary that can be modified.
- * 
+ *
  * @author Eugen
  *
  */
 public interface TempDictionary extends Closeable {
-	
+
 	TempDictionarySection getSubjects();
-	
+
 	TempDictionarySection getPredicates();
-	
+
 	TempDictionarySection getObjects();
-	
+
 	TempDictionarySection getShared();
-	
+
 	/**
 	 * To be executed at the start of the processing
-	 * 
+	 *
 	 */
 	void startProcessing();
-	
+
 	/**
 	 * To be executed at the end of the processing
-	 * 
+	 *
 	 */
 	void endProcessing();
 
 	/**
 	 * Inserts a string in the dictionary in a position
-	 * 
+	 *
 	 * @param str
 	 *            The string to be inserted
 	 * @param position
@@ -73,18 +73,18 @@ public interface TempDictionary extends Closeable {
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections).
 	 * (used for two-pass way of work).
-	 * 
+	 *
 	 */
 	void reorganize();
-	
+
 	/**
 	 * Reorganizes the dictionary (Extract shared SO, sort sections)
 	 * and updates the IDs of the triples (used for one-pass way of work).
 	 */
 	void reorganize(TempTriples triples);
-	
+
 	boolean isOrganized();
-	
+
 	/**
 	 * Empty all the strings of the dictionary.
 	 */
@@ -94,7 +94,6 @@ public interface TempDictionary extends Closeable {
 	 * Get the ID of a given String
 	 * @param subject
 	 * @param role
-	 * @return
 	 */
 	public long stringToId(CharSequence subject, TripleComponentRole role);
 }
