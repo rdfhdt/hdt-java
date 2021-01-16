@@ -18,28 +18,23 @@
 
 package org.rdfhdt.hdtjena.junit;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.*;
+
+import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
 import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.query.Dataset;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryException;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
-import org.apache.jena.query.ResultSet;
-import org.apache.jena.query.ResultSetFactory;
-import org.apache.jena.query.ResultSetFormatter;
-import org.apache.jena.query.ResultSetRewindable;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.*;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
-import org.apache.jena.riot.checker.CheckerLiterals;
 import org.apache.jena.shared.JenaException;
 import org.apache.jena.sparql.SystemARQ;
 import org.apache.jena.sparql.core.Var;
@@ -53,7 +48,6 @@ import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.NodeValue;
 import org.apache.jena.sparql.expr.nodevalue.NodeFunctions;
 import org.apache.jena.sparql.junit.QueryTestException;
-import org.apache.jena.sparql.junit.TestItem;
 import org.apache.jena.sparql.resultset.ResultSetCompare;
 import org.apache.jena.sparql.resultset.SPARQLResult;
 import org.apache.jena.sparql.util.DatasetUtils;
@@ -65,25 +59,12 @@ import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.rdfhdt.hdtjena.util.GraphConverter;
 
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 public class HDTQueryTest implements ScriptTest {
     private static int testCounter = 1;
 
     private final int testNumber = testCounter++;
     private final String testName;
-    private final TestItem testItem;
+    private final QueryTestItem testItem;
 
     private SPARQLResult results;    // Maybe null if no testing of results
 
@@ -96,7 +77,7 @@ public class HDTQueryTest implements ScriptTest {
                 || testType.equals(TestManifest.ReducedCardinalityTest);
     }
 
-    public HDTQueryTest(String testName, TestItem testItem) {
+    public HDTQueryTest(String testName, QueryTestItem testItem) {
         this.testName = Objects.requireNonNull(testName);
         this.testItem = Objects.requireNonNull(testItem);
     }
@@ -150,7 +131,6 @@ public class HDTQueryTest implements ScriptTest {
         // Switch warnings off for things that do occur in the scripted test suites
         NodeValue.VerboseWarnings = false;
         E_Function.WarnOnUnknownFunction = false;
-        CheckerLiterals.WarnOnBadLiterals = false;
 
         // SPARQL and ARQ tests are done with no value matching (for query execution and results testing)
         SystemARQ.UsePlainGraph = true;
@@ -163,11 +143,10 @@ public class HDTQueryTest implements ScriptTest {
         // Restore default settings
         NodeValue.VerboseWarnings = true;
         E_Function.WarnOnUnknownFunction = true;
-        CheckerLiterals.WarnOnBadLiterals = true;
         SystemARQ.UsePlainGraph = false;
     }
 
-    private Dataset setUpDataset(Query query, TestItem testItem) {
+    private Dataset setUpDataset(Query query, QueryTestItem testItem) {
         try {
             if (query.hasDatasetDescription() && doesTestItemHaveDataset(testItem)) {
                 // Only warn if there are results to test
@@ -196,7 +175,7 @@ public class HDTQueryTest implements ScriptTest {
         }
     }
 
-    private Query queryFromTestItem(TestItem testItem) {
+    private Query queryFromTestItem(QueryTestItem testItem) {
         if (testItem.getQueryFile() == null) {
             fail("Query test file is null");
         }
@@ -204,7 +183,7 @@ public class HDTQueryTest implements ScriptTest {
         return QueryFactory.read(testItem.getQueryFile(), null, testItem.getFileSyntax());
     }
 
-    private static boolean doesTestItemHaveDataset(TestItem testItem) {
+    private static boolean doesTestItemHaveDataset(QueryTestItem testItem) {
         return (testItem.getDefaultGraphURIs() != null && testItem.getDefaultGraphURIs().size() > 0)
                 ||
                 (testItem.getNamedGraphURIs() != null && testItem.getNamedGraphURIs().size() > 0);

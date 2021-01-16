@@ -18,23 +18,19 @@
 
 package org.rdfhdt.hdtjena.junit;
 
-import org.apache.jena.query.Syntax;
+
+import java.util.*;
+
+import org.apache.jena.arq.junit.manifest.Manifest;
+import org.apache.jena.arq.junit.manifest.ManifestEntry;
+import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.junit.QueryTestException;
-import org.apache.jena.sparql.junit.TestItem;
-import org.apache.jena.sparql.junit.TestQueryUtils;
 import org.apache.jena.sparql.vocabulary.TestManifest;
 import org.apache.jena.sparql.vocabulary.TestManifestUpdate_11;
 import org.apache.jena.sparql.vocabulary.TestManifestX;
 import org.apache.jena.sparql.vocabulary.TestManifest_11;
-import org.apache.jena.util.junit.Manifest;
 import org.apache.jena.util.junit.TestUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
 
 public class ScriptTestFactory {
     private static final List<Resource> IGNORE = Arrays.asList(
@@ -61,7 +57,7 @@ public class ScriptTestFactory {
     public List<ScriptTest> load(String manifestUri) {
         List<ScriptTest> tests = new ArrayList<>();
 
-        Manifest m = new Manifest(manifestUri);
+        Manifest m = Manifest.parse(manifestUri);
         String manifestName = join(groupName, TestUtils.safeName(m.getName() != null ? m.getName() : manifestUri));
 
         // Recur
@@ -70,45 +66,60 @@ public class ScriptTestFactory {
             tests.addAll(new ScriptTestFactory(manifestName).load(n));
         }
 
-        m.apply((manifest, item, testName, action, result) -> {
-            ScriptTest test = makeTest(manifest, item, join(groupName, testName), action);
-            if (test != null) {
-                tests.add(test);
+        for (ManifestEntry entry : m.entries() ) {
+            Resource testType = entry.getTestType();
+            if ( testType == null )
+                testType = TestManifest.QueryEvaluationTest;
+
+            String testName = join(groupName, entry.getName());
+
+            if (IGNORE.contains(testType)) {
+                continue;
             }
-            return true;
-        });
+
+            if (HDTQueryTest.accepts(testType)) {
+
+                QueryTestItem item = QueryTestItem.create(entry.getEntry(), TestManifest.QueryEvaluationTest);
+
+                ScriptTest test = new HDTQueryTest(testName, item);
+                if (test != null) {
+                    tests.add(test);
+                }
+
+            } else
+                throw new QueryTestException("Unknown testType: " + testType);
+        }
         return tests;
-
     }
 
-    private ScriptTest makeTest(Resource manifest, Resource entry, String testName, Resource action) {
-        if (action == null) {
-            return null;
-        }
-
-        Syntax querySyntax = TestQueryUtils.getQuerySyntax(manifest);
-        if (querySyntax != null) {
-            if (!querySyntax.equals(Syntax.syntaxARQ) &&
-                    !querySyntax.equals(Syntax.syntaxSPARQL_10) &&
-                    !querySyntax.equals(Syntax.syntaxSPARQL_11)) {
-                throw new QueryTestException("Unknown syntax: " + querySyntax);
-            }
-        }
-
-        TestItem item = TestItem.create(entry, TestManifest.QueryEvaluationTest);
-
-        Resource testType = item.getTestType();
-        if (testType == null) {
-            throw new QueryTestException("Missing testType: " + testName);
-        }
-        if (IGNORE.contains(testType)) {
-            return null;
-        }
-        if (HDTQueryTest.accepts(testType)) {
-            return new HDTQueryTest(testName, item);
-        }
-        throw new QueryTestException("Unknown testType: " + testType);
-    }
+//    private ScriptTest makeTest(Resource manifest, Resource entry, String testName, Resource action) {
+//        if (action == null) {
+//            return null;
+//        }
+//
+//        Syntax querySyntax = TestQueryUtils.getQuerySyntax(manifest);
+//        if (querySyntax != null) {
+//            if (!querySyntax.equals(Syntax.syntaxARQ) &&
+//                    !querySyntax.equals(Syntax.syntaxSPARQL_10) &&
+//                    !querySyntax.equals(Syntax.syntaxSPARQL_11)) {
+//                throw new QueryTestException("Unknown syntax: " + querySyntax);
+//            }
+//        }
+//
+//        TestItem item = TestItem.create(entry, TestManifest.QueryEvaluationTest);
+//
+//        Resource testType = item.getTestType();
+//        if (testType == null) {
+//            throw new QueryTestException("Missing testType: " + testName);
+//        }
+//        if (IGNORE.contains(testType)) {
+//            return null;
+//        }
+//        if (HDTQueryTest.accepts(testType)) {
+//            return new HDTQueryTest(testName, item);
+//        }
+//        throw new QueryTestException("Unknown testType: " + testType);
+//    }
 
 
     private static String join(String parent, String child) {

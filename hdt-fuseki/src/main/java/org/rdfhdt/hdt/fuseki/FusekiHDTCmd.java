@@ -59,7 +59,7 @@ import jena.cmd.ArgDecl ;
 import jena.cmd.CmdException ;
 
 /**
- * 
+ *
  * Fork of default's FusekiCmd that adds support for loading HDT files.
  *
  */
@@ -72,47 +72,47 @@ public class FusekiHDTCmd extends CmdARQ
           , "log4j.appender.jena.plain.target=System.out"
           , "log4j.appender.jena.plain.layout=org.apache.log4j.PatternLayout"
           , "log4j.appender.jena.plain.layout.ConversionPattern=%d{HH:mm:ss} %-5p %m%n"
-          
+
           , "## Plain output with level, to stderr"
           , "log4j.appender.jena.plainlevel=org.apache.log4j.ConsoleAppender"
           , "log4j.appender.jena.plainlevel.target=System.err"
           , "log4j.appender.jena.plainlevel.layout=org.apache.log4j.PatternLayout"
           , "log4j.appender.jena.plainlevel.layout.ConversionPattern=%d{HH:mm:ss} %-5p %m%n"
-          
+
           , "## Everything"
           , "log4j.rootLogger=INFO, jena.plain"
           , "log4j.logger.com.hp.hpl.jena=WARN"
           , "log4j.logger.org.openjena=WARN"
           , "log4j.logger.org.apache.jena=WARN"
-          
+
           , "# Server log."
           , "log4j.logger.org.apache.jena.fuseki.Server=INFO"
           , "# Request log."
           , "log4j.logger.org.apache.jena.fuseki.Fuseki=INFO"
           , "log4j.logger.org.apache.jena.tdb.loader=INFO"
           , "log4j.logger.org.eclipse.jetty=ERROR"
-          
+
           , "## Parser output"
           , "log4j.additivity."+SysRIOT.riotLoggerName+"=false"
           , "log4j.logger."+SysRIOT.riotLoggerName+"=INFO, jena.plainlevel "
         ) ;
 
-    
+
     // Set logging.
     // 1/ Use log4j.configuration is defined.
-    // 2/ Use file:log4j.properties 
+    // 2/ Use file:log4j.properties
     // 3/ Use Built in.
-    
+
     static void setLogging() {
-        // No loggers have been created but configuration may have been set up. 
+        // No loggers have been created but configuration may have been set up.
         String x = System.getProperty("log4j.configuration", null) ;
-        
+
         if ( x != null && ! x.equals("set") ) {
             // "set" indicates that CmdMain set logging.
             // Use standard log4j initialization.
             return ;
         }
-        
+
         String fn = "log4j.properties" ;
         File f = new File(fn) ;
         if ( f.exists() ) {
@@ -121,28 +121,29 @@ public class FusekiHDTCmd extends CmdARQ
             return ;
         }
         // Use built-in for Fuseki.
-            LogCtl.resetLogging(log4Jsetup) ; 
+        LogCtl.setCmdLogging();
+        //LogCtl.resetLogging(log4Jsetup) ;
     }
-    
+
     static { setLogging() ; }
 
     // Arguments:
     // --update
-    
+
     // Specific switches:
-    
+
     // --admin=on/off
-    
+
     // --http-update
     // --http-get
-    
+
     // --sparql-query
     // --sparql-update
-    
+
     // pages/validators/
     // pages/control/
     // pages/query/ or /pages/sparql/
-    
+
     private static ArgDecl argMgtPort       = new ArgDecl(ArgDecl.HasValue, "mgtPort", "mgtport") ;
     private static ArgDecl argMem           = new ArgDecl(ArgDecl.NoValue,  "mem") ;
     private static ArgDecl argAllowUpdate   = new ArgDecl(ArgDecl.NoValue,  "update", "allowUpdate") ;
@@ -158,15 +159,15 @@ public class FusekiHDTCmd extends CmdARQ
     private static ArgDecl argGZip          = new ArgDecl(ArgDecl.HasValue, "gzip") ;
     private static ArgDecl argUber          = new ArgDecl(ArgDecl.NoValue,  "uber", "über") ;   // Use the überservlet (experimental)
     private static ArgDecl argBasicAuth     = new ArgDecl(ArgDecl.HasValue, "basic-auth") ;
-    
+
     private static ArgDecl argGSP           = new ArgDecl(ArgDecl.NoValue,  "gsp") ;    // GSP compliance mode
-    
+
     private static ArgDecl argHome          = new ArgDecl(ArgDecl.HasValue, "home") ;
     private static ArgDecl argPages         = new ArgDecl(ArgDecl.HasValue, "pages") ;
-    
+
     //private static ModLocation          modLocation =  new ModLocation() ;
     private static ModDatasetAssembler  modDataset = new ModDatasetAssembler() ;
-    
+
     // fuseki [--mem|--desc assembler.ttl] [--port PORT] **** /datasetURI
 
     static public void main(String...argv)
@@ -177,30 +178,30 @@ public class FusekiHDTCmd extends CmdARQ
         Fuseki.init() ;
         new FusekiHDTCmd(argv).mainRun() ;
     }
-    
+
     private int port                    = 3030 ;
     private int mgtPort                 = -1 ;
     private boolean listenLocal         = false ;
 
-    private DatasetGraph dsg            = null ; 
+    private DatasetGraph dsg            = null ;
     private String datasetPath          = null ;
     private boolean allowUpdate         = false ;
-    
+
     private String fusekiConfigFile     = null ;
     private boolean enableCompression   = true ;
     private String jettyConfigFile      = null ;
     private String authConfigFile       = null ;
     private String homeDir              = null ;
     private String pagesDir             = null ;
-    
+
     public FusekiHDTCmd(String...argv)
     {
         super(argv) ;
-        
+
         if ( false )
             // Consider ...
             TransactionManager.QueueBatchSize =  TransactionManager.QueueBatchSize / 2 ;
-        
+
         getUsage().startCategory("Fuseki") ;
         addModule(modDataset) ;
         add(argMem,     "--mem",                "Create an in-memory, non-persistent dataset for the server") ;
@@ -209,7 +210,7 @@ public class FusekiHDTCmd extends CmdARQ
         add(argHDT,     "--hdt=HDT",            "Use an existing HDT file") ;
         add(argMemTDB,  "--memTDB",             "Create an in-memory, non-persistent dataset using TDB (testing only)") ;
         add(argPort,    "--port",               "Listen on this port number") ;
-        add(argPages,   "--pages=DIR",          "Set of pages to serve as static content") ; 
+        add(argPages,   "--pages=DIR",          "Set of pages to serve as static content") ;
         // Set via jetty config file.
         add(argLocalhost,   "--localhost",      "Listen only on the localhost interface") ;
         add(argTimeout, "--timeout=",           "Global timeout applied to queries (value in ms) -- format is X[,Y] ") ;
@@ -217,19 +218,19 @@ public class FusekiHDTCmd extends CmdARQ
         add(argFusekiConfig, "--config=",       "Use a configuration file to determine the services") ;
         add(argJettyConfig, "--jetty-config=FILE",  "Set up the server (not services) with a Jetty XML file") ;
         add(argBasicAuth, "--basic-auth=FILE",  "Configure basic auth using provided Jetty realm file, ignored if --jetty-config is used") ;
-        add(argMgtPort, "--mgtPort=port",       "Enable the management commands on the given port") ; 
-        add(argHome, "--home=DIR",              "Root of Fuseki installation (overrides environment variable FUSEKI_HOME)") ; 
+        add(argMgtPort, "--mgtPort=port",       "Enable the management commands on the given port") ;
+        add(argHome, "--home=DIR",              "Root of Fuseki installation (overrides environment variable FUSEKI_HOME)") ;
         add(argGZip, "--gzip=on|off",           "Enable GZip compression (HTTP Accept-Encoding) if request header set") ;
-        
+
         add(argUber) ;
         //add(argGSP) ;
-        
+
         super.modVersion.addClass(TDB.class) ;
         super.modVersion.addClass(Fuseki.class) ;
     }
 
     static String argUsage = "[--config=FILE] [--mem|--desc=AssemblerFile|--file=FILE] [--port PORT] /DatasetPathName" ;
-    
+
     @Override
     protected String getSummary()
     {
@@ -240,14 +241,14 @@ public class FusekiHDTCmd extends CmdARQ
     protected void processModulesAndArgs()
     {
         int x = 0 ;
-        
+
         Logger log = Fuseki.serverLog ;
-        
+
         if ( contains(argFusekiConfig) )
             fusekiConfigFile = getValue(argFusekiConfig) ;
-        
+
         ArgDecl assemblerDescDecl = new ArgDecl(ArgDecl.HasValue, "desc", "dataset") ;
-        if ( contains(argMem) ) x++ ; 
+        if ( contains(argMem) ) x++ ;
         if ( contains(argFile) ) x++ ;
         if ( contains(assemblerDescDecl) ) x++ ;
         if ( contains(argTDB) ) x++ ;
@@ -264,11 +265,11 @@ public class FusekiHDTCmd extends CmdARQ
             if ( x == 0 )
                 throw new CmdException("Required: either --config=FILE or one of --mem, --file, --loc, --hdt or --desc") ;
         }
-        
+
         // One of:
         // argMem, argFile, argMemTDB, argTDB, argHDT
-        
-        
+
+
         if ( contains(argMem) )
         {
             log.info("Dataset: in-memory") ;
@@ -286,23 +287,23 @@ public class FusekiHDTCmd extends CmdARQ
             Lang language = RDFLanguages.filenameToLang(filename) ;
             if ( language == null )
                 throw new CmdException("Can't guess language for file: "+filename) ;
-            
+
             if ( RDFLanguages.isQuads(language) )
                 RDFDataMgr.read(dsg, filename) ;
             else
                 RDFDataMgr.read(dsg.getDefaultGraph(), filename) ;
         }
-        
+
         if ( contains(argMemTDB) )
         {
             log.info("TDB dataset: in-memory") ;
             dsg = TDBFactory.createDatasetGraph() ;
         }
-        
+
         if ( contains(argTDB) )
         {
             String dir = getValue(argTDB) ;
-            
+
             if ( Objects.equals(dir, Names.memName) ) {
                 log.info("TDB dataset: in-memory") ;
             } else {
@@ -313,14 +314,14 @@ public class FusekiHDTCmd extends CmdARQ
 
             dsg = TDBFactory.createDatasetGraph(dir) ;
         }
-        
+
         if ( contains(argHDT) )
         {
             String hdtFile = getValue(argHDT) ;
             log.info("HDT dataset: file={}", hdtFile);
             if ( ! FileOps.exists(hdtFile) )
                 throw new CmdException("HDT file does not exist: "+hdtFile) ;
-            
+
             if(contains(argAllowUpdate)) {
             	System.err.println("Warning: You specified --update but HDT is read only.");
             }
@@ -328,19 +329,19 @@ public class FusekiHDTCmd extends CmdARQ
 			try {
 				// Single Graph:
 				HDT hdt = HDTManager.mapIndexedHDT(hdtFile, null);
-				Graph graph = new HDTGraph(hdt);				
+				Graph graph = new HDTGraph(hdt);
 				dsg = DatasetGraphFactory.wrap(graph);
-				
+
 				// Multiple Graphs:
 //				DatasetGraphMap datasetMap = new DatasetGraphMap(defaultGraph);
 //				datasetMap.addGraph(graphName, graph);
-				
+
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new CmdException("Could not load HDT: "+e.getMessage());
 			}
         }
-        
+
         // Otherwise
         if ( contains(assemblerDescDecl) )
         {
@@ -349,14 +350,14 @@ public class FusekiHDTCmd extends CmdARQ
             if ( ds != null )
                 dsg = ds.asDatasetGraph() ;
         }
-        
+
         if ( contains(argFusekiConfig) )
         {
             if ( dsg != null )
                 throw new CmdException("(internal error) Dataset specificed on the command line but a a configuration file also given.") ;
             fusekiConfigFile = getValue(argFusekiConfig) ;
         }
-        
+
         if ( contains(argPort) )
         {
             String portStr = getValue(argPort) ;
@@ -367,7 +368,7 @@ public class FusekiHDTCmd extends CmdARQ
                 throw new CmdException(argPort.getKeyName()+" : bad port number: "+portStr) ;
             }
         }
-        
+
         if ( contains(argMgtPort) )
         {
             String mgtPortStr = getValue(argMgtPort) ;
@@ -381,10 +382,10 @@ public class FusekiHDTCmd extends CmdARQ
 
         if ( contains(argLocalhost) )
             listenLocal = true ;
-            
+
         if ( fusekiConfigFile == null && dsg == null )
             throw new CmdException("No dataset defined and no configuration file: "+argUsage) ;
-        
+
         if ( dsg != null )
         {
             if ( getPositional().size() == 0 )
@@ -394,36 +395,36 @@ public class FusekiHDTCmd extends CmdARQ
             datasetPath = getPositionalArg(0) ;
             if ( datasetPath.length() > 0 && ! datasetPath.startsWith("/") )
                 throw new CmdException("Dataset path name must begin with a /: "+datasetPath) ;
-            
+
             allowUpdate = contains(argAllowUpdate) ;
         }
-        
+
         if ( contains(argTimeout) )
         {
             String str = getValue(argTimeout) ;
             ARQ.getContext().set(ARQ.queryTimeout, str) ;
         }
-        
+
         if ( contains(argJettyConfig) )
         {
             jettyConfigFile = getValue(argJettyConfig) ;
             if ( !FileOps.exists(jettyConfigFile) )
                 throw new CmdException("No such file: "+jettyConfigFile) ;
         }
-        
+
         if ( contains(argBasicAuth) )
         {
             authConfigFile = getValue(argBasicAuth) ;
             if ( !FileOps.exists(authConfigFile) )
                 throw new CmdException("No such file: " + authConfigFile) ;
         }
-        
+
         if ( contains(argHome) )
         {
            List<String> args = super.getValues(argHome) ;
            homeDir = args.get(args.size()-1) ;
         }
-        
+
         if ( contains(argPages) )
         {
            List<String> args = super.getValues(argPages) ;
@@ -436,10 +437,10 @@ public class FusekiHDTCmd extends CmdARQ
                 throw new CmdException(argGZip.getNames().get(0)+": Not understood: "+getValue(argGZip)) ;
             enableCompression = super.hasValueOfTrue(argGZip) ;
         }
-        
+
         if ( contains(argUber) )
             SPARQLServer.überServlet = true ;
-        
+
         if ( contains(argGSP) )
         {
             SPARQLServer.überServlet = true ;
@@ -455,7 +456,7 @@ public class FusekiHDTCmd extends CmdARQ
             path = path +"/" ;
         return path ;
     }
-    
+
     @Override
     protected void exec()
     {
@@ -466,12 +467,12 @@ public class FusekiHDTCmd extends CmdARQ
             else
                  homeDir = "." ;
         }
-        
+
         homeDir = sort_out_dir(homeDir) ;
         Fuseki.configLog.info("Home Directory: " + FileOps.fullDirectoryPath(homeDir));
         if ( ! FileOps.exists(homeDir) )
             Fuseki.configLog.warn("No such directory for Fuseki home: "+homeDir) ;
-        
+
         String staticContentDir = pagesDir ;
         if ( staticContentDir == null )
             staticContentDir = homeDir+Fuseki.PagesStatic ;
@@ -482,12 +483,12 @@ public class FusekiHDTCmd extends CmdARQ
             Fuseki.configLog.warn("No such directory for static content: " + FileOps.fullDirectoryPath(staticContentDir)) ;
             Fuseki.configLog.warn("You may need to set the --pages or --home option to configure static content correctly");
         }
-        
+
         if ( jettyConfigFile != null )
             Fuseki.configLog.info("Jetty configuration: "+jettyConfigFile) ;
-        
+
         ServerConfig serverConfig ;
-        
+
         if ( fusekiConfigFile != null )
         {
             Fuseki.configLog.info("Configuration file: "+fusekiConfigFile) ;
@@ -499,8 +500,8 @@ public class FusekiHDTCmd extends CmdARQ
             if ( ! allowUpdate )
                 Fuseki.serverLog.info("Running in read-only mode.");
         }
-		
-            
+
+
         // TODO Get from parsing config file.
         serverConfig.port = port ;
         serverConfig.pages = staticContentDir ;
@@ -511,14 +512,14 @@ public class FusekiHDTCmd extends CmdARQ
         serverConfig.jettyConfigFile = jettyConfigFile ;
         serverConfig.authConfigFile = authConfigFile ;
         serverConfig.verboseLogging = ( super.isVerbose() || super.isDebug() ) ;
-        
+
         SPARQLServer server = new SPARQLServer(serverConfig) ;
-        
+
         // Temporary
         Fuseki.setServer(server) ;
-        
+
         Server mgtServer = null ;
-        
+
         if ( mgtPort > 0 )
         {
             Fuseki.configLog.info("Management services on port "+mgtPort) ;
@@ -535,17 +536,17 @@ public class FusekiHDTCmd extends CmdARQ
         } catch (FusekiException ex) {
             serverLog.warn("Failed to start the server.", ex) ;
         }
-    
+
         try { server.getServer().join() ; } catch (Exception ex) {}
 
         if ( mgtServer != null )
         {
-            try { mgtServer.stop() ; } 
+            try { mgtServer.stop() ; }
             catch (Exception e) { serverLog.warn("Failed to cleanly stop the management server", e) ; }
         }
         System.exit(0) ;
     }
-    
+
 
     @Override
     protected String getCommandName()
