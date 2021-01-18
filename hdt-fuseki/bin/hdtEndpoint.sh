@@ -23,7 +23,7 @@ done
 # Check if the HDT file needs an index file
 if [ -n "$hdtfile" -a ! -f "$hdtfile.index" ]; then
     echo "One-time index file creation, please be patient ..."
-    $JAVA -Xmx$INDEX_MEM -cp $CP:$CLASSPATH org.rdfhdt.hdt.fuseki.HDTGenerateIndex $hdtfile || exit $?
+    $JAVA -Xmx$INDEX_MEM -cp $JAR org.rdfhdt.hdt.fuseki.HDTGenerateIndex $hdtfile || exit $?
 fi
 
 # Set default Java options
@@ -32,4 +32,4 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
 fi
 
 # Launch server
-$JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH org.rdfhdt.hdt.fuseki.FusekiHDTCmd $orig_args || exit $?
+$JAVA $JAVA_OPTIONS -cp $JAR org.apache.jena.fuseki.main.cmds.FusekiHDTCmd $orig_args || exit $?
