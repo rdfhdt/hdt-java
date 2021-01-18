@@ -30,7 +30,6 @@ package org.rdfhdt.hdtjena.solver;
 import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.TERM;
 import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.VAR;
 
-import org.apache.jena.graph.GraphStatisticsHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.engine.optimizer.Pattern;
 import org.apache.jena.sparql.engine.optimizer.StatsMatcher;
@@ -40,6 +39,7 @@ import org.apache.jena.sparql.graph.NodeConst;
 import org.apache.jena.sparql.sse.Item;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdtjena.HDTGraph;
+import org.rdfhdt.hdtjena.HDTStatistics;
 
 /**
  * Reorders the Triple Patterns of a BGP by using statistics directly fetched from
@@ -64,13 +64,12 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 	final long TERM_O ;         // Used for ? ? O if no stats
 	final long numTriples ;		// Actual number of triples of the dataset.
 
-	private final GraphStatisticsHandler stats;
+	private final HDTStatistics stats;
     public final StatsMatcher matcher = new StatsMatcher() ;
     
 
-	public ReorderTransformationHDT(HDTGraph graph)
-	{
-		this.stats = graph.getStatisticsHandler();
+	public ReorderTransformationHDT(HDTGraph graph, HDTStatistics hdtStatistics) {
+		this.stats = hdtStatistics;
 		numTriples = graph.size();
 	
 		initializeMatcher();
