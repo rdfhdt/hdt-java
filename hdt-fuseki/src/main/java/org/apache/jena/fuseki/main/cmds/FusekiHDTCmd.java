@@ -209,9 +209,6 @@ public class FusekiHDTCmd
 		if (numDefinitions > 1)
 			throw new CmdException("Multiple ways providing a dataset. Only one of --mem, --file, --loc or --conf");
 
-		if (numDefinitions > 0)
-			throw new CmdException("Dataset provided but 'no dataset' flag given");
-
 		//---- check: Invalid: --conf + service name.
 		if (contains(argConfig))
 		{
