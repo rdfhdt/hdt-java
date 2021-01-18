@@ -32,4 +32,4 @@ if [ "$JAVA_OPTIONS" = "" ] ; then
 fi
 
 # Launch server
-$JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH org.rdfhdt.hdt.fuseki.FusekiHDTCmd --pages=$BASE/pages $orig_args || exit $?
+$JAVA $JAVA_OPTIONS -cp $CP:$CLASSPATH org.rdfhdt.hdt.fuseki.FusekiHDTCmd $orig_args || exit $?
