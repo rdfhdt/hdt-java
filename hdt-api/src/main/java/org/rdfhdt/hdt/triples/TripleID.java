@@ -160,11 +160,6 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		return Long.toString(subject) + " " + predicate + " " + object;
 	}
 
-
-	public boolean equals(TripleID other) {
-		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
-	}
-
 	/**
 	 * Compare TripleID to another one using SPO Order. 
 	 * To compare using other orders use @see org.rdfhdt.hdt.triples.TripleStringComparator
