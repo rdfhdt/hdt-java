@@ -65,8 +65,9 @@ public class RDFParserSimple implements RDFParserCallback {
 			IOUtil.closeQuietly(reader);
 		}
 	}
-	
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+
+	@Override
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		try {
 			doParse(reader, baseUri, notation, callback);
@@ -84,7 +85,7 @@ public class RDFParserSimple implements RDFParserCallback {
 			long numLine = 1;
 			TripleString triple = new TripleString();
 			while((line=reader.readLine())!=null) {
-				
+
 				line = line.trim().replaceAll("\\t"," ");
 				if(!line.startsWith("#")) {
 					triple.read(line);

@@ -41,7 +41,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jdk.version>1.8</jdk.version>
-    <jena.version>3.13.1</jena.version>
+    <jena.version>3.17.0</jena.version>
     <jena-fuseki1.version>3.9.0</jena-fuseki1.version>
     <logback.version>1.2.3</logback.version>
     <slf4j.version>1.7.30</slf4j.version>
@@ -92,22 +92,14 @@
     </developer>
   </developers>
 
-  <profiles>
-    <profile>
-      <id>complete</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <modules>
-        <module>hdt-api</module>
-        <module>hdt-java-core</module>
-        <module>hdt-java-cli</module>
-        <module>hdt-jena</module>
-        <module>hdt-java-package</module>
-        <module>hdt-fuseki</module>
-      </modules>
-    </profile>
-  </profiles>
+  <modules>
+    <module>hdt-api</module>
+    <module>hdt-java-core</module>
+    <module>hdt-java-cli</module>
+    <module>hdt-jena</module>
+    <module>hdt-java-package</module>
+    <module>hdt-fuseki</module>
+  </modules>
 
   <issueManagement>
     <system>Github</system>
@@ -276,20 +268,6 @@
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-gpg-plugin</artifactId>
-        <version>1.6</version>
-        <executions>
-          <execution>
-            <id>sign-artifacts</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>sign</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-release-plugin</artifactId>
         <version>2.5.3</version>
         <configuration>
@@ -301,5 +279,36 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+      <activation>
+        <property>
+          <name>performRelease</name>
+          <value>true</value>
+        </property>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+
+  </profiles>
 
 </project>

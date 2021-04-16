@@ -53,8 +53,8 @@ public class CatCommon implements Iterator<Pair<Integer,Integer>> {
     }
 
     @Override
-    public Pair next() {
-        Pair r = next;
+    public Pair<Integer,Integer> next() {
+        Pair<Integer,Integer> r = next;
         hasNext=false;
         helpNext();
         return r;

@@ -32,22 +32,21 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 public class BitUtil {
-	
+
 	private BitUtil() {}
-	
+
 	/**
 	 * Number of bits needed to store up to n
 	 * @param n
-	 * @return
 	 */
 	public static int log2(long n) {
 		return (n != 0) ? (64 - Long.numberOfLeadingZeros(n)) : 0;
 	}
-	
+
 	public static long maxVal(int numbits) {
 		return ~(~0L<<numbits);
 	}
-	
+
 	public static long readLowerBitsByteAligned(long numbits, InputStream in) throws IOException {
         int bitsRead = 0;
         long value = 0;
@@ -67,7 +66,7 @@ public class BitUtil {
         	numbits-=8;
 		}
 	}
-	
+
 	public static int select1(long value, int rank) {
         int bitpos=0;
         while(rank>0 && value!=0) {
@@ -77,7 +76,7 @@ public class BitUtil {
         }
         return bitpos;
 	}
-	
+
 	public static int select0(long value, int rank) {
         int bitpos=0;
         while(rank>0) {

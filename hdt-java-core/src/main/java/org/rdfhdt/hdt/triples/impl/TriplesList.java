@@ -26,14 +26,9 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 
 import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
@@ -45,11 +40,7 @@ import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
-import org.rdfhdt.hdt.triples.TempTriples;
-import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.TripleIDComparatorInt;
-import org.rdfhdt.hdt.triples.Triples;
+import org.rdfhdt.hdt.triples.*;
 import org.rdfhdt.hdt.util.RDFInfo;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -58,10 +49,10 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 /**
  * Implementation of TempTriples using a List of TripleID.
- * 
+ *
  */
 public class TriplesList implements TempTriples {
-	
+
 	/** The array to hold the triples */
 	private ArrayList<TripleIDInt> arrayOfTriples;
 
@@ -73,7 +64,7 @@ public class TriplesList implements TempTriples {
 
 	/**
 	 * Constructor, given an order to sort by
-	 * 
+	 *
 	 * @param specification
 	 *            The specification to sort by
 	 */
@@ -109,7 +100,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
@@ -133,7 +124,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#getNumberOfElements()
 	 */
 	@Override
@@ -143,7 +134,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#size()
 	 */
 	@Override
@@ -154,7 +145,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#save(java.io.OutputStream)
 	 */
 	@Override
@@ -180,7 +171,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#load(java.io.InputStream)
 	 */
 	@Override
@@ -189,7 +180,7 @@ public class TriplesList implements TempTriples {
 		long totalTriples = controlInformation.getInt("numTriples");
 
 		int numRead=0;
-		
+
 		while(numRead<totalTriples) {
 			arrayOfTriples.add(new TripleIDInt(IOUtil.readInt(input), IOUtil.readInt(input), IOUtil.readInt(input)));
 			numRead++;
@@ -202,7 +193,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples)
 	 */
 	@Override
@@ -236,7 +227,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#insert(hdt.triples.TripleID[])
 	 */
 	@Override
@@ -262,7 +253,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#delete(hdt.triples.TripleID[])
 	 */
 	@Override
@@ -284,7 +275,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#sort(datatypes.TripleComponentOrder)
 	 */
 	@Override
@@ -327,7 +318,7 @@ public class TriplesList implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -394,7 +385,7 @@ public class TriplesList implements TempTriples {
 
 	/**
 	 * Iterator implementation to iterate over a TriplesList object
-	 * 
+	 *
 	 * @author mario.arias
 	 *
 	 */
@@ -500,19 +491,19 @@ public class TriplesList implements TempTriples {
 	}
 
 	@Override
-	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {		
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {
 	}
 
 	@Override
 	public void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj) {
 		sorted=false;
 		for(TripleIDInt triple : arrayOfTriples) {
-			triple.setAll( 
+			triple.setAll(
 					(int)mapSubj.getNewID(triple.getSubject()-1),
 					(int)mapPred.getNewID(triple.getPredicate()-1),
 					(int)mapObj.getNewID(triple.getObject()-1)
 				);
 		}
 	}
-	
+
 }

@@ -18,7 +18,17 @@ public class ARQScriptsTest {
 
     public List<ScriptTest> parametersForScriptTest() {
         ScriptTestFactory stf = new ScriptTestFactory("ARQ");
-        return stf.load(testDir + "/manifest-arq.ttl");
+        List<ScriptTest> tests = stf.load(testDir + "/manifest-arq.ttl");
+
+        if ( tests.isEmpty() ) {
+            ScriptTest dummyTest = new ScriptTest() {
+                @Override
+                public void runTest() throws Throwable {}
+            };
+            tests.add(dummyTest);
+        }
+        return tests;
+
     }
 
     @Test
@@ -26,4 +36,8 @@ public class ARQScriptsTest {
     public void scriptTest(ScriptTest test) throws Throwable {
         test.runTest();
     }
+
+    // At least one test!
+    @Test
+    public void dummy() {}
 }

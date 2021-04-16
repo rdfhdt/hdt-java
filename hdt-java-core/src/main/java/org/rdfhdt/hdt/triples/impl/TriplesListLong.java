@@ -58,7 +58,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 /**
  * Implementation of TempTriples using a List of TripleID.
- * 
+ *
  */
 public class TriplesListLong implements TempTriples {
 
@@ -73,7 +73,7 @@ public class TriplesListLong implements TempTriples {
 
 	/**
 	 * Constructor, given an order to sort by
-	 * 
+	 *
 	 * @param specification
 	 *            The specification to sort by
 	 */
@@ -109,7 +109,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
@@ -133,7 +133,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#getNumberOfElements()
 	 */
 	@Override
@@ -143,7 +143,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#size()
 	 */
 	@Override
@@ -154,7 +154,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#save(java.io.OutputStream)
 	 */
 	@Override
@@ -181,7 +181,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#load(java.io.InputStream)
 	 */
 	@Override
@@ -190,7 +190,7 @@ public class TriplesListLong implements TempTriples {
 		long totalTriples = controlInformation.getInt("numTriples");
 
 		int numRead=0;
-		
+
 		while(numRead<totalTriples) {
 			arrayOfTriples.add(new TripleID(IOUtil.readLong(input), IOUtil.readLong(input), IOUtil.readLong(input)));
 			numRead++;
@@ -203,7 +203,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.Triples#load(hdt.triples.TempTriples)
 	 */
 	@Override
@@ -236,7 +236,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#insert(hdt.triples.TripleID[])
 	 */
 	@Override
@@ -263,7 +263,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#delete(hdt.triples.TripleID[])
 	 */
 	@Override
@@ -285,7 +285,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.triples.TempTriples#sort(datatypes.TripleComponentOrder)
 	 */
 	@Override
@@ -328,7 +328,7 @@ public class TriplesListLong implements TempTriples {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -346,7 +346,8 @@ public class TriplesListLong implements TempTriples {
 		header.insert(rootNode, HDTVocabulary.TRIPLES_ORDER, order.ordinal() );
 	}
 
-	public String getType() {
+	@Override
+    public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST;
 	}
 
@@ -394,7 +395,7 @@ public class TriplesListLong implements TempTriples {
 
 	/**
 	 * Iterator implementation to iterate over a TriplesList object
-	 * 
+	 *
 	 * @author mario.arias
 	 *
 	 */
@@ -500,7 +501,7 @@ public class TriplesListLong implements TempTriples {
 	}
 
 	@Override
-	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {		
+	public void mapIndex(CountInputStream input, File f, ControlInfo ci, ProgressListener listener) throws IOException {
 	}
 
 	@Override
@@ -514,5 +515,5 @@ public class TriplesListLong implements TempTriples {
 				);
 		}
 	}
-	
+
 }

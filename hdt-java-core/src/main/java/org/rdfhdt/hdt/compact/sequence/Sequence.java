@@ -37,13 +37,13 @@ import java.util.Iterator;
 
 /**
  * The array interface represents compact sequences of integers.
- * 
+ *
  */
 public interface Sequence extends Closeable {
 
 	/**
 	 * Adds an element to the array
-	 * 
+	 *
 	 * @param elements
 	 *            The element to be added to the array
 	 */
@@ -51,7 +51,7 @@ public interface Sequence extends Closeable {
 
 	/**
 	 * Gets the element in a specific position
-	 * 
+	 *
 	 * @param position
 	 *            The position of the element to be returned
 	 * @return int
@@ -60,21 +60,19 @@ public interface Sequence extends Closeable {
 
 	/**
 	 * Gets the total number of elements in the array
-	 * 
+	 *
 	 * @return int
 	 */
 	long getNumberOfElements();
-	
+
 	/**
 	 * Return the size of the data structure in bytes
-	 * 
-	 * @return
 	 */
 	long size();
 
 	/**
 	 * Saves the array to an OutputStream
-	 * 
+	 *
 	 * @param output
 	 *            The OutputStream to be saved to
 	 * @throws IOException
@@ -83,15 +81,14 @@ public interface Sequence extends Closeable {
 
 	/**
 	 * Loads a array from an InputStream
-	 * 
+	 *
 	 * @param input
 	 *            The InputStream to load from
 	 */
 	void load(InputStream input, ProgressListener listener) throws IOException;
-	
+
 	/**
 	 * Type identifier of this Stream.
-	 * @return
 	 */
 	String getType();
 }

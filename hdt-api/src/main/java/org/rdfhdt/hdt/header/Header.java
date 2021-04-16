@@ -36,18 +36,16 @@ import org.rdfhdt.hdt.rdf.RDFStorage;
 
 /**
  * Provides the basic functionality for a header
- * 
+ *
  */
 public interface Header extends RDFStorage {
-	
+
 	void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
 
 	CharSequence getBaseURI();
-	
+
 	/**
 	 * Returns the number of triples
-	 *
-	 * @return
 	 */
 	int getNumberOfElements();
 }

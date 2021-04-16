@@ -19,10 +19,14 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import java.io.BufferedOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap375Disk;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.compact.sequence.SequenceLog64Big;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -35,12 +39,6 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
-
-import java.io.BufferedOutputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class BitmapTriplesCat {
 

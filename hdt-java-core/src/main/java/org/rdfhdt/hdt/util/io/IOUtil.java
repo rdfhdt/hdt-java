@@ -53,9 +53,9 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
  *
  */
 public class IOUtil {
-	
+
 	private IOUtil() {}
-	
+
 	public static InputStream getFileInputStream(String fileName) throws IOException {
 		InputStream input;
 		String name = fileName.toLowerCase();
@@ -69,12 +69,12 @@ public class IOUtil {
 		} else {
 			input = new BufferedInputStream(new FileInputStream(fileName));
 		}
-			
+
 		if(name.endsWith(".gz")||name.endsWith(".tgz")) {
 			input = new GZIPInputStream(input);
-		} else if(name.endsWith("bz2") || name.endsWith("bz")) {	
+		} else if(name.endsWith("bz2") || name.endsWith("bz")) {
 			input = new BZip2CompressorInputStream(input, true);
-		} else if(name.endsWith("xz")) {	
+		} else if(name.endsWith("xz")) {
 			input = new XZCompressorInputStream(input, true);
 		}
 		return input;
@@ -83,7 +83,7 @@ public class IOUtil {
 	public static BufferedReader getFileReader(String fileName) throws IOException {
 		return new BufferedReader(new InputStreamReader(getFileInputStream(fileName)));
 	}
-	
+
 	public static String readLine(InputStream in, char character) throws IOException {
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		while(true) {
@@ -197,7 +197,6 @@ public class IOUtil {
 	/**
 	 * Read long, little endian.
 	 * @param input
-	 * @return
 	 * @throws IOException
 	 */
 	public static long readLong(InputStream input) throws IOException {
@@ -267,7 +266,6 @@ public class IOUtil {
 	/**
 	 * Convert byte array to int, little endian
 	 * @param value
-	 * @return
 	 */
 	public static int byteArrayToInt(byte[] value){
 		return (value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0);
@@ -277,7 +275,6 @@ public class IOUtil {
 	 * @param input din
 	 * @param length bytes
 	 * @param listener
-	 * @return
 	 */
 	public static byte[] readBuffer(InputStream input, int length, ProgressListener listener) throws IOException {
 		int nRead;

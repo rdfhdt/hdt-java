@@ -102,6 +102,7 @@ public class CatIterator implements Iterator<Integer> {
 
     public class ScoreComparator implements Comparator<IteratorPlusInt> {
 
+        @Override
         public int compare(IteratorPlusInt a, IteratorPlusInt b) {
             CharSequenceComparator comparator = new CharSequenceComparator();
             if (a.value.getKey()>b.value.getKey()){

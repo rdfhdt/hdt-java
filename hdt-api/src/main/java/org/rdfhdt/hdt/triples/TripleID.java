@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.triples;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import org.rdfhdt.hdt.util.LongCompare;
 
@@ -36,11 +35,11 @@ import org.rdfhdt.hdt.util.LongCompare;
 
 /**
  * TripleID holds a triple using Long IDs
- * 
+ *
  */
 public final class TripleID implements Comparable<TripleID>, Serializable {
 	private static final long serialVersionUID = -4685524566493494912L;
-	
+
 	private long subject;
 	private long predicate;
 	private long object;
@@ -54,7 +53,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Constructor
-	 * 
+	 *
 	 * @param subject
 	 *            The subject
 	 * @param predicate
@@ -68,7 +67,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		this.predicate = predicate;
 		this.object = object;
 	}
-	
+
 	/**
 	 * Build a TripleID as a copy of another one.
 	 * @param other
@@ -136,7 +135,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		this.predicate = predicate;
 		this.object = object;
 	}
-	
+
 	public void assign(TripleID replacement) {
 		subject = replacement.getSubject();
         object = replacement.getObject();
@@ -152,7 +151,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
@@ -167,7 +166,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	}
 
 	/**
-	 * Compare TripleID to another one using SPO Order. 
+	 * Compare TripleID to another one using SPO Order.
 	 * To compare using other orders use @see org.rdfhdt.hdt.triples.TripleStringComparator
 	 */
 	@Override
@@ -185,10 +184,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
                  return result;
          }
 	}
-	
+
 	/**
 	 * Check whether this triple matches a pattern of TripleID. 0 acts as a wildcard
-	 * 
+	 *
 	 * @param pattern
 	 *            The pattern to match against
 	 * @return boolean
@@ -210,10 +209,9 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		}
 		return false;
 	}
-	
+
 	/**
 	 * Check whether all the components of the triple are empty (zero).
-	 * @return
 	 */
 	public boolean isEmpty() {
 		return !(subject != 0 || predicate != 0 || object != 0);
@@ -221,15 +219,13 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Check whether none of the components of the triple are empty.
-	 * @return
 	 */
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
 	}
-	
+
 	/**
 	 * Checks whether any of the components of the triple are "no match" (-1).
-	 * @return
 	 */
 	public boolean isNoMatch() {
 		return subject == -1 || predicate == -1 || object == -1;
@@ -237,15 +233,14 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
-	 * @return
 	 */
 	public String getPatternString() {
 		return "" +
-			(subject==0   ? '?' : 'S') + 
+			(subject==0   ? '?' : 'S') +
 			(predicate==0 ? '?' : 'P') +
 			(object==0    ? '?' : 'O');
 	}
-	
+
 	/** size of one TripleID in memory */
 	public static int size(){
 		return 48;

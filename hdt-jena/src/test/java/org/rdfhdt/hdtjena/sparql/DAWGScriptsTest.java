@@ -48,6 +48,14 @@ public class DAWGScriptsTest {
         tests.addAll(stf2.load(testDirDAWG + "/regex/manifest.n3"));
         tests.addAll(stf2.load(testDirDAWG + "/examples/manifest.n3"));
 
+        if ( tests.isEmpty() ) {
+            ScriptTest dummyTest = new ScriptTest() {
+                @Override
+                public void runTest() throws Throwable {}
+            };
+            tests.add(dummyTest);
+        }
+
         return tests;
     }
 

@@ -35,10 +35,10 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 
 /**
  * Interface for TempTriples implementation.
- * 
+ *
  * This is a dynamic interface. For static(read-only) behaviour have a look at
  * {@link Triples}
- * 
+ *
  */
 public interface TempTriples extends TriplesPrivate, Closeable {
 	/**
@@ -46,22 +46,21 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 * @param subject
 	 * @param predicate
 	 * @param object
-	 * @return
 	 */
 	boolean insert(long subject, long predicate, long object);
-	
+
 	/**
 	 * Adds one or more triples
-	 * 
+	 *
 	 * @param triples
 	 *            The triples to be inserted
 	 * @return boolean
 	 */
 	boolean insert(TripleID... triples);
-	
+
 	/**
 	 * Deletes one or more triples according to a pattern
-	 * 
+	 *
 	 * @param pattern
 	 *            The pattern to match against
 	 * @return boolean
@@ -76,25 +75,25 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	void sort(ProgressListener listener);
 
 	void removeDuplicates(ProgressListener listener);
-	
+
 	/**
 	 * Sets a type of order(TripleComponentOrder)
-	 * 
+	 *
 	 * @param order
 	 *            The order to set
 	 */
 	void setOrder(TripleComponentOrder order);
-	
+
 	/**
 	 * Gets the currently set order(TripleComponentOrder)
 	 */
 	TripleComponentOrder getOrder();
-	
+
 	/**
 	 * Clear all triples, resulting in an empty triples section.
 	 */
 	void clear();
-	
+
 	/**
 	 * Load triples from another instance.
 	 */

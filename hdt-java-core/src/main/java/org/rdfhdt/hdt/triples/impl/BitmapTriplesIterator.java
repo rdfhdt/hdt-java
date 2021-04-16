@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
@@ -43,12 +42,12 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	private final BitmapTriples triples;
 	private final TripleID pattern, returnTriple;
 	private long patX, patY, patZ;
-	
+
 	private AdjacencyList adjY, adjZ;
 	long posY, posZ, minY, minZ, maxY, maxZ;
 	private long nextY, nextZ;
 	private long x, y, z;
-	
+
 	public BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
@@ -136,7 +135,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#hasNext()
 	 */
 	@Override
@@ -146,7 +145,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#next()
 	 */
 	@Override
@@ -157,7 +156,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 			y = adjY.get(posY);
 //			nextZ = adjZ.find(posY+1);
 			nextZ = adjZ.findNext(nextZ)+1;
-			
+
 			if(posY==nextY) {
 				x++;
 				// nextY = adjY.find(x);
@@ -174,7 +173,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#hasPrevious()
 	 */
 	@Override
@@ -184,7 +183,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#previous()
 	 */
 	@Override
@@ -207,7 +206,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#goToStart()
 	 */
 	@Override
@@ -225,7 +224,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#estimatedNumResults()
 	 */
 	@Override
@@ -235,7 +234,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#numResultEstimation()
 	 */
 	@Override
@@ -248,7 +247,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#canGoTo()
 	 */
 	@Override
@@ -258,7 +257,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#goTo(int)
 	 */
 	@Override
@@ -284,7 +283,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see hdt.iterator.IteratorTripleID#getOrder()
 	 */
 	@Override
@@ -294,7 +293,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see java.util.Iterator#remove()
 	 */
 	@Override

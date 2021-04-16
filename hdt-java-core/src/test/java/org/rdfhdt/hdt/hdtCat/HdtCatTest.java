@@ -10,6 +10,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdtCat.utils.Utility;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.TripleString;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class HdtCatTest implements ProgressListener {
                 Utility.compareTriples(hdtCatOld,hdtCatNew);
 
                 try {
-                    Iterator it = hdtCatOld.search("", "", "");
+                    Iterator<TripleString> it = hdtCatOld.search("", "", "");
                     while (it.hasNext()) {
                         System.out.println(it.next().toString());
                     }
@@ -53,7 +54,7 @@ public class HdtCatTest implements ProgressListener {
                 }
 
                 try {
-                    Iterator it = hdtCatNew.search("", "", "");
+                    Iterator<TripleString> it = hdtCatNew.search("", "", "");
                     while (it.hasNext()) {
                         System.out.println(it.next().toString());
                     }
