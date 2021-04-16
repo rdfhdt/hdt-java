@@ -204,9 +204,13 @@ public class NodeDictionary {
     }
 
 	public static long translate(NodeDictionary dictionary, HDTId id, TripleComponentRole role) {
-		if(dictionary==id.getDictionary()) {
+		// "Does not exist ID, see HDTId"
+		if (id.getValue() == -1) {
+			return -1;
+		}
+		if (dictionary == id.getDictionary()) {
 			if (role == id.getRole()) {
-			return id.getValue();
+				return id.getValue();
 			} else if (isSO(role) && isSO(id.getRole())) {
 				return id.getValue() <= dictionary.dictionary.getNshared() ? id.getValue() : -1;
 			}
