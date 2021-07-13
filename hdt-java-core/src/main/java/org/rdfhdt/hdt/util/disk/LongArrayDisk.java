@@ -40,9 +40,6 @@ public class LongArrayDisk implements Closeable {
      * garbage-collected.
      */
     public void close() throws IOException {
-        for(int i = 0; i < mappings_array.length; i++) {
-            mappings_array[i].clear();
-        }
         this.array.close();
         this.mappings_array = null;
         this.array = null;
