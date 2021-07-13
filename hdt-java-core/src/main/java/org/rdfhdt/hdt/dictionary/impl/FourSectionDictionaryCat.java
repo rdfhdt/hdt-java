@@ -42,12 +42,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -227,6 +222,28 @@ public class FourSectionDictionaryCat {
             } else {
                 mappingS.set(mappingS2.getMapping(i) + (int)numShared, (i + 1 + (int) dictionary2.getNshared()), 2);
             }
+        }
+    }
+
+    public void closeAll() {
+        try {
+            doClose(mappingSh1);
+            doClose(mappingSh2);
+            doClose(mappingS1);
+            doClose(mappingS2);
+            doClose(mappingO1);
+            doClose(mappingO2);
+            doClose(mappingP1);
+            doClose(mappingP2);
+            doClose(mappingS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void doClose(Closeable closeable) throws IOException {
+        if (closeable != null){
+            closeable.close();
         }
     }
 
@@ -414,8 +431,9 @@ public class FourSectionDictionaryCat {
                 out.flush();
             }
             out.close();
+            in.close();
             Files.delete(Paths.get(location+"section_buffer_"+type));
-            Files.delete(Paths.get(location+"SequenceLog64BigDisk"+type));
+            new File(location+"SequenceLog64BigDisk"+type).delete();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -670,8 +688,9 @@ public class FourSectionDictionaryCat {
                 out.flush();
             }
             out.close();
-            Files.delete(Paths.get(location+"section_buffer_"+1));
-            Files.delete(Paths.get(location+"SequenceLog64BigDisk"+1));
+            in.close();
+            new File(location+"section_buffer_"+1).delete();
+            new File(location+"SequenceLog64BigDisk"+1).delete();
         } catch (IOException e) {
             e.printStackTrace();
         }

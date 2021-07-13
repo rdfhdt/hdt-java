@@ -20,14 +20,18 @@
 
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayList;
+
+import org.apache.jena.ext.com.google.common.io.Closeables;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 
 
 /**
  * @author Dennis Diefenbach &amp; Jose Gimenez Garcia
  */
-public class CatMappingBack {
+public class CatMappingBack implements Closeable {
     private String location;
     private long size;
     private LongArrayDisk mapping1;
@@ -80,4 +84,18 @@ public class CatMappingBack {
         }
     }
 
+    @Override public void close() throws IOException {
+        if (this.mapping1 != null) {
+            this.mapping1.close();
+        }
+        if (this.mapping2 != null){
+            this.mapping2.close();
+        }
+        if (this.mappingType1 != null) {
+            this.mappingType1.close();
+        }
+        if (this.mappingType2 != null) {
+            this.mappingType2.close();
+        }
+    }
 }
