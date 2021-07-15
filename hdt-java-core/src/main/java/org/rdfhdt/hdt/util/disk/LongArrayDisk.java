@@ -20,6 +20,7 @@
 
 package org.rdfhdt.hdt.util.disk;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.MappedByteBuffer;
@@ -27,12 +28,22 @@ import java.nio.channels.FileChannel;
 
 //Implementing an array of longs that is backed up on disk. Following this: http://vanillajava.blogspot.fr/2011/12/using-memory-mapped-file-for-huge.html
 
-public class LongArrayDisk {
+public class LongArrayDisk implements Closeable {
     private static final long MAPPING_SIZE = 1 << 30;
     private RandomAccessFile array = null;
     private MappedByteBuffer[] mappings_array;
     private long size;
     private String location;
+
+    /**
+     * Allows the {@link RandomAccessFile} and the array of {@link MappedByteBuffer} held by the instance to be
+     * garbage-collected.
+     */
+    public void close() throws IOException {
+        this.array.close();
+        this.mappings_array = null;
+        this.array = null;
+    }
 
     public LongArrayDisk(String location, long size){
         try {
@@ -95,7 +106,6 @@ public class LongArrayDisk {
             long oldSize = this.size;
             this.size = newSize;
             long sizeBit = 8 * (newSize);
-            this.array.setLength(sizeBit);
 
             int blocks = (int) Math.ceil((double)sizeBit / MAPPING_SIZE);
             mappings_array = new MappedByteBuffer[blocks];

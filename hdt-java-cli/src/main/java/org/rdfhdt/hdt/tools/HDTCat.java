@@ -131,7 +131,6 @@ public class HDTCat implements ProgressListener {
         HDTCat hdtCat = new HDTCat();
         System.out.println("Welcome to hdtCat!");
         System.out.println("This tool was developed by Dennis Diefenbach and Jośe M. Giḿenez-Garćıa");
-        System.out.println("NOTE: this tool is not working under WINDOWS! This is a well-known BUG!");
         JCommander com = new JCommander(hdtCat, args);
         com.setProgramName("hdtCat");
 

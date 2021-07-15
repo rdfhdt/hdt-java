@@ -27,13 +27,15 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 import org.rdfhdt.hdt.util.io.IOUtil;
+
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-public class SequenceLog64BigDisk implements DynamicSequence {
+public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
     private static final byte W = 64;
     private static final int INDEX = 1073741824;
 
@@ -289,6 +291,9 @@ public class SequenceLog64BigDisk implements DynamicSequence {
 
     @Override
     public void close() throws IOException {
+        if (data != null) {
+            data.close();
+        }
         data=null;
     }
 }
