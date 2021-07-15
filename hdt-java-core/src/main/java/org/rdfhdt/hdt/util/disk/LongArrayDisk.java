@@ -106,7 +106,6 @@ public class LongArrayDisk implements Closeable {
             long oldSize = this.size;
             this.size = newSize;
             long sizeBit = 8 * (newSize);
-            //this.array.setLength(sizeBit);
 
             int blocks = (int) Math.ceil((double)sizeBit / MAPPING_SIZE);
             mappings_array = new MappedByteBuffer[blocks];
