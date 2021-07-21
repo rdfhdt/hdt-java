@@ -432,8 +432,12 @@ public class FourSectionDictionaryCat {
             }
             out.close();
             in.close();
-            Files.delete(Paths.get(location+"section_buffer_"+type));
-            new File(location+"SequenceLog64BigDisk"+type).delete();
+            try {
+                Files.delete(Paths.get(location + "section_buffer_" + type));
+                Files.delete(Paths.get(location + "SequenceLog64BigDisk" + type));
+            } catch (Exception e) {
+                // swallow this exception intentionally. See javadoc on Files.delete for details.
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -689,8 +693,12 @@ public class FourSectionDictionaryCat {
             }
             out.close();
             in.close();
-            new File(location+"section_buffer_"+1).delete();
-            new File(location+"SequenceLog64BigDisk"+1).delete();
+            try {
+                Files.delete(Paths.get(location+"section_buffer_"+1));
+                Files.delete(Paths.get(location+"SequenceLog64BigDisk"+1));
+            } catch (Exception e) {
+                // swallow this exception intentionally. See javadoc on Files.delete for details.
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -589,22 +589,27 @@ public class HDTImpl implements HDTPrivate {
 			bitmapTriplesCat.cat(it,listener);
 			dictionaryCat.closeAll();
 			//Delete the mappings since they are not necessary anymore
-			new File(location+"P1").delete();
-			new File(location+"P1"+"Types").delete();
-			new File(location+"P2").delete();
-			new File(location+"P2"+"Types").delete();
-            new File(location+"SH1").delete();
-            new File(location+"SH1"+"Types").delete();
-            new File(location+"SH2").delete();
-            new File(location+"SH2"+"Types").delete();
-			new File(location+"S1").delete();
-			new File(location+"S1"+"Types").delete();
-			new File(location+"S2").delete();
-			new File(location+"S2"+"Types").delete();
-			new File(location+"O1").delete();
-			new File(location+"O1"+"Types").delete();
-			new File(location+"O2").delete();
-			new File(location+"O2"+"Types").delete();
+			try {
+				Files.delete( Paths.get(location+"P1"));
+				Files.delete( Paths.get(location+"P1"+"Types"));
+				Files.delete( Paths.get(location+"P2"));
+				Files.delete( Paths.get(location+"P2"+"Types"));
+				Files.delete( Paths.get(location+"SH1"));
+				Files.delete( Paths.get(location+"SH1"+"Types"));
+				Files.delete( Paths.get(location+"SH2"));
+				Files.delete( Paths.get(location+"SH2"+"Types"));
+				Files.delete( Paths.get(location+"S1"));
+				Files.delete( Paths.get(location+"S1"+"Types"));
+				Files.delete( Paths.get(location+"S2"));
+				Files.delete( Paths.get(location+"S2"+"Types"));
+				Files.delete( Paths.get(location+"O1"));
+				Files.delete( Paths.get(location+"O1"+"Types"));
+				Files.delete( Paths.get(location+"O2"));
+				Files.delete( Paths.get(location+"O2"+"Types"));
+			} catch (Exception e) {
+				// swallow this exception intentionally. See javadoc on Files.delete for details.
+			}
+
 			//map the triples
 			CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
 			ci2 = new ControlInformation();
@@ -614,10 +619,14 @@ public class HDTImpl implements HDTPrivate {
 			fis2.reset();
 			triples = TriplesFactory.createTriples(ci2);
 			triples.mapFromFile(fis2,new File(location + "triples"),null);
-            new File(location+"mapping_back_1").delete();
-            new File(location+"mapping_back_2").delete();
-            new File(location+"mapping_back_type_1").delete();
-            new File(location+"mapping_back_type_2").delete();
+			try {
+				Files.delete(Paths.get(location + "mapping_back_1"));
+				Files.delete(Paths.get(location + "mapping_back_2"));
+				Files.delete(Paths.get(location + "mapping_back_type_1"));
+				Files.delete(Paths.get(location + "mapping_back_type_2"));
+			} catch (Exception e) {
+				// swallow this exception intentionally. See javadoc on Files.delete for details.
+			}
 			System.out.println("Generating header");
 			this.header = HeaderFactory.createHeader(spec);
 			this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");

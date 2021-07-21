@@ -137,8 +137,12 @@ public class BitmapTriplesCat {
             vectorZ.save(bos, iListener);
             vectorY.close();
             vectorZ.close();
-            new File(location + "vectorY").delete();
-            new File(location + "vectorZ").delete();
+            try {
+                Files.delete(Paths.get(location + "vectorY"));
+                Files.delete(Paths.get(location + "vectorZ"));
+            } catch (Exception e) {
+                // swallow this exception intentionally. See javadoc on Files.delete for details.
+            }
             //Files.delete(Paths.get(location + "bitY"));
             //Files.delete(Paths.get(location + "bitZ"));
             bos.close();
