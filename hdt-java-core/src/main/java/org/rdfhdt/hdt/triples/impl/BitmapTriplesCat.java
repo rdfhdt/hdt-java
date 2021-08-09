@@ -20,6 +20,7 @@
 package org.rdfhdt.hdt.triples.impl;
 
 import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -134,8 +135,14 @@ public class BitmapTriplesCat {
             bitZ.save(bos, iListener);
             vectorY.save(bos, iListener);
             vectorZ.save(bos, iListener);
-            Files.delete(Paths.get(location + "vectorY"));
-            Files.delete(Paths.get(location + "vectorZ"));
+            vectorY.close();
+            vectorZ.close();
+            try {
+                Files.delete(Paths.get(location + "vectorY"));
+                Files.delete(Paths.get(location + "vectorZ"));
+            } catch (Exception e) {
+                // swallow this exception intentionally. See javadoc on Files.delete for details.
+            }
             //Files.delete(Paths.get(location + "bitY"));
             //Files.delete(Paths.get(location + "bitZ"));
             bos.close();
