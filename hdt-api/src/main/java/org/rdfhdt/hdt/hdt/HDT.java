@@ -72,6 +72,10 @@ public interface HDT extends RDFAccess,Closeable {
 	 *
 	 * @param output
 	 *            The OutputStream to save to
+	 * @param listener
+	 *            A listener that can be used to see the progress of the saving
+	 * @throws IOException
+	 * 			  when the file cannot be found
 	 */
 	void saveToHDT(OutputStream output, ProgressListener listener) throws IOException;
 
@@ -80,16 +84,24 @@ public interface HDT extends RDFAccess,Closeable {
 	 *
 	 * @param fileName
 	 *            The OutputStream to save to
+	 * @param listener
+	 *            A listener that can be used to see the progress of the saving
+	 * @throws IOException
+	 * 			  when the file cannot be found
 	 */
 	void saveToHDT(String fileName, ProgressListener listener) throws IOException;
 
 	/**
 	 * Returns the size of the Data Structure in bytes.
+	 *
+	 * @return long
 	 */
 	long size();
 
 	/**
 	 * Get the Base URI for the Dataset.
+	 *
+	 * @return String
 	 */
 	String getBaseURI();
 

@@ -65,32 +65,44 @@ public interface Dictionary extends Closeable {
 	public long stringToId(CharSequence str, TripleComponentRole position);
 
 	/**
-	 * Returns the number of elements in the dictionary
+	 * 	 * Returns the number of elements in the dictionary
+	 *
+	 * @return long
 	 */
 	public long getNumberOfElements();
 
 	/**
 	 * Return the combined size of the sections of the dictionary (in bytes)
+	 *
+	 * @return long
 	 */
 	public long size();
 
 	/**
 	 * Returns the number of subjects in the dictionary. Note: Includes shared.
+	 *
+	 * @return long
 	 */
 	public long getNsubjects();
 
 	/**
 	 * Returns the number of predicates in the dictionary.
+	 *
+	 * @return long
 	 */
 	public long getNpredicates();
 
 	/**
 	 * Returns the number of objects in the dictionary. Note: Includes shared
+	 *
+	 * @return long
 	 */
 	public long getNobjects();
 
 	/**
 	 * Returns the number of subjects/objects in the dictionary.
+	 *
+	 * @return long
 	 */
 	public long getNshared();
 
@@ -104,11 +116,17 @@ public interface Dictionary extends Closeable {
 
 	/**
 	 * Fills the header with information from the dictionary
+	 * @param header
+	 * 					the header to fill
+	 * @param rootNode
+	 * 					the rdf root node
 	 */
 	public void populateHeader(Header header, String rootNode);
 
 	/**
 	 * Returns the type of the dictionary (the way it is written onto file/held in memory)
+	 *
+	 * @return String
 	 */
 	public String getType();
 }

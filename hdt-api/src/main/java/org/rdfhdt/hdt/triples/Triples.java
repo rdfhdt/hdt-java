@@ -38,6 +38,7 @@ import org.rdfhdt.hdt.header.Header;
 public interface Triples extends Closeable {
 	/**
 	 * Iterates over all triples. Equivalent to this.search(new TripleID());
+	 * @return IteratorTripleID
 	 */
 	IteratorTripleID searchAll();
 
@@ -67,13 +68,14 @@ public interface Triples extends Closeable {
 
 	/**
 	 * Populates HDT Header with all information relevant to this Triples under a RDF root node.
-	 * @param head
-	 * @param rootNode
+	 * @param head the header to populate
+	 * @param rootNode the rdf root node to attach
 	 */
 	void populateHeader(Header head, String rootNode);
 
 	/**
 	 * Returns a unique identifier of this Triples Implementation
+	 * @return String
 	 */
 	String getType();
 }

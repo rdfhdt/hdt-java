@@ -70,7 +70,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Build a TripleID as a copy of another one.
-	 * @param other
+	 * @param other the triple ID to copy
 	 */
 	public TripleID(TripleID other) {
 		super();
@@ -80,7 +80,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	}
 
 	/**
-	 * @return the subject
+	 * @return long the subject
 	 */
 	public long getSubject() {
 		return subject;
@@ -95,7 +95,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	}
 
 	/**
-	 * @return the object
+	 * @return long the object
 	 */
 	public long getObject() {
 		return object;
@@ -110,7 +110,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	}
 
 	/**
-	 * @return the predicate
+	 * @return long the predicate
 	 */
 	public long getPredicate() {
 		return predicate;
@@ -126,9 +126,9 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
-	 * @param subject
-	 * @param predicate
-	 * @param object
+	 * @param subject subject ID
+	 * @param predicate predicate ID
+	 * @param object object ID
 	 */
 	public void setAll(long subject, long predicate, long object) {
 		this.subject = subject;
@@ -206,6 +206,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Check whether all the components of the triple are empty (zero).
+	 * @return boolean
 	 */
 	public boolean isEmpty() {
 		return !(subject != 0 || predicate != 0 || object != 0);
@@ -213,6 +214,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Check whether none of the components of the triple are empty.
+	 * @return boolean
 	 */
 	public boolean isValid() {
 		return subject>0 && predicate>0 && object>0;
@@ -220,6 +222,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Checks whether any of the components of the triple are "no match" (-1).
+	 * @return boolean
 	 */
 	public boolean isNoMatch() {
 		return subject == -1 || predicate == -1 || object == -1;
@@ -227,6 +230,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Get the pattern of the triple as String, such as "SP?".
+	 * @return String
 	 */
 	public String getPatternString() {
 		return "" +
@@ -235,7 +239,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 			(object==0    ? '?' : 'O');
 	}
 
-	/** size of one TripleID in memory */
+	/**
+	 * size of one TripleID in memory
+	 * @return int
+	 */
 	public static int size(){
 		return 48;
 	}

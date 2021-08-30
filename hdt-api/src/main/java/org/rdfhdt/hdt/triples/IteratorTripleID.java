@@ -41,12 +41,14 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 
 	/**
 	 * Whether the iterator has previous elements.
+	 * @return boolean
 	 */
 	boolean hasPrevious();
 
 	/**
 	 * Get the previous element. Call only if hasPrevious() returns true.
 	 * It moves the cursor of the Iterator to the previous entry.
+	 * @return TripleID
 	 */
 	TripleID previous();
 
@@ -57,12 +59,13 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 
 	/**
 	 * Specifies whether the iterator can move to a random position.
+	 * @return boolean
 	 */
 	boolean canGoTo();
 
 	/**
 	 * Go to the specified random position. Only use whenever canGoTo() returns true.
-	 * @param pos
+	 * @param pos got to a given position
 	 */
 	void goTo(long pos);
 
@@ -70,18 +73,20 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 	 * Returns the number of estimated results of the Iterator.
 	 * It is usually more efficient than going through all the results.
 	 *
-	 * @return Number of estimated results.
+	 * @return long Number of estimated results.
 	 */
 	long estimatedNumResults();
 
 	/**
 	 * Returns the accuracy of the estimation of number of results as returned
 	 * by estimatedNumResults()
+	 * @return ResultEstimationType
 	 */
 	ResultEstimationType numResultEstimation();
 
 	/**
 	 * Return the order in which the triples are iterated (Might be unknown)
+	 * @return TripleComponentOrder
 	 */
 	TripleComponentOrder getOrder();
 }
