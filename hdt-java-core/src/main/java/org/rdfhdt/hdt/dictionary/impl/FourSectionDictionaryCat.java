@@ -331,7 +331,7 @@ public class FourSectionDictionaryCat {
                             numBlocks++;
 
                             // if a buffer is filled, flush the byteOut and store it
-                            if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) {
+                            if ((((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) || byteOut.size()>200000 ) {
                                 storedBuffersSize += byteOut.size();
                                 byteOut.flush();
                                 IOUtil.writeBuffer(out_buffer, byteOut.toByteArray(), 0, byteOut.toByteArray().length, null);
@@ -520,7 +520,7 @@ public class FourSectionDictionaryCat {
                         numBlocks++;
 
                         // if a buffer is filled, flush the byteOut and store it
-                        if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) {
+                        if ((((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) || byteOut.size()>200000 ) {
                             storedBuffersSize += byteOut.size();
                             byteOut.flush();
                             IOUtil.writeBuffer(out_buffer, byteOut.toByteArray(), 0, byteOut.toByteArray().length, null);
