@@ -46,6 +46,7 @@ public interface Header extends RDFStorage {
 
 	/**
 	 * Returns the number of triples
+	 * @return int
 	 */
 	int getNumberOfElements();
 }

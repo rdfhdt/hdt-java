@@ -49,7 +49,7 @@ public interface RDFAccess {
 	 *            The object to search
 	 * 
 	 * @return Iterator of TripleStrings
-	 * @throws NotFoundException 
+	 * @throws NotFoundException when the triple cannot be found
 	 */
 	IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
 }

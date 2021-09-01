@@ -46,9 +46,10 @@ public abstract class HDTManager {
 	/**
 	 * Load an HDT file into memory to use it. NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFileName
+	 * @param hdtFileName file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadHDT(String hdtFileName, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doLoadHDT(hdtFileName, listener);
@@ -57,8 +58,9 @@ public abstract class HDTManager {
 	/**
 	 * Load an HDT file into memory to use it. NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFileName
-	 * @throws IOException
+	 * @param hdtFileName file path to load
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadHDT(String hdtFileName) throws IOException {
 		return HDTManager.getInstance().doLoadHDT(hdtFileName, null);
@@ -69,9 +71,10 @@ public abstract class HDTManager {
 	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
 	 * for querying because it needs to load those blocks from disk.
 	 * NOTE: Use this method to go through all elements. If you plan to do queries, use mapIndexedHDT() instead.
-	 * @param hdtFileName
+	 * @param hdtFileName file path to map
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT mapHDT(String hdtFileName, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doMapHDT(hdtFileName, listener);
@@ -82,8 +85,9 @@ public abstract class HDTManager {
 	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
 	 * for querying because it needs to load those blocks from disk.
 	 * NOTE: Use this method to go through all elements. If you plan to do queries, use mapIndexedHDT() instead.
-	 * @param hdtFileName
-	 * @throws IOException
+	 * @param hdtFileName file path to map
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT mapHDT(String hdtFileName) throws IOException {
 		return HDTManager.getInstance().doMapHDT(hdtFileName, null);
@@ -92,9 +96,10 @@ public abstract class HDTManager {
 	/**
 	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFile
+	 * @param hdtFile file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doLoadHDT(hdtFile, listener);
@@ -103,8 +108,9 @@ public abstract class HDTManager {
 	/**
 	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFile
-	 * @throws IOException
+	 * @param hdtFile file path to load
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadHDT(InputStream hdtFile) throws IOException {
 		return HDTManager.getInstance().doLoadHDT(hdtFile, null);
@@ -112,9 +118,10 @@ public abstract class HDTManager {
 
 	/**
 	 * Load an HDT File, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
+	 * @param hdtFileName file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener);
@@ -122,8 +129,9 @@ public abstract class HDTManager {
 
 	/**
 	 * Load an HDT File, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
-	 * @throws IOException
+	 * @param hdtFileName file path to load
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(String hdtFileName) throws IOException {
 		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null);
@@ -131,9 +139,10 @@ public abstract class HDTManager {
 
 	/**
 	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
+	 * @param hdtFileName file path to map
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, listener);
@@ -141,8 +150,9 @@ public abstract class HDTManager {
 
 	/**
 	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
-	 * @throws IOException
+	 * @param hdtFileName file path to map
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName) throws IOException {
 		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, null);
@@ -150,9 +160,10 @@ public abstract class HDTManager {
 
 	/**
 	 * Load an HDT file from InputStream, and create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
+	 * @param hdtFileName file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(InputStream hdtFileName, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener);
@@ -160,8 +171,9 @@ public abstract class HDTManager {
 
 	/**
 	 * Load an HDT file from InputStream, and create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName
-	 * @throws IOException
+	 * @param hdtFileName file path to load
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(InputStream hdtFileName) throws IOException {
 		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null);
@@ -169,8 +181,9 @@ public abstract class HDTManager {
 
 	/**
 	 * Return an indexed HDT that is efficient for all kind of queries, given a not indexed HDT.
-	 * @param hdt
+	 * @param hdt file path to index
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
 	 */
 	public static HDT indexedHDT(HDT hdt, ProgressListener listener) {
 		return HDTManager.getInstance().doIndexedHDT(hdt, listener);
@@ -184,8 +197,9 @@ public abstract class HDTManager {
 	 * @param hdtFormat Parameters to tune the generated HDT.
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
 	 *
-	 * @throws IOException
-	 * @throws ParserException
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the file cannot be parsed
+	 * @return HDT
 	 */
 	public static HDT generateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
 		return HDTManager.getInstance().doGenerateHDT(rdfFileName, baseURI, rdfNotation, hdtFormat, listener);
@@ -197,7 +211,9 @@ public abstract class HDTManager {
 	 * @param baseURI Base URI for the dataset.
 	 * @param hdtFormat Parameters to tune the generated HDT.
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the file cannot be parsed
+	 * @return HDT
 	 */
 	public static HDT generateHDT(Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
 		return HDTManager.getInstance().doGenerateHDT(iterator, baseURI, hdtFormat, listener);
@@ -218,7 +234,8 @@ public abstract class HDTManager {
 	 * @param hdtFileName2 Second hdt file name
 	 * @param hdtFormat Parameters to tune the generated HDT.
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
 	 */
 	public static HDT catHDT(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doHDTCat(location, hdtFileName1, hdtFileName2, hdtFormat, listener);

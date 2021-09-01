@@ -11,6 +11,7 @@ public class UnicodeEscape {
      * according to the N-Triples specification.
      * @see #isLetter
      * @see #isNumber
+     * @return boolean
      */
     private static boolean isLetterOrNumber(int c) {
         return isLetter(c) || isNumber(c);
@@ -19,6 +20,8 @@ public class UnicodeEscape {
     /**
      * Checks whether the supplied character is a letter according to
      * the N-Triples specification. N-Triples letters are A - Z and a - z.
+     * @param c character
+     * @return boolean
      */
     private static boolean isLetter(int c) {
         return (c >= 65 && c <= 90) || // A - Z
@@ -28,6 +31,8 @@ public class UnicodeEscape {
     /**
      * Checks whether the supplied character is a number according to
      * the N-Triples specification. N-Triples numbers are 0 - 9.
+     * @param c character
+     * @return boolean
      */
     private static boolean isNumber(int c) {
         return c >= 48 && c <= 57; // 0 - 9
@@ -38,6 +43,8 @@ public class UnicodeEscape {
      * characters are escaped using backslashes (<code>"</code> becomes <code>\"</code>,
      * etc.), and non-ascii/non-printable characters are escaped using Unicode
      * escapes (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>).
+     * @param label label
+     * @return String
      */
     public static String escapeString(String label) {
         try {
@@ -55,8 +62,9 @@ public class UnicodeEscape {
      * characters are escaped using backslashes (<code>"</code> becomes <code>\"</code>,
      * etc.), and non-ascii/non-printable characters are escaped using Unicode
      * escapes (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>).
-     * 
-     * @throws IOException
+     * @param label label
+     * @param appendable appendable
+     * @throws IOException when IOException occurs
      */
     public static void escapeString(String label, Appendable appendable)
         throws IOException
@@ -241,6 +249,7 @@ public class UnicodeEscape {
      * 
      * @param decimal A decimal value.
      * @param stringLength The length of the resulting string.
+     * @return String
      */
     public static String toHexString(int decimal, int stringLength) {
         StringBuilder sb = new StringBuilder(stringLength);

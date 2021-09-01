@@ -63,6 +63,7 @@ public class TripleString {
 
 	/**
 	 * Copy constructor
+	 * @param other triple string to copy
 	 */
 	public TripleString(TripleString other) {
 		this.subject = other.subject;
@@ -71,7 +72,7 @@ public class TripleString {
 	}
 
 	/**
-	 * @return the subject
+	 * @return CharSequence the subject
 	 */
 	public CharSequence getSubject() {
 		return subject;
@@ -86,7 +87,7 @@ public class TripleString {
 	}
 
 	/**
-	 * @return the predicate
+	 * @return CharSequence the predicate
 	 */
 	public CharSequence getPredicate() {
 		return predicate;
@@ -117,9 +118,9 @@ public class TripleString {
 
 	/**
 	 * Sets all components at once. Useful to reuse existing object instead of creating new ones for performance.
-	 * @param subject
-	 * @param predicate
-	 * @param object
+	 * @param subject subject
+	 * @param predicate predicate
+	 * @param object object
 	 */
 	public void setAll(CharSequence subject, CharSequence predicate, CharSequence object) {
 		this.subject = subject;
@@ -147,7 +148,8 @@ public class TripleString {
 
 	/**
 	 * Check whether this triple matches a pattern. A pattern is just a TripleString where each empty component means <em>any</em>.
-	 * @param pattern
+	 * @param pattern triple pattern to search
+	 * @return boolean
 	 */
 	public boolean match(TripleString pattern) {
         if (pattern.getSubject() == "" || pattern.getSubject().equals(this.subject)) {
@@ -169,6 +171,7 @@ public class TripleString {
 
 	/**
 	 * Checks whether all components are empty.
+	 * @return boolean
 	 */
 	public boolean isEmpty() {
 		return subject.length()==0 && predicate.length()==0 && object.length()==0;
@@ -176,6 +179,7 @@ public class TripleString {
 
 	/**
 	 * Checks whether any component is empty.
+	 * @return boolean
 	 */
 	public boolean hasEmpty() {
 		return subject.length()==0 || predicate.length()==0 || object.length()==0;
@@ -183,7 +187,8 @@ public class TripleString {
 
 	/**
 	 * Read from a line, where each component is separated by space.
-	 * @param line
+	 * @param line line to read
+	 * @throws ParserException if the line is not RDF complient
 	 */
 	public void read(String line) throws ParserException {
 		int split, posa, posb;
@@ -238,7 +243,11 @@ public class TripleString {
 		return subject + " " + predicate + " " + object;
 	}
 
-	/** Convert TripleString to NTriple */
+	/**
+     * Convert TripleString to NTriple
+	 * @return CharSequence
+	 * @throws IOException when IOException occurs
+	 */
 	public CharSequence asNtriple() throws IOException {
 		StringBuilder str = new StringBuilder();
 		this.dumpNtriple(str);

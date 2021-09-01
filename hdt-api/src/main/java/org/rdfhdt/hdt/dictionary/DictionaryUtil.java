@@ -10,7 +10,9 @@ public class DictionaryUtil {
 	
 	/**
 	 * Converts a TripleID to a TripleString using a dictionary.
-	 * 
+	 *
+	 * @param dict
+	 * 			  The Dictionary to search
 	 * @param tripleID
 	 *            The Triple to convert from
 	 * @return TripleString
@@ -25,7 +27,9 @@ public class DictionaryUtil {
 	
 	/**
 	 * Converts a TripleString to a TripleID using a dictionary.
-	 * 
+	 *
+	 * @param dict
+	 *  		  The Dictionary to search
 	 * @param tripleString
 	 *            The Triple to convert from
 	 * @return TripleID
