@@ -25,6 +25,9 @@ $ ./hdtsparql.sh ../hdt-java/data/test.hdt "SELECT ?s ?p ?o WHERE { ?s ?p ?o . }
 // Load HDT file using the hdt-java library
 HDT hdt = HDTManager.loadIndexedHDT("path/to/file.hdt", null);
 
+// Create a graph from hdt
+HDTGraph graph = new HDTGraph(hdt);
+
 // Create Jena Model on top of HDT.
 Model model = ModelFactory.createModelForGraph(graph);
 
