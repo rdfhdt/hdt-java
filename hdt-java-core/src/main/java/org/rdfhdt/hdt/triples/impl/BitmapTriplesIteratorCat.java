@@ -19,6 +19,7 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import org.rdfhdt.hdt.dictionary.DictionaryCat;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
@@ -42,17 +43,23 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
     Triples hdt1;
     Triples hdt2;
     Iterator<TripleID> list;
-    FourSectionDictionaryCat dictionaryCat;
+    DictionaryCat dictionaryCat;
     TripleIDComparator tripleIDComparator = new TripleIDComparator(TripleComponentOrder.SPO);
 
-    public BitmapTriplesIteratorCat(Triples hdt1, Triples hdt2, FourSectionDictionaryCat dictionaryCat){
+    public BitmapTriplesIteratorCat(Triples hdt1, Triples hdt2, DictionaryCat dictionaryCat){
 
         this.dictionaryCat = dictionaryCat;
         this.hdt1 = hdt1;
         this.hdt2 = hdt2;
 
-        list = getTripleID(1).listIterator();
-        count++;
+        if(this.hdt1.getNumberOfElements() == 0 && this.hdt2.getNumberOfElements() == 0 ) {
+            list = new ArrayList<TripleID>().listIterator();
+        }
+        else {
+            list = getTripleID(1).listIterator();
+            count++;
+        }
+
 
     }
 
@@ -157,14 +164,14 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
 
     public TripleID mapTriple(TripleID tripleID, int num){
         if (num == 1){
-            long new_subject1 = mapIdSection(tripleID.getSubject(), dictionaryCat.getMappingSh1(),dictionaryCat.getMappingS1());
-            long new_predicate1 = mapIdPredicate(tripleID.getPredicate(), dictionaryCat.getMappingP1());
-            long new_object1 = mapIdSection(tripleID.getObject(), dictionaryCat.getMappingSh1(),dictionaryCat.getMappingO1());
+            long new_subject1 = mapIdSection(tripleID.getSubject(), dictionaryCat.getAllMappings().get("SH1"),dictionaryCat.getAllMappings().get("S1"));
+            long new_predicate1 = mapIdPredicate(tripleID.getPredicate(), dictionaryCat.getAllMappings().get("P1"));
+            long new_object1 = mapIdSection(tripleID.getObject(), dictionaryCat.getAllMappings().get("SH1"),dictionaryCat.getAllMappings().get("O1"));
             return new TripleID(new_subject1, new_predicate1, new_object1);
         } else {
-            long new_subject2 = mapIdSection(tripleID.getSubject(), dictionaryCat.getMappingSh2(),dictionaryCat.getMappingS2());
-            long new_predicate2 = mapIdPredicate(tripleID.getPredicate(), dictionaryCat.getMappingP2());
-            long new_object2 = mapIdSection(tripleID.getObject(), dictionaryCat.getMappingSh2(),dictionaryCat.getMappingO2());
+            long new_subject2 = mapIdSection(tripleID.getSubject(), dictionaryCat.getAllMappings().get("SH2"),dictionaryCat.getAllMappings().get("S2"));
+            long new_predicate2 = mapIdPredicate(tripleID.getPredicate(), dictionaryCat.getAllMappings().get("P2"));
+            long new_object2 = mapIdSection(tripleID.getObject(), dictionaryCat.getAllMappings().get("SH2"),dictionaryCat.getAllMappings().get("O2"));
             return new TripleID(new_subject2, new_predicate2, new_object2);
         }
     }
@@ -176,7 +183,7 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
             if (catMapping.getType(id-catMappingShared.getSize()-1)==1){
                 return catMapping.getMapping(id-catMappingShared.getSize()-1);
             } else {
-                return catMapping.getMapping(id - catMappingShared.getSize()-1) + dictionaryCat.getNumEntriesShared();
+                return catMapping.getMapping(id - catMappingShared.getSize()-1) + dictionaryCat.getNumShared();
             }
         }
     }
