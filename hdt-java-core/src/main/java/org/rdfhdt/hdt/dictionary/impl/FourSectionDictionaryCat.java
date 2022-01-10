@@ -252,6 +252,23 @@ public class FourSectionDictionaryCat implements DictionaryCat {
             }
         }
     }
+    public void closeAll() {
+        try {
+            // iterate over all mappings and close them
+            for(CatMapping mapping:allMappings.values()){
+                doClose(mapping);
+            }
+            doClose(mappingS);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void doClose(Closeable closeable) throws IOException {
+        if (closeable != null){
+            closeable.close();
+        }
+    }
     public CatMappingBack getMappingS() {
         return mappingS;
     }

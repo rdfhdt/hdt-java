@@ -140,8 +140,12 @@ public class SectionUtil {
                 out.flush();
             }
             out.close();
-            Files.delete(Paths.get(location+"section_buffer_"+type));
-            Files.delete(Paths.get(location+"SequenceLog64BigDisk"+type));
+            try {
+                Files.delete(Paths.get(location + "section_buffer_" + type));
+                Files.delete(Paths.get(location + "SequenceLog64BigDisk" + type));
+            } catch (Exception e) {
+                // swallow this exception intentionally. See javadoc on Files.delete for details.
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
