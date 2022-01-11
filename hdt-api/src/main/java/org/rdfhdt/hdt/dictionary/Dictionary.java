@@ -28,6 +28,8 @@ package org.rdfhdt.hdt.dictionary;
 
 
 import java.io.Closeable;
+import java.util.HashMap;
+import java.util.TreeMap;
 
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.header.Header;
@@ -65,45 +67,44 @@ public interface Dictionary extends Closeable {
 	public long stringToId(CharSequence str, TripleComponentRole position);
 
 	/**
-	 * 	 * Returns the number of elements in the dictionary
-	 *
-	 * @return long
+	 * Returns the number of elements in the dictionary
 	 */
+
+	/**
+	 * Returns the data type of a given literal string
+	 *
+	 * @param id
+	 *            The id to get the data type for
+	 * @return String
+	 */
+	public String dataTypeOfId(long id);
+
 	public long getNumberOfElements();
 
 	/**
 	 * Return the combined size of the sections of the dictionary (in bytes)
-	 *
-	 * @return long
 	 */
 	public long size();
 
 	/**
 	 * Returns the number of subjects in the dictionary. Note: Includes shared.
-	 *
-	 * @return long
 	 */
 	public long getNsubjects();
 
 	/**
 	 * Returns the number of predicates in the dictionary.
-	 *
-	 * @return long
 	 */
 	public long getNpredicates();
 
 	/**
 	 * Returns the number of objects in the dictionary. Note: Includes shared
-	 *
-	 * @return long
 	 */
 	public long getNobjects();
 
 	/**
 	 * Returns the number of subjects/objects in the dictionary.
-	 *
-	 * @return long
 	 */
+	public long getNAllObjects();
 	public long getNshared();
 
 	public DictionarySection getSubjects();
@@ -112,21 +113,18 @@ public interface Dictionary extends Closeable {
 
 	public DictionarySection getObjects();
 
+	public TreeMap<String,DictionarySection> getAllObjects();
+
 	public DictionarySection getShared();
 
 	/**
 	 * Fills the header with information from the dictionary
-	 * @param header
-	 * 					the header to fill
-	 * @param rootNode
-	 * 					the rdf root node
 	 */
 	public void populateHeader(Header header, String rootNode);
 
 	/**
 	 * Returns the type of the dictionary (the way it is written onto file/held in memory)
-	 *
-	 * @return String
+	 * @return
 	 */
 	public String getType();
 }
