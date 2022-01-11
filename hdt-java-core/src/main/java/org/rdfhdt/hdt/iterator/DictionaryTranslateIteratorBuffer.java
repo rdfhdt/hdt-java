@@ -34,8 +34,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.rdfhdt.hdt.dictionary.impl.DictionaryPFCOptimizedExtractor;
-import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -53,7 +52,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	final int blockSize;
 	
 	IteratorTripleID iterator;
-	DictionaryPFCOptimizedExtractor dictionary;
+	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
 
 	List<TripleID> triples;
@@ -67,7 +66,11 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
 	}
-	
+	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
+	}
+
+
 	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
 		this.iterator = iteratorTripleID;
@@ -77,6 +80,16 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this.p = p==null ? "" : p;
 		this.o = o==null ? "" : o;
 	}
+	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
+		this.blockSize = blockSize;
+		this.iterator = iteratorTripleID;
+		this.dictionary = new MultDictionaryPFCOptimizedExtractor(dictionary);
+
+		this.s = s==null ? "" : s;
+		this.p = p==null ? "" : p;
+		this.o = o==null ? "" : o;
+	}
+
 
 	private void reset() {
 		triples = new ArrayList<TripleID>(blockSize);

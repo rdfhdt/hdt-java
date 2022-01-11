@@ -35,7 +35,8 @@ public class HDTVocabulary {
 	// Base
 	public static final String HDT_BASE = "<http://purl.org/HDT/hdt#";
 	public static final String HDT_CONTAINER = HDT_BASE+"HDTv" + HDTVersion.HDT_VERSION+">";
-	 
+	public static final String HDT_CONTAINER_2 = HDT_BASE+"HDTv" + HDTVersion.HDT_VERSION_2+">";
+
 	public static final String HDT_HEADER = HDT_BASE+"header";
 	public static final String HDT_DICTIONARY_BASE = HDT_BASE+"dictionary";
 	public static final String HDT_DICTIONARY = HDT_DICTIONARY_BASE+">";
@@ -49,7 +50,7 @@ public class HDTVocabulary {
 	public static final String RDF_TYPE = RDF+"type>";
 	public static final String DUBLIN_CORE = "<http://purl.org/dc/terms/";
 	public static final String DUBLIN_CORE_ISSUED = DUBLIN_CORE+"issued>";
-	
+
 	// VOID
 	public static final String VOID_BASE ="<http://rdfs.org/ns/void#";
 	public static final String VOID_DATASET = VOID_BASE + "Dataset>";
@@ -82,6 +83,8 @@ public class HDTVocabulary {
 	// Dictionary Types
 	public static final String DICTIONARY_TYPE_PLAIN = HDT_DICTIONARY_BASE+"Plain>";
 	public static final String DICTIONARY_TYPE_FOUR_SECTION = HDT_DICTIONARY_BASE+"Four>";
+	public static final String DICTIONARY_TYPE_MULT_SECTION = HDT_DICTIONARY_BASE+"Mult>";
+
 	public static final String DICTIONARY_TYPE_FOUR_PSFC_SECTION = HDT_DICTIONARY_BASE+"FourPsfc>";
 
 	// Triples
@@ -103,7 +106,7 @@ public class HDTVocabulary {
 	public static final String TRIPLES_TYPE_PLAIN = HDT_TRIPLES_BASE+"Plain>";
 	public static final String TRIPLES_TYPE_COMPACT = HDT_TRIPLES_BASE+"Compact>";
 	public static final String TRIPLES_TYPE_BITMAP = HDT_TRIPLES_BASE+"Bitmap>";
-	
+
 	// Index type
 	public static final String INDEX_TYPE_FOQ = HDT_BASE+"indexFoQ>";
 
@@ -116,10 +119,10 @@ public class HDTVocabulary {
 
 	// Bitmaps
 	public static final String BITMAP_TYPE_PLAIN = HDT_BITMAP_BASE+"Plain>";
-	
-    // Misc
+
+	// Misc
 	public static final String ORIGINAL_SIZE = HDT_BASE+"originalSize>";
 	public static final String HDT_SIZE = HDT_BASE+"hdtSize>";
-	
+
 	private HDTVocabulary() {}
 }

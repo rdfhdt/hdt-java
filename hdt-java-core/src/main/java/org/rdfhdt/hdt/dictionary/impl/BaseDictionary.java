@@ -36,6 +36,8 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.DelayedString;
 
+import java.util.TreeMap;
+
 /**
  * 
  * This abstract class implements all general methods that are the same
@@ -217,6 +219,33 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		DictionarySectionPrivate section = getSection(id, role);
 		long localId = getLocalId(id, role);
 		return section.extract(localId);
+	}
+	@Override
+	public String dataTypeOfId(long id) {
+		try {
+			throw new IllegalAccessException("Method is not applicable on this dictionary");
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
+	@Override
+	public TreeMap<String, DictionarySection> getAllObjects() {
+		try {
+			throw new IllegalAccessException("Method is not applicable on this dictionary");
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	@Override
+	public long getNAllObjects() {
+		try {
+			throw new IllegalAccessException("Method is not applicable on this dictionary");
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		}
+		return 0;
 	}
 	
 }
