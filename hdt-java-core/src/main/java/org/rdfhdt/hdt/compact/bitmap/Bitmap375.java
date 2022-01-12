@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.compact.bitmap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -39,9 +40,9 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 /**
  * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
  *
- * index -&gt; O(n)
- * rank1 -&gt; O(1)
- * select1 -&gt; O(log log n)
+ * index -> O(n)
+ * rank1 -> O(1)
+ * select1 -> O(log log n)
  *
  * @author mario.arias
  *
@@ -138,14 +139,14 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	@Override
 	public boolean access(long bitIndex) {
 		if (bitIndex < 0)
-            throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
+			throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
-        int wordIndex = wordIndex(bitIndex);
-        if(wordIndex>=words.length) {
-        	return false;
-        }
+		int wordIndex = wordIndex(bitIndex);
+		if(wordIndex>=words.length) {
+			return false;
+		}
 
-        return (words[wordIndex] & (1L << bitIndex)) != 0;
+		return (words[wordIndex] & (1L << bitIndex)) != 0;
 	}
 
 	@Override
@@ -195,41 +196,41 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		return pos+1L-rank1(pos);
 	}
 
-    private static int binarySearch0(long[] a, int fromIndex, int toIndex, long key) {
-        int low = fromIndex;
-        int high = toIndex - 1;
+	private static int binarySearch0(long[] a, int fromIndex, int toIndex, long key) {
+		int low = fromIndex;
+		int high = toIndex - 1;
 
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            long midVal = mid * BLOCKS_PER_SUPER * W-a[mid];
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+			long midVal = mid * BLOCKS_PER_SUPER * W-a[mid];
 
-            if (midVal < key)
-                low = mid + 1;
-            else if (midVal > key)
-                high = mid - 1;
-            else
-                return mid; // key found
-        }
-        return -(low + 1);  // key not found.
-    }
+			if (midVal < key)
+				low = mid + 1;
+			else if (midVal > key)
+				high = mid - 1;
+			else
+				return mid; // key found
+		}
+		return -(low + 1);  // key not found.
+	}
 
-    private static int binarySearch0(int[] a, int fromIndex, int toIndex, long key) {
-        int low = fromIndex;
-        int high = toIndex - 1;
+	private static int binarySearch0(int[] a, int fromIndex, int toIndex, long key) {
+		int low = fromIndex;
+		int high = toIndex - 1;
 
-        while (low <= high) {
-            int mid = (low + high) >>> 1;
-            long midVal = mid * BLOCKS_PER_SUPER * W-a[mid];
+		while (low <= high) {
+			int mid = (low + high) >>> 1;
+			long midVal = mid * BLOCKS_PER_SUPER * W-a[mid];
 
-            if (midVal < key)
-                low = mid + 1;
-            else if (midVal > key)
-                high = mid - 1;
-            else
-                return mid; // key found
-        }
-        return -(low + 1);  // key not found.
-    }
+			if (midVal < key)
+				low = mid + 1;
+			else if (midVal > key)
+				high = mid - 1;
+			else
+				return mid; // key found
+		}
+		return -(low + 1);  // key not found.
+	}
 
 	/* (non-Javadoc)
 	 * @see hdt.compact.bitmap.Bitmap#select0(long)
@@ -327,36 +328,43 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 		if(numbits==0) {
 			return 0;
 		}
-
 		// Search superblock (binary Search)
 		int superBlockIndex;
 		if(superBlocksLong!=null) {
-			superBlockIndex = SortUtils.binarySearch(superBlocksLong, x);
+			superBlockIndex = binarySearch(superBlocksLong, x,superBlocksLong.length);
+//			superBlockIndex = SortUtils.binarySearch(superBlocksLong, x);
 		} else {
-			superBlockIndex = SortUtils.binarySearch(superBlocksInt, (int)x);
+			superBlockIndex = binarySearch(superBlocksInt,(int)x,superBlocksInt.length);
+			//superBlockIndex = Arrays.binarySearch(superBlocksInt, (int)x);
+//			superBlockIndex = SortUtils.binarySearch(superBlocksInt, (int)x);
 		}
-		if(superBlockIndex<0) {
-			// Not found exactly, gives the position where it should be inserted
-			superBlockIndex = -superBlockIndex-2;
-		} else if(superBlockIndex>0){
-			// If found exact, we need to check previous block.
-			superBlockIndex--;
-		}
-
+//		if(superBlockIndex<0) {
+//			// Not found exactly, gives the position where it should be inserted
+//			superBlockIndex = -superBlockIndex-2;
+//		} else if(superBlockIndex>0){
+//			// If found exact, we need to check previous block.
+//			//superBlockIndex--;
+//		}
 		long countdown;
 		if(superBlocksLong!=null) {
 			// If there is a run of many zeros, two correlative superblocks may have the same value,
 			// We need to position at the first of them.
+
 			while(superBlockIndex>0 && (superBlocksLong[superBlockIndex]>=x)) {
 				superBlockIndex--;
+
 			}
+
 			countdown = x-superBlocksLong[superBlockIndex];
 		} else {
 			// If there is a run of many zeros, two correlative superblocks may have the same value,
 			// We need to position at the first of them.
+			int mycount = 0;
 			while(superBlockIndex>0 && (superBlocksInt[superBlockIndex]>=x)) {
 				superBlockIndex--;
+				mycount++;
 			}
+			//System.out.println("Count to go back:"+mycount);
 			countdown = x-superBlocksInt[superBlockIndex];
 		}
 		int blockIdx = superBlockIndex * BLOCKS_PER_SUPER;
@@ -443,5 +451,46 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		super.load(input, listener);
 		updateIndex();
+	}
+	/*
+	arr: sorted array of integers
+	x: desired key
+	n: size of the array
+	 */
+	public int binarySearch(int arr[], long x,int n)
+	{
+		int i,j,m;
+		i = 0; j = n;
+
+		while (i+1 < j)
+		{
+			m = (i+j)/2;
+
+			if (arr[m] >= x) {
+				j = m;
+			} else  {
+				i = m;
+			}
+		}
+
+		return i;
+	}
+	public int binarySearch(long arr[], long x,int n)
+	{
+		int i,j,m;
+		i = 0; j = n;
+
+		while (i+1 < j)
+		{
+			m = (i+j)/2;
+
+			if (arr[m] >= x) {
+				j = m;
+			} else  {
+				i = m;
+			}
+		}
+
+		return i;
 	}
 }

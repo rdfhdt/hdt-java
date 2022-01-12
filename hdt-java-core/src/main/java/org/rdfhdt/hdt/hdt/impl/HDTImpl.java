@@ -509,9 +509,9 @@ public class HDTImpl implements HDTPrivate {
 
 			// SAVE
 			if(this.hdtFileName!=null) {
-				FileOutputStream out=null;
+				BufferedOutputStream out=null;
 				try {
-					out = new FileOutputStream(versionName);
+					out = new BufferedOutputStream(new FileOutputStream(versionName));
 					ci.clear();
 					triples.saveIndex(out, ci, listener);
 					out.close();
