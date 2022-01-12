@@ -14,35 +14,34 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Contacting the authors:
- *   Dennis Diefenbach:         dennis.diefenbach@univ-st-etienne.fr
- *   Jose Gimenez Garcia:       jose.gimenez.garcia@univ-st-etienne.fr
+ *   Ali Haidar:  ali.haidar@qanswer.eu
  */
 
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
+import org.rdfhdt.hdt.util.string.CompactString;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import org.apache.commons.math3.util.Pair;
 
-public class CatCommon implements Iterator<Pair<Integer,Integer>> {
-    ArrayList<IteratorPlusString> list;
-    private Iterator<? extends CharSequence> it1;
-    private Iterator<? extends CharSequence> it2;
-    int count1 = 0;
-    int count2 = 0;
+public class CatIntersection implements Iterator<CatElement> {
+    ArrayList<IteratorPlusElement> list;
+    private Iterator<CatElement> it1;
+    private Iterator<CatElement> it2;
+
     boolean hasNext = false;
-    Pair<Integer,Integer> next;
+    CatElement next;
 
-    public CatCommon(Iterator<? extends CharSequence> it1, Iterator<? extends CharSequence> it2) {
+    public CatIntersection(Iterator<CatElement> it1, Iterator<CatElement> it2) {
         this.it1 = it1;
         this.it2 = it2;
         list = new ArrayList<>();
         if (it1.hasNext()) {
-            list.add(new IteratorPlusString(1, it1.next()));
+            list.add(new IteratorPlusElement(1, it1.next()));
         }
         if (it2.hasNext()) {
-            list.add(new IteratorPlusString(2, it2.next()));
+            list.add(new IteratorPlusElement(2, it2.next()));
         }
         helpNext();
     }
@@ -53,8 +52,8 @@ public class CatCommon implements Iterator<Pair<Integer,Integer>> {
     }
 
     @Override
-    public Pair<Integer,Integer> next() {
-        Pair<Integer,Integer> r = next;
+    public CatElement next() {
+        CatElement r = next;
         hasNext=false;
         helpNext();
         return r;
@@ -62,45 +61,44 @@ public class CatCommon implements Iterator<Pair<Integer,Integer>> {
 
     private void helpNext(){
         while (list.size() != 0) {
-            Collections.sort(list, new IteratorPlusStringComparator());
+            Collections.sort(list, new IteratorPlusElementComparator());
             if (list.size() == 2) {
-                if (list.get(0).value.toString().equals(list.get(1).value.toString())) {
+
+
+                if (new CompactString(list.get(0).element.entity).equals(new CompactString(list.get(1).element.entity))) {
                     hasNext = true;
-                    next = new Pair<Integer,Integer>(count1,count2);
-                    boolean remove = false;
+                    ArrayList<CatElement.IteratorPlusPosition> ids = new ArrayList<>();
+                    ids.addAll(list.get(0).element.IDs);
+                    ids.addAll(list.get(1).element.IDs);
+
+                    next = new CatElement(list.get(0).element.entity,ids);
                     if (it1.hasNext()) {
-                        list.set(0, new IteratorPlusString(1, it1.next()));
-                        count1++;
+                        list.set(0, new IteratorPlusElement(1, it1.next()));
                     } else {
                         list.remove(0);
-                        remove = true;
+                        break;
                     }
                     if (it2.hasNext()) {
-                        count2++;
-                        if (remove==true){
-                            list.set(0, new IteratorPlusString(2, it2.next()));
-                        } else {
-                            list.set(1, new IteratorPlusString(2, it2.next()));
-                        }
-
+                        list.set(1, new IteratorPlusElement(2, it2.next()));
                     } else {
                         list.remove(0);
+                        break;
                     }
                     break;
                 } else {
-                    if (list.get(0).iterator == 1) {
+                    if (list.get(0).iter == 1) {
                         if (it1.hasNext()) {
-                            list.set(0, new IteratorPlusString(1, it1.next()));
-                            count1++;
+                            list.set(0, new IteratorPlusElement(list.get(0).iter, it1.next()));
                         } else {
                             list.remove(0);
+                            break;
                         }
                     } else {
                         if (it2.hasNext()) {
-                            count2++;
-                            list.set(0, new IteratorPlusString(2, it2.next()));
+                            list.set(0, new IteratorPlusElement(list.get(0).iter, it2.next()));
                         } else {
                             list.remove(0);
+                            break;
                         }
                     }
                 }
@@ -118,5 +116,4 @@ public class CatCommon implements Iterator<Pair<Integer,Integer>> {
             e.printStackTrace();
         }
     }
-
 }

@@ -160,7 +160,30 @@ public class HdtCatTest implements ProgressListener {
         String concat = classLoader.getResource("example1.nt").getFile();
         help(file1,file2,concat);
     }
-
+    @Test
+    public void cat12() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        String file1 = classLoader.getResource("example18.nt").getFile();
+        String file2 = classLoader.getResource("example19.nt").getFile();
+        String concat = classLoader.getResource("example18+19.nt").getFile();
+        help(file1,file2,concat);
+    }
+    @Test
+    public void cat13() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        String file1 = classLoader.getResource("example20.nt").getFile();
+        String file2 = classLoader.getResource("example21.nt").getFile();
+        String concat = classLoader.getResource("example20+21.nt").getFile();
+        help(file1,file2,concat);
+    }
+    @Test
+    public void cat14() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        String file1 = classLoader.getResource("example22.nt").getFile();
+        String file2 = classLoader.getResource("example23.nt").getFile();
+        String concat = classLoader.getResource("example22+23.nt").getFile();
+        help(file1,file2,concat);
+    }
     @Override
     public void notifyProgress(float level, String message) {
 
