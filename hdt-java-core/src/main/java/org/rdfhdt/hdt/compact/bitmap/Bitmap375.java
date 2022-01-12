@@ -40,9 +40,9 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 /**
  * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
  *
- * index -> O(n)
- * rank1 -> O(1)
- * select1 -> O(log log n)
+ * index -&gt; O(n)
+ * rank1 -&gt; O(1)
+ * select1 -&gt; O(log log n)
  *
  * @author mario.arias
  *
