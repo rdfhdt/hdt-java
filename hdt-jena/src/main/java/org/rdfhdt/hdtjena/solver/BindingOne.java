@@ -1,6 +1,7 @@
 package org.rdfhdt.hdtjena.solver;
 
 import java.util.Iterator;
+import java.util.function.BiConsumer;
 
 import org.apache.jena.atlas.iterator.Iter;
 import org.apache.jena.graph.Node;
@@ -39,7 +40,12 @@ public class BindingOne implements Binding
     {
         return Iter.singleton(var) ;
     }
-    
+
+    @Override
+    public void forEach(BiConsumer<Var, Node> biConsumer) {
+        throw new UnsupportedOperationException() ;
+    }
+
     @Override
     public boolean contains(Var n)
     {

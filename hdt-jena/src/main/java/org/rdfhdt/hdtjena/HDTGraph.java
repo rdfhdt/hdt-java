@@ -29,7 +29,6 @@ package org.rdfhdt.hdtjena;
 import java.io.IOException;
 
 import org.apache.jena.graph.Capabilities;
-import org.apache.jena.graph.GraphStatisticsHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.GraphBase;
 import org.apache.jena.query.ARQ;
@@ -106,14 +105,6 @@ public class HDTGraph extends GraphBase {
 	public long getNumSearches() {
 		return numSearches;
 	}
-
-	/* (non-Javadoc)
-	 * @see com.hp.hpl.jena.graph.impl.GraphBase#getStatisticsHandler()
-	 */
-	@Override
-	public GraphStatisticsHandler getStatisticsHandler() {
-		return hdtStatistics;
-	}
 	
 	/* (non-Javadoc)
 	 * @see com.hp.hpl.jena.graph.impl.GraphBase#getCapabilities()
@@ -143,5 +134,9 @@ public class HDTGraph extends GraphBase {
 				log.error("Unexpected exception.", e);
 			}
 		}
+	}
+
+	public HDTStatistics getHdtStatistics() {
+		return hdtStatistics;
 	}
 }

@@ -26,7 +26,6 @@
 
 package org.rdfhdt.hdtjena;
 
-import org.apache.jena.graph.GraphStatisticsHandler;
 import org.apache.jena.graph.Node;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -40,7 +39,7 @@ import org.rdfhdt.hdt.triples.impl.BitmapTriples;
  * @author mario.arias
  *
  */
-public class HDTStatistics implements GraphStatisticsHandler {
+public class HDTStatistics {
 
 	private final NodeDictionary nodeDictionary;
 	private final HDT hdt;
@@ -52,12 +51,8 @@ public class HDTStatistics implements GraphStatisticsHandler {
 		this.nodeDictionary = graph.getNodeDictionary();
 		this.hdt = graph.getHDT();
 	}
-	
-	/* (non-Javadoc)
-	 * @see com.hp.hpl.jena.graph.GraphStatisticsHandler#getStatistic(com.hp.hpl.jena.graph.Node, com.hp.hpl.jena.graph.Node, com.hp.hpl.jena.graph.Node)
-	 */
-	@Override
-	public long getStatistic(Node subject, Node predicate, Node object) {
+
+	public long getNumberOfMatches(Node subject, Node predicate, Node object) {
 		try {
 			final BitmapTriples triples = (BitmapTriples) hdt.getTriples();
 			
