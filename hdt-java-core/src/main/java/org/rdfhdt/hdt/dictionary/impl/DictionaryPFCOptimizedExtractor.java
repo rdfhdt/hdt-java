@@ -4,7 +4,7 @@ import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySectionMap;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCOptimizedExtractor;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 
-public class DictionaryPFCOptimizedExtractor {
+public class DictionaryPFCOptimizedExtractor implements OptimizedExtractor{
 	private final PFCOptimizedExtractor shared, subjects, predicates, objects;
 	private final long numshared;
 	

@@ -49,6 +49,7 @@ import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryCat;
+import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -165,8 +166,8 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
-			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
+		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER) && !hdtFormat.equals(HDTVocabulary.HDT_CONTAINER_2)) {
+			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x | v"+HDTVersion.HDT_VERSION_2+".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
 		// Load header
@@ -248,8 +249,8 @@ public class HDTImpl implements HDTPrivate {
 		ci.clear();
 		ci.load(input);
 		String hdtFormat = ci.getFormat();
-		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER)) {
-			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
+		if(!hdtFormat.equals(HDTVocabulary.HDT_CONTAINER) && !hdtFormat.equals(HDTVocabulary.HDT_CONTAINER_2)) {
+			throw new IllegalFormatException("This software (v" + HDTVersion.HDT_VERSION + ".x.x | v"+HDTVersion.HDT_VERSION_2+".x.x) cannot open this version of HDT File (" + hdtFormat + ")");
 		}
 
 		// Load header
@@ -374,10 +375,15 @@ public class HDTImpl implements HDTPrivate {
 				}
 			};
 		}
-		
+
 		if(isMapped) {
 			try {
-				return new DictionaryTranslateIteratorBuffer(triples.search(triple), (FourSectionDictionary) dictionary, subject, predicate, object);
+				if(dictionary instanceof MultipleSectionDictionary){
+					return new DictionaryTranslateIteratorBuffer(triples.search(triple), (MultipleSectionDictionary) dictionary, subject, predicate, object);
+				}else{
+					return new DictionaryTranslateIteratorBuffer(triples.search(triple), (FourSectionDictionary) dictionary, subject, predicate, object);
+
+				}
 			}catch(NullPointerException e) {
 				e.printStackTrace();
 				return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
