@@ -136,10 +136,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	}
 
 	/**
-	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
-	 * @param subject
-	 * @param predicate
-	 * @param object
+	 * Sets all components at once. Useful to reuse existing object instead of creating new ones for performance.
+	 * @param subject subject
+	 * @param predicate predicate
+	 * @param object object
 	 */
 	public void setAll(long subject, long predicate, long object) {
 		this.subject = subject;
@@ -186,7 +186,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 
 	/**
 	 * Compare TripleID to another one using SPO Order.
-	 * To compare using other orders use {@link TripleStringComparator}
+	 * To compare using other orders use @see org.rdfhdt.hdt.triples.TripleStringComparator
 	 */
 	@Override
 	public int compareTo(TripleID other) {
