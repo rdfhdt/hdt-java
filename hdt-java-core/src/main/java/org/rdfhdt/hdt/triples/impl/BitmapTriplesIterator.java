@@ -52,6 +52,8 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
 		this.pattern = new TripleID();
+		if(pattern.isWithIndex())
+			this.pattern.setWithIndex(true);
 		newSearch(pattern);
 	}
 
@@ -88,6 +90,11 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	private void updateOutput() {
 		returnTriple.setAll(x, y, z);
+		if(pattern.isWithIndex())
+			returnTriple.setAllPlusIndex(x, y, z,posZ);
+		else
+			returnTriple.setAll(x,y,z);
+
 		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 	}
 

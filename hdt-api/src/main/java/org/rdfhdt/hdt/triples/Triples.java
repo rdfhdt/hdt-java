@@ -53,6 +53,16 @@ public interface Triples extends Closeable {
 	IteratorTripleID search(TripleID pattern);
 
 	/**
+	 * Iterates over all triples that match the pattern, and their IDs (i.e. index in the triples list)
+	 *
+	 * @param pattern
+	 *            The pattern to match against
+	 * @return IteratorTripleID
+	 *
+	 */
+	IteratorTripleID searchWithId(TripleID pattern);
+
+	/**
 	 * Returns the total number of triples
 	 *
 	 * @return int
@@ -78,4 +88,10 @@ public interface Triples extends Closeable {
 	 * @return String
 	 */
 	String getType();
+
+	/**
+	 * Returns a triple of the given index
+	 * @param index
+	 */
+	TripleID find(long index);
 }

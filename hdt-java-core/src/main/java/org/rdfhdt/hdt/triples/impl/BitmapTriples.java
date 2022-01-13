@@ -284,6 +284,76 @@ public class BitmapTriples implements TriplesPrivate {
 
 	}
 
+	@Override
+	public IteratorTripleID searchWithId(TripleID pattern) {
+		// set this to true in order to return the index of the triple
+		pattern.setWithIndex(true);
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
+		}
+
+		if (getNumberOfElements() == 0 || pattern.isNoMatch()) {
+			return new EmptyTriplesIterator(order);
+		}
+
+
+		TripleID reorderedPat = new TripleID(pattern);
+		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
+		String patternString = reorderedPat.getPatternString();
+
+		if(patternString.equals("?P?")) {
+			if(this.predicateIndex!=null) {
+				return new BitmapTriplesIteratorYFOQ(this, pattern);
+			} else {
+				return new BitmapTriplesIteratorY(this, pattern);
+			}
+		}
+
+		if(indexZ!=null && bitmapIndexZ!=null) {
+			// USE FOQ
+			if(patternString.equals("?PO") || patternString.equals("??O")) {
+				return new BitmapTriplesIteratorZFOQ(this, pattern);
+			}
+		} else {
+			if(patternString.equals("?PO")) {
+				return new SequentialSearchIteratorTripleID(pattern, new BitmapTriplesIteratorZ(this, pattern));
+			}
+
+			if(patternString.equals("??O")) {
+				return new BitmapTriplesIteratorZ(this, pattern);
+			}
+		}
+
+		IteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
+		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
+			return bitIt;
+		} else {
+			return new SequentialSearchIteratorTripleID(pattern, bitIt);
+		}
+	}
+	@Override
+	public TripleID find(long index) {
+		// get the object at the given position
+		long z = seqZ.get(index -1);
+
+		long posY = -1;
+		if(bitmapZ.access(index -1)){ // subtract one if it is the end of the tree
+			posY = bitmapZ.rank1(index -1) - 1;
+		}else{
+			posY = bitmapZ.rank1(index -1);
+		}
+		// get the predicate from the inferred position Y
+		long y = seqY.get(posY);
+
+		long posX = -1;
+		if(bitmapY.access(posY)){
+			posX = bitmapY.rank1(posY) - 1;
+		}else{
+			posX = bitmapY.rank1(posY);
+		}
+		long x = posX + 1; // the subject ID is the position + 1, IDs start from 1 not zero
+		return new TripleID(x,y,z);
+	}
 	/* (non-Javadoc)
 	 * @see hdt.triples.Triples#searchAll()
 	 */

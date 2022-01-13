@@ -121,6 +121,11 @@ public class TriplesListLong implements TempTriples {
 			return new SequentialSearchIteratorTripleID(pattern, new TriplesListIterator(this));
 		}
 	}
+	@Override
+	public IteratorTripleID searchWithId(TripleID pattern) {
+		pattern.setWithIndex(true);
+		return search(pattern);
+	}
 
 	/* (non-Javadoc)
 	 * @see hdt.triples.Triples#searchAll()
@@ -514,6 +519,11 @@ public class TriplesListLong implements TempTriples {
 					mapObj.getNewID(triple.getObject()-1)
 				);
 		}
+	}
+	// function not used...
+	@Override
+	public TripleID find(long index) {
+		return null;
 	}
 
 }

@@ -156,6 +156,13 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 		return new PlainHeaderIterator(this, pattern);
 	}
 
+	// not used
+	@Override
+	public IteratorTripleString searchWithId(CharSequence subject, CharSequence predicate, CharSequence object) {
+		return search(subject,predicate,object);
+	}
+
+
 	@Override
 	public void processTriple(TripleString triple, long pos) {
 		triples.add(new TripleString(triple));

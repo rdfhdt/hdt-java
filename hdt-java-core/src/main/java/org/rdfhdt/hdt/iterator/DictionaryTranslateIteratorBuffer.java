@@ -186,8 +186,8 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			lastOid = triple.getObject();
 			lastOstr = mapObject.get(lastOid);
 		}
-		
-		return new TripleString(lastSstr, lastPstr, lastOstr);
+
+		return new TripleString(lastSstr, lastPstr, lastOstr,triple.getIndex());
 	}
 
 	/*

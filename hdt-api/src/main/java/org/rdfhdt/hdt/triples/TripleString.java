@@ -40,7 +40,7 @@ public class TripleString {
 	private CharSequence subject;
 	private CharSequence predicate;
 	private CharSequence object;
-
+	private long index;
 	public TripleString() {
 		this.subject = this.predicate = this.object = null;
 	}
@@ -61,9 +61,14 @@ public class TripleString {
 		this.object = object;
 	}
 
+	public TripleString(CharSequence subject, CharSequence predicate, CharSequence object,long index) {
+		this.subject = subject;
+		this.predicate = predicate;
+		this.object = object;
+		this.index = index;
+	}
 	/**
 	 * Copy constructor
-	 * @param other triple string to copy
 	 */
 	public TripleString(TripleString other) {
 		this.subject = other.subject;
@@ -72,7 +77,7 @@ public class TripleString {
 	}
 
 	/**
-	 * @return CharSequence the subject
+	 * @return the subject
 	 */
 	public CharSequence getSubject() {
 		return subject;
@@ -87,7 +92,7 @@ public class TripleString {
 	}
 
 	/**
-	 * @return CharSequence the predicate
+	 * @return the predicate
 	 */
 	public CharSequence getPredicate() {
 		return predicate;
@@ -118,9 +123,9 @@ public class TripleString {
 
 	/**
 	 * Sets all components at once. Useful to reuse existing object instead of creating new ones for performance.
-	 * @param subject subject
-	 * @param predicate predicate
-	 * @param object object
+	 * @param subject
+	 * @param predicate
+	 * @param object
 	 */
 	public void setAll(CharSequence subject, CharSequence predicate, CharSequence object) {
 		this.subject = subject;
@@ -128,38 +133,24 @@ public class TripleString {
 		this.object = object;
 	}
 
-	@Override
-	public boolean equals(Object other) {
-		if (other instanceof TripleString) {
-			TripleString ts = (TripleString) other;
-			return subject.equals(ts.subject) && predicate.equals(ts.predicate)
-					&& object.equals(ts.object);
-		}
-		return false;
-	}
-
-	@Override public int hashCode() {
-		// Same as Objects.hashCode(subject, predicate, object), with fewer calls
-		int s = subject   == null ? 0 : subject.hashCode();
-		int p = predicate == null ? 0 : predicate.hashCode();
-		int o = object    == null ? 0 : object.hashCode();
-		return 31 * (31 * (31 * s) + p) + o;
+	public boolean equals(TripleString other) {
+		return !( !subject.equals(other.subject) || !predicate.equals(other.predicate) || !object.equals(other.object) );
 	}
 
 	/**
 	 * Check whether this triple matches a pattern. A pattern is just a TripleString where each empty component means <em>any</em>.
-	 * @param pattern triple pattern to search
-	 * @return boolean
+	 * @param pattern
+	 * @return
 	 */
 	public boolean match(TripleString pattern) {
-        if (pattern.getSubject() == "" || pattern.getSubject().equals(this.subject)) {
-            if (pattern.getPredicate() == "" || pattern.getPredicate().equals(this.predicate)) {
-                if (pattern.getObject() == "" || pattern.getObject().equals(this.object)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+		if (pattern.getSubject() == "" || pattern.getSubject().equals(this.subject)) {
+			if (pattern.getPredicate() == "" || pattern.getPredicate().equals(this.predicate)) {
+				if (pattern.getObject() == "" || pattern.getObject().equals(this.object)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -171,7 +162,7 @@ public class TripleString {
 
 	/**
 	 * Checks whether all components are empty.
-	 * @return boolean
+	 * @return
 	 */
 	public boolean isEmpty() {
 		return subject.length()==0 && predicate.length()==0 && object.length()==0;
@@ -179,7 +170,7 @@ public class TripleString {
 
 	/**
 	 * Checks whether any component is empty.
-	 * @return boolean
+	 * @return
 	 */
 	public boolean hasEmpty() {
 		return subject.length()==0 || predicate.length()==0 || object.length()==0;
@@ -187,8 +178,7 @@ public class TripleString {
 
 	/**
 	 * Read from a line, where each component is separated by space.
-	 * @param line line to read
-	 * @throws ParserException if the line is not RDF complient
+	 * @param line
 	 */
 	public void read(String line) throws ParserException {
 		int split, posa, posb;
@@ -243,11 +233,7 @@ public class TripleString {
 		return subject + " " + predicate + " " + object;
 	}
 
-	/**
-     * Convert TripleString to NTriple
-	 * @return CharSequence
-	 * @throws IOException when IOException occurs
-	 */
+	/** Convert TripleString to NTriple */
 	public CharSequence asNtriple() throws IOException {
 		StringBuilder str = new StringBuilder();
 		this.dumpNtriple(str);
@@ -278,5 +264,9 @@ public class TripleString {
 		} else {
 			out.append('<').append(object).append("> .\n");
 		}
+	}
+
+	public long getIndex() {
+		return index;
 	}
 }

@@ -386,6 +386,55 @@ public class HDTImpl implements HDTPrivate {
 			return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
 		}
 	}
+	@Override
+	public IteratorTripleString searchWithId(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search an already closed HDT");
+		}
+
+		// Conversion from TripleString to TripleID
+		TripleID triple = new TripleID(
+				dictionary.stringToId(subject, TripleComponentRole.SUBJECT),
+				dictionary.stringToId(predicate, TripleComponentRole.PREDICATE),
+				dictionary.stringToId(object, TripleComponentRole.OBJECT)
+		);
+
+		if(triple.isNoMatch()) {
+			//throw new NotFoundException("String not found in dictionary");
+			return new IteratorTripleString() {
+				@Override
+				public TripleString next() {
+					return null;
+				}
+				@Override
+				public boolean hasNext() {
+					return false;
+				}
+				@Override
+				public ResultEstimationType numResultEstimation() {
+					return ResultEstimationType.EXACT;
+				}
+				@Override
+				public void goToStart() {
+				}
+				@Override
+				public long estimatedNumResults() {
+					return 0;
+				}
+			};
+		}
+
+		if(isMapped) {
+			try {
+					return new DictionaryTranslateIteratorBuffer(triples.searchWithId(triple), (FourSectionDictionary) dictionary, subject, predicate, object);
+			}catch(NullPointerException e) {
+				e.printStackTrace();
+				return new DictionaryTranslateIterator(triples.searchWithId(triple), dictionary, subject, predicate, object);
+			}
+		} else {
+			return new DictionaryTranslateIterator(triples.searchWithId(triple), dictionary, subject, predicate, object);
+		}
+	}
 
 	/*
 	 * (non-Javadoc)

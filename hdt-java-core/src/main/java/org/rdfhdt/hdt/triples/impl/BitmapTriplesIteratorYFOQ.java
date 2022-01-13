@@ -77,6 +77,11 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		
 		private void updateOutput() {
 			returnTriple.setAll(x, y, z);
+			if(pattern.isWithIndex())
+				returnTriple.setAllPlusIndex(x, y, z,posZ);
+			else
+				returnTriple.setAll(x,y,z);
+
 			TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 		}
 		

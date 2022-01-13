@@ -52,4 +52,21 @@ public interface RDFAccess {
 	 * @throws NotFoundException when the triple cannot be found
 	 */
 	IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
+	/**
+	 * Iterate over the triples of an RDF Set that match the specified pattern, and gives back the ID of the triple
+	 * (i.e. the index of the triple in the list of triples) .
+	 * null and empty strings act as a wildcard.
+	 * (e.g. search(null, null, null) iterates over all elements)
+	 *
+	 * @param subject
+	 *            The subject to search
+	 * @param predicate
+	 *            The predicate to search
+	 * @param object
+	 *            The object to search
+	 *
+	 * @return Iterator of TripleStrings
+	 * @throws NotFoundException when the triple cannot be found
+	 */
+	IteratorTripleString searchWithId(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException;
 }

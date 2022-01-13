@@ -45,7 +45,8 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	AdjacencyList adjY, adjIndex;
 	long posIndex, minIndex, maxIndex;
 	long x, y, z;
-	
+
+	long posZ;
 	long patY;
     final long patZ;
 	
@@ -134,6 +135,11 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	
 	private void updateOutput() {
 		returnTriple.setAll(x, y, z);
+		if(pattern.isWithIndex())
+			returnTriple.setAllPlusIndex(x, y, z,posZ);
+		else
+			returnTriple.setAll(x,y,z);
+
 		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 	}
 	
@@ -150,16 +156,19 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	 */
 	@Override
 	public TripleID next() {
-	    long posY = adjIndex.get(posIndex);
+		long posY = adjIndex.get(posIndex);
 
-	    z = patZ!=0 ? patZ : adjIndex.findListIndex(posIndex)+1;
-	    y = patY!=0 ? patY : adjY.get(posY);
-	    x = adjY.findListIndex(posY)+1;
+		z = patZ!=0 ? patZ : adjIndex.findListIndex(posIndex)+1;
+		y = patY!=0 ? patY : adjY.get(posY);
+		x = adjY.findListIndex(posY)+1;
 
-	    posIndex++;
-
-	    updateOutput();
-	    return returnTriple;
+		if(this.pattern.isWithIndex()) {
+			// if the triple pattern is asking for the index as well
+			posZ = triples.adjZ.find(posY, z) + 1;
+		}
+		posIndex++;
+		updateOutput();
+		return returnTriple;
 	}
 
 	/* (non-Javadoc)

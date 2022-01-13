@@ -113,6 +113,12 @@ public class TriplesList implements TempTriples {
 		}
 	}
 
+	@Override
+	public IteratorTripleID searchWithId(TripleID pattern) {
+		pattern.setWithIndex(true);
+		return search(pattern);
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.Triples#searchAll()
 	 */
@@ -505,5 +511,8 @@ public class TriplesList implements TempTriples {
 				);
 		}
 	}
-
+	@Override
+	public TripleID find(long index) {
+		return null;
+	}
 }
