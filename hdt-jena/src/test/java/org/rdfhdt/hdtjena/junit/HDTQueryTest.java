@@ -41,6 +41,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.ResultSetStream;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.binding.BindingFactory;
 import org.apache.jena.sparql.engine.binding.BindingMap;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
@@ -179,8 +180,8 @@ public class HDTQueryTest implements ScriptTest {
         if (testItem.getQueryFile() == null) {
             fail("Query test file is null");
         }
-
-        return QueryFactory.read(testItem.getQueryFile(), null, Syntax.guessFileSyntax(testItem.getResultFile()));
+        Syntax syntax = Syntax.guessFileSyntax(testItem.getQueryFile());
+        return QueryFactory.read(testItem.getQueryFile(), null, syntax);
     }
 
     private static boolean doesTestItemHaveDataset(QueryTestItem testItem) {
@@ -252,7 +253,7 @@ public class HDTQueryTest implements ScriptTest {
         List<Binding> bindings = new ArrayList<>();
         while (resultsActual.hasNext()) {
             Binding b = resultsActual.nextBinding();
-            BindingMap b2 = BindingFactory.create();
+            BindingBuilder b2 = Binding.builder();
 
             for (String vn : resultsActual.getResultVars()) {
                 Var v = Var.alloc(vn);
@@ -267,9 +268,9 @@ public class HDTQueryTest implements ScriptTest {
                 }
                 b2.add(v, NodeFactory.createLiteral(s));
             }
-            bindings.add(b2);
+            bindings.add(b2.build());
         }
-        ResultSet rs = new ResultSetStream(resultsActual.getResultVars(), null, QueryIterPlainWrapper.create(bindings.iterator()));
+        ResultSet rs = ResultSetStream.create(resultsActual.getResultVars(), null, QueryIterPlainWrapper.create(bindings.iterator()));
         return ResultSetFactory.makeRewindable(rs);
     }
 
