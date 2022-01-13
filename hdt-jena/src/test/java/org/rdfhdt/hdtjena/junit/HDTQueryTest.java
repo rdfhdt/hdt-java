@@ -180,7 +180,7 @@ public class HDTQueryTest implements ScriptTest {
             fail("Query test file is null");
         }
 
-        return QueryFactory.read(testItem.getQueryFile(), null, testItem.getFileSyntax());
+        return QueryFactory.read(testItem.getQueryFile(), null, Syntax.guessFileSyntax(testItem.getResultFile()));
     }
 
     private static boolean doesTestItemHaveDataset(QueryTestItem testItem) {
@@ -269,7 +269,7 @@ public class HDTQueryTest implements ScriptTest {
             }
             bindings.add(b2);
         }
-        ResultSet rs = new ResultSetStream(resultsActual.getResultVars(), null, new QueryIterPlainWrapper(bindings.iterator()));
+        ResultSet rs = new ResultSetStream(resultsActual.getResultVars(), null, QueryIterPlainWrapper.create(bindings.iterator()));
         return ResultSetFactory.makeRewindable(rs);
     }
 
@@ -286,7 +286,7 @@ public class HDTQueryTest implements ScriptTest {
             seen.add(b);
             x.add(b);
         }
-        QueryIterator qIter = new QueryIterPlainWrapper(x.iterator());
+        QueryIterator qIter = QueryIterPlainWrapper.create(x.iterator());
         ResultSet rs = new ResultSetStream(results.getResultVars(), ModelFactory.createDefaultModel(), qIter);
         return ResultSetFactory.makeRewindable(rs);
     }
