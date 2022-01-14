@@ -8,10 +8,7 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
-import org.rdfhdt.hdt.compact.sequence.Sequence;
-import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
-import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
-import org.rdfhdt.hdt.compact.sequence.SequenceLog64Map;
+import org.rdfhdt.hdt.compact.sequence.*;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -71,7 +68,7 @@ class PredicateIndexArray implements PredicateIndex {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
 		@SuppressWarnings("resource")
-		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
+		SequenceLog64Big predCount = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
 
 	    long maxCount = 0;
 	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
@@ -108,10 +105,10 @@ class PredicateIndexArray implements PredicateIndex {
 
 
 	    // Create predicate index
-	    SequenceLog64 array = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
+		SequenceLog64Big array = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
 	    array.resize(triples.getSeqY().getNumberOfElements());
 
-	    SequenceLog64 insertArray = new SequenceLog64(BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
+		SequenceLog64Big insertArray = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
 	    insertArray.resize(bitmap.countOnes());
 
 	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {

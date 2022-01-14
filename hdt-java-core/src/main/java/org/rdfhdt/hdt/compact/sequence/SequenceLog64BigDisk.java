@@ -208,7 +208,7 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
             long totalSize = numWordsFor(numbits, numentries);
 
             if (totalSize!=data.length()){
-                resizeArray((int)totalSize);
+                resizeArray(totalSize);
             }
         }
 

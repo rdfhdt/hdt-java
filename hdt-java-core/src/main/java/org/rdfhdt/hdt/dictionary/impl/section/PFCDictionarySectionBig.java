@@ -175,8 +175,15 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			long bytePos = 0;
 			long numBlocks = blocks.getNumberOfElements();
 			//System.out.println("numblocks:"+numBlocks);
-			
-			long numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
+
+			long numBuffers = -1;
+			if(numBlocks > 0){
+				// non empty section
+				numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
+			}else{
+				// else empty section then it's zero
+				numBuffers = 0;
+			}
 			data = new byte[(int)numBuffers][];
 			posFirst = new long[(int)numBuffers];
 			
