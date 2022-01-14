@@ -1,12 +1,14 @@
 package org.rdfhdt.hdt.hdtCat.utils;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
+import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 import java.util.Iterator;
+import java.util.Map;
 
 import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -43,7 +45,39 @@ public class Utility {
             count++;
         }
     }
-
+    public static void printCustomDictionary(Dictionary d){
+        Iterator i = d.getShared().getSortedEntries();
+        int count = 0;
+        System.out.println("SHARED");
+        while (i.hasNext()){
+            System.out.println(count +"---"+i.next().toString());
+            count++;
+        }
+        System.out.println("SUBJECTS");
+        count = 0;
+        i = d.getSubjects().getSortedEntries();
+        while (i.hasNext()){
+            System.out.println(count +"---"+i.next().toString());
+            count++;
+        }
+        System.out.println("OBJECTS");
+        count = 0;
+        Iterator iter = d.getAllObjects().entrySet().iterator();
+        while (iter.hasNext()) {
+            i = ((DictionarySection)((Map.Entry)iter.next()).getValue()).getSortedEntries();
+            while (i.hasNext()) {
+                System.out.println(count + "---" + i.next().toString());
+                count++;
+            }
+        }
+        System.out.println("PREDICATES");
+        count = 0;
+        i = d.getPredicates().getSortedEntries();
+        while (i.hasNext()){
+            System.out.println(count +"---"+i.next().toString());
+            count++;
+        }
+    }
     public static void compareDictionary(Dictionary d1, Dictionary d2){
         Iterator i1 = d1.getShared().getSortedEntries();
         Iterator i2 = d2.getShared().getSortedEntries();
@@ -82,7 +116,57 @@ public class Utility {
             }
         }
     }
+    public static void compareCustomDictionary(Dictionary d1, Dictionary d2){
+        Iterator i1 = d1.getShared().getSortedEntries();
+        Iterator i2 = d2.getShared().getSortedEntries();
+        while (i1.hasNext()){
+            if (i2.hasNext()!=true){
+                assertFalse("The dictionaries have a different size",true);
+            } else {
+                assertEquals(i1.next().toString(),i2.next().toString());
+            }
+        }
+        i1 = d1.getSubjects().getSortedEntries();
+        i2 = d2.getSubjects().getSortedEntries();
+        while (i1.hasNext()){
+            if (i2.hasNext()!=true){
+                assertFalse("The dictionaries have a different size",true);
+            } else {
+                assertEquals(i1.next().toString(),i2.next().toString());
+            }
+        }
+        Iterator hmIter1 = d1.getAllObjects().entrySet().iterator();
+        Iterator hmIter2 = d2.getAllObjects().entrySet().iterator();
+        while (hmIter1.hasNext()){
+            if(hmIter2.hasNext() == false){
+                assertFalse("The dictionaries have a different number of objects subsections",true);
+            }else{
+                Map.Entry entry1 = (Map.Entry)hmIter1.next();
+                Map.Entry entry2 = (Map.Entry)hmIter2.next();
 
+                i1 = ((DictionarySection)entry1.getValue()).getSortedEntries();
+                i2 = ((DictionarySection)entry2.getValue()).getSortedEntries();
+                while (i1.hasNext()){
+                    if (i2.hasNext()!=true){
+                        assertFalse("The subsections have a different size",true);
+                    } else {
+                        String s1 = i1.next().toString();
+                        String s2 = i2.next().toString();
+                        assertEquals(s1,s2);
+                    }
+                }
+            }
+        }
+        i1 = d1.getPredicates().getSortedEntries();
+        i2 = d2.getPredicates().getSortedEntries();
+        while (i1.hasNext()){
+            if (i2.hasNext()!=true){
+                assertFalse("The dictionaries have a different size",true);
+            } else {
+                assertEquals(i1.next().toString(),i2.next().toString());
+            }
+        }
+    }
     public static void printTriples(HDT hdt){
         IteratorTripleID it = hdt.getTriples().searchAll();
         while (it.hasNext()){
