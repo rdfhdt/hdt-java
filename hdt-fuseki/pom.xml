@@ -12,7 +12,8 @@
   </parent>
 
   <properties>
-    <jdk.version>${jena-jdk.version}</jdk.version>
+    <!--suppress UnresolvedMavenProperty -->
+      <jdk.version>${jena-jdk.version}</jdk.version>
   </properties>
 
     <licenses>
@@ -53,10 +54,23 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
     </dependency>
-    <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki1</artifactId>
-    </dependency>
+	<dependency>
+    	<groupId>org.apache.jena</groupId>
+    	<artifactId>jena-fuseki-webapp</artifactId>
+    	<version>${jena-fuseki.version}</version>
+	</dependency>
+	<dependency>
+    	<groupId>org.apache.jena</groupId>
+    	<artifactId>jena-fuseki-webapp</artifactId>
+    	<version>${jena-fuseki.version}</version>
+	</dependency>
+	<dependency>
+		<groupId>org.apache.jena</groupId>
+		<artifactId>jena-fuseki-main</artifactId>
+		<version>${jena-fuseki.version}</version>
+	</dependency>
+	
+
 
   </dependencies>
 
@@ -73,26 +87,58 @@
 			</plugin>
 
             <!-- The configuration of maven-assembly-plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <!-- The configuration of the plugin -->
-                <configuration>
-                    <!-- Specifies the configuration file of the assembly plugin -->
-                    <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
-                    </descriptors>
-                </configuration>
-                <executions>
-          			<execution>
-            			<id>make-assembly</id> <!-- this is used for inheritance merges -->
-            			<phase>package</phase> <!-- bind to the packaging phase -->
-            				<goals>
-              					<goal>single</goal>
-            				</goals>
-          			</execution>
-        		</executions>
-            </plugin>
+           <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <configuration>
+          <shadedArtifactAttached>false</shadedArtifactAttached>
+
+          <!-- 
+            https://issues.apache.org/jira/browse/LOG4J2-954
+            Multiple Log4j2Plugins.dat
+            jena-fuseki-server only pick up one Log4j2Plugins.dat (from log4j-core-2.13.2)
+            No need to run the transformer to merge them.
+            If it becomes necessary, see: https://github.com/edwgiz/maven-shaded-log4j-transformer
+          -->
+
+          <transformers>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+              <mainClass>org.apache.jena.fuseki.main.cmds.FusekiHDTCmd</mainClass>
+              <!-- https://issues.apache.org/jira/browse/LOG4J2-2537 -->
+              <manifestEntries>
+                <Multi-Release>true</Multi-Release>
+              </manifestEntries>
+            </transformer>
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheLicenseResourceTransformer" />
+            <transformer implementation="org.apache.maven.plugins.shade.resource.ApacheNoticeResourceTransformer">
+              <addHeader>false</addHeader>
+            </transformer>
+          </transformers>
+
+          <filters>
+            <filter>
+              <artifact>*:*</artifact>
+              <excludes>
+                <!-- Some jars are signed but shading breaks that. Don't 
+                  include signing files. -->
+                <exclude>META-INF/*.SF</exclude>
+                <exclude>META-INF/*.DSA</exclude>
+                <exclude>META-INF/*.RSA</exclude>
+              </excludes>
+            </filter>
+          </filters>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <!--<phase /><!- - Switch off -->
+            <goals>
+              <goal>shade</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 		</plugins>
 	</build>
 </project>

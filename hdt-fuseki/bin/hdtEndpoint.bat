@@ -2,4 +2,4 @@
 
 call "%~dp0\javaenv.bat"
 
-"%JAVACMD%" %JAVAOPTIONS% -classpath "%~dp0\..\lib\*" "org.rdfhdt.hdt.fuseki.FusekiHDTCmd" %*
+"%JAVACMD%" %JAVAOPTIONS% -classpath "%~dp0\..\lib\*" "org.apache.jena.fuseki.main.cmds.FusekiHDTCmd" %*

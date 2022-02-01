@@ -58,7 +58,6 @@ public class HDTGraph extends GraphBase {
 	private HDT hdt;
 	private NodeDictionary nodeDictionary;
 	private ReorderTransformation reorderTransform;
-	private HDTStatistics hdtStatistics;
 	private long numSearches;
 	private boolean closeAfter;
 	
@@ -75,8 +74,8 @@ public class HDTGraph extends GraphBase {
 	public HDTGraph(HDT hdt, boolean close) {
 		this.hdt = hdt;
 		this.nodeDictionary = new NodeDictionary(hdt.getDictionary());
-		this.hdtStatistics = new HDTStatistics(this);	// Must go after NodeDictionary created.
-		this.reorderTransform=new ReorderTransformationHDT(this);  // Must go after Dict and Stats
+		HDTStatistics hdtStatistics = new HDTStatistics(this);	// Must go after NodeDictionary created.
+		this.reorderTransform = new ReorderTransformationHDT(this, hdtStatistics);  // Must go after Dict and Stats
 		this.closeAfter = close;
 	}
 	
@@ -105,7 +104,6 @@ public class HDTGraph extends GraphBase {
 	public long getNumSearches() {
 		return numSearches;
 	}
-	
 	/* (non-Javadoc)
 	 * @see com.hp.hpl.jena.graph.impl.GraphBase#getCapabilities()
 	 */
@@ -134,9 +132,5 @@ public class HDTGraph extends GraphBase {
 				log.error("Unexpected exception.", e);
 			}
 		}
-	}
-
-	public HDTStatistics getHdtStatistics() {
-		return hdtStatistics;
 	}
 }

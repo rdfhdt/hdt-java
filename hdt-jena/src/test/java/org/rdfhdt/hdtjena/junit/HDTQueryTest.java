@@ -18,15 +18,6 @@
 
 package org.rdfhdt.hdtjena.junit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.*;
-
 import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
 import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Node;
@@ -42,8 +33,6 @@ import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.ResultSetStream;
 import org.apache.jena.sparql.engine.binding.Binding;
 import org.apache.jena.sparql.engine.binding.BindingBuilder;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.engine.binding.BindingMap;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.NodeValue;
@@ -59,6 +48,13 @@ import org.apache.jena.sparql.vocabulary.TestManifestX;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.rdfhdt.hdtjena.util.GraphConverter;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class HDTQueryTest implements ScriptTest {
     private static int testCounter = 1;
