@@ -1,4 +1,4 @@
-from maven:3-jdk-8
+from maven:3-jdk-11
 
 COPY . /usr/local/src/hdt-java
 
