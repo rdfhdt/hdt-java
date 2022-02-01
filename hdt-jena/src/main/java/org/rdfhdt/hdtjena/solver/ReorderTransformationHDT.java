@@ -68,9 +68,8 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
     public final StatsMatcher matcher = new StatsMatcher() ;
     
 
-	public ReorderTransformationHDT(HDTGraph graph)
-	{
-		this.stats = graph.getHdtStatistics();
+	public ReorderTransformationHDT(HDTGraph graph, HDTStatistics hdtStatistics) {
+		this.stats = hdtStatistics;
 		numTriples = graph.size();
 	
 		initializeMatcher();

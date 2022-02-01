@@ -2,8 +2,10 @@ package org.rdfhdt.hdtjena.solver;
 
 import org.apache.jena.query.Query;
 import org.apache.jena.sparql.ARQInternalErrorException;
+import org.apache.jena.sparql.algebra.Algebra;
 import org.apache.jena.sparql.algebra.Op;
 import org.apache.jena.sparql.core.DatasetGraph;
+import org.apache.jena.sparql.core.Substitute;
 import org.apache.jena.sparql.engine.Plan;
 import org.apache.jena.sparql.engine.QueryEngineFactory;
 import org.apache.jena.sparql.engine.QueryEngineRegistry;

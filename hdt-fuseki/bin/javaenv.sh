@@ -4,16 +4,9 @@
 # source `dirname $0`/javaenv.sh
 
 BASE=`dirname $0`/../
-
-case `uname` in
-  CYGWIN*)
-    CP=$( echo "$BASE"/lib/*jar "$BASE/target" "$BASE/target/classes" "$BASE"/target/dependency/*.jar . | sed 's/ /;/g')
-    ;;
-  *)
-    CP=$( echo "$BASE"/lib/*jar "$BASE/target" "$BASE/target/classes" "$BASE"/target/dependency/*.jar . | sed 's/ /:/g')
-esac
-#echo $CP
-
+version=$(grep -m 1 -oP '<version>.+</version>' $BASE/../pom.xml);
+JAR=target/hdt-fuseki-${version:9:-10}.jar
+echo $JAR
 # Find Java
 if [ "$JAVA_HOME" = "" ] ; then
     JAVA="java -server"
