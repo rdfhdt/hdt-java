@@ -140,12 +140,34 @@ public abstract class HDTManager {
 	/**
 	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
 	 * @param hdtFileName file path to map
+	 * @param spec HDTOptions to the new mapped HDT. Can be null for default options.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
+	 */
+	public static HDT mapIndexedHDT(String hdtFileName, HDTOptions spec, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName,  listener, spec);
+	}
+
+	/**
+	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
+	 * @param hdtFileName file path to map
+	 * @param spec HDTOptions to the new mapped HDT. Can be null for default options.
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
+	 */
+	public static HDT mapIndexedHDT(String hdtFileName, HDTOptions spec) throws IOException {
+		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, null, spec);
+	}
+	/**
+	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
+	 * @param hdtFileName file path to map
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
 	 * @throws IOException when the file cannot be found
 	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, listener);
+		return mapIndexedHDT(hdtFileName, null, listener);
 	}
 
 	/**
@@ -155,7 +177,7 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName) throws IOException {
-		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, null);
+		return mapIndexedHDT(hdtFileName, (ProgressListener) null);
 	}
 
 	/**
@@ -248,7 +270,7 @@ public abstract class HDTManager {
 	protected abstract HDT doMapHDT(String hdtFileName, ProgressListener listener) throws IOException;
 	protected abstract HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException;
 	protected abstract HDT doLoadIndexedHDT(InputStream hdtFileName, ProgressListener listener) throws IOException;
-	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException;
+	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
 	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener);
 	protected abstract HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 	protected abstract HDT doGenerateHDT(Iterator<TripleString> iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;

@@ -61,8 +61,11 @@ public class HDTManagerImpl extends HDTManager {
 
 
 	@Override
-	protected HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		if (spec == null) {
+			spec = new HDTSpecification();
+		}
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
