@@ -98,7 +98,6 @@
     <module>hdt-java-cli</module>
     <module>hdt-jena</module>
     <module>hdt-java-package</module>
-    <module>hdt-fuseki</module>
   </modules>
 
   <issueManagement>
