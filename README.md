@@ -35,7 +35,8 @@ Each module has a different License. Core is LGPL, examples and tools are Apache
 * `hdt-java-cli`: (Commandline tools and examples): Apache License
 * `hdt-java-core`: Lesser General Public License
 * `hdt-jena`: Lesser General Public License
-* `hdt-fuseki`: Apache License
+
+Note that `hdt-fuseki` has been removed in version 2.2.0 and might be readded later when made compatible with fuseki2.
 
 
 ## Authors
