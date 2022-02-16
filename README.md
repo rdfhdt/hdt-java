@@ -12,7 +12,7 @@ It provides several components:
 - hdt-java-cli: Commandline tools to convert RDF to HDT, merge two HDT files and access HDT files from a terminal.
 - hdt-jena: Jena integration. Provides a Jena Graph implementation that allows accessing HDT files as normal Jena Models. In turn, this can be used with Jena ARQ to provide more advanced searches, such as SPARQL, and even setting up SPARQL Endpoints with Fuseki.
 - hdt-java-package: Generates a package with all the components and launcher scripts.
-- hdt-fuseki: Packages Apache Jena Fuseki with the HDT jars and a fast launcher, to start a SPARQL endpoint out of HDT files very easily.
+- hdt-fuseki (< 2.2.0): Packages Apache Jena Fuseki with the HDT jars and a fast launcher, to start a SPARQL endpoint out of HDT files very easily.
 
 
 ## Compiling
@@ -35,6 +35,7 @@ Each module has a different License. Core is LGPL, examples and tools are Apache
 * `hdt-java-cli`: (Commandline tools and examples): Apache License
 * `hdt-java-core`: Lesser General Public License
 * `hdt-jena`: Lesser General Public License
+* `hdt-fuseki`(< 2.2.0): Apache License
 
 Note that `hdt-fuseki` has been removed in version 2.2.0 and might be readded later when made compatible with fuseki2.
 
