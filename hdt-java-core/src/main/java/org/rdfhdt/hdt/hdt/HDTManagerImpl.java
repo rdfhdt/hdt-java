@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
@@ -154,8 +155,11 @@ public class HDTManagerImpl extends HDTManager {
 		HDT hdt1 = doMapHDT(hdtFileName1, listener);
 		HDT hdt2 = doMapHDT(hdtFileName2, listener);
 		HDTImpl hdt = new HDTImpl(new HDTSpecification());
-		hdt.cat(location, hdt1, hdt2, listener);
-		System.out.println("HDT file joint in: "+st.stopAndShow());
+		if(hdt1.getDictionary() instanceof MultipleSectionDictionary
+				&& hdt2.getDictionary() instanceof MultipleSectionDictionary)
+			hdt.catCustom(location,hdt1,hdt2,listener);
+		else
+			hdt.cat(location, hdt1, hdt2, listener);
 		return hdt;
 	}
 }
