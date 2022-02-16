@@ -39,17 +39,7 @@ public class HDTCapabilities implements Capabilities
 	@Override
 	public boolean addAllowed() { return false; }
 	@Override
-	public boolean addAllowed( boolean every ) { return false; } 
-	@Override
 	public boolean deleteAllowed() { return false; }
-	@Override
-	public boolean deleteAllowed( boolean every ) { return false; } 
-	@Override
-	public boolean canBeEmpty() { return true; }
-	@Override
-	public boolean iteratorRemoveAllowed() { return false; }
-	@Override
-	public boolean findContractSafe() { return true; }
 	@Override
 	public boolean handlesLiteralTyping() { return true; }
 }

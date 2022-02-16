@@ -17,6 +17,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.Plan;
 import org.apache.jena.sparql.engine.PlanOp;
 import org.apache.jena.sparql.engine.binding.Binding;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.QueryIterYieldN;
 import org.apache.jena.sparql.expr.Expr;
 import org.apache.jena.sparql.expr.ExprList;
@@ -229,7 +230,10 @@ public class OptimizedCount {
 			}
 		}
 	
-		Binding bindingResult = new BindingOne( varOutput,  NodeFactory.createLiteral(Long.toString(count), XSDDatatype.XSDinteger) );
+		Binding bindingResult = BindingBuilder
+				.create()
+				.set(varOutput,  NodeFactory.createLiteral(Long.toString(count), XSDDatatype.XSDinteger))
+				.build();
 		return new PlanOp(new HDTOptimizedOp(), engine, new QueryIterYieldN(1, bindingResult));
 	}
 }

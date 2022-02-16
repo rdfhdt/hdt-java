@@ -30,7 +30,6 @@ package org.rdfhdt.hdtjena.solver;
 import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.TERM;
 import static org.apache.jena.sparql.engine.optimizer.reorder.PatternElements.VAR;
 
-import org.apache.jena.graph.GraphStatisticsHandler;
 import org.apache.jena.graph.Node;
 import org.apache.jena.sparql.engine.optimizer.Pattern;
 import org.apache.jena.sparql.engine.optimizer.StatsMatcher;
@@ -40,6 +39,7 @@ import org.apache.jena.sparql.graph.NodeConst;
 import org.apache.jena.sparql.sse.Item;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdtjena.HDTGraph;
+import org.rdfhdt.hdtjena.HDTStatistics;
 
 /**
  * Reorders the Triple Patterns of a BGP by using statistics directly fetched from
@@ -64,13 +64,12 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 	final long TERM_O ;         // Used for ? ? O if no stats
 	final long numTriples ;		// Actual number of triples of the dataset.
 
-	private final GraphStatisticsHandler stats;
+	private final HDTStatistics stats;
     public final StatsMatcher matcher = new StatsMatcher() ;
     
 
-	public ReorderTransformationHDT(HDTGraph graph)
-	{
-		this.stats = graph.getStatisticsHandler();
+	public ReorderTransformationHDT(HDTGraph graph, HDTStatistics hdtStatistics) {
+		this.stats = hdtStatistics;
 		numTriples = graph.size();
 	
 		initializeMatcher();
@@ -105,7 +104,7 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 	{	
 		// If all are nodes, there are no substitutions. We can get the exact number.
 		if(pt.subject.isNode() && pt.predicate.isNode() && pt.object.isNode()) {
-			return stats.getStatistic(pt.subject.getNode(), pt.predicate.getNode(), pt.object.getNode());
+			return stats.getNumberOfMatches(pt.subject.getNode(), pt.predicate.getNode(), pt.object.getNode());
 		}
 
 		// Try on fixed
@@ -128,20 +127,20 @@ public class ReorderTransformationHDT extends ReorderTransformationSubstitution 
 
 		// Include guesses for SP, OP, typeClass
 		if ( pt.subject.isNode() && !pt.subject.isVar()) {
-			S = stats.getStatistic(pt.subject.getNode(), Node.ANY, Node.ANY) ;
+			S = stats.getNumberOfMatches(pt.subject.getNode(), Node.ANY, Node.ANY) ;
 		} else if ( TERM.equals(pt.subject) ) {
 			S = TERM_S ;
 		}
 
 		// rdf:type.
 		if ( pt.predicate.isNode() && !pt.predicate.isVar())
-			P = stats.getStatistic(Node.ANY, pt.predicate.getNode(), Node.ANY) ;
+			P = stats.getNumberOfMatches(Node.ANY, pt.predicate.getNode(), Node.ANY) ;
 		else if ( TERM.equals(pt.predicate) ) {
 			P = TERM_P ;
 		}
 
 		if ( pt.object.isNode() && !pt.object.isVar())
-			O = stats.getStatistic(Node.ANY, Node.ANY, pt.object.getNode()) ;
+			O = stats.getNumberOfMatches(Node.ANY, Node.ANY, pt.object.getNode()) ;
 		else if ( TERM.equals(pt.object) ) {
 			O = TERM_O ;
 		}

@@ -32,7 +32,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.apache.jena.atlas.iterator.Iter;
-import org.apache.jena.atlas.iterator.RepeatApplyIterator;
+
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping;
@@ -40,6 +40,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.ExecutionContext;
 import org.apache.jena.sparql.engine.iterator.QueryIterTriplePattern;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.iterator.utils.RepeatApplyIterator;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;

@@ -40,9 +40,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <jdk.version>1.8</jdk.version>
-    <jena.version>3.17.0</jena.version>
-    <jena-fuseki1.version>3.9.0</jena-fuseki1.version>
+    <jdk.version>11</jdk.version>
+    <jena.version>4.3.2</jena.version>
     <logback.version>1.2.3</logback.version>
     <slf4j.version>1.7.30</slf4j.version>
   </properties>
@@ -98,7 +97,6 @@
     <module>hdt-java-cli</module>
     <module>hdt-jena</module>
     <module>hdt-java-package</module>
-    <module>hdt-fuseki</module>
   </modules>
 
   <issueManagement>
@@ -168,11 +166,6 @@
         <version>${jena.version}</version>
         <classifier>tests</classifier>
         <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.jena</groupId>
-        <artifactId>jena-fuseki1</artifactId>
-        <version>${jena-fuseki1.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.jena</groupId>

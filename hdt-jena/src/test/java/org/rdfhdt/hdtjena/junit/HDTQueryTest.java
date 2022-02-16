@@ -18,15 +18,6 @@
 
 package org.rdfhdt.hdtjena.junit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.IOException;
-import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.util.*;
-
 import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
 import org.apache.jena.atlas.logging.Log;
 import org.apache.jena.graph.Node;
@@ -41,8 +32,7 @@ import org.apache.jena.sparql.core.Var;
 import org.apache.jena.sparql.engine.QueryIterator;
 import org.apache.jena.sparql.engine.ResultSetStream;
 import org.apache.jena.sparql.engine.binding.Binding;
-import org.apache.jena.sparql.engine.binding.BindingFactory;
-import org.apache.jena.sparql.engine.binding.BindingMap;
+import org.apache.jena.sparql.engine.binding.BindingBuilder;
 import org.apache.jena.sparql.engine.iterator.QueryIterPlainWrapper;
 import org.apache.jena.sparql.expr.E_Function;
 import org.apache.jena.sparql.expr.NodeValue;
@@ -58,6 +48,13 @@ import org.apache.jena.sparql.vocabulary.TestManifestX;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.rdfhdt.hdtjena.util.GraphConverter;
+
+import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.util.*;
+
+import static org.junit.Assert.*;
 
 public class HDTQueryTest implements ScriptTest {
     private static int testCounter = 1;
@@ -179,8 +176,8 @@ public class HDTQueryTest implements ScriptTest {
         if (testItem.getQueryFile() == null) {
             fail("Query test file is null");
         }
-
-        return QueryFactory.read(testItem.getQueryFile(), null, testItem.getFileSyntax());
+        Syntax syntax = Syntax.guessFileSyntax(testItem.getQueryFile());
+        return QueryFactory.read(testItem.getQueryFile(), null, syntax);
     }
 
     private static boolean doesTestItemHaveDataset(QueryTestItem testItem) {
@@ -252,7 +249,7 @@ public class HDTQueryTest implements ScriptTest {
         List<Binding> bindings = new ArrayList<>();
         while (resultsActual.hasNext()) {
             Binding b = resultsActual.nextBinding();
-            BindingMap b2 = BindingFactory.create();
+            BindingBuilder b2 = Binding.builder();
 
             for (String vn : resultsActual.getResultVars()) {
                 Var v = Var.alloc(vn);
@@ -267,9 +264,9 @@ public class HDTQueryTest implements ScriptTest {
                 }
                 b2.add(v, NodeFactory.createLiteral(s));
             }
-            bindings.add(b2);
+            bindings.add(b2.build());
         }
-        ResultSet rs = new ResultSetStream(resultsActual.getResultVars(), null, new QueryIterPlainWrapper(bindings.iterator()));
+        ResultSet rs = ResultSetStream.create(resultsActual.getResultVars(), null, QueryIterPlainWrapper.create(bindings.iterator()));
         return ResultSetFactory.makeRewindable(rs);
     }
 
@@ -286,7 +283,7 @@ public class HDTQueryTest implements ScriptTest {
             seen.add(b);
             x.add(b);
         }
-        QueryIterator qIter = new QueryIterPlainWrapper(x.iterator());
+        QueryIterator qIter = QueryIterPlainWrapper.create(x.iterator());
         ResultSet rs = new ResultSetStream(results.getResultVars(), ModelFactory.createDefaultModel(), qIter);
         return ResultSetFactory.makeRewindable(rs);
     }

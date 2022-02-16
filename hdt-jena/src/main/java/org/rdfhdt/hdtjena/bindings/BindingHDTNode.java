@@ -115,8 +115,7 @@ public class BindingHDTNode extends BindingBase
             return null ;
         }
     }
-    
-    @Override
+
     protected void format(StringBuffer sbuff, Var var)
     {
         HDTId id = idBinding.get(var) ;

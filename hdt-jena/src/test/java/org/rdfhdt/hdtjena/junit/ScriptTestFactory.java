@@ -19,8 +19,6 @@
 package org.rdfhdt.hdtjena.junit;
 
 
-import java.util.*;
-
 import org.apache.jena.arq.junit.manifest.Manifest;
 import org.apache.jena.arq.junit.manifest.ManifestEntry;
 import org.apache.jena.arq.junit.sparql.tests.QueryTestItem;
@@ -31,6 +29,8 @@ import org.apache.jena.sparql.vocabulary.TestManifestUpdate_11;
 import org.apache.jena.sparql.vocabulary.TestManifestX;
 import org.apache.jena.sparql.vocabulary.TestManifest_11;
 import org.apache.jena.util.junit.TestUtils;
+
+import java.util.*;
 
 public class ScriptTestFactory {
     private static final List<Resource> IGNORE = Arrays.asList(
@@ -91,35 +91,6 @@ public class ScriptTestFactory {
         }
         return tests;
     }
-
-//    private ScriptTest makeTest(Resource manifest, Resource entry, String testName, Resource action) {
-//        if (action == null) {
-//            return null;
-//        }
-//
-//        Syntax querySyntax = TestQueryUtils.getQuerySyntax(manifest);
-//        if (querySyntax != null) {
-//            if (!querySyntax.equals(Syntax.syntaxARQ) &&
-//                    !querySyntax.equals(Syntax.syntaxSPARQL_10) &&
-//                    !querySyntax.equals(Syntax.syntaxSPARQL_11)) {
-//                throw new QueryTestException("Unknown syntax: " + querySyntax);
-//            }
-//        }
-//
-//        TestItem item = TestItem.create(entry, TestManifest.QueryEvaluationTest);
-//
-//        Resource testType = item.getTestType();
-//        if (testType == null) {
-//            throw new QueryTestException("Missing testType: " + testName);
-//        }
-//        if (IGNORE.contains(testType)) {
-//            return null;
-//        }
-//        if (HDTQueryTest.accepts(testType)) {
-//            return new HDTQueryTest(testName, item);
-//        }
-//        throw new QueryTestException("Unknown testType: " + testType);
-//    }
 
 
     private static String join(String parent, String child) {
