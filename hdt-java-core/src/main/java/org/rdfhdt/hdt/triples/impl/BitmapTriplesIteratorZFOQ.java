@@ -249,12 +249,6 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	
 	@Override
 	public long getNextTriplePosition() {
-		long ret =0;
-		try {
-			ret = triples.adjZ.find(adjIndex.get(posIndex),patZ);
-		} catch (NotFoundException e) {
-		}
-		
-		return ret;
+		return triples.adjZ.find(adjIndex.get(posIndex),patZ);
 	}
 }

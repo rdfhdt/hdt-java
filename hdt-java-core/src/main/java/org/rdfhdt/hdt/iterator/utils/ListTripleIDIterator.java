@@ -104,6 +104,11 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	}
 
 	@Override
+	public long getNextTriplePosition() {
+		return 0; // @todo: implement
+	}
+
+	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}

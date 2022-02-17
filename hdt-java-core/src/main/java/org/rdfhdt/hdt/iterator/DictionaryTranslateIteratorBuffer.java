@@ -232,6 +232,11 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		return iterator.numResultEstimation();
 	}
 
+	@Override
+	public long getNextTriplePosition() {
+		return 0; // @todo: implement
+	}
+
 	public static void setBlockSize(int size) {
 		DEFAULT_BLOCK_SIZE = size;
 	}

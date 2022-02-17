@@ -118,6 +118,11 @@ public class OptimizedCountTest {
 		public ResultEstimationType numResultEstimation() {
 			return ResultEstimationType.EXACT;
 		}
-		
+
+		@Override
+		public long getNextTriplePosition() {
+			return 1;
+		}
+
 	}
 }

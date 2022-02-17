@@ -65,6 +65,11 @@ public class EmptyTriplesIterator implements IteratorTripleID {
     }
 
     @Override
+    public long getNextTriplePosition() {
+        throw new NoSuchElementException();
+    }
+
+    @Override
     public void remove() {
         throw new UnsupportedOperationException();
     }

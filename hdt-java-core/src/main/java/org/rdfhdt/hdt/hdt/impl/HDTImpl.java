@@ -373,6 +373,11 @@ public class HDTImpl implements HDTPrivate {
 				public long estimatedNumResults() {
 					return 0;
 				}
+
+				@Override
+				public long getNextTriplePosition() {
+					return 0;
+				}
 			};
 		}
 

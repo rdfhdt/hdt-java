@@ -104,6 +104,11 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
     }
 
     @Override
+    public long getNextTriplePosition() {
+        return 0; // @todo: implement
+    }
+
+    @Override
     public boolean hasNext() {
         if (count<dictionaryCat.getMappingS().size()){
             return true;

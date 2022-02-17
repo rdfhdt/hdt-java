@@ -62,7 +62,7 @@ public class MapArray {
 		// Ending block pointer.
 		((SequenceLog64)blocks).append(byteOut.size());
 		// Trim text/blocks
-		((SequenceLog64)blocks).aggresiveTrimToSize();
+		((SequenceLog64)blocks).aggressiveTrimToSize();
 
 		byteOut.flush();
 		byte[] text = byteOut.toByteArray(); // save to byte[]
