@@ -391,6 +391,7 @@ public class TriplesList implements TempTriples {
 	 */
 	public static class TriplesListIterator implements IteratorTripleID {
 
+		private long lastPosition;
 		private final TriplesList triplesList;
 		private int pos;
 
@@ -412,7 +413,8 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get((int)pos++).asTripleID();
+			lastPosition = pos;
+			return triplesList.arrayOfTriples.get(pos++).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -428,7 +430,8 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get((int)--pos).asTripleID();
+			lastPosition = --pos;
+			return triplesList.arrayOfTriples.get(pos).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -483,10 +486,10 @@ public class TriplesList implements TempTriples {
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
-		
+
 		@Override
-		public long getNextTriplePosition() {
-			return pos;
+		public long getLastTriplePosition() {
+			return lastPosition;
 		}
 	}
 

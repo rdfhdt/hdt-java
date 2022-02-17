@@ -113,7 +113,7 @@ public class PlainHeaderIterator implements IteratorTripleString {
 	}
 
 	@Override
-	public long getNextTriplePosition() {
+	public long getLastTriplePosition() {
 		throw new UnsupportedOperationException();
 	}
 

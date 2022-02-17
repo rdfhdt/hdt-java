@@ -44,6 +44,7 @@ import org.rdfhdt.hdt.triples.TripleID;
 public class BitmapTriplesIteratorY implements IteratorTripleID {
 
 	private final BitmapTriples triples;
+	private long lastPosition;
 	private final TripleID pattern, returnTriple;
 	private final long patY;
 	
@@ -70,6 +71,10 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 	}
 	
 	private void updateOutput() {
+		if(posZ>nextZ)
+			lastPosition = adjZ.find(nextY);
+		else
+			lastPosition = posZ;
 		returnTriple.setAll(x, y, z);
 		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 	}
@@ -101,10 +106,12 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 		} else {
 			z = adjZ.get(posZ);
 		}
-		posZ++;	
-	
+
 		updateOutput();
-        
+
+		posZ++;
+
+
 		return returnTriple;
 	}
 
@@ -208,14 +215,10 @@ public class BitmapTriplesIteratorY implements IteratorTripleID {
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
-	public long getNextTriplePosition() {
-		if(posZ>nextZ) {
-			return adjZ.find(nextY);
-		}
-		else
-			return posZ;
+	public long getLastTriplePosition() {
+		return lastPosition;
 	}
 
 }

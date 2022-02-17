@@ -41,6 +41,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 
 	private final BitmapTriples triples;
 	private final TripleID pattern, returnTriple;
+	private long lastPosition;
 	private long patX, patY, patZ;
 
 	private AdjacencyList adjY, adjZ;
@@ -87,6 +88,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	}
 
 	private void updateOutput() {
+		lastPosition = posZ;
 		returnTriple.setAll(x, y, z);
 		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 	}
@@ -164,9 +166,9 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 			}
 		}
 
-		posZ++;
-
 		updateOutput();
+
+		posZ++;
 
 		return returnTriple;
 	}
@@ -302,7 +304,7 @@ public class BitmapTriplesIterator implements IteratorTripleID {
 	}
 
 	@Override
-	public long getNextTriplePosition() {
-		return posZ;
+	public long getLastTriplePosition() {
+		return lastPosition;
 	}
 }

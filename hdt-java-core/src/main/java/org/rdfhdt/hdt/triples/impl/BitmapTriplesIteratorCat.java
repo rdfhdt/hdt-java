@@ -105,7 +105,7 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
     }
 
     @Override
-    public long getNextTriplePosition() {
+    public long getLastTriplePosition() {
         throw new NotImplementedException();
     }
 

@@ -155,8 +155,8 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 	}
 
 	@Override
-	public long getNextTriplePosition() {
-		return iterator.getNextTriplePosition();
+	public long getLastTriplePosition() {
+		return iterator.getLastTriplePosition();
 	}
 
 }

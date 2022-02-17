@@ -47,16 +47,25 @@ import org.rdfhdt.hdt.triples.TripleString;
  * 
  */
 public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
+	private static class IndexedTripleID {
+		final TripleID triple;
+		final long index;
+
+		IndexedTripleID(TripleID triple, long index) {
+			this.triple = triple;
+			this.index = index;
+		}
+	}
 	private static int DEFAULT_BLOCK_SIZE=10000;
-	
+	private long lastPosition;
 	final int blockSize;
 	
 	IteratorTripleID iterator;
 	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
 
-	List<TripleID> triples;
-	Iterator<TripleID> child=Collections.emptyIterator();
+	List<IndexedTripleID> triples;
+	Iterator<IndexedTripleID> child = Collections.emptyIterator();
 	
 	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject;
 
@@ -92,7 +101,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 
 
 	private void reset() {
-		triples = new ArrayList<TripleID>(blockSize);
+		triples = new ArrayList<>(blockSize);
 				
 		if(s.length()==0) {
 			mapSubject = new HashMap<>(blockSize);
@@ -134,8 +143,10 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {
 			TripleID t = new TripleID(iterator.next());
+			long index = iterator.getLastTriplePosition();
+			IndexedTripleID itid = new IndexedTripleID(t, index);
 
-			triples.add(t);
+			triples.add(itid);
 
 			if(s.length()==0) arrSubjects[count] = t.getSubject();
 			if(p.length()==0) arrPredicates[count] = t.getPredicate();
@@ -177,7 +188,9 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			fetchBlock();
 		}
 
-		TripleID triple = child.next();
+		IndexedTripleID itid = child.next();
+		TripleID triple = itid.triple;
+		lastPosition = itid.index;
 
 		if(s.length()!=0) {
 			lastSstr = s;
@@ -233,8 +246,8 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	}
 
 	@Override
-	public long getNextTriplePosition() {
-		return iterator.getNextTriplePosition();
+	public long getLastTriplePosition() {
+		return lastPosition;
 	}
 
 	public static void setBlockSize(int size) {

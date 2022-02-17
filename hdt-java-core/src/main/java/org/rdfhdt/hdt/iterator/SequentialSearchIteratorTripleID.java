@@ -201,8 +201,8 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	}
 
 	@Override
-	public long getNextTriplePosition() {
-		return iterator.getNextTriplePosition();
+	public long getLastTriplePosition() {
+		return iterator.getLastTriplePosition();
 	}
 	
 	

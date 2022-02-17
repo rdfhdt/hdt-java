@@ -376,7 +376,7 @@ public class HDTImpl implements HDTPrivate {
 				}
 
 				@Override
-				public long getNextTriplePosition() {
+				public long getLastTriplePosition() {
 					throw new NotImplementedException();
 				}
 			};
