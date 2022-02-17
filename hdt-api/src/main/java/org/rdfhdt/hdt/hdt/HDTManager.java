@@ -48,37 +48,13 @@ public abstract class HDTManager {
 	 * to do queries, use loadIndexedHDT() instead.
 	 * @param hdtFileName file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadHDT(String hdtFileName, ProgressListener listener, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFileName, listener, hdtFormat);
-	}
-
-	/**
-	 * Load an HDT file into memory to use it. NOTE: Use this method to go through all elements. If you plan
-	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFileName file path to load
-	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
 	 * @throws IOException when the file cannot be found
 	 * @return HDT
 	 */
 	public static HDT loadHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFileName, listener, null);
+		return HDTManager.getInstance().doLoadHDT(hdtFileName, listener);
 	}
 
-	/**
-	 * Load an HDT file into memory to use it. NOTE: Use this method to go through all elements. If you plan
-	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFileName file path to load
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadHDT(String hdtFileName, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFileName, null, hdtFormat);
-	}
 	/**
 	 * Load an HDT file into memory to use it. NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
@@ -87,23 +63,9 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadHDT(String hdtFileName) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFileName, null, null);
+		return HDTManager.getInstance().doLoadHDT(hdtFileName, null);
 	}
 
-	/**
-	 * Map an HDT file into memory to use it. This method does not load the whole file into memory,
-	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
-	 * for querying because it needs to load those blocks from disk.
-	 * NOTE: Use this method to go through all elements. If you plan to do queries, use mapIndexedHDT() instead.
-	 * @param hdtFileName file path to map
-	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT mapHDT(String hdtFileName, ProgressListener listener, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doMapHDT(hdtFileName, listener, hdtFormat);
-	}
 	/**
 	 * Map an HDT file into memory to use it. This method does not load the whole file into memory,
 	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
@@ -115,22 +77,9 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT mapHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doMapHDT(hdtFileName, listener, null);
+		return HDTManager.getInstance().doMapHDT(hdtFileName, listener);
 	}
 
-	/**
-	 * Map an HDT file into memory to use it. This method does not load the whole file into memory,
-	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
-	 * for querying because it needs to load those blocks from disk.
-	 * NOTE: Use this method to go through all elements. If you plan to do queries, use mapIndexedHDT() instead.
-	 * @param hdtFileName file path to map
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT mapHDT(String hdtFileName, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doMapHDT(hdtFileName, null, hdtFormat);
-	}
 	/**
 	 * Map an HDT file into memory to use it. This method does not load the whole file into memory,
 	 * it lets the OS to handle memory pages as desired. Therefore it uses less memory but can be slower
@@ -141,21 +90,9 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT mapHDT(String hdtFileName) throws IOException {
-		return HDTManager.getInstance().doMapHDT(hdtFileName, null, null);
+		return HDTManager.getInstance().doMapHDT(hdtFileName, null);
 	}
 
-	/**
-	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
-	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFile file path to load
-	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadHDT(InputStream hdtFile, ProgressListener listener, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFile, listener, hdtFormat);
-	}
 	/**
 	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
@@ -165,20 +102,9 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFile, listener, null);
+		return HDTManager.getInstance().doLoadHDT(hdtFile, listener);
 	}
 
-	/**
-	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
-	 * to do queries, use loadIndexedHDT() instead.
-	 * @param hdtFile file path to load
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadHDT(InputStream hdtFile, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFile, null, hdtFormat);
-	}
 	/**
 	 * Load an HDT from an InputStream (File, socket...). NOTE: Use this method to go through all elements. If you plan
 	 * to do queries, use loadIndexedHDT() instead.
@@ -187,31 +113,20 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadHDT(InputStream hdtFile) throws IOException {
-		return HDTManager.getInstance().doLoadHDT(hdtFile, null, null);
+		return HDTManager.getInstance().doLoadHDT(hdtFile, null);
 	}
 
 	/**
 	 * Load an HDT File, and load/create additional indexes to support all kind of queries efficiently.
 	 * @param hdtFileName file path to load
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
 	 * @throws IOException when the file cannot be found
 	 * @return HDT
 	 */
-	public static HDT loadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener, hdtFormat);
+	public static HDT loadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener);
 	}
 
-	/**
-	 * Load an HDT File, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName file path to load
-	 * @param hdtFormat Parameters to tune the loaded HDT index. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadIndexedHDT(String hdtFileName, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null, hdtFormat);
-	}
 	/**
 	 * Load an HDT File, and load/create additional indexes to support all kind of queries efficiently.
 	 * @param hdtFileName file path to load
@@ -219,31 +134,9 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(String hdtFileName) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null, null);
+		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null);
 	}
 
-	/**
-	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName file path to map
-	 * @param spec HDTOptions to the new mapped HDT. Can be null for default options.
-	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT mapIndexedHDT(String hdtFileName, HDTOptions spec, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName,  listener, spec);
-	}
-
-	/**
-	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName file path to map
-	 * @param spec HDTOptions to the new mapped HDT. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT mapIndexedHDT(String hdtFileName, HDTOptions spec) throws IOException {
-		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, null, spec);
-	}
 	/**
 	 * Maps an HDT File into virtual memory, and load/create additional indexes to support all kind of queries efficiently.
 	 * @param hdtFileName file path to map
@@ -252,7 +145,7 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		return mapIndexedHDT(hdtFileName, null, listener);
+		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, listener);
 	}
 
 	/**
@@ -262,7 +155,7 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT mapIndexedHDT(String hdtFileName) throws IOException {
-		return mapIndexedHDT(hdtFileName, (ProgressListener) null);
+		return HDTManager.getInstance().doMapIndexedHDT(hdtFileName, null);
 	}
 
 	/**
@@ -273,17 +166,7 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(InputStream hdtFileName, ProgressListener listener) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener, null);
-	}
-	/**
-	 * Load an HDT file from InputStream, and create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName file path to load
-	 * @param hdtFormat Parameters to tune the loaded HDT. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadIndexedHDT(InputStream hdtFileName, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null, hdtFormat);
+		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener);
 	}
 
 	/**
@@ -293,17 +176,7 @@ public abstract class HDTManager {
 	 * @return HDT
 	 */
 	public static HDT loadIndexedHDT(InputStream hdtFileName) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null, null);
-	}
-	/**
-	 * Load an HDT file from InputStream, and create additional indexes to support all kind of queries efficiently.
-	 * @param hdtFileName file path to load
-	 * @param hdtFormat Parameters to tune the loaded HDT. Can be null for default options.
-	 * @throws IOException when the file cannot be found
-	 * @return HDT
-	 */
-	public static HDT loadIndexedHDT(InputStream hdtFileName, ProgressListener listener, HDTOptions hdtFormat) throws IOException {
-		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, listener, hdtFormat);
+		return HDTManager.getInstance().doLoadIndexedHDT(hdtFileName, null);
 	}
 
 	/**
@@ -370,12 +243,12 @@ public abstract class HDTManager {
 
 	// Abstract methods for the current implementation
 	protected abstract HDTOptions doReadOptions(String file) throws IOException;
-	protected abstract HDT doLoadHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doLoadHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doLoadIndexedHDT(InputStream hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
+	protected abstract HDT doLoadHDT(String hdtFileName, ProgressListener listener) throws IOException;
+	protected abstract HDT doLoadHDT(InputStream hdtFile, ProgressListener listener) throws IOException;
+	protected abstract HDT doMapHDT(String hdtFileName, ProgressListener listener) throws IOException;
+	protected abstract HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException;
+	protected abstract HDT doLoadIndexedHDT(InputStream hdtFileName, ProgressListener listener) throws IOException;
+	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException;
 	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener);
 	protected abstract HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 	protected abstract HDT doGenerateHDT(Iterator<TripleString> iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;

@@ -30,30 +30,30 @@ public class HDTManagerImpl extends HDTManager {
 	}
 
 	@Override
-	public HDT doLoadHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	public HDT doLoadHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.loadFromHDT(hdtFileName, listener);
 		return hdt;
 	}
 	
 	@Override
-	protected HDT doMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	protected HDT doMapHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		return hdt;
 	}
 
 
 	@Override
-	public HDT doLoadHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	public HDT doLoadHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.loadFromHDT(hdtFile, listener);
 		return hdt;
 	}
 
 	@Override
-	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.loadFromHDT(hdtFileName, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
@@ -62,16 +62,16 @@ public class HDTManagerImpl extends HDTManager {
 
 
 	@Override
-	public HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	protected HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
 	}
 
 	@Override
-	public HDT doLoadIndexedHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException {
-		HDTPrivate hdt = new HDTImpl(spec);
+	public HDT doLoadIndexedHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
+		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
 		hdt.loadFromHDT(hdtFile, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
@@ -152,9 +152,9 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	public HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		StopWatch st = new StopWatch();
-		HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
-		HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat);
-		HDTImpl hdt = new HDTImpl(hdtFormat);
+		HDT hdt1 = doMapHDT(hdtFileName1, listener);
+		HDT hdt2 = doMapHDT(hdtFileName2, listener);
+		HDTImpl hdt = new HDTImpl(new HDTSpecification());
 		if(hdt1.getDictionary() instanceof MultipleSectionDictionary
 				&& hdt2.getDictionary() instanceof MultipleSectionDictionary)
 			hdt.catCustom(location,hdt1,hdt2,listener);

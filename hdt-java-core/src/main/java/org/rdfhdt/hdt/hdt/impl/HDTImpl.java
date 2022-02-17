@@ -148,11 +148,7 @@ public class HDTImpl implements HDTPrivate {
 	}
 
 	public HDTImpl(HDTOptions spec) {
-		if (spec == null) {
-			this.spec = new HDTSpecification();
-		} else {
-			this.spec = spec;
-		}
+		this.spec = spec;
 
 		createComponents();
 	}
