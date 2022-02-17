@@ -51,7 +51,7 @@ public class TriplesTest {
 	}
 	
 	public static void main(String[] args) throws Throwable {
-		HDT hdt = HDTManager.mapIndexedHDT("/Users/mck/hdt/DBPedia-3.9-en.hdt", null);
+		HDT hdt = HDTManager.mapIndexedHDT("/Users/mck/hdt/DBPedia-3.9-en.hdt");
 		
 		TripleID pat = new TripleID(0, 53201,0);
 		final BitmapTriples t = (BitmapTriples) hdt.getTriples();
