@@ -59,7 +59,7 @@ public class HDTEnsureDictionaryOrder {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		HDT hdt = HDTManager.mapHDT(args[0], null);
+		HDT hdt = HDTManager.mapHDT(args[0]);
 
 		check(hdt.getDictionary().getSubjects().getSortedEntries());
 		check(hdt.getDictionary().getPredicates().getSortedEntries());
