@@ -40,16 +40,12 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
-import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.DictionaryFactory;
-import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
-import org.rdfhdt.hdt.dictionary.TempDictionary;
-import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
-import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
-import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryCat;
-import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
+import org.rdfhdt.hdt.dictionary.*;
+import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -637,6 +633,91 @@ public class HDTImpl implements HDTPrivate {
 			} catch (Exception e) {
 				// swallow this exception intentionally. See javadoc on Files.delete for details.
 			}
+			System.out.println("Generating header");
+			this.header = HeaderFactory.createHeader(spec);
+			this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener){
+		try {
+			System.out.println("Generating dictionary");
+			DictionaryCat dictionaryCat = new MultipleSectionDictionaryCat(location);
+			dictionaryCat.cat(hdt1.getDictionary(),hdt2.getDictionary(), listener);
+			//map the generated dictionary
+			ControlInfo ci2 = new ControlInformation();
+			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
+			HDTSpecification spec = new HDTSpecification();
+			spec.setOptions("tempDictionary.impl=multHash;dictionary.type=dictionaryMultiObj;");
+			MultipleSectionDictionaryBig dictionary = new MultipleSectionDictionaryBig(spec);
+			fis.mark(1024);
+			ci2.load(fis);
+			fis.reset();
+			dictionary.mapFromFile(fis, new File(location + "dictionary"),null);
+			this.dictionary = dictionary;
+
+			System.out.println("Generating triples");
+			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(),hdt2.getTriples(),dictionaryCat);
+			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
+			bitmapTriplesCat.cat(it,listener);
+			//Delete the mappings since they are not necessary anymore
+			Iterator iter = hdt1.getDictionary().getAllObjects().entrySet().iterator();
+			int countSubSections = 0;
+			while (iter.hasNext()){
+				Map.Entry entry = (Map.Entry)iter.next();
+				String dataType = (String)entry.getKey();
+				String prefix = "sub"+countSubSections;
+				if(dataType.equals("NO_DATATYPE"))
+					prefix = dataType;
+				Files.delete(Paths.get(location+prefix+"1"));
+				Files.delete(Paths.get(location+prefix+"1"+"Types"));
+				countSubSections++;
+			}
+			iter = hdt2.getDictionary().getAllObjects().entrySet().iterator();
+			countSubSections = 0;
+			while (iter.hasNext()){
+				Map.Entry entry = (Map.Entry)iter.next();
+				String dataType = (String)entry.getKey();
+				String prefix = "sub"+countSubSections;
+				if(dataType.equals("NO_DATATYPE"))
+					prefix = dataType;
+				Files.delete(Paths.get(location+prefix+"2"));
+				Files.delete(Paths.get(location+prefix+"2"+"Types"));
+				countSubSections++;
+			}
+			Files.delete(Paths.get(location+"P1"));
+			Files.delete(Paths.get(location+"P1"+"Types"));
+			Files.delete(Paths.get(location+"P2"));
+			Files.delete(Paths.get(location+"P2"+"Types"));
+			Files.delete(Paths.get(location+"SH1"));
+			Files.delete(Paths.get(location+"SH1"+"Types"));
+			Files.delete(Paths.get(location+"SH2"));
+			Files.delete(Paths.get(location+"SH2"+"Types"));
+			Files.delete(Paths.get(location+"S1"));
+			Files.delete(Paths.get(location+"S1"+"Types"));
+			Files.delete(Paths.get(location+"S2"));
+			Files.delete(Paths.get(location+"S2"+"Types"));
+			Files.delete(Paths.get(location+"O1"));
+			Files.delete(Paths.get(location+"O1"+"Types"));
+			Files.delete(Paths.get(location+"O2"));
+			Files.delete(Paths.get(location+"O2"+"Types"));
+			//map the triples
+			CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
+			ci2 = new ControlInformation();
+			ci2.clear();
+			fis2.mark(1024);
+			ci2.load(fis2);
+			fis2.reset();
+			triples = TriplesFactory.createTriples(ci2);
+			triples.mapFromFile(fis2,new File(location + "triples"),null);
+			Files.delete(Paths.get(location+"mapping_back_1"));
+			Files.delete(Paths.get(location+"mapping_back_2"));
+			Files.delete(Paths.get(location+"mapping_back_type_1"));
+			Files.delete(Paths.get(location+"mapping_back_type_2"));
 			System.out.println("Generating header");
 			this.header = HeaderFactory.createHeader(spec);
 			this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
