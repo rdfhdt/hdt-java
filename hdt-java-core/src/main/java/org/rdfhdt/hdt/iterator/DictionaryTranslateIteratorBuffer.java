@@ -234,7 +234,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 
 	@Override
 	public long getNextTriplePosition() {
-		return 0; // @todo: implement
+		return iterator.getNextTriplePosition();
 	}
 
 	public static void setBlockSize(int size) {

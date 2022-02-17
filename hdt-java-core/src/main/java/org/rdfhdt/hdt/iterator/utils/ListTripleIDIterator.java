@@ -105,7 +105,7 @@ public class ListTripleIDIterator implements IteratorTripleID {
 
 	@Override
 	public long getNextTriplePosition() {
-		return 0; // @todo: implement
+		return pos;
 	}
 
 	@Override
