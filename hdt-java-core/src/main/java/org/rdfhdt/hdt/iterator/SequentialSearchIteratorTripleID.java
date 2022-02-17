@@ -199,6 +199,11 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
+
+	@Override
+	public long getNextTriplePosition() {
+		return iterator.getNextTriplePosition();
+	}
 	
 	
 }

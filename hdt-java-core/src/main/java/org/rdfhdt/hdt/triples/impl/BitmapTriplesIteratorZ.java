@@ -172,4 +172,9 @@ public class BitmapTriplesIteratorZ implements IteratorTripleID {
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
+	
+	@Override
+	public long getNextTriplePosition() {
+		return posZ;
+	}
 }

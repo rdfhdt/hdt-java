@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
@@ -244,5 +245,16 @@ public class BitmapTriplesIteratorZFOQ implements IteratorTripleID {
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public long getNextTriplePosition() {
+		long ret =0;
+		try {
+			ret = triples.adjZ.find(adjIndex.get(posIndex),patZ);
+		} catch (NotFoundException e) {
+		}
+		
+		return ret;
 	}
 }

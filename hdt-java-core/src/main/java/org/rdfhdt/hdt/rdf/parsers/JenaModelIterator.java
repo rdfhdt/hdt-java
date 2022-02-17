@@ -52,4 +52,11 @@ public class JenaModelIterator implements IteratorTripleString {
 		throw new UnsupportedOperationException();
 	}
 
+	@Override
+	public long getNextTriplePosition() {
+		throw new UnsupportedOperationException();
+	}
+
+
+
 }
