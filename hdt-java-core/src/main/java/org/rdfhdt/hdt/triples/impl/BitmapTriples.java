@@ -705,7 +705,7 @@ public class BitmapTriples implements TriplesPrivate {
 	public TripleID findTriple(long position) {
 		if (position == 0) {
 			// remove this special case so we can use position-1
-			return new TripleID(1,1,1);
+			return new TripleID(1, 1, 1);
 		}
 		// get the object at the given position
 		long z = seqZ.get(position);
@@ -714,15 +714,16 @@ public class BitmapTriples implements TriplesPrivate {
 		long posY = bitmapZ.rank1(position - 1);
 		long y = seqY.get(posY);
 
-		// -1 so we don't count end of tree
 		if (posY == 0) {
 			// remove this case to do posY - 1
-			return new TripleID(1,y,z);
+			return new TripleID(1, y, z);
 		}
+
+		// -1 so we don't count end of tree
 		long posX = bitmapY.rank1(posY - 1);
 		long x = posX + 1; // the subject ID is the position + 1, IDs start from 1 not zero
 
-		return new TripleID(x,y,z);
+		return new TripleID(x, y, z);
 	}
 
 	/* (non-Javadoc)
