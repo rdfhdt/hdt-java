@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
@@ -120,8 +121,8 @@ public class OptimizedCountTest {
 		}
 
 		@Override
-		public long getNextTriplePosition() {
-			return 1;
+		public long getLastTriplePosition() {
+			throw new NotImplementedException();
 		}
 
 	}
