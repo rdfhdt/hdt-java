@@ -44,7 +44,7 @@ public class BitmapTriplesIteratorPositionTest {
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Collection<Object> data() {
+    public static Collection<Object> genParam() {
         return Arrays.asList(
                 HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION,
                 DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG,
@@ -55,11 +55,11 @@ public class BitmapTriplesIteratorPositionTest {
 
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
-    HDTSpecification spec;
-    int shared;
-    int subjects;
-    int predicates;
-    int objects;
+    final HDTSpecification spec;
+    final int shared;
+    final int subjects;
+    final int predicates;
+    final int objects;
 
     public BitmapTriplesIteratorPositionTest(String dictionaryType) {
         spec = new HDTSpecification();
@@ -70,6 +70,10 @@ public class BitmapTriplesIteratorPositionTest {
         shared = 12;
     }
 
+    /**
+     * Print an iterator and (if found) sub iterators
+     * @param it Iterator
+     */
     private void printIterator(Object it) {
         for (int depth = 0; ; depth++) {
             System.out.println("[" + depth + "] Used iterator: " + it.getClass());
@@ -134,6 +138,14 @@ public class BitmapTriplesIteratorPositionTest {
         }
     }
 
+    /**
+     * create a test for a particular spo pattern
+     * @param s subject to search (or 0 for wildcard)
+     * @param p predicate to search (or 0 for wildcard)
+     * @param o object to search (or 0 for wildcard)
+     * @throws IOException file
+     * @throws NotFoundException search
+     */
     private void searchTest(int s, int p, int o) throws IOException, NotFoundException {
         HDTTestUtils data = new HDTTestUtils(tempDir.newFile(), subjects, predicates, objects, shared, spec, true);
 

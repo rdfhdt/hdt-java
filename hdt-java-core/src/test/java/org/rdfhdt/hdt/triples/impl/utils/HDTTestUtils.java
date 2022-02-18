@@ -29,6 +29,10 @@ public class HDTTestUtils {
             this.o = o;
         }
 
+        /**
+         * Compute the index in the HDT assuming the order
+         * @return index
+         */
         public long getIndex() {
             long indexS = s == 0 ? 0 : (s - 1);
             long indexP = p == 0 ? 0 : (p - 1);
