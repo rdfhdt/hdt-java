@@ -46,6 +46,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -236,7 +237,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
-	public IteratorTripleID search(TripleID pattern) {
+	public SuppliableIteratorTripleID search(TripleID pattern) {
 		if(isClosed) {
 			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
 		}
@@ -272,8 +273,8 @@ public class BitmapTriples implements TriplesPrivate {
 				return new BitmapTriplesIteratorZ(this, pattern);	
 			}
 		}
-		
-		IteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
+
+		SuppliableIteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
 		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
 			return bitIt;
 		} else {

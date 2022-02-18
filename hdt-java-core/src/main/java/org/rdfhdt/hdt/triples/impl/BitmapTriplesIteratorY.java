@@ -30,9 +30,8 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.iterator.BufferableIteratorTripleID;
-import org.rdfhdt.hdt.iterator.BufferedTriplePosition;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
+import org.rdfhdt.hdt.iterator.TriplePositionSupplier;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -43,7 +42,7 @@ import org.rdfhdt.hdt.triples.TripleID;
  * @author mario.arias
  *
  */
-public class BitmapTriplesIteratorY implements BufferableIteratorTripleID {
+public class BitmapTriplesIteratorY implements SuppliableIteratorTripleID {
 
 	private final BitmapTriples triples;
 	private long lastPosZ, lastNextZ, lastNextY;
@@ -230,7 +229,7 @@ public class BitmapTriplesIteratorY implements BufferableIteratorTripleID {
 	}
 
 	@Override
-	public BufferedTriplePosition getBufferedLastTriplePosition() {
+	public TriplePositionSupplier getLastTriplePositionSupplier() {
 		final long flastPosZ = lastPosZ, flastNextZ = lastNextZ, flastNextY = lastNextY;
 		return () -> computeLastTriplePos(flastPosZ, flastNextZ, flastNextY);
 	}

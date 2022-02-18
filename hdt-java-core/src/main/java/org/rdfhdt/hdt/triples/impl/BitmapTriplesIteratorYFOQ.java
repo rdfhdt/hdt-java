@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -41,7 +41,7 @@ import org.rdfhdt.hdt.triples.TripleID;
  * @author mario.arias
  *
  */
-public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
+public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 		private BitmapTriples triples;
 		private long lastPosition;
 		private TripleID pattern, returnTriple;

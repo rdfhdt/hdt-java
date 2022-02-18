@@ -37,7 +37,6 @@ import java.util.Map;
 import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -49,18 +48,18 @@ import org.rdfhdt.hdt.triples.TripleString;
 public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	private static class IndexedTripleID {
 		final TripleID triple;
-		final BufferedTriplePosition index;
+		final TriplePositionSupplier index;
 
-		IndexedTripleID(TripleID triple, BufferedTriplePosition index) {
+		IndexedTripleID(TripleID triple, TriplePositionSupplier index) {
 			this.triple = triple;
 			this.index = index;
 		}
 	}
 	private static int DEFAULT_BLOCK_SIZE=10000;
-	private BufferedTriplePosition lastPosition;
+	private TriplePositionSupplier lastPosition;
 	final int blockSize;
 
-	IteratorTripleID iterator;
+	SuppliableIteratorTripleID iterator;
 	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
 
@@ -72,15 +71,15 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	long lastSid, lastPid, lastOid;
 	CharSequence lastSstr, lastPstr, lastOstr;
 	
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
 	}
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
 	}
 
 
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
 		this.iterator = iteratorTripleID;
 		this.dictionary = new DictionaryPFCOptimizedExtractor(dictionary);
@@ -89,7 +88,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this.p = p==null ? "" : p;
 		this.o = o==null ? "" : o;
 	}
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
 		this.iterator = iteratorTripleID;
 		this.dictionary = new MultDictionaryPFCOptimizedExtractor(dictionary);
@@ -143,14 +142,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {
 			TripleID t = new TripleID(iterator.next());
-
-			BufferedTriplePosition index;
-
-			if (iterator instanceof BufferableIteratorTripleID) {
-				index = ((BufferableIteratorTripleID) iterator).getBufferedLastTriplePosition();
-			} else {
-				index = BufferedTriplePosition.of(iterator.getLastTriplePosition());
-			}
+			TriplePositionSupplier index = iterator.getLastTriplePositionSupplier();
 
 			IndexedTripleID itid = new IndexedTripleID(t, index);
 

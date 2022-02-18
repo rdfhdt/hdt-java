@@ -30,17 +30,15 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.iterator.BufferableIteratorTripleID;
-import org.rdfhdt.hdt.iterator.BufferedTriplePosition;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
+import org.rdfhdt.hdt.iterator.TriplePositionSupplier;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
  * @author mario.arias
  *
  */
-public class BitmapTriplesIteratorZFOQ implements BufferableIteratorTripleID {
+public class BitmapTriplesIteratorZFOQ implements SuppliableIteratorTripleID {
 	private long lastPosIndex;
 	final BitmapTriples triples;
 	final TripleID pattern;
@@ -258,7 +256,7 @@ public class BitmapTriplesIteratorZFOQ implements BufferableIteratorTripleID {
 	}
 
 	@Override
-	public BufferedTriplePosition getBufferedLastTriplePosition() {
+	public TriplePositionSupplier getLastTriplePositionSupplier() {
 		final long flastPosIndex = this.lastPosIndex;
 		return () -> triples.adjZ.find(adjIndex.get(flastPosIndex), patZ);
 	}

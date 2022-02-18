@@ -29,7 +29,6 @@ package org.rdfhdt.hdt.iterator;
 
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -38,19 +37,19 @@ import org.rdfhdt.hdt.triples.TripleID;
  * @author mario.arias
  *
  */
-public class SequentialSearchIteratorTripleID implements IteratorTripleID {
+public class SequentialSearchIteratorTripleID implements SuppliableIteratorTripleID {
 	private final TripleID pattern;
     private final TripleID nextTriple;
-	private long nextPosition;
-	private long lastPosition;
-	private long previousPosition;
+	private TriplePositionSupplier nextPosition;
+	private TriplePositionSupplier lastPosition;
+	private TriplePositionSupplier previousPosition;
     private TripleID previousTriple;
     private final TripleID returnTriple;
-	final IteratorTripleID iterator;
+	final SuppliableIteratorTripleID iterator;
 	boolean hasMoreTriples, hasPreviousTriples;
 	boolean goingUp;
 	
-	public SequentialSearchIteratorTripleID(TripleID pattern, IteratorTripleID other) {
+	public SequentialSearchIteratorTripleID(TripleID pattern, SuppliableIteratorTripleID other) {
 		this.pattern = pattern;
 		this.iterator = other;
 		hasPreviousTriples = false;
@@ -78,7 +77,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 				hasMoreTriples = true;
 				hasPreviousTriples = true;
 				nextTriple.assign(next);
-				nextPosition = iterator.getLastTriplePosition();
+				nextPosition = iterator.getLastTriplePositionSupplier();
 				break;
 			}
 		}
@@ -123,7 +122,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
                         hasPreviousTriples = true;
                         hasMoreTriples = true;
                         previousTriple.assign(previous);
-						previousPosition = iterator.getLastTriplePosition();
+						previousPosition = iterator.getLastTriplePositionSupplier();
                         break;
                 }
         }
@@ -209,8 +208,11 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 
 	@Override
 	public long getLastTriplePosition() {
+		return lastPosition.compute();
+	}
+
+	@Override
+	public TriplePositionSupplier getLastTriplePositionSupplier() {
 		return lastPosition;
 	}
-	
-	
 }

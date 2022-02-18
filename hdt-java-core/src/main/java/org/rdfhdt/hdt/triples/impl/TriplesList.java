@@ -36,6 +36,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -104,7 +105,7 @@ public class TriplesList implements TempTriples {
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
-	public IteratorTripleID search(TripleID pattern) {
+	public SuppliableIteratorTripleID search(TripleID pattern) {
 		String patternStr = pattern.getPatternString();
 		if(patternStr.equals("???")) {
 			return new TriplesListIterator(this);
@@ -394,7 +395,7 @@ public class TriplesList implements TempTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public static class TriplesListIterator implements IteratorTripleID {
+	public static class TriplesListIterator implements SuppliableIteratorTripleID {
 
 		private long lastPosition;
 		private final TriplesList triplesList;

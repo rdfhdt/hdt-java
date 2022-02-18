@@ -31,14 +31,14 @@ import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
  * @author mario.arias
  *
  */
-public class BitmapTriplesIteratorZ implements IteratorTripleID {
+public class BitmapTriplesIteratorZ implements SuppliableIteratorTripleID {
 	private final BitmapTriples triples;
 	private long lastPosition;
 	private final TripleID pattern;
