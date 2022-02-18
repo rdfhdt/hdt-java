@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.triples.impl.utils;
 
 import org.junit.Assert;
+import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
@@ -8,6 +9,7 @@ import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
 import java.io.File;
@@ -146,12 +148,25 @@ public class HDTTestUtils {
     }
 
     /**
+     * convert a {@link TripleID} to a {@link SpoId}
+     *
+     * @param triple hdt triple
+     * @return spoid
+     */
+    public SpoId tripleToSpo(TripleID triple) {
+        return tripleToSpo(new TripleString(
+                hdt.getDictionary().idToString(triple.getSubject(), TripleComponentRole.SUBJECT),
+                hdt.getDictionary().idToString(triple.getPredicate(), TripleComponentRole.PREDICATE),
+                hdt.getDictionary().idToString(triple.getObject(), TripleComponentRole.OBJECT)
+        ));
+    }
+    /**
      * convert a {@link TripleString} to a {@link SpoId}
      *
      * @param triple hdt triple
      * @return spoid
      */
-    public SpoId TripleToSpo(TripleString triple) {
+    public SpoId tripleToSpo(TripleString triple) {
 
         int shift = BASE_URI.length();
 

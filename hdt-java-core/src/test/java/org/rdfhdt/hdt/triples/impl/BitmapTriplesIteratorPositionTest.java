@@ -14,6 +14,7 @@ import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
@@ -109,9 +110,13 @@ public class BitmapTriplesIteratorPositionTest {
             Assert.assertEquals("nextTriplePosition order", index++, tripleIndex);
 
             // test if the triple is at the right index
-            HDTTestUtils.SpoId spoId = data.TripleToSpo(triple);
+            HDTTestUtils.SpoId spoId = data.tripleToSpo(triple);
             long testIndex = spoId.getIndex();
             Assert.assertEquals("getIndex hdt value", testIndex, tripleIndex);
+
+            TripleID findTriple = data.hdt.getTriples().findTriple(tripleIndex);
+            long testIndex2 = data.tripleToSpo(findTriple).getIndex();
+            Assert.assertEquals("getIndex findTriple hdt value", testIndex2, tripleIndex);
         }
     }
 
@@ -132,9 +137,14 @@ public class BitmapTriplesIteratorPositionTest {
             Assert.assertEquals("nextTriplePosition order", index++, tripleIndex);
 
             // test if the triple is at the right index
-            HDTTestUtils.SpoId spoId = data.TripleToSpo(triple);
+            HDTTestUtils.SpoId spoId = data.tripleToSpo(triple);
             long testIndex = spoId.getIndex();
             Assert.assertEquals("getIndex hdt value", testIndex, tripleIndex);
+
+            // test if we can find it back again
+            TripleID findTriple = data.hdt.getTriples().findTriple(tripleIndex);
+            long testIndex2 = data.tripleToSpo(findTriple).getIndex();
+            Assert.assertEquals("getIndex findTriple hdt value", testIndex2, tripleIndex);
         }
     }
 
@@ -157,7 +167,7 @@ public class BitmapTriplesIteratorPositionTest {
             TripleString triple = it.next();
             long tripleIndex = it.getLastTriplePosition();
             // test if the triple is at the right index
-            HDTTestUtils.SpoId spoId = data.TripleToSpo(triple);
+            HDTTestUtils.SpoId spoId = data.tripleToSpo(triple);
             long testIndex = spoId.getIndex();
             Assert.assertEquals("getIndex hdt value", testIndex, tripleIndex);
         }
@@ -202,4 +212,5 @@ public class BitmapTriplesIteratorPositionTest {
     public void spoSearchTest() throws IOException, NotFoundException {
         searchTest(subjects / 3, predicates / 3, objects / 3); // Tested pattern: SPO
     }
+
 }
