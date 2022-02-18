@@ -342,6 +342,11 @@ public class TriplesList implements TempTriples {
 	}
 
 	@Override
+	public TripleID findTriple(long position) {
+		return arrayOfTriples.get((int)position).asTripleID();
+	}
+
+	@Override
 	public void generateIndex(ProgressListener listener) {
 		// TODO Auto-generated method stub
 
