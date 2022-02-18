@@ -49,17 +49,17 @@ import org.rdfhdt.hdt.triples.TripleString;
 public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	private static class IndexedTripleID {
 		final TripleID triple;
-		final long index;
+		final BufferedTriplePosition index;
 
-		IndexedTripleID(TripleID triple, long index) {
+		IndexedTripleID(TripleID triple, BufferedTriplePosition index) {
 			this.triple = triple;
 			this.index = index;
 		}
 	}
 	private static int DEFAULT_BLOCK_SIZE=10000;
-	private long lastPosition;
+	private BufferedTriplePosition lastPosition;
 	final int blockSize;
-	
+
 	IteratorTripleID iterator;
 	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
@@ -143,7 +143,15 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {
 			TripleID t = new TripleID(iterator.next());
-			long index = iterator.getLastTriplePosition();
+
+			BufferedTriplePosition index;
+
+			if (iterator instanceof BufferableIteratorTripleID) {
+				index = ((BufferableIteratorTripleID) iterator).getBufferedLastTriplePosition();
+			} else {
+				index = BufferedTriplePosition.of(iterator.getLastTriplePosition());
+			}
+
 			IndexedTripleID itid = new IndexedTripleID(t, index);
 
 			triples.add(itid);
@@ -247,7 +255,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 
 	@Override
 	public long getLastTriplePosition() {
-		return lastPosition;
+		return lastPosition.compute();
 	}
 
 	public static void setBlockSize(int size) {
