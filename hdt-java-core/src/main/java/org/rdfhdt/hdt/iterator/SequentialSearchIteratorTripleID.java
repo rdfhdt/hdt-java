@@ -41,6 +41,9 @@ import org.rdfhdt.hdt.triples.TripleID;
 public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 	private final TripleID pattern;
     private final TripleID nextTriple;
+	private long nextPosition;
+	private long lastPosition;
+	private long previousPosition;
     private TripleID previousTriple;
     private final TripleID returnTriple;
 	final IteratorTripleID iterator;
@@ -70,11 +73,12 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 		
 		while(iterator.hasNext()) {
 			TripleID next = iterator.next();
-			
+
 			if(next.match(pattern)) {
 				hasMoreTriples = true;
 				hasPreviousTriples = true;
 				nextTriple.assign(next);
+				nextPosition = iterator.getLastTriplePosition();
 				break;
 			}
 		}
@@ -94,6 +98,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 			doFetchNext();
 		}
 		returnTriple.assign(nextTriple);
+		lastPosition = nextPosition;
 		
 		doFetchNext();
 		
@@ -118,6 +123,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
                         hasPreviousTriples = true;
                         hasMoreTriples = true;
                         previousTriple.assign(previous);
+						previousPosition = iterator.getLastTriplePosition();
                         break;
                 }
         }
@@ -136,6 +142,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 			doFetchPrevious();
 		}
 		returnTriple.assign(previousTriple);
+		lastPosition = previousPosition;
 
 		doFetchPrevious();
 
@@ -202,7 +209,7 @@ public class SequentialSearchIteratorTripleID implements IteratorTripleID {
 
 	@Override
 	public long getLastTriplePosition() {
-		return iterator.getLastTriplePosition();
+		return lastPosition;
 	}
 	
 	
