@@ -36,6 +36,7 @@ public class HDTTestUtils {
             return indexO + objects * (indexP + predicates * indexS);
         }
     }
+
     /**
      * memory hdt
      */
@@ -58,7 +59,7 @@ public class HDTTestUtils {
     public final int subjects;
     /**
      * predicates count
-      */
+     */
     public final int predicates;
     /**
      * objects count
@@ -74,7 +75,7 @@ public class HDTTestUtils {
      * @param shared     number of shared subjects/objects
      * @param spec       hdt spec
      */
-    public HDTTestUtils(File f, int subjects, int predicates, int objects, int shared, HDTOptions spec) throws IOException {
+    public HDTTestUtils(File f, int subjects, int predicates, int objects, int shared, HDTOptions spec, boolean buffer) throws IOException {
         this.hdtFile = f;
         this.shared = shared;
         this.subjects = subjects;
@@ -92,20 +93,25 @@ public class HDTTestUtils {
                 }
             }
         }
-        this.hdt = HDTManager.mapHDT(hdtFile.getAbsolutePath(), null, spec);
+        if (buffer) this.hdt = HDTManager.mapHDT(hdtFile.getAbsolutePath(), null, spec);
+        else this.hdt = HDTManager.loadHDT(hdtFile.getAbsolutePath(), null, spec);
         Assert.assertEquals("HDT count", triples, hdt.getTriples().getNumberOfElements());
         this.triples = triples;
     }
+
     /**
      * convert SpoId into {@link TripleString}
+     *
      * @param id spoid
      * @return triplestring
      */
     public TripleString spoToTriple(SpoId id) {
         return spoToTriple(id.s, id.p, id.o);
     }
+
     /**
      * convert SpoId into {@link TripleString}
+     *
      * @param s subject
      * @param p predicate
      * @param o object
@@ -137,6 +143,7 @@ public class HDTTestUtils {
 
     /**
      * convert a {@link TripleString} to a {@link SpoId}
+     *
      * @param triple hdt triple
      * @return spoid
      */
@@ -152,28 +159,16 @@ public class HDTTestUtils {
         int pid = p.isEmpty() ? 0 : Integer.parseInt(p.substring(shift + 2));
         int oid = o.isEmpty() ? 0 : Integer.parseInt(o.substring(shift + 2));
 
-        if (!s.startsWith("Sh", shift))
-            sid += shared;
+        if (!s.startsWith("Sh", shift)) sid += shared;
 
-        if (!o.startsWith("Sh", shift))
-            oid += shared;
+        if (!o.startsWith("Sh", shift)) oid += shared;
 
         return new SpoId(sid, pid, oid);
     }
 
     /**
      * search in the hdt triples, 0 for wildcard
-     * @param id spoid
-     * @return the iterator
-     * @throws NotFoundException if no triples can be found
-     */
-    public IteratorTripleString searchForSPO(SpoId id) throws NotFoundException {
-        TripleString tr = spoToTriple(id);
-        return hdt.search(tr.getSubject(), tr.getPredicate(), tr.getObject());
-    }
-
-    /**
-     * search in the hdt triples, 0 for wildcard
+     *
      * @param s subject
      * @param p predicate
      * @param o object
@@ -182,6 +177,8 @@ public class HDTTestUtils {
      */
     public IteratorTripleString searchForSPO(int s, int p, int o) throws NotFoundException {
         TripleString tr = spoToTriple(s, p, o);
+
+        System.out.println("Search with pattern:" + (s == 0 ? "?" : "S") + (p == 0 ? "?" : "P") + (o == 0 ? "?" : "O"));
         return hdt.search(tr.getSubject(), tr.getPredicate(), tr.getObject());
     }
 
