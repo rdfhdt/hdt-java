@@ -706,7 +706,10 @@ public class BitmapTriples implements TriplesPrivate {
 	public TripleID findTriple(long position) {
 		if (position == 0) {
 			// remove this special case so we can use position-1
-			return new TripleID(1, 1, 1);
+			return new TripleID(
+					1,
+					seqY.get(0),
+					seqZ.get(0));
 		}
 		// get the object at the given position
 		long z = seqZ.get(position);
