@@ -7,26 +7,39 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
+import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.RDFParserCallback;
+import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.impl.utils.HDTSortedUtils;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.Collection;
+import java.nio.file.Files;
+import java.util.*;
 
 @RunWith(Parameterized.class)
 public class BitmapTriplesIteratorPositionTest {
+
+    public static final List<String> DICTONARIES = Arrays.asList(
+            HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION,
+            DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG,
+            DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS,
+            HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION
+    );
 
     private static final Field ITERATOR_SUB;
     private static final Field ITERATOR_SUB_BUFFER;
@@ -47,13 +60,27 @@ public class BitmapTriplesIteratorPositionTest {
     }
 
     @Parameterized.Parameters(name = "{0}")
-    public static Collection<Object> genParam() {
-        return Arrays.asList(
-                HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION,
-                DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG,
-                DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS,
-                HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION
-        );
+    public static Collection<Object[]> genParam() {
+        List<Object[]> lst = new ArrayList<>();
+        for (String dict :DICTONARIES){
+            lst.add(new Object[] { dict, 25, 50, 37, 12 });
+            lst.add(new Object[] { dict, 25, 50, 37, 0 });
+            lst.add(new Object[] { dict, 25, 50, 0, 12 });
+            lst.add(new Object[] { dict, 25, 50, 0, 0 });
+            lst.add(new Object[] { dict, 25, 0, 37, 12 });
+            lst.add(new Object[] { dict, 25, 0, 37, 0 });
+            lst.add(new Object[] { dict, 25, 0, 0, 12 });
+            lst.add(new Object[] { dict, 25, 0, 0, 0 });
+            lst.add(new Object[] { dict, 0, 50, 37, 12 });
+            lst.add(new Object[] { dict, 0, 50, 37, 0 });
+            lst.add(new Object[] { dict, 0, 50, 0, 12 });
+            lst.add(new Object[] { dict, 0, 50, 0, 0 });
+            lst.add(new Object[] { dict, 0, 0, 37, 12 });
+            lst.add(new Object[] { dict, 0, 0, 37, 0 });
+            lst.add(new Object[] { dict, 0, 0, 0, 12 });
+            lst.add(new Object[] { dict, 0, 0, 0, 0 });
+        }
+        return lst;
     }
 
     @Rule
@@ -63,17 +90,19 @@ public class BitmapTriplesIteratorPositionTest {
     final int subjects;
     final int predicates;
     final int objects;
-    public BitmapTriplesIteratorPositionTest(String dictionaryType) {
+
+    public BitmapTriplesIteratorPositionTest(String dictionaryType, int subjects, int predicates, int objects, int shared) {
         spec = new HDTSpecification();
         spec.set("dictionary.type", dictionaryType);
-        subjects = 25;
-        predicates = 50;
-        objects = 37;
-        shared = 12;
+        this.subjects = subjects;
+        this.predicates = predicates;
+        this.objects = objects;
+        this.shared = shared;
     }
 
     /**
      * Print an iterator and (if found) sub iterators
+     *
      * @param it Iterator
      */
     private void printIterator(Object it) {
@@ -151,10 +180,11 @@ public class BitmapTriplesIteratorPositionTest {
 
     /**
      * create a test for a particular spo pattern
+     *
      * @param s subject to search (or 0 for wildcard)
      * @param p predicate to search (or 0 for wildcard)
      * @param o object to search (or 0 for wildcard)
-     * @throws IOException file
+     * @throws IOException       file
      * @throws NotFoundException search
      */
     private void searchTest(int s, int p, int o) throws IOException, NotFoundException {
@@ -214,19 +244,59 @@ public class BitmapTriplesIteratorPositionTest {
         searchTest(subjects / 3, predicates / 3, objects / 3); // Tested pattern: SPO
     }
 
+    private boolean equalsCharSequence(CharSequence cs1, CharSequence cs2) {
+        if (cs1.length() != cs2.length())
+            return false;
+
+        for (int i = 0; i < cs1.length(); i++)
+            if (cs1.charAt(i) != cs2.charAt(i))
+                return false;
+        return true;
+    }
+
+    private boolean equalsTriple(TripleString s1, TripleString s2) {
+        // quick fix, might do a pr/issue later to remove it
+        // s1.equals(s1) -> false
+        return equalsCharSequence(s1.getSubject(), s2.getSubject())
+                && equalsCharSequence(s1.getPredicate(), s2.getPredicate())
+                && equalsCharSequence(s1.getObject(), s2.getObject());
+
+    }
+
+    public long getIndex(List<TripleString> triples, TripleString str) {
+        for (int i = 0; i < triples.size(); i++) {
+            if (equalsTriple(str, triples.get(i)))
+                return i;
+        }
+        throw new IllegalArgumentException("not a triple or our hdt: " + str);
+    }
+
     private void searchTPSTest(int s, int p, int o) throws NotFoundException, ParserException, IOException {
         ClassLoader classLoader = getClass().getClassLoader();
-        HDTSortedUtils hdtSortedUtils = new HDTSortedUtils(tempDir, classLoader.getResourceAsStream("example_triplePosition.nt"));
-        TripleString ts = hdtSortedUtils.getTriples().get(10);
+        File f = new File(tempDir.newFolder(), "test.nt");
+        InputStream ntFile = classLoader.getResourceAsStream("example_triplePosition.nt");
+        Assert.assertNotNull("ntFile can't be null", ntFile);
+
+        Files.copy(ntFile, f.toPath());
+        HDT hdt = HDTManager.generateHDT(f.getAbsolutePath(), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, new HDTSpecification(), null);
+        RDFParserCallback parser = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES);
+
+        List<TripleString> triples = new ArrayList<>();
+        try {
+            hdt.search("", "", "").forEachRemaining(triples::add);
+        } catch (NotFoundException e) {
+            e.printStackTrace();
+        }
+        TripleString ts = triples.get(10);
         CharSequence ss = s == 0 ? "" : ts.getSubject();
         CharSequence sp = p == 0 ? "" : ts.getPredicate();
         CharSequence so = o == 0 ? "" : ts.getObject();
 
-        IteratorTripleString it = hdtSortedUtils.getHdt().search(ss, sp, so);
+        IteratorTripleString it = hdt.search(ss, sp, so);
 
         while (it.hasNext()) {
             TripleString tripleString = it.next();
-            Assert.assertEquals("Sorted triple index", hdtSortedUtils.getIndex(tripleString), it.getLastTriplePosition());
+            Assert.assertEquals("Sorted triple index", getIndex(triples, tripleString), it.getLastTriplePosition());
         }
     }
 
@@ -267,7 +337,7 @@ public class BitmapTriplesIteratorPositionTest {
 
     @Test
     public void spoSearchTPSTest() throws IOException, NotFoundException, ParserException {
-        searchTPSTest(1,1,1); // Tested pattern: SPO
+        searchTPSTest(1, 1, 1); // Tested pattern: SPO
     }
 
 }

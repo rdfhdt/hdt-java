@@ -15,6 +15,10 @@ import org.rdfhdt.hdt.triples.TripleString;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * class to generate a synthetic hdt for test purposes.
+ * @author ate47
+ */
 public class HDTTestUtils {
 
     /**
@@ -84,9 +88,9 @@ public class HDTTestUtils {
     public HDTTestUtils(File f, int subjects, int predicates, int objects, int shared, HDTOptions spec, boolean buffer) throws IOException {
         this.hdtFile = f;
         this.shared = shared;
-        this.subjects = subjects;
+        this.subjects = Math.max(shared, subjects);
         this.predicates = predicates;
-        this.objects = objects;
+        this.objects = Math.max(shared, objects);
 
         int triples = 0;
         try (final TripleWriterHDT wr = new TripleWriterHDT(BASE_URI, new HDTSpecification(), hdtFile.getAbsolutePath(), false)) {
