@@ -226,7 +226,6 @@ public class BitmapTriplesIteratorPositionTest {
 
         while (it.hasNext()) {
             TripleString tripleString = it.next();
-            System.out.println(hdtSortedUtils.getIndex(tripleString));
             Assert.assertEquals("Sorted triple index", hdtSortedUtils.getIndex(tripleString), it.getLastTriplePosition());
         }
     }
