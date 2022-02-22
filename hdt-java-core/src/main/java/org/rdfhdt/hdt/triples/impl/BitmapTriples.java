@@ -46,6 +46,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -236,7 +237,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
-	public IteratorTripleID search(TripleID pattern) {
+	public SuppliableIteratorTripleID search(TripleID pattern) {
 		if(isClosed) {
 			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
 		}
@@ -272,8 +273,8 @@ public class BitmapTriples implements TriplesPrivate {
 				return new BitmapTriplesIteratorZ(this, pattern);	
 			}
 		}
-		
-		IteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
+
+		SuppliableIteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
 		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
 			return bitIt;
 		} else {
@@ -699,6 +700,34 @@ public class BitmapTriples implements TriplesPrivate {
 	@Override
 	public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_BITMAP;
+	}
+
+	@Override
+	public TripleID findTriple(long position) {
+		if (position == 0) {
+			// remove this special case so we can use position-1
+			return new TripleID(
+					1,
+					seqY.get(0),
+					seqZ.get(0));
+		}
+		// get the object at the given position
+		long z = seqZ.get(position);
+
+		// -1 so we don't count end of tree
+		long posY = bitmapZ.rank1(position - 1);
+		long y = seqY.get(posY);
+
+		if (posY == 0) {
+			// remove this case to do posY - 1
+			return new TripleID(1, y, z);
+		}
+
+		// -1 so we don't count end of tree
+		long posX = bitmapY.rank1(posY - 1);
+		long x = posX + 1; // the subject ID is the position + 1, IDs start from 1 not zero
+
+		return new TripleID(x, y, z);
 	}
 
 	/* (non-Javadoc)

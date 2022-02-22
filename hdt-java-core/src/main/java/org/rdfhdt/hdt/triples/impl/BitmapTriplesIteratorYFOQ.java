@@ -30,7 +30,7 @@ package org.rdfhdt.hdt.triples.impl;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 /**
@@ -41,8 +41,9 @@ import org.rdfhdt.hdt.triples.TripleID;
  * @author mario.arias
  *
  */
-public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
+public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 		private BitmapTriples triples;
+		private long lastPosition;
 		private TripleID pattern, returnTriple;
 		private long patY;
 		
@@ -76,6 +77,7 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		}
 		
 		private void updateOutput() {
+			lastPosition = posZ;
 			returnTriple.setAll(x, y, z);
 			TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
 		}
@@ -107,10 +109,11 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 			} else {
 				z = adjZ.get(posZ);
 			}
-			posZ++;	
-		
+
 			updateOutput();
-			
+
+			posZ++;
+
 			return returnTriple;
 		}
 
@@ -211,5 +214,10 @@ public class BitmapTriplesIteratorYFOQ implements IteratorTripleID {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long getLastTriplePosition() {
+			return lastPosition;
 		}
 }

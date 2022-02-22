@@ -50,6 +50,7 @@ import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.hdt.HDTVersion;
@@ -372,6 +373,11 @@ public class HDTImpl implements HDTPrivate {
 				@Override
 				public long estimatedNumResults() {
 					return 0;
+				}
+
+				@Override
+				public long getLastTriplePosition() {
+					throw new NotImplementedException();
 				}
 			};
 		}

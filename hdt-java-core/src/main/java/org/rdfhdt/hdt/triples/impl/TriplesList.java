@@ -36,6 +36,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -104,7 +105,7 @@ public class TriplesList implements TempTriples {
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
-	public IteratorTripleID search(TripleID pattern) {
+	public SuppliableIteratorTripleID search(TripleID pattern) {
 		String patternStr = pattern.getPatternString();
 		if(patternStr.equals("???")) {
 			return new TriplesListIterator(this);
@@ -342,6 +343,11 @@ public class TriplesList implements TempTriples {
 	}
 
 	@Override
+	public TripleID findTriple(long position) {
+		return arrayOfTriples.get((int)position).asTripleID();
+	}
+
+	@Override
 	public void generateIndex(ProgressListener listener) {
 		// TODO Auto-generated method stub
 
@@ -389,8 +395,9 @@ public class TriplesList implements TempTriples {
 	 * @author mario.arias
 	 *
 	 */
-	public static class TriplesListIterator implements IteratorTripleID {
+	public static class TriplesListIterator implements SuppliableIteratorTripleID {
 
+		private long lastPosition;
 		private final TriplesList triplesList;
 		private int pos;
 
@@ -412,7 +419,8 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID next() {
-			return triplesList.arrayOfTriples.get((int)pos++).asTripleID();
+			lastPosition = pos;
+			return triplesList.arrayOfTriples.get(pos++).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -428,7 +436,8 @@ public class TriplesList implements TempTriples {
 		 */
 		@Override
 		public TripleID previous() {
-			return triplesList.arrayOfTriples.get((int)--pos).asTripleID();
+			lastPosition = --pos;
+			return triplesList.arrayOfTriples.get(pos).asTripleID();
 		}
 
 		/* (non-Javadoc)
@@ -482,6 +491,11 @@ public class TriplesList implements TempTriples {
 		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long getLastTriplePosition() {
+			return lastPosition;
 		}
 	}
 

@@ -89,4 +89,11 @@ public interface IteratorTripleID extends Iterator<TripleID> {
 	 * @return TripleComponentOrder
 	 */
 	TripleComponentOrder getOrder();
+	
+	/**
+	 * Return the position of the triple of the last next call, from 1 to numTriples.
+	 * @return position
+	 * @see Triples#findTriple(long)
+	 */
+	long getLastTriplePosition();
 }

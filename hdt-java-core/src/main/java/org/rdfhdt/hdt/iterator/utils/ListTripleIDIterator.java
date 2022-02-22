@@ -17,6 +17,8 @@ public class ListTripleIDIterator implements IteratorTripleID {
 
 	private List<TripleID> triplesList;
 	private int pos;
+	private long lastPosition;
+
 
 	public ListTripleIDIterator(List<TripleID> triplesList) {
 		this.triplesList = triplesList;
@@ -36,6 +38,7 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	 */
 	@Override
 	public TripleID next() {
+		lastPosition = pos;
 		return triplesList.get((int)pos++);
 	}
 
@@ -52,7 +55,9 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	 */
 	@Override
 	public TripleID previous() {
-		return triplesList.get((int)--pos);
+		TripleID tripleID = triplesList.get((int)--pos);
+		lastPosition = pos;
+		return tripleID;
 	}
 
 	/* (non-Javadoc)
@@ -101,6 +106,11 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	@Override
 	public TripleComponentOrder getOrder() {
 		return TripleComponentOrder.Unknown;
+	}
+
+	@Override
+	public long getLastTriplePosition() {
+		return lastPosition;
 	}
 
 	@Override
