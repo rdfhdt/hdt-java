@@ -46,11 +46,11 @@ import org.rdfhdt.hdt.triples.TripleString;
  * 
  */
 public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
-	private static class IndexedTripleID {
+	private static class TripleIdWithIndex {
 		final TripleID triple;
 		final TriplePositionSupplier index;
 
-		IndexedTripleID(TripleID triple, TriplePositionSupplier index) {
+		TripleIdWithIndex(TripleID triple, TriplePositionSupplier index) {
 			this.triple = triple;
 			this.index = index;
 		}
@@ -63,8 +63,8 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
 
-	List<IndexedTripleID> triples;
-	Iterator<IndexedTripleID> child = Collections.emptyIterator();
+	List<TripleIdWithIndex> triples;
+	Iterator<TripleIdWithIndex> child = Collections.emptyIterator();
 	
 	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject;
 
@@ -144,7 +144,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			TripleID t = new TripleID(iterator.next());
 			TriplePositionSupplier index = iterator.getLastTriplePositionSupplier();
 
-			IndexedTripleID itid = new IndexedTripleID(t, index);
+			TripleIdWithIndex itid = new TripleIdWithIndex(t, index);
 
 			triples.add(itid);
 
@@ -188,7 +188,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			fetchBlock();
 		}
 
-		IndexedTripleID itid = child.next();
+		TripleIdWithIndex itid = child.next();
 		TripleID triple = itid.triple;
 		lastPosition = itid.index;
 
