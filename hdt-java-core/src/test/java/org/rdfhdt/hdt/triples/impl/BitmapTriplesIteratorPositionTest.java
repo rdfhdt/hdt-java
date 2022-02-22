@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
@@ -16,6 +17,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.triples.impl.utils.HDTSortedUtils;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
 import java.io.IOException;
@@ -61,7 +63,6 @@ public class BitmapTriplesIteratorPositionTest {
     final int subjects;
     final int predicates;
     final int objects;
-
     public BitmapTriplesIteratorPositionTest(String dictionaryType) {
         spec = new HDTSpecification();
         spec.set("dictionary.type", dictionaryType);
@@ -211,6 +212,63 @@ public class BitmapTriplesIteratorPositionTest {
     @Test
     public void spoSearchTest() throws IOException, NotFoundException {
         searchTest(subjects / 3, predicates / 3, objects / 3); // Tested pattern: SPO
+    }
+
+    private void searchTPSTest(int s, int p, int o) throws NotFoundException, ParserException, IOException {
+        ClassLoader classLoader = getClass().getClassLoader();
+        HDTSortedUtils hdtSortedUtils = new HDTSortedUtils(tempDir, classLoader.getResourceAsStream("example_triplePosition.nt"));
+        TripleString ts = hdtSortedUtils.getTriples().get(10);
+        CharSequence ss = s == 0 ? "" : ts.getSubject();
+        CharSequence sp = p == 0 ? "" : ts.getPredicate();
+        CharSequence so = o == 0 ? "" : ts.getObject();
+
+        IteratorTripleString it = hdtSortedUtils.getHdt().search(ss, sp, so);
+
+        while (it.hasNext()) {
+            TripleString tripleString = it.next();
+            System.out.println(hdtSortedUtils.getIndex(tripleString));
+            Assert.assertEquals("Sorted triple index", hdtSortedUtils.getIndex(tripleString), it.getLastTriplePosition());
+        }
+    }
+
+    @Test
+    public void ___SearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(0, 0, 0); // Tested pattern: ???
+    }
+
+    @Test
+    public void s__SearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(1, 0, 0); // Tested pattern: S??
+    }
+
+    @Test
+    public void _p_SearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(0, 1, 0); // Tested pattern: ?P?
+    }
+
+    @Test
+    public void sp_SearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(1, 1, 0); // Tested pattern: SP?
+    }
+
+    @Test
+    public void __oSearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(0, 0, 1); // Tested pattern: ??O
+    }
+
+    @Test
+    public void s_oSearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(1, 0, 1); // Tested pattern: S?O
+    }
+
+    @Test
+    public void _poSearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(0, 1, 1); // Tested pattern: ?PO
+    }
+
+    @Test
+    public void spoSearchTPSTest() throws IOException, NotFoundException, ParserException {
+        searchTPSTest(1,1,1); // Tested pattern: SPO
     }
 
 }
