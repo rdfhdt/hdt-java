@@ -128,12 +128,25 @@ public class TripleString {
 		this.object = object;
 	}
 
+	private boolean equalsCharSequence(CharSequence cs1, CharSequence cs2) {
+		if (cs1 instanceof String && cs2 instanceof String)
+			return cs1.equals(cs2); // use string method if we can
+
+		if (cs1.length() != cs2.length())
+			return false;
+
+		for (int i = 0; i < cs1.length(); i++)
+			if (cs1.charAt(i) != cs2.charAt(i))
+				return false;
+		return true;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof TripleString) {
 			TripleString ts = (TripleString) other;
-			return subject.equals(ts.subject) && predicate.equals(ts.predicate)
-					&& object.equals(ts.object);
+			return equalsCharSequence(subject, ts.subject) && equalsCharSequence(predicate, ts.predicate)
+					&& equalsCharSequence(object, ts.object);
 		}
 		return false;
 	}
@@ -152,9 +165,9 @@ public class TripleString {
 	 * @return boolean
 	 */
 	public boolean match(TripleString pattern) {
-        if (pattern.getSubject() == "" || pattern.getSubject().equals(this.subject)) {
-            if (pattern.getPredicate() == "" || pattern.getPredicate().equals(this.predicate)) {
-                if (pattern.getObject() == "" || pattern.getObject().equals(this.object)) {
+        if (pattern.getSubject().length() == 0 || equalsCharSequence(pattern.getSubject(), this.subject)) {
+            if (pattern.getPredicate().length() == 0 || equalsCharSequence(pattern.getPredicate(), this.predicate)) {
+                if (pattern.getObject().length() == 0 || equalsCharSequence(pattern.getObject(), this.object)) {
                     return true;
                 }
             }
