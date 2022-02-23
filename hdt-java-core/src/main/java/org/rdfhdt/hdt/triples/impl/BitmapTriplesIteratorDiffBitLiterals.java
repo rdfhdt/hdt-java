@@ -52,8 +52,8 @@ public class BitmapTriplesIteratorDiffBitLiterals implements BitmapTriplesIterat
 
         while (iterator.hasNext()){
             TripleID tripleID = iterator.next();
-            count = iterator.getLastTriplePosition();
-            if(!this.bitArrayDisk.access(count)){ // triple not deleted bit = 0
+            this.count = iterator.getLastTriplePosition();
+            if(!this.bitArrayDisk.access(this.count)){ // triple not deleted bit = 0
                 long predId = tripleID.getPredicate();
                 long subjId = tripleID.getSubject();
                 long objId = tripleID.getObject();
@@ -78,7 +78,7 @@ public class BitmapTriplesIteratorDiffBitLiterals implements BitmapTriplesIterat
 
     @Override
     public long getCount() {
-        return count + 1;
+        return count;
     }
 
     @Override

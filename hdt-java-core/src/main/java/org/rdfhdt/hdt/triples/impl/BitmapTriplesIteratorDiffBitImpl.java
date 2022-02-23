@@ -66,7 +66,7 @@ public class BitmapTriplesIteratorDiffBitImpl implements BitmapTriplesIteratorDi
 
     @Override
     public long getCount() {
-        return count + 1;
+        return count;
     }
 
     @Override

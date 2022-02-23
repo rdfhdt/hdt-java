@@ -776,7 +776,7 @@ public class HDTImpl implements HDTPrivate {
 		System.out.println("Generating Triples...");
 		// map the triples based on the new dictionary
 		BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff, iter.getCount());
-		BitmapTriples triples = new BitmapTriples();
+		BitmapTriples triples = new BitmapTriples(spec);
 		triples.load(mapIter, listener);
 		this.triples = triples;
 

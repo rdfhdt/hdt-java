@@ -96,7 +96,7 @@ public class HdtDiffTest {
 
 
         Assert.assertEquals(
-                "Dictionary aren't the same",
+                "Dictionaries aren't the same",
                 hdtDiffExcepted.getDictionary().getType(),
                 hdtDiffActual.getDictionary().getType()
         );
