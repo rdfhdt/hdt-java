@@ -36,7 +36,7 @@ public class BitmapTriplesIteratorDiff {
                         origNext.getObject()
                 );
                 if (otherTriple.hasNext()) {
-                    bitmap.set(otherTriple.getLastTriplePosition(), true);
+                    bitmap.set(iterator1.getLastTriplePosition(), true);
                 }
             } catch (NotFoundException e) {
                 // continue

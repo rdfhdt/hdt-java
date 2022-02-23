@@ -114,7 +114,7 @@ public class BitmapTriplesIteratorMapDiff implements IteratorTripleID {
             IteratorTripleID it = this.triples.search(new TripleID(mapping, 0, 0));
             while (it.hasNext()) {
                 TripleID next = it.next();
-                if (!this.bitArrayDisk.access(it.getLastTriplePosition() - 1)) {
+                if (!this.bitArrayDisk.access(it.getLastTriplePosition())) {
                     newTriples.add(mapTriple(next));
                 }
             }
