@@ -28,7 +28,7 @@ import java.util.Collection;
 @RunWith(Parameterized.class)
 public class BitmapTriplesIteratorDiffTest {
     /**
-     * Return type for {@link #createTestHDT(File, File, HDTOptions, int, int, int, int, int)}
+     * Return type for {@link #createTestHDT(File, File, int, int, int, int, int)}
      */
     public static class HDTDiffData {
         public int tupleCountA;
@@ -41,14 +41,13 @@ public class BitmapTriplesIteratorDiffTest {
      *
      * @param fileName   hdt file name
      * @param fileName2   hdt 2 file name
-     * @param spec       hdt spec
      * @param subjects   number of subjects
      * @param predicates number of predicates
      * @param objects    number of objects
      * @param shared     number of shared subjects/objects
      * @return tuple count
      */
-    public static HDTDiffData createTestHDT(File fileName, File fileName2, HDTOptions spec, int subjects, int predicates, int objects, int shared, int shift) throws IOException {
+    public static HDTDiffData createTestHDT(File fileName, File fileName2, int subjects, int predicates, int objects, int shared, int shift) throws IOException {
         String baseURI = "http://ex.org/";
         HDTDiffData count = new HDTDiffData();
         int shiftCount = 0;
@@ -120,7 +119,6 @@ public class BitmapTriplesIteratorDiffTest {
 
     public BitmapTriplesIteratorDiffTest(String dictionaryType) {
         spec = new HDTSpecification();
-        spec.set("dictionary.type", dictionaryType);
     }
 
     @Test
@@ -128,7 +126,7 @@ public class BitmapTriplesIteratorDiffTest {
         File hdt1 = tempDir.newFile();
         File hdt2 = tempDir.newFile();
 
-        HDTDiffData data = createTestHDT(hdt1, hdt2, spec, 40, 50, 60, 5, 4);
+        HDTDiffData data = createTestHDT(hdt1, hdt2, 40, 50, 60, 5, 4);
 
         HDT origin = HDTManager.mapHDT(hdt2.getAbsolutePath());
         HDT diff = HDTManager.mapHDT(hdt1.getAbsolutePath());
@@ -155,10 +153,10 @@ public class BitmapTriplesIteratorDiffTest {
         File hdt1 = tempDir.newFile();
         File hdt2 = tempDir.newFile();
 
-        HDTDiffData data = createTestHDT(hdt1, hdt2, spec, 100, 50, 60, 5, 4);
+        HDTDiffData data = createTestHDT(hdt1, hdt2, 100, 50, 60, 5, 4);
 
-        HDT origin = HDTManager.mapHDT(hdt1.getAbsolutePath());
-        HDT diff = HDTManager.mapHDT(hdt2.getAbsolutePath());
+        HDT origin = HDTManager.mapHDT(hdt1.getAbsolutePath(), null, spec);
+        HDT diff = HDTManager.mapHDT(hdt2.getAbsolutePath(), null, spec);
 
         ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(data.tupleCountA);
 

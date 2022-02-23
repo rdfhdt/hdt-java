@@ -13,11 +13,16 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorDiffTest;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,13 +30,106 @@ import java.util.Objects;
 
 @RunWith(Parameterized.class)
 public class HdtDiffTest {
+    /**
+     * Return type for {@link #createTestHDT(File, File, File, int, int, int, int, int)}
+     */
+    public static class HDTDiffData {
+        public int tupleCountA;
+        public int tupleCountB;
+        public int tupleCountC;
+        public int shared;
+    }
+
+    private static final Logger logger = LoggerFactory.getLogger(BitmapTriplesIteratorDiffTest.class);
+
+    /**
+     * create 2 test hdts and a result hdt
+     *
+     * @param fileName   hdt file name
+     * @param fileName2  hdt 2 file name
+     * @param fileName3  result hdt file name
+     * @param subjects   number of subjects
+     * @param predicates number of predicates
+     * @param objects    number of objects
+     * @param shared     number of shared subjects/objects
+     * @return tuple count
+     */
+    public static HDTDiffData createTestHDT(File fileName, File fileName2, File fileName3, int subjects, int predicates, int objects, int shared, int shift) throws IOException {
+        String baseURI = "http://ex.org/";
+        HDTDiffData count = new HDTDiffData();
+        int shiftCount = 0;
+        try (final TripleWriterHDT wr = new TripleWriterHDT(baseURI, new HDTSpecification(), fileName.getAbsolutePath(), false);
+             final TripleWriterHDT wr2 = new TripleWriterHDT(baseURI, new HDTSpecification(), fileName2.getAbsolutePath(), false);
+             final TripleWriterHDT wr3 = new TripleWriterHDT(baseURI, new HDTSpecification(), fileName3.getAbsolutePath(), false)) {
+            for (int i = subjects; i > 0; i--) {
+                String subject;
+                if (i <= shared) {
+                    subject = baseURI + "Shared" + i;
+                } else {
+                    subject = baseURI + "Subject" + (i - shared);
+                }
+
+                for (int j = predicates; j > 0; j--) {
+                    String predicate = baseURI + "Predicate" + j;
+                    for (int k = objects; k > 0; k--) {
+                        String object;
+                        if (k <= shared) {
+                            object = baseURI + "Shared" + k;
+                        } else {
+                            object = baseURI + "Object" + (k - shared);
+                        }
+                        shiftCount = (shiftCount + 1) % shift;
+                        int newtriple = 0;
+
+                        if (shiftCount != 0) {
+                            wr.addTriple(new TripleString(
+                                    subject,
+                                    predicate,
+                                    object
+                            ));
+                            count.tupleCountA++;
+                            newtriple++;
+                        }
+                        if (shiftCount == 0 || shiftCount == 1) {
+                            wr2.addTriple(new TripleString(
+                                    subject,
+                                    predicate,
+                                    object
+                            ));
+                            count.tupleCountB++;
+                            newtriple++;
+                        } else {
+                            if (newtriple == 1) {
+                                wr3.addTriple(new TripleString(
+                                        subject,
+                                        predicate,
+                                        object
+                                ));
+                                count.tupleCountC++;
+                            }
+                        }
+
+                        if (newtriple == 2) {
+
+                            count.shared++;
+                        }
+                    }
+                }
+            }
+        }
+
+        Assert.assertEquals("|A-B| != |C|", count.tupleCountA - count.shared, count.tupleCountC);
+
+        return count;
+    }
+
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> genParam() {
         return Arrays.asList(
-                new Object[]{ HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH},
-                new Object[]{ DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG, DictionaryFactory.MOD_DICT_IMPL_HASH},
-                new Object[]{ DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS, DictionaryFactory.MOD_DICT_IMPL_MULT_HASH},
-                new Object[]{ HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH_PSFC}
+                new Object[]{HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH},
+                new Object[]{DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG, DictionaryFactory.MOD_DICT_IMPL_HASH},
+                new Object[]{DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS, DictionaryFactory.MOD_DICT_IMPL_MULT_HASH},
+                new Object[]{HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH_PSFC}
         );
     }
 
@@ -73,6 +171,27 @@ public class HdtDiffTest {
         spec = new HDTSpecification();
         spec.set("dictionary.type", dictionaryType);
         spec.set("tempDictionary.impl", tempDictionaryImpl);
+    }
+
+    @Test
+    public void hdtDiffTest() throws IOException {
+        File hdtFile1 = tempDir.newFile();
+        File hdtFile2 = tempDir.newFile();
+        File hdtDiffExceptedFile = tempDir.newFile();
+        createTestHDT(hdtFile1, hdtFile2, hdtDiffExceptedFile, 40, 50, 60, 5, 4);
+
+        HDT hdtDiffExcepted = HDTManager.mapHDT(hdtDiffExceptedFile.getAbsolutePath(), null, spec);
+
+        HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1.getAbsolutePath(), hdtFile2.getAbsolutePath(), spec, null);
+
+        // @todo: find how to create custom dict hdt
+//        Assert.assertEquals(
+//                "Dictionaries aren't the same",
+//                hdtDiffExcepted.getDictionary().getType(),
+//                hdtDiffActual.getDictionary().getType()
+//        );
+
+        assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
     }
 
     private void ntFilesDiffTest(String a, String b, String amb) throws IOException, ParserException {
