@@ -44,6 +44,9 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.*;
 import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
@@ -66,15 +69,8 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
-import org.rdfhdt.hdt.triples.TempTriples;
-import org.rdfhdt.hdt.triples.TripleID;
-import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.Triples;
-import org.rdfhdt.hdt.triples.TriplesFactory;
-import org.rdfhdt.hdt.triples.TriplesPrivate;
-import org.rdfhdt.hdt.triples.impl.BitmapTriplesCat;
-import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorCat;
+import org.rdfhdt.hdt.triples.*;
+import org.rdfhdt.hdt.triples.impl.*;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -732,5 +728,96 @@ public class HDTImpl implements HDTPrivate {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) {
+		this.dictionary = (DictionaryPrivate) hdt1.getDictionary();
+		ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(hdt1.getTriples().getNumberOfElements());
+		BitmapTriplesIteratorDiff iterator = new BitmapTriplesIteratorDiff(hdt1, hdt2, bitmap);
+		iterator.fillBitmap();
+		diffBit(getHDTFileName(), hdt1, bitmap, listener);
+	}
+
+	public void diffBit(String location, HDT hdt, Bitmap deleteBitmap, ProgressListener listener) {
+		System.out.println("Generating Dictionary...");
+		IteratorTripleID hdtIterator = hdt.getTriples().searchAll();
+		BitmapTriplesIteratorDiffBit iter;
+		if(hdt.getDictionary() instanceof FourSectionDictionary)
+			iter = new BitmapTriplesIteratorDiffBitImpl(hdt, deleteBitmap, hdtIterator);
+		else
+			iter = new BitmapTriplesIteratorDiffBitLiterals(hdt, deleteBitmap, hdtIterator);
+
+		iter.loadBitmaps();
+
+		Map<String, ModifiableBitmap> bitmaps = iter.getBitmaps();
+
+		DictionaryDiff diff;
+
+		if (hdt.getDictionary() instanceof FourSectionDictionary)
+			diff = new FourSectionDictionaryDiff(location);
+		else
+			diff = new MultipleSectionDictionaryDiff(location);
+
+		diff.diff(hdt.getDictionary(), bitmaps, listener);
+
+		try {
+			//map the generated dictionary
+			ControlInfo ci2 = new ControlInformation();
+			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
+			DictionaryPrivate dictionary = null;
+			if(hdt.getDictionary() instanceof FourSectionDictionary)
+				dictionary = new FourSectionDictionaryBig(new HDTSpecification());
+			else
+				dictionary = new MultipleSectionDictionaryBig(new HDTSpecification());
+			fis.mark(1024);
+			ci2.load(fis);
+			fis.reset();
+			dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
+			this.dictionary = dictionary;
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		System.out.println("Generating Triples...");
+		// map the triples based on the new dictionary
+		BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff, iter.getCount());
+		BitmapTriples triples = new BitmapTriples();
+		triples.load(mapIter, listener);
+		this.triples = triples;
+
+		try {
+			if(!(hdt.getDictionary() instanceof FourSectionDictionary)) {
+				int count = 0;
+				for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
+					String subPrefix = "sub" + count;
+					if(next.getKey().equals("NO_DATATYPE"))
+						subPrefix = next.getKey();
+					Files.delete(Paths.get(location + subPrefix));
+					Files.delete(Paths.get(location + subPrefix + "Types"));
+					count++;
+				}
+			}
+
+			Files.delete(Paths.get(location+"predicate"));
+			Files.delete(Paths.get(location+"predicate"+"Types"));
+			Files.delete(Paths.get(location+"subject"));
+			Files.delete(Paths.get(location+"subject"+"Types"));
+			Files.delete(Paths.get(location+"object"));
+			Files.delete(Paths.get(location+"object"+"Types"));
+			Files.delete(Paths.get(location+"shared"));
+			Files.delete(Paths.get(location+"shared"+"Types"));
+			Files.delete(Paths.get(location+"back"+"Types"));
+			Files.delete(Paths.get(location+"back"));
+			Files.deleteIfExists(Paths.get(location+"P"));
+			Files.deleteIfExists(Paths.get(location+"S"));
+			Files.deleteIfExists(Paths.get(location+"O"));
+			Files.deleteIfExists(Paths.get(location+"SH_S"));
+			Files.deleteIfExists(Paths.get(location+"SH_O"));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		this.header = HeaderFactory.createHeader(spec);
+
+		this.populateHeaderStructure("http://wdaqua.eu/hdtDiff/");
 	}
 }
