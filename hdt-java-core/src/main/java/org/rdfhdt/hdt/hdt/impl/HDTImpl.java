@@ -764,11 +764,7 @@ public class HDTImpl implements HDTPrivate {
 			//map the generated dictionary
 			ControlInfo ci2 = new ControlInformation();
 			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
-			DictionaryPrivate dictionary = null;
-			if(hdt.getDictionary() instanceof FourSectionDictionary)
-				dictionary = new FourSectionDictionaryBig(new HDTSpecification());
-			else
-				dictionary = new MultipleSectionDictionaryBig(new HDTSpecification());
+			DictionaryPrivate dictionary = DictionaryFactory.createDictionary(spec);
 			fis.mark(1024);
 			ci2.load(fis);
 			fis.reset();
