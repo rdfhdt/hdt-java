@@ -31,28 +31,41 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
 
 /**
  * @author mario.arias
  *
  */
-public class BitmapFactory {
-	
-	private BitmapFactory() {}
-	
-	public static final byte TYPE_BITMAP_PLAIN = 1;
-	
-	public static Bitmap createBitmap(String type) {
-		return new Bitmap375();
+public class BitmapFactoryImpl extends BitmapFactory {
+
+	@Override
+	protected ModifiableBitmap doCreateModifiableBitmap(String type) {
+		if (type == null || type.equals(HDTVocabulary.BITMAP_TYPE_PLAIN)) {
+			return new Bitmap375();
+		} else {
+			throw new IllegalArgumentException("Implementation not found for Bitmap with type " + type);
+		}
 	}
-	
-	public static Bitmap createBitmap(InputStream input) throws IOException {
+
+	@Override
+	protected Bitmap doCreateEmptyBitmap(long size) {
+		return new EmptyBitmap(size);
+	}
+
+	@Override
+	protected Bitmap doCreateBitmap(InputStream input) throws IOException {
 		input.mark(1);
 		int value = input.read();
 		input.reset();
-		if(value==TYPE_BITMAP_PLAIN) {
+		if (value == TYPE_BITMAP_PLAIN) {
 			return new Bitmap375();
 		}
-		throw new IllegalFormatException("Implementation not found for Bitmap with code "+value);
+		throw new IllegalFormatException("Implementation not found for Bitmap with code " + value);
+	}
+
+	@Override
+	protected ModifiableBitmap doCreateRWModifiableBitmap(long size) {
+		return new Bitmap64(size);
 	}
 }
