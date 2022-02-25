@@ -6,6 +6,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -16,6 +17,7 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -222,5 +224,42 @@ public class HdtDiffTest {
         );
 
         assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
+    }
+
+    @Test
+    public void diffHDTBitIdentityTest() throws IOException {
+        File f = tempDir.newFile();
+        File location = tempDir.newFile();
+        HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true);
+
+        HDT hdtDiffExcepted = hdtTestUtils.hdt;
+        HDT hdtDiffActual = HDTManager.diffHDTBit(location.getAbsolutePath(), f.getAbsolutePath(), BitmapFactory.createEmptyBitmap(hdtTestUtils.triples), spec, null);
+
+        Assert.assertEquals(
+                "Dictionaries aren't the same",
+                hdtDiffExcepted.getDictionary().getType(),
+                hdtDiffActual.getDictionary().getType()
+        );
+
+        assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+    }
+    @Test
+    public void diffHDTIdentityTest() throws IOException {
+        File f = tempDir.newFile();
+        File f2 = tempDir.newFile();
+        HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true);
+        new HDTTestUtils(f2, 0, 0, 0, 0, spec, true);
+
+        HDT hdtDiffExcepted = hdtTestUtils.hdt;
+        HDT hdtDiffActual = HDTManager.diffHDT(f.getAbsolutePath(), f2.getAbsolutePath(), spec, null);
+
+        Assert.assertEquals(
+                "Dictionaries aren't the same",
+                hdtDiffExcepted.getDictionary().getType(),
+                hdtDiffActual.getDictionary().getType()
+        );
+
+        assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+
     }
 }
