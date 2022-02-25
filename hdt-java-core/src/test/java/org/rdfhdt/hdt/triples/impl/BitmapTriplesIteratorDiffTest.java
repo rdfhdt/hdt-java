@@ -1,6 +1,8 @@
 package org.rdfhdt.hdt.triples.impl;
 
-import org.junit.*;
+import org.junit.Assert;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -12,7 +14,6 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.hdtDiff.utils.TripleStringUtility;
-import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -119,6 +120,7 @@ public class BitmapTriplesIteratorDiffTest {
 
     public BitmapTriplesIteratorDiffTest(String dictionaryType) {
         spec = new HDTSpecification();
+        spec.set("dictionary.type", dictionaryType);
     }
 
     @Test

@@ -7,9 +7,7 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
-import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
@@ -18,16 +16,24 @@ import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Objects;
+import java.util.List;
 
 @RunWith(Parameterized.class)
 public class HdtDiffTest {
+    public static class DictionaryTestData {
+        public final String dictionaryType;
+        public final String dictionaryTempType;
+
+        public DictionaryTestData(String dictionaryType, String dictionaryTempType) {
+            this.dictionaryType = dictionaryType;
+            this.dictionaryTempType = dictionaryTempType;
+        }
+    }
     /**
      * Return type for {@link #createTestHDT(File, File, File, HDTOptions, int, int, int, int, int)}
      */
@@ -37,6 +43,13 @@ public class HdtDiffTest {
         public int tupleCountC;
         public int shared;
     }
+
+    public static final DictionaryTestData[] DICTIONARY_TEST_DATA = {
+            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH),
+            new DictionaryTestData(DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG, DictionaryFactory.MOD_DICT_IMPL_HASH),
+            new DictionaryTestData(DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS, DictionaryFactory.MOD_DICT_IMPL_MULT_HASH),
+            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH_PSFC)
+    };
 
     /**
      * create 2 test hdts and a result hdt
@@ -121,12 +134,26 @@ public class HdtDiffTest {
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> genParam() {
-        return Arrays.asList(
-                new Object[]{HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH},
-                new Object[]{DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG, DictionaryFactory.MOD_DICT_IMPL_HASH},
-                new Object[]{DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS, DictionaryFactory.MOD_DICT_IMPL_MULT_HASH},
-                new Object[]{HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH_PSFC}
-        );
+        List<Object[]> list = new ArrayList<>();
+        for (DictionaryTestData data : DICTIONARY_TEST_DATA) {
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 50, 37, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 50, 37, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 50, 0, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 50, 0, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 0, 37, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 0, 37, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 0, 0, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 25, 0, 0, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 50, 37, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 50, 37, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 50, 0, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 50, 0, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 0, 37, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 0, 37, 0 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 0, 0, 12 });
+            list.add(new Object[] { data.dictionaryType, data.dictionaryTempType, 0, 0, 0, 0 });
+        }
+        return list;
     }
 
     public static void assertHdtEquals(HDT hdt1, HDT hdt2) {
@@ -162,11 +189,19 @@ public class HdtDiffTest {
     @Rule
     public TemporaryFolder tempDir = new TemporaryFolder();
     final HDTSpecification spec;
+    final int shared;
+    final int subjects;
+    final int predicates;
+    final int objects;
 
-    public HdtDiffTest(String dictionaryType, String tempDictionaryImpl) {
+    public HdtDiffTest(String dictionaryType, String tempDictionaryImpl, int subjects, int predicates, int objects, int shared) {
         spec = new HDTSpecification();
         spec.set("dictionary.type", dictionaryType);
         spec.set("tempDictionary.impl", tempDictionaryImpl);
+        this.subjects = subjects;
+        this.predicates = predicates;
+        this.objects = objects;
+        this.shared = shared;
     }
 
     @Test
@@ -174,7 +209,7 @@ public class HdtDiffTest {
         File hdtFile1 = tempDir.newFile();
         File hdtFile2 = tempDir.newFile();
         File hdtDiffExceptedFile = tempDir.newFile();
-        createTestHDT(hdtFile1, hdtFile2, hdtDiffExceptedFile, spec,40, 50, 60, 5, 4);
+        createTestHDT(hdtFile1, hdtFile2, hdtDiffExceptedFile, spec, subjects, predicates, objects, shared, 4);
 
         HDT hdtDiffExcepted = HDTManager.mapHDT(hdtDiffExceptedFile.getAbsolutePath(), null, spec);
 
@@ -187,142 +222,5 @@ public class HdtDiffTest {
         );
 
         assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
-    }
-
-    private void ntFilesDiffTest(String a, String b, String amb) throws IOException, ParserException {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = Objects.requireNonNull(classLoader.getResource(a), "Can't find " + a).getFile();
-        String file2 = Objects.requireNonNull(classLoader.getResource(b), "Can't find " + b).getFile();
-        String diff = Objects.requireNonNull(classLoader.getResource(amb), "Can't find " + amb).getFile();
-
-        String hdtFile1 = tempDir.newFile().getAbsolutePath();
-        String hdtFile2 = tempDir.newFile().getAbsolutePath();
-
-        HDT hdt1 = HDTManager.generateHDT(file1, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-        hdt1.saveToHDT(hdtFile1, null);
-
-        HDT hdt2 = HDTManager.generateHDT(file2, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-        hdt2.saveToHDT(hdtFile2, null);
-
-        HDT hdtDiffExcepted = HDTManager.generateHDT(diff, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-
-        HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1, hdtFile2, spec, null);
-
-
-        Assert.assertEquals(
-                "Dictionaries aren't the same",
-                hdtDiffExcepted.getDictionary().getType(),
-                hdtDiffActual.getDictionary().getType()
-        );
-
-        assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
-    }
-
-    @Test
-    public void ntFilesDiffTest1M2() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example1.nt",
-                "hdtDiff/example2.nt",
-                "hdtDiff/example1-2.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest3M4() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example3.nt",
-                "hdtDiff/example4.nt",
-                "hdtDiff/example3-4.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest5M6() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example5.nt",
-                "hdtDiff/example6.nt",
-                "hdtDiff/example5-6.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest7M8() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example7.nt",
-                "hdtDiff/example8.nt",
-                "hdtDiff/example7-8.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest9M10() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example9.nt",
-                "hdtDiff/example10.nt",
-                "hdtDiff/example9-10.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest11M12() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example11.nt",
-                "hdtDiff/example12.nt",
-                "hdtDiff/example11-12.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest13M14() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example13.nt",
-                "hdtDiff/example14.nt",
-                "hdtDiff/example13-14.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest15M16() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example15.nt",
-                "hdtDiff/example16.nt",
-                "hdtDiff/example15-16.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest17M18() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example17.nt",
-                "hdtDiff/example18.nt",
-                "hdtDiff/example17-18.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest19M20() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example19.nt",
-                "hdtDiff/example20.nt",
-                "hdtDiff/example19-20.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest21M22() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example21.nt",
-                "hdtDiff/example22.nt",
-                "hdtDiff/example21-22.nt"
-        );
-    }
-
-    @Test
-    public void ntFilesDiffTest23M24() throws IOException, ParserException {
-        ntFilesDiffTest(
-                "hdtDiff/example23.nt",
-                "hdtDiff/example24.nt",
-                "hdtDiff/example23-24.nt"
-        );
     }
 }
