@@ -218,6 +218,8 @@ public class Bitmap64 implements ModifiableBitmap{
 
 	@Override
 	public long countOnes() {
+		if (words.length == 0)
+			return 0;
 		long acc = 0;
 		int end = wordIndex(numbits);
 		for (int i = 0; i <= end; i++)
