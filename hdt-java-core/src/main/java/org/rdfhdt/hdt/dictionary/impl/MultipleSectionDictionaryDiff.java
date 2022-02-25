@@ -32,7 +32,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
     }
 
     @Override
-    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener){
+    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate",new CatMapping(location,"predicate",dictionary.getPredicates().getNumberOfElements()));
         allMappings.put("subject",new CatMapping(location,"subject",dictionary.getSubjects().getNumberOfElements()));
         int countSubSection = 0;
@@ -166,38 +166,29 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         //Putting the sections together
         ControlInfo ci = new ControlInformation();
         ci.setType(ControlInfo.Type.DICTIONARY);
-        ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
+        ci.setFormat(dictionary.getType());
 
         ci.setInt("elements", numSubj+numPreds+totalObjects+numShared);
 
-        try {
-            ci.save(new FileOutputStream(location + "dictionary"));
-            FileOutputStream outFinal = new FileOutputStream(location + "dictionary",true);
+        try (OutputStream out = new FileOutputStream(location + "dictionary")) {
+            ci.save(out);
             byte[] buf = new byte[100000];
             for (int i = 1; i <= 3 +dataTypes.size(); i++) {
-                if(i == 4){ // write literals map before writing the objects sections
-                    outFinal.write(dataTypes.size());
-                    for(String datatype:dataTypes){
-                        outFinal.write(datatype.length());
-                        IOUtil.writeBuffer(outFinal, datatype.getBytes(), 0, datatype.getBytes().length, listener);
+                if(i == 4) { // write literals map before writing the objects sections
+                    out.write(dataTypes.size());
+                    for (String datatype : dataTypes){
+                        out.write(datatype.length());
+                        IOUtil.writeBuffer(out, datatype.getBytes(), 0, datatype.getBytes().length, listener);
                     }
                 }
-                try {
-                    InputStream in = new FileInputStream(location + "section" + i);
-                    int b = 0;
+                try (InputStream in = new FileInputStream(location + "section" + i)) {
+                    int b;
                     while ((b = in.read(buf)) >= 0) {
-                        outFinal.write(buf, 0, b);
-                        outFinal.flush();
+                        out.write(buf, 0, b);
                     }
-                    in.close();
-                    Files.delete(Paths.get(location + "section" + i));
-                } catch (FileNotFoundException e ){
-                    e.printStackTrace();
                 }
+                Files.delete(Paths.get(location + "section" + i));
             }
-            outFinal.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         // create global objects mapping from section by section mappings
         long oldId = 0;

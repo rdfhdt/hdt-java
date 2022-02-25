@@ -128,7 +128,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         //Putting the sections together
         ControlInfo ci = new ControlInformation();
         ci.setType(ControlInfo.Type.DICTIONARY);
-        ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
+        ci.setFormat(dictionary.getType());
 
         ci.setInt("elements", numSubj + numPreds + numObject + numShared);
 

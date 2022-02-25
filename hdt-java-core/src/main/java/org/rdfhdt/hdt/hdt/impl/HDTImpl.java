@@ -730,69 +730,62 @@ public class HDTImpl implements HDTPrivate {
 		}
 	}
 
-	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) {
-		this.dictionary = (DictionaryPrivate) hdt1.getDictionary();
+	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
 		ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(hdt1.getTriples().getNumberOfElements());
 		BitmapTriplesIteratorDiff iterator = new BitmapTriplesIteratorDiff(hdt1, hdt2, bitmap);
 		iterator.fillBitmap();
 		diffBit(getHDTFileName(), hdt1, bitmap, listener);
 	}
 
-	public void diffBit(String location, HDT hdt, Bitmap deleteBitmap, ProgressListener listener) {
-		System.out.println("Generating Dictionary...");
+	public void diffBit(String location, HDT hdt, Bitmap deleteBitmap, ProgressListener listener) throws IOException {
+		IntermediateListener il = new IntermediateListener(listener);
+		log.debug("Generating Dictionary...");
+		il.notifyProgress(0, "Generating Dictionary...");
 		IteratorTripleID hdtIterator = hdt.getTriples().searchAll();
-		BitmapTriplesIteratorDiffBit iter;
-		if(hdt.getDictionary() instanceof FourSectionDictionary)
-			iter = new BitmapTriplesIteratorDiffBitImpl(hdt, deleteBitmap, hdtIterator);
-		else
-			iter = new BitmapTriplesIteratorDiffBitLiterals(hdt, deleteBitmap, hdtIterator);
+		BitmapTriplesIteratorDiffBit iter = BitmapTriplesIteratorDiffBit.createForType(hdt.getDictionary(), hdt, deleteBitmap, hdtIterator);
 
 		iter.loadBitmaps();
 
 		Map<String, ModifiableBitmap> bitmaps = iter.getBitmaps();
 
-		DictionaryDiff diff;
-
-		if (hdt.getDictionary() instanceof FourSectionDictionary)
-			diff = new FourSectionDictionaryDiff(location);
-		else
-			diff = new MultipleSectionDictionaryDiff(location);
+		DictionaryDiff diff = DictionaryFactory.createDictionaryDiff(hdt.getDictionary(), location);
 
 		diff.diff(hdt.getDictionary(), bitmaps, listener);
 
-		try {
-			//map the generated dictionary
-			ControlInfo ci2 = new ControlInformation();
-			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
-			DictionaryPrivate dictionary = DictionaryFactory.createDictionary(spec);
+		//map the generated dictionary
+		ControlInfo ci2 = new ControlInformation();
+
+		try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
 			fis.mark(1024);
 			ci2.load(fis);
 			fis.reset();
+			DictionaryPrivate dictionary = DictionaryFactory.createDictionary(ci2);
 			dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
 			this.dictionary = dictionary;
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
-		System.out.println("Generating Triples...");
+		log.debug("Generating Triples...");
+		il.notifyProgress(40, "Generating Triples...");
 		// map the triples based on the new dictionary
 		BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff, iter.getCount());
 		BitmapTriples triples = new BitmapTriples(spec);
 		triples.load(mapIter, listener);
 		this.triples = triples;
 
-		try {
-			if(!(hdt.getDictionary() instanceof FourSectionDictionary)) {
-				int count = 0;
-				for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
-					String subPrefix = "sub" + count;
-					if(next.getKey().equals("NO_DATATYPE"))
-						subPrefix = next.getKey();
-					Files.delete(Paths.get(location + subPrefix));
-					Files.delete(Paths.get(location + subPrefix + "Types"));
-					count++;
-				}
+		log.debug("Clear data...");
+		il.notifyProgress(80, "Clear data...");
+		if(!(hdt.getDictionary() instanceof FourSectionDictionary)) {
+			int count = 0;
+			for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
+				String subPrefix = "sub" + count;
+				if(next.getKey().equals("NO_DATATYPE"))
+					subPrefix = next.getKey();
+				Files.delete(Paths.get(location + subPrefix));
+				Files.delete(Paths.get(location + subPrefix + "Types"));
+				count++;
 			}
+		}
 
+		try {
 			Files.delete(Paths.get(location+"predicate"));
 			Files.delete(Paths.get(location+"predicate"+"Types"));
 			Files.delete(Paths.get(location+"subject"));
@@ -812,8 +805,12 @@ public class HDTImpl implements HDTPrivate {
 			e.printStackTrace();
 		}
 
+		log.debug("Set header...");
+		il.notifyProgress(90, "Set header...");
 		this.header = HeaderFactory.createHeader(spec);
 
 		this.populateHeaderStructure("http://wdaqua.eu/hdtDiff/");
+		log.debug("Diff completed.");
+		il.notifyProgress(100, "Diff completed...");
 	}
 }

@@ -33,6 +33,7 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.BitmapTriplesIteratorDiffBit;
 
 /**
  * Factory that creates Dictionary objects
@@ -102,5 +103,15 @@ public class DictionaryFactory {
 			return new MultipleSectionDictionary(new HDTSpecification());
 		}
 		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
+	}
+
+	public static DictionaryDiff createDictionaryDiff(Dictionary dictionary, String location) {
+		String type = dictionary.getType();
+		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(type) || type.equals(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION))
+			return new FourSectionDictionaryDiff(location);
+		else if (type.equals(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION))
+			return new MultipleSectionDictionaryDiff(location);
+
+		throw new IllegalFormatException("Implementation of DictionaryDiff not found for "+type);
 	}
 }
