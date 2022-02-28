@@ -105,7 +105,7 @@ public class DictionaryFactory {
 	}
 
 	/**
-	 * create a {@link DictionaryDiff} to create diff of the HDT, the
+	 * create a {@link DictionaryDiff} to create diff of the HDT
 	 * @param dictionary the hdt dictionary
 	 * @param location the location of the dictionary
 	 * @return dictionaryDiff
