@@ -33,7 +33,6 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.BitmapTriplesIteratorDiffBit;
 
 /**
  * Factory that creates Dictionary objects

@@ -742,7 +742,7 @@ public class HDTImpl implements HDTPrivate {
 		log.debug("Generating Dictionary...");
 		il.notifyProgress(0, "Generating Dictionary...");
 		IteratorTripleID hdtIterator = hdt.getTriples().searchAll();
-		BitmapTriplesIteratorDiffBit iter = BitmapTriplesIteratorDiffBit.createForType(hdt.getDictionary(), hdt, deleteBitmap, hdtIterator);
+		DictionaryEntriesDiff iter = DictionaryEntriesDiff.createForType(hdt.getDictionary(), hdt, deleteBitmap, hdtIterator);
 
 		iter.loadBitmaps();
 
