@@ -4,7 +4,6 @@ import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.BitmapTriplesIteratorDiffBit;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -13,7 +12,10 @@ import org.rdfhdt.hdt.triples.TripleID;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BitmapTriplesIteratorDiffBitImpl implements BitmapTriplesIteratorDiffBit {
+/**
+ * Implementation of the {@link BitmapTriplesIteratorDiffBit} for four section dictionaries
+ */
+public class FourSectionBitmapTriplesIteratorDiffBit implements BitmapTriplesIteratorDiffBit {
 
     private final HDT hdtOriginal;
     private final IteratorTripleID iterator;
@@ -21,7 +23,7 @@ public class BitmapTriplesIteratorDiffBitImpl implements BitmapTriplesIteratorDi
     private final Map<String, ModifiableBitmap> bitmaps;
     private long count;
 
-    public BitmapTriplesIteratorDiffBitImpl(HDT hdtOriginal, Bitmap deleteBitmap, IteratorTripleID iterator) {
+    public FourSectionBitmapTriplesIteratorDiffBit(HDT hdtOriginal, Bitmap deleteBitmap, IteratorTripleID iterator) {
         this.hdtOriginal = hdtOriginal;
         this.iterator = iterator;
         this.bitArrayDisk = deleteBitmap;
@@ -33,12 +35,16 @@ public class BitmapTriplesIteratorDiffBitImpl implements BitmapTriplesIteratorDi
         this.bitmaps.clear();
         count = 0;
 
+        // create a bitmap for each section
+
         Dictionary dict = hdtOriginal.getDictionary();
         this.bitmaps.put("P", BitmapFactory.createRWBitmap(dict.getPredicates().getNumberOfElements()));
         this.bitmaps.put("S", BitmapFactory.createRWBitmap(dict.getSubjects().getNumberOfElements()));
         this.bitmaps.put("O", BitmapFactory.createRWBitmap(dict.getObjects().getNumberOfElements()));
         this.bitmaps.put("SH_S", BitmapFactory.createRWBitmap(dict.getShared().getNumberOfElements()));
         this.bitmaps.put("SH_O", BitmapFactory.createRWBitmap(dict.getShared().getNumberOfElements()));
+
+        // if triple is marked as to delete mark the corresponding subject, predicate and object as to delete
 
         while (iterator.hasNext()) {
             TripleID tripleID = iterator.next();

@@ -105,6 +105,12 @@ public class DictionaryFactory {
 		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
 
+	/**
+	 * create a {@link DictionaryDiff} to create diff of the HDT, the
+	 * @param dictionary the hdt dictionary
+	 * @param location the location of the dictionary
+	 * @return dictionaryDiff
+	 */
 	public static DictionaryDiff createDictionaryDiff(Dictionary dictionary, String location) {
 		String type = dictionary.getType();
 		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(type) || type.equals(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION))
