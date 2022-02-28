@@ -7,10 +7,13 @@ public class BitmapFactoryTest {
 
     @Test
     public void emptyBitmapTest() {
-        final long size = 123456;
-        Bitmap bitmap = BitmapFactory.createEmptyBitmap(size);
-        Assert.assertEquals("bitmap size", size, bitmap.getNumBits());
+        final long size = 123457;
+        Bitmap bitmap = BitmapFactory.createRWBitmap(size);
         Assert.assertEquals("countOnes", bitmap.countOnes(), 0);
-        Assert.assertEquals("countZeros", bitmap.countZeros(), size);
+
+        // because we can't get size, we need to use the closest 64 multiple
+        long realSize = (size & ~63) + ((size & 63) == 0 ? 0 : 64);
+
+        Assert.assertEquals("countZeros", realSize, bitmap.countZeros());
     }
 }

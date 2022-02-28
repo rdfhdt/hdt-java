@@ -229,7 +229,7 @@ public class Bitmap64 implements ModifiableBitmap{
 
 	@Override
 	public long countZeros() {
-		return getRealSizeBytes() - countOnes();
+		return words.length * 64L - countOnes();
 	}
 
 	@Override

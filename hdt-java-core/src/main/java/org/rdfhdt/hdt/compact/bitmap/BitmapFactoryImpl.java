@@ -49,11 +49,6 @@ public class BitmapFactoryImpl extends BitmapFactory {
 	}
 
 	@Override
-	protected Bitmap doCreateEmptyBitmap(long size) {
-		return new EmptyBitmap(size);
-	}
-
-	@Override
 	protected Bitmap doCreateBitmap(InputStream input) throws IOException {
 		input.mark(1);
 		int value = input.read();

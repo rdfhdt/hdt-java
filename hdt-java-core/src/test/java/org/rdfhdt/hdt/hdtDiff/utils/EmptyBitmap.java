@@ -1,5 +1,7 @@
-package org.rdfhdt.hdt.compact.bitmap;
+package org.rdfhdt.hdt.hdtDiff.utils;
 
+import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
@@ -107,7 +109,7 @@ public class EmptyBitmap implements ModifiableBitmap {
     }
 
     @Override
-    public void load(InputStream input, ProgressListener listener) throws IOException {
+    public void load(InputStream input, ProgressListener listener) {
         throw new NotImplementedException();
     }
 

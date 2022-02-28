@@ -50,14 +50,6 @@ public abstract class BitmapFactory {
         return getInstance().doCreateModifiableBitmap(type);
     }
     /**
-     * create an empty unmodifiable bitmap
-     * @param size The size of the bitmap
-     * @return bitmap
-     */
-    public static Bitmap createEmptyBitmap(long size) {
-        return getInstance().doCreateEmptyBitmap(size);
-    }
-    /**
      * create an empty modifiable bitmap without indexing, only the
      * {@link Bitmap#access(long)}, {@link Bitmap#countOnes()}, {@link Bitmap#countZeros()}, 
      * {@link ModifiableBitmap#set(long, boolean)}, {@link Bitmap#getNumBits()}, {@link Bitmap#getSizeBytes()}, 
@@ -82,6 +74,5 @@ public abstract class BitmapFactory {
     // Abstract methods for the current implementation
     protected abstract ModifiableBitmap doCreateModifiableBitmap(String type);
     protected abstract ModifiableBitmap doCreateRWModifiableBitmap(long size);
-    protected abstract Bitmap doCreateEmptyBitmap(long size);
     protected abstract Bitmap doCreateBitmap(InputStream input) throws IOException;
 }

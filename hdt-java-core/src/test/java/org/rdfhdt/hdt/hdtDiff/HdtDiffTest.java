@@ -13,6 +13,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
+import org.rdfhdt.hdt.hdtDiff.utils.EmptyBitmap;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
@@ -233,7 +234,7 @@ public class HdtDiffTest {
         HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true);
 
         HDT hdtDiffExcepted = hdtTestUtils.hdt;
-        HDT hdtDiffActual = HDTManager.diffHDTBit(location.getAbsolutePath(), f.getAbsolutePath(), BitmapFactory.createEmptyBitmap(hdtTestUtils.triples), spec, null);
+        HDT hdtDiffActual = HDTManager.diffHDTBit(location.getAbsolutePath(), f.getAbsolutePath(), new EmptyBitmap(hdtTestUtils.triples), spec, null);
 
         Assert.assertEquals(
                 "Dictionaries aren't the same",
