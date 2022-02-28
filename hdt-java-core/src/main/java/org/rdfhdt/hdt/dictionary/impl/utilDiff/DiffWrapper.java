@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
- * Iterator keeping only the element market with a true in a bitmap
+ * Iterator keeping only the element marked with a true in a bitmap
  */
 public class DiffWrapper implements Iterator<CatElement> {
 
