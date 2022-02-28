@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -160,6 +161,23 @@ public class HDTManagerImpl extends HDTManager {
 			hdt.catCustom(location,hdt1,hdt2,listener);
 		else
 			hdt.cat(location, hdt1, hdt2, listener);
+		return hdt;
+	}
+
+	@Override
+	public HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
+		HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat);
+		HDTImpl hdt = new HDTImpl(hdtFormat);
+		hdt.diff(hdt1, hdt2, listener);
+		return hdt;
+	}
+
+	@Override
+	protected HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		HDT hdtOriginal = doMapHDT(hdtFileName, listener, hdtFormat);
+		HDTImpl hdt = new HDTImpl(hdtFormat);
+		hdt.diffBit(location, hdtOriginal, deleteBitmap, listener);
 		return hdt;
 	}
 }

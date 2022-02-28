@@ -1,5 +1,5 @@
 /*
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/ModifiableBitmap.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/compact/bitmap/BitmapFactory.java $
  * Revision: $Rev: 191 $
  * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
  * Last modified by: $Author: mario.arias $
@@ -27,11 +27,40 @@
 
 package org.rdfhdt.hdt.compact.bitmap;
 
+import java.io.IOException;
+import java.io.InputStream;
+
+import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
+
 /**
  * @author mario.arias
  *
  */
-public interface ModifiableBitmap extends Bitmap {
-	void set(long bit, boolean value);
-	void append(boolean value);
+public class BitmapFactoryImpl extends BitmapFactory {
+
+	@Override
+	protected ModifiableBitmap doCreateModifiableBitmap(String type) {
+		if (type == null || type.equals(HDTVocabulary.BITMAP_TYPE_PLAIN)) {
+			return new Bitmap375();
+		} else {
+			throw new IllegalArgumentException("Implementation not found for Bitmap with type " + type);
+		}
+	}
+
+	@Override
+	protected Bitmap doCreateBitmap(InputStream input) throws IOException {
+		input.mark(1);
+		int value = input.read();
+		input.reset();
+		if (value == TYPE_BITMAP_PLAIN) {
+			return new Bitmap375();
+		}
+		throw new IllegalFormatException("Implementation not found for Bitmap with code " + value);
+	}
+
+	@Override
+	protected ModifiableBitmap doCreateRWModifiableBitmap(long size) {
+		return new Bitmap64(size);
+	}
 }

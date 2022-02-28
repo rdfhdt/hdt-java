@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -310,6 +311,32 @@ public abstract class HDTManager {
 	public static HDT catHDT(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doHDTCat(location, hdtFileName1, hdtFileName2, hdtFormat, listener);
 	}
+	/**
+	 * Create a new HDT by removing from hdt1 the triples of hdt2.
+	 * @param hdtFileName1 First hdt file name
+	 * @param hdtFileName2 Second hdt file name
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the file cannot be found
+	 */
+	public static HDT diffHDT(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doHDTDiff(hdtFileName1, hdtFileName2, hdtFormat, listener);
+	}
+
+	/**
+	 * Create a new HDT by removing from a hdt all the triples marked to delete in a bitmap
+	 * @param location where the new HDT file is stored
+	 * @param hdtFileName hdt file name
+	 * @param deleteBitmap delete bitmap
+	 * @param hdtFormat  Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the file cannot be found
+	 */
+	public static HDT diffHDTBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doHDTDiffBit(location, hdtFileName, deleteBitmap, hdtFormat, listener);
+	}
 
 	// Abstract methods for the current implementation
 	protected abstract HDTOptions doReadOptions(String file) throws IOException;
@@ -325,5 +352,7 @@ public abstract class HDTManager {
 	protected abstract TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 
 }

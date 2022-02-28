@@ -103,4 +103,20 @@ public class DictionaryFactory {
 		}
 		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
+
+	/**
+	 * create a {@link DictionaryDiff} to create diff of a HDT in a new location
+	 * @param dictionary the hdt dictionary
+	 * @param location the location of the new dictionary
+	 * @return dictionaryDiff
+	 */
+	public static DictionaryDiff createDictionaryDiff(Dictionary dictionary, String location) {
+		String type = dictionary.getType();
+		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(type) || type.equals(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION))
+			return new FourSectionDictionaryDiff(location);
+		else if (type.equals(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION))
+			return new MultipleSectionDictionaryDiff(location);
+
+		throw new IllegalFormatException("Implementation of DictionaryDiff not found for "+type);
+	}
 }
