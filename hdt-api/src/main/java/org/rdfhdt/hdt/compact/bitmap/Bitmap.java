@@ -40,24 +40,24 @@ import java.io.OutputStream;
 public interface Bitmap {
 	/**
 	 * Get the value of the bit at position pos
-	 * @param pos pos
+	 * @param position pos
 	 * @return boolean
 	 */
-	boolean access(long pos);
+	boolean access(long position);
 
 	/**
 	 * Count the number of ones up to position pos (included)
-	 * @param pos pos
+	 * @param position pos
 	 * @return long
 	 */
-    long rank1(long pos);
+    long rank1(long position);
 
     /**
      * Count the number of zeros up to position pos (included)
-     * @param pos pos
+     * @param position pos
 	 * @return long
      */
-    long rank0(long pos);
+    long rank0(long position);
 
     /**
      * Return the position of the next 1 after position start.

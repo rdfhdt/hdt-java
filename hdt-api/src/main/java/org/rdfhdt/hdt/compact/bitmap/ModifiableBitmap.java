@@ -34,10 +34,10 @@ package org.rdfhdt.hdt.compact.bitmap;
 public interface ModifiableBitmap extends Bitmap {
 	/**
 	 * Set the value of the bit at position pos
-	 * @param pos pos
+	 * @param position pos
 	 * @param value value
 	 */
-	void set(long pos, boolean value);
+	void set(long position, boolean value);
 	/**
 	 * Append a value at the end of the Bitmap
 	 * @param value value
