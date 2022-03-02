@@ -1,8 +1,16 @@
 package org.rdfhdt.hdt.dictionary.impl.section;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
+
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.Objects;
 
 public class PFCDictionarySectionMapTest {
 
