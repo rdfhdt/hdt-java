@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 
 /**
@@ -94,8 +95,14 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		in.read(buffer, pos, len);
 		used = pos+len;
 	}
-	
+
 	public void replace(ByteBuffer in, int pos, int len) throws IOException {
+		ensureSize(pos+len);
+		in.get(buffer, pos, len);
+		used = pos+len;
+	}
+
+	public void replace(BigMappedByteBuffer in, int pos, int len) throws IOException {
 		ensureSize(pos+len);
 		in.get(buffer, pos, len);
 		used = pos+len;
@@ -154,10 +161,10 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			used+=numread;
 		}
 	}
-	
+
 	public void replace(ByteBuffer in, int pos) throws IOException {
 		used = pos;
-		
+
 		int n = in.capacity()-in.position();
 		while(n-- != 0) {
 			byte value = in.get();
@@ -169,7 +176,23 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			}
 			buffer[used++] = value;
 		}
-		throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");				
+		throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");
+	}
+	public void replace(BigMappedByteBuffer in, int pos) throws IOException {
+		used = pos;
+
+		long n = in.capacity()-in.position();
+		while(n-- != 0) {
+			byte value = in.get();
+			if(value==0) {
+				return;
+			}
+			if(used>=buffer.length) {
+				buffer = Arrays.copyOf(buffer, buffer.length*2);
+			}
+			buffer[used++] = value;
+		}
+		throw new IllegalArgumentException("Was reading a string but stream ended before finding the null terminator");
 	}
 	
 	/* (non-Javadoc)

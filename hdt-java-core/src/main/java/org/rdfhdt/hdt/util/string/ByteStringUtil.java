@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -150,11 +151,11 @@ public class ByteStringUtil {
 		}
 		return 0;
 	}
-	
+
 	public static int strcmp(CharSequence str, ByteBuffer buffer, int offset) {
 		byte [] buf;
 		int len;
-		
+
 		str = DelayedString.unwrap(str);
 
 		// Isolate array
@@ -170,23 +171,23 @@ public class ByteStringUtil {
 		} else {
 			throw new NotImplementedException();
 		}
-		
+
 		// Compare
 		int i=0;
 		int n = Math.min(len, buffer.capacity()-offset);
 		while(i<n) {
 			int v1 = buf[i] & 0xFF;
-	        int v2 = buffer.get(offset+i) & 0xFF;
+			int v2 = buffer.get(offset+i) & 0xFF;
 
-	        if(v1!=v2) {
-	        	return v1-v2;
-	        }
-	        if(v1==0) {
-	        	return 0;
-	        }
-	        i++;
-	    }
-		
+			if(v1!=v2) {
+				return v1-v2;
+			}
+			if(v1==0) {
+				return 0;
+			}
+			i++;
+		}
+
 		// One of the buffer exhausted
 		if(buffer.capacity()-offset-i>0) {
 			byte v = buffer.get(offset+i);
@@ -197,7 +198,55 @@ public class ByteStringUtil {
 			}
 		} else {
 			throw new IllegalArgumentException("Buffer is not Null-Terminated");
-		}	
+		}
+	}
+	public static int strcmp(CharSequence str, BigMappedByteBuffer buffer, int offset) {
+		byte [] buf;
+		int len;
+
+		str = DelayedString.unwrap(str);
+
+		// Isolate array
+		if(str instanceof CompactString) {
+			buf = ((CompactString) str).getData();
+			len = buf.length;
+		} else if(str instanceof String) {
+			buf = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
+			len = buf.length;
+		} else if(str instanceof ReplazableString) {
+			buf = ((ReplazableString) str).buffer;
+			len = ((ReplazableString) str).used;
+		} else {
+			throw new NotImplementedException();
+		}
+
+		// Compare
+		int i=0;
+		long n = Math.min(len, buffer.capacity()-offset);
+		while(i<n) {
+			int v1 = buf[i] & 0xFF;
+			int v2 = buffer.get(offset+i) & 0xFF;
+
+			if(v1!=v2) {
+				return v1-v2;
+			}
+			if(v1==0) {
+				return 0;
+			}
+			i++;
+		}
+
+		// One of the buffer exhausted
+		if(buffer.capacity()-offset-i>0) {
+			byte v = buffer.get(offset+i);
+			if(v==0) {
+				return 0;
+			} else {
+				return -1;
+			}
+		} else {
+			throw new IllegalArgumentException("Buffer is not Null-Terminated");
+		}
 	}
 
 	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
