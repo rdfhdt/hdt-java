@@ -10,19 +10,12 @@ jobs:
       packages: write 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Java for publishing to Maven Central Repository
-        uses: actions/setup-java@v2
+      - name: maven-settings-action
+        uses: s4u/maven-settings-action@v2.5.0
         with:
-          java-version: '11'
-          distribution: 'adopt'
-          server-id: ossrh
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
+          servers: '[{"id": "sonatype-nexus-snapshots", "username": ${{ secrets.SONATYPE_NEXUS_USERNAME }}, "password": ${{ secrets.SONATYPE_NEXUS_PASSWORD }}},{"id": "sonatype-nexus-staging", "username": ${{ secrets.SONATYPE_NEXUS_USERNAME }}, "password": ${{ secrets.SONATYPE_NEXUS_PASSWORD }}}]'
       - name: Publish to the Maven Central Repository
         run: mvn --batch-mode deploy
-        env:
-          MAVEN_USERNAME: ${{ secrets.SONATYPE_NEXUS_USERNAME }}
-          MAVEN_PASSWORD: ${{ secrets.SONATYPE_NEXUS_PASSWORD }}
       - name: Set up Java for publishing to GitHub Packages
         uses: actions/setup-java@v2
         with:
