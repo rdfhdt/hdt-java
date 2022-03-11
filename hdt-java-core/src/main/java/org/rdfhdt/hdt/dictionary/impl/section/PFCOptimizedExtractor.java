@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
+import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
@@ -21,8 +22,8 @@ public class PFCOptimizedExtractor {
 	PFCDictionarySectionMap pfc;
 	long numstrings;
 	int blocksize;
-	ByteBuffer [] buffers;
-	ByteBuffer buffer;
+	BigMappedByteBuffer[] buffers;
+	BigMappedByteBuffer buffer;
 	long [] posFirst;
 	Sequence blocks;
 

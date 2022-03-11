@@ -53,6 +53,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
+import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
@@ -73,7 +74,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	
 	static final int BLOCKS_PER_BYTEBUFFER = 50000;
 	protected FileChannel ch;
-	protected ByteBuffer [] buffers; // Encoded sequence
+	protected BigMappedByteBuffer[] buffers; // Encoded sequence
 	long [] posFirst;	// Global byte position of the start of each buffer
 	protected int blocksize;
 	protected long numstrings;
@@ -124,7 +125,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		long numBlocks = blocks.getNumberOfElements();
 		long bytePos = 0;
 		long numBuffers = 1L+numBlocks/BLOCKS_PER_BYTEBUFFER;
-		buffers = new ByteBuffer[(int)numBuffers ];
+		buffers = new BigMappedByteBuffer[(int)numBuffers ];
 		posFirst = new long[(int)numBuffers];
 		
 //		System.out.println("Buffers "+buffers.length);
@@ -135,7 +136,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 //			System.out.println("From block "+block+" to "+nextBlock);
 //			System.out.println("From pos "+ bytePos+" to "+nextBytePos);
 //			System.out.println("Total size: "+ (nextBytePos-bytePos));
-			buffers[buffer] = ch.map(MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
+			buffers[buffer] = BigMappedByteBuffer.ofFileChannel(ch, MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
 			buffers[buffer].order(ByteOrder.LITTLE_ENDIAN);
 			
 			posFirst[buffer] = bytePos;
@@ -162,7 +163,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			if(mid==max) {
 				cmp=-1;
 			} else {
-				ByteBuffer buffer = buffers[(int) (mid/BLOCKS_PER_BYTEBUFFER)];
+				BigMappedByteBuffer buffer = buffers[(int) (mid/BLOCKS_PER_BYTEBUFFER)];
 				cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[(int) (mid/BLOCKS_PER_BYTEBUFFER)]));
 			}
 			if (cmp<0) {
@@ -218,7 +219,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 //		dumpBlock(block);
 
-		ByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
+		BigMappedByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
 		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
 		
 		try {
@@ -277,7 +278,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 		
 		long block = (id-1)/blocksize;
-		ByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
+		BigMappedByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
 		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
 		
 		try {
@@ -323,7 +324,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 				final ReplazableString tempString = new ReplazableString();
 				int bytebufferIndex;
 
-				ByteBuffer buffer = buffers[0].duplicate();
+				BigMappedByteBuffer buffer = buffers[0].duplicate();
 
 				@Override
 				public boolean hasNext() {
