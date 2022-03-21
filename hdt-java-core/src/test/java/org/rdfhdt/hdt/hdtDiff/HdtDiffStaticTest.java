@@ -176,4 +176,22 @@ public class HdtDiffStaticTest {
                 "hdtDiff/example23-24.nt"
         );
     }
+
+    @Test
+    public void ntFilesDiffTest25M26() throws IOException, ParserException {
+        ntFilesDiffTest(
+                "hdtDiff/example25.nt",
+                "hdtDiff/example26.nt",
+                "hdtDiff/example25-26.nt"
+        );
+    }
+
+    @Test
+    public void ntFilesDiffTest27M28() throws IOException, ParserException {
+        ntFilesDiffTest(
+                "hdtDiff/example27.nt",
+                "hdtDiff/example28.nt",
+                "hdtDiff/example27-28.nt"
+        );
+    }
 }
