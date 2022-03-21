@@ -34,11 +34,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.rdfhdt.hdt.dictionary.impl.DictionaryPFCOptimizedExtractor;
-import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -48,27 +46,40 @@ import org.rdfhdt.hdt.triples.TripleString;
  * 
  */
 public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
+	private static class TripleIdWithIndex {
+		final TripleID triple;
+		final TriplePositionSupplier index;
+
+		TripleIdWithIndex(TripleID triple, TriplePositionSupplier index) {
+			this.triple = triple;
+			this.index = index;
+		}
+	}
 	private static int DEFAULT_BLOCK_SIZE=10000;
-	
+	private TriplePositionSupplier lastPosition;
 	final int blockSize;
-	
-	IteratorTripleID iterator;
-	DictionaryPFCOptimizedExtractor dictionary;
+
+	SuppliableIteratorTripleID iterator;
+	OptimizedExtractor dictionary;
 	CharSequence s, p, o;
 
-	List<TripleID> triples;
-	Iterator<TripleID> child=Collections.emptyIterator();
+	List<TripleIdWithIndex> triples;
+	Iterator<TripleIdWithIndex> child = Collections.emptyIterator();
 	
 	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject;
 
 	long lastSid, lastPid, lastOid;
 	CharSequence lastSstr, lastPstr, lastOstr;
 	
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
 	}
-	
-	public DictionaryTranslateIteratorBuffer(IteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
+		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
+	}
+
+
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
 		this.iterator = iteratorTripleID;
 		this.dictionary = new DictionaryPFCOptimizedExtractor(dictionary);
@@ -77,9 +88,19 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this.p = p==null ? "" : p;
 		this.o = o==null ? "" : o;
 	}
+	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
+		this.blockSize = blockSize;
+		this.iterator = iteratorTripleID;
+		this.dictionary = new MultDictionaryPFCOptimizedExtractor(dictionary);
+
+		this.s = s==null ? "" : s;
+		this.p = p==null ? "" : p;
+		this.o = o==null ? "" : o;
+	}
+
 
 	private void reset() {
-		triples = new ArrayList<TripleID>(blockSize);
+		triples = new ArrayList<>(blockSize);
 				
 		if(s.length()==0) {
 			mapSubject = new HashMap<>(blockSize);
@@ -121,8 +142,11 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {
 			TripleID t = new TripleID(iterator.next());
+			TriplePositionSupplier index = iterator.getLastTriplePositionSupplier();
 
-			triples.add(t);
+			TripleIdWithIndex itid = new TripleIdWithIndex(t, index);
+
+			triples.add(itid);
 
 			if(s.length()==0) arrSubjects[count] = t.getSubject();
 			if(p.length()==0) arrPredicates[count] = t.getPredicate();
@@ -164,7 +188,9 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			fetchBlock();
 		}
 
-		TripleID triple = child.next();
+		TripleIdWithIndex itid = child.next();
+		TripleID triple = itid.triple;
+		lastPosition = itid.index;
 
 		if(s.length()!=0) {
 			lastSstr = s;
@@ -217,6 +243,11 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	@Override
 	public ResultEstimationType numResultEstimation() {		
 		return iterator.numResultEstimation();
+	}
+
+	@Override
+	public long getLastTriplePosition() {
+		return lastPosition.compute();
 	}
 
 	public static void setBlockSize(int size) {

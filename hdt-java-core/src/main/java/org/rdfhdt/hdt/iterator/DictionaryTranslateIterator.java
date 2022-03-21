@@ -154,4 +154,9 @@ public class DictionaryTranslateIterator implements IteratorTripleString {
 		return iterator.numResultEstimation();
 	}
 
+	@Override
+	public long getLastTriplePosition() {
+		return iterator.getLastTriplePosition();
+	}
+
 }

@@ -153,19 +153,20 @@ public class SequenceLog64Big implements DynamicSequence {
 			data.set(i+1 , (data.get(i+1) & mask) | value >>> (W-j));
 		}
 	}
-	
+
 	private void resizeArray(long size) {
-		//data = Arrays.copyOf(data, size);	
-		
-		LongLargeArray a = new LongLargeArray(size);
-		if (size < data.length()) {
-			LargeArrayUtils.arraycopy(data, 0, a, 0, size);
+		//data = Arrays.copyOf(data, size);
+		if(size > 0) {
+			LongLargeArray a = new LongLargeArray(size);
+			if (size < data.length()) {
+				LargeArrayUtils.arraycopy(data, 0, a, 0, size);
+			} else {
+				LargeArrayUtils.arraycopy(data, 0, a, 0, data.length());
 			}
-			else {
-		    LargeArrayUtils.arraycopy(data, 0, a, 0, data.length());
-			}
-		data = a;
-		
+			data = a;
+		}else{
+			this.numentries = 0;
+		}
 	}
 	
 	
@@ -289,7 +290,7 @@ public class SequenceLog64Big implements DynamicSequence {
 			long totalSize = numWordsFor(numbits, numentries);
 			
 			if (totalSize!=data.length()){
-				resizeArray((int)totalSize);
+				resizeArray(totalSize);
 			}
 		}
 

@@ -112,4 +112,9 @@ public class PlainHeaderIterator implements IteratorTripleString {
 		return ResultEstimationType.UP_TO;
 	}
 
+	@Override
+	public long getLastTriplePosition() {
+		throw new UnsupportedOperationException();
+	}
+
 }

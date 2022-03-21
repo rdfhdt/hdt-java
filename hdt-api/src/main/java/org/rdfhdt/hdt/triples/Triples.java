@@ -78,4 +78,13 @@ public interface Triples extends Closeable {
 	 * @return String
 	 */
 	String getType();
+
+	/**
+	 * Find a triple with his position
+	 * @param position The triple position
+	 * @return triple
+	 * @see IteratorTripleID#getLastTriplePosition()
+	 * @see IteratorTripleString#getLastTriplePosition()
+	 */
+	TripleID findTriple(long position);
 }

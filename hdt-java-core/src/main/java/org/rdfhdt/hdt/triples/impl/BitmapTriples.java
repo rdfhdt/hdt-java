@@ -41,13 +41,12 @@ import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.compact.sequence.Sequence;
-import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
-import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
+import org.rdfhdt.hdt.compact.sequence.*;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -238,7 +237,7 @@ public class BitmapTriples implements TriplesPrivate {
 	 * @see hdt.triples.Triples#search(hdt.triples.TripleID)
 	 */
 	@Override
-	public IteratorTripleID search(TripleID pattern) {
+	public SuppliableIteratorTripleID search(TripleID pattern) {
 		if(isClosed) {
 			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
 		}
@@ -274,8 +273,8 @@ public class BitmapTriples implements TriplesPrivate {
 				return new BitmapTriplesIteratorZ(this, pattern);	
 			}
 		}
-		
-		IteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
+
+		SuppliableIteratorTripleID bitIt = new BitmapTriplesIterator(this, pattern);
 		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
 			return bitIt;
 		} else {
@@ -396,7 +395,7 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		isClosed=false;
 	}
-	
+
 
 
 	private void createIndexObjectMemoryEfficient() {
@@ -408,14 +407,14 @@ public class BitmapTriples implements TriplesPrivate {
 		long numDifferentObjects = 0;
 		long numReservedObjects = 8192;
 		@SuppressWarnings("resource")
-		SequenceLog64 objectCount = new SequenceLog64(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
+		SequenceLog64Big objectCount = new SequenceLog64Big(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
 			long val = seqZ.get(i);
 			if(val==0) {
 				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
 			}
 			if(numReservedObjects<val) {
-				while(numReservedObjects<val) {					
+				while(numReservedObjects<val) {
 					numReservedObjects <<=1;
 				}
 				objectCount.resize(numReservedObjects);
@@ -423,7 +422,7 @@ public class BitmapTriples implements TriplesPrivate {
 			if(numDifferentObjects<val) {
 				numDifferentObjects=val;
 			}
-			
+
 			long count = objectCount.get(val-1)+1;
 			maxCount = count>maxCount ? count : maxCount;
 			objectCount.set(val-1, count);
@@ -445,28 +444,35 @@ public class BitmapTriples implements TriplesPrivate {
 		st.reset();
 
 		// Copy each object reference to its position
-		SequenceLog64 objectInsertedCount = new SequenceLog64(BitUtil.log2(maxCount), numDifferentObjects);
+		SequenceLog64Big objectInsertedCount = new SequenceLog64Big(BitUtil.log2(maxCount), numDifferentObjects);
 		objectInsertedCount.resize(numDifferentObjects);
+		File file = null;
+		try {
+			file = File.createTempFile("objectsArray", ".tmp");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 
-		SequenceLog64 objectArray = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
+		SequenceLog64BigDisk objectArray = new SequenceLog64BigDisk(file.getAbsolutePath(),
+				BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
 		objectArray.resize(seqZ.getNumberOfElements());
 
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
-				long objectValue = seqZ.get(i);
-				long posY = i>0 ?  bitmapZ.rank1(i-1) : 0;
+			long objectValue = seqZ.get(i);
+			long posY = i>0 ?  bitmapZ.rank1(i-1) : 0;
 
-				long insertBase = objectValue==1 ? 0 : bitmapIndex.select1(objectValue-1)+1;
-				long insertOffset = objectInsertedCount.get(objectValue-1);
-				objectInsertedCount.set(objectValue-1, insertOffset+1);
+			long insertBase = objectValue==1 ? 0 : bitmapIndex.select1(objectValue-1)+1;
+			long insertOffset = objectInsertedCount.get(objectValue-1);
+			objectInsertedCount.set(objectValue-1, insertOffset+1);
 
-				objectArray.set(insertBase+insertOffset, posY);
+			objectArray.set(insertBase+insertOffset, posY);
 		}
 		log.info("Object references in {}", st.stopAndShow());
 		IOUtil.closeQuietly(objectInsertedCount);
 		objectInsertedCount=null;
 		st.reset();
 
-		
+
 		long object=1;
 		long first = 0;
 		long last = bitmapIndex.selectNext1(first)+1;
@@ -487,30 +493,30 @@ public class BitmapTriples implements TriplesPrivate {
 				}
 			} else if(listLen>2) {
 				class Pair {
-					int valueY;
-					int positionY;
+					Long valueY;
+					Long positionY;
 					@Override public String toString() { return String.format("%d %d", valueY,positionY); }
 				};
-				
+
 				// FIXME: Sort directly without copying?
 				ArrayList<Pair> list=new ArrayList<Pair>((int)listLen);
 
 				// Create temporary list of (position, predicate)
 				for(long i=first; i<last;i++) {
 					Pair p = new Pair();
-					p.positionY=(int)objectArray.get(i);
-					p.valueY=(int)seqY.get(p.positionY);
+					p.positionY = objectArray.get(i);
+					p.valueY = seqY.get(p.positionY);
 					list.add(p);
 				}
 
 				// Sort
-				Collections.sort(list, (Pair o1, Pair o2)->{
-						if(o1.valueY==o2.valueY) {
-							return o1.positionY-o2.positionY;
-						}
-						return o1.valueY-o2.valueY;
-					});
-				
+				list.sort((Pair o1, Pair o2) -> {
+					if (o1.valueY.equals(o2.valueY)) {
+						return o1.positionY.compareTo(o2.positionY);
+					}
+					return o1.valueY.compareTo(o2.valueY);
+				});
+
 				// Copy back
 				for(long i=first; i<last;i++) {
 					Pair pair = list.get((int)(i-first));
@@ -527,7 +533,7 @@ public class BitmapTriples implements TriplesPrivate {
 		st.reset();
 
 		// Count predicates
-		SequenceLog64 predCount = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()));
+		SequenceLog64Big predCount = new SequenceLog64Big(BitUtil.log2(seqY.getNumberOfElements()));
 		for(long i=0;i<seqY.getNumberOfElements(); i++) {
 			// Read value
 			long val = seqY.get(i);
@@ -549,7 +555,7 @@ public class BitmapTriples implements TriplesPrivate {
 		this.indexZ = objectArray;
 		this.bitmapIndexZ = bitmapIndex;
 		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
-		
+
 		log.info("Index generated in {}", global.stopAndShow());
 	}
 	
@@ -694,6 +700,34 @@ public class BitmapTriples implements TriplesPrivate {
 	@Override
 	public String getType() {
 		return HDTVocabulary.TRIPLES_TYPE_BITMAP;
+	}
+
+	@Override
+	public TripleID findTriple(long position) {
+		if (position == 0) {
+			// remove this special case so we can use position-1
+			return new TripleID(
+					1,
+					seqY.get(0),
+					seqZ.get(0));
+		}
+		// get the object at the given position
+		long z = seqZ.get(position);
+
+		// -1 so we don't count end of tree
+		long posY = bitmapZ.rank1(position - 1);
+		long y = seqY.get(posY);
+
+		if (posY == 0) {
+			// remove this case to do posY - 1
+			return new TripleID(1, y, z);
+		}
+
+		// -1 so we don't count end of tree
+		long posX = bitmapY.rank1(posY - 1);
+		long x = posX + 1; // the subject ID is the position + 1, IDs start from 1 not zero
+
+		return new TripleID(x, y, z);
 	}
 
 	/* (non-Javadoc)

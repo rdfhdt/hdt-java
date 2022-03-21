@@ -40,84 +40,95 @@ import java.io.OutputStream;
 public interface Bitmap {
 	/**
 	 * Get the value of the bit at position pos
-	 * @param pos
+	 * @param position pos
+	 * @return boolean
 	 */
-	boolean access(long pos);
+	boolean access(long position);
 
 	/**
 	 * Count the number of ones up to position pos (included)
-	 * @param pos
+	 * @param position pos
+	 * @return long
 	 */
-    long rank1(long pos);
+    long rank1(long position);
 
     /**
      * Count the number of zeros up to position pos (included)
-     * @param pos
+     * @param position pos
+	 * @return long
      */
-    long rank0(long pos);
+    long rank0(long position);
 
     /**
      * Return the position of the next 1 after position start.
-     * @param start
+     * @param start start
+	 * @return long
      */
     long selectPrev1(long start);
 
     /**
      * Return the position of the previous 1 before position start.
-     * @param start
+     * @param start start
+	 * @return long
      */
     long selectNext1(long start);
 
     /**
      * Find the position where n zeros have appeared up to that position.
-     * @param n
-     */
+     * @param n n
+	 * @return long
+	 */
     long select0(long n);
 
     /**
      * Find the position where n ones have appeared up to that position.
-     * @param n
+     * @param n n
+	 * @return long
      */
     long select1(long n);
 
     /**
      * Get number of total bits in the data structure
+	 * @return long
      */
     long getNumBits();
 
     /**
      * Count the number of total ones in the data structure.
+	 * @return long
      */
     long countOnes();
 
     /**
      * Count the number of total zeros in the data structure.
+	 * @return long
      */
     long countZeros();
 
     /**
      * Estimate the size in bytes of the total data structure.
+	 * @return long
      */
     long getSizeBytes();
 
     /**
-     * Dump Bitmap into an OutputStream
-     * @param output
-     * @param listener
-     * @throws IOException
+     * Dump Bitmap into an {@link OutputStream}
+     * @param output The OutputStream
+     * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+     * @throws IOException io exception while saving the bitmap
      */
 	void save(OutputStream output, ProgressListener listener) throws IOException;
 
 	/**
-	 * Load Bitmap from an InputStream
-	 * @param input
-	 * @param listener
-	 * @throws IOException
+	 * Load Bitmap from an {@link OutputStream}
+	 * @param input The OutputStream
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException io exception while loading the bitmap
 	 */
 	void load(InputStream input, ProgressListener listener) throws IOException;
 
 	/**
-	 * Return the type of the data structure as defined in HDTVocabulary
+	 * @return the type of the data structure as defined in HDTVocabulary
 	 */
 	String getType();
 }

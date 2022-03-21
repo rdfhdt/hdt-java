@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -17,6 +18,16 @@ public interface TriplesPrivate extends Triples {
 	 *            The OutputStream to save the triples to
 	 */
 	void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException;
+
+	/**
+	 * Iterates over all triples that match the pattern.
+	 *
+	 * @param pattern
+	 *            The pattern to match against
+	 * @return IteratorTripleID
+	 *
+	 */
+	SuppliableIteratorTripleID search(TripleID pattern);
 
 	/**
 	 * Loads the structure from an InputStream

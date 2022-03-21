@@ -56,4 +56,11 @@ public interface IteratorTripleString extends Iterator<TripleString> {
 	 * @return ResultEstimationType
 	 */
 	ResultEstimationType numResultEstimation();
+
+	/**
+	 * Return the position of the triple of the last next call, from 1 to numTriples.
+	 * @return position
+	 * @see Triples#findTriple(long) 
+	 */
+	long getLastTriplePosition();
 }

@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
@@ -35,6 +36,7 @@ import org.rdfhdt.hdt.dictionary.impl.section.HashDictionarySection;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.TempTriples;
+import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.util.StopWatch;
 
 /**
@@ -43,13 +45,14 @@ import org.rdfhdt.hdt.util.StopWatch;
  */
 public class HashDictionary extends BaseTempDictionary {
 
-	public HashDictionary(HDTOptions spec) {
+	boolean isCustom = false;
+	public HashDictionary(HDTOptions spec,boolean isCustom) {
 		super(spec);
-
+		this.isCustom = isCustom;
 		// FIXME: Read types from spec
 		subjects = new HashDictionarySection();
 		predicates = new HashDictionarySection();
-		objects = new HashDictionarySection();
+		objects = new HashDictionarySection(isCustom);
 		shared = new HashDictionarySection();
 	}
 
@@ -105,7 +108,10 @@ public class HashDictionary extends BaseTempDictionary {
 		st.reset();
 		subjects.sort();
 		predicates.sort();
+		long startTime = System.currentTimeMillis();
 		objects.sort();
+		long endTime = System.currentTimeMillis();
+		//System.out.println("Time to sort temp objects:"+(endTime - startTime)+" ms");
 		shared.sort();
 		//System.out.println("Sections sorted in "+ st.stopAndShow());
 

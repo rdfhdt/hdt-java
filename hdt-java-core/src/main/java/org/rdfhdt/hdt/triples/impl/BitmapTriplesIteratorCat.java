@@ -24,6 +24,7 @@ import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryCat;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
@@ -101,6 +102,11 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
     @Override
     public TripleComponentOrder getOrder() {
         return null;
+    }
+
+    @Override
+    public long getLastTriplePosition() {
+        throw new NotImplementedException();
     }
 
     @Override

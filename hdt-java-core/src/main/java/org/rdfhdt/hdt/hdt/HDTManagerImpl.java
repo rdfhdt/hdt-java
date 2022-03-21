@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
@@ -29,30 +31,30 @@ public class HDTManagerImpl extends HDTManager {
 	}
 
 	@Override
-	public HDT doLoadHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doLoadHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFileName, listener);
 		return hdt;
 	}
 	
 	@Override
-	protected HDT doMapHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	protected HDT doMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		return hdt;
 	}
 
 
 	@Override
-	public HDT doLoadHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doLoadHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFile, listener);
 		return hdt;
 	}
 
 	@Override
-	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFileName, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
@@ -61,16 +63,16 @@ public class HDTManagerImpl extends HDTManager {
 
 
 	@Override
-	protected HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
 	}
 
 	@Override
-	public HDT doLoadIndexedHDT(InputStream hdtFile, ProgressListener listener) throws IOException {
-		HDTPrivate hdt = new HDTImpl(new HDTSpecification());
+	public HDT doLoadIndexedHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException {
+		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFile, listener);
 		hdt.loadOrCreateIndex(listener);
 		return hdt;
@@ -151,11 +153,31 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	public HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		StopWatch st = new StopWatch();
-		HDT hdt1 = doMapHDT(hdtFileName1, listener);
-		HDT hdt2 = doMapHDT(hdtFileName2, listener);
-		HDTImpl hdt = new HDTImpl(new HDTSpecification());
-		hdt.cat(location, hdt1, hdt2, listener);
-		System.out.println("HDT file joint in: "+st.stopAndShow());
+		HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
+		HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat);
+		HDTImpl hdt = new HDTImpl(hdtFormat);
+		if(hdt1.getDictionary() instanceof MultipleSectionDictionary
+				&& hdt2.getDictionary() instanceof MultipleSectionDictionary)
+			hdt.catCustom(location,hdt1,hdt2,listener);
+		else
+			hdt.cat(location, hdt1, hdt2, listener);
+		return hdt;
+	}
+
+	@Override
+	public HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
+		HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat);
+		HDTImpl hdt = new HDTImpl(hdtFormat);
+		hdt.diff(hdt1, hdt2, listener);
+		return hdt;
+	}
+
+	@Override
+	protected HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		HDT hdtOriginal = doMapHDT(hdtFileName, listener, hdtFormat);
+		HDTImpl hdt = new HDTImpl(hdtFormat);
+		hdt.diffBit(location, hdtOriginal, deleteBitmap, listener);
 		return hdt;
 	}
 }

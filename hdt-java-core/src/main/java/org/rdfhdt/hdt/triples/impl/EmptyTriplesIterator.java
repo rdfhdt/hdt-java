@@ -2,12 +2,12 @@ package org.rdfhdt.hdt.triples.impl;
 
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
-import org.rdfhdt.hdt.triples.IteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
 import java.util.NoSuchElementException;
 
-public class EmptyTriplesIterator implements IteratorTripleID {
+public class EmptyTriplesIterator implements SuppliableIteratorTripleID {
     private final TripleComponentOrder order;
 
     public EmptyTriplesIterator(TripleComponentOrder order) {
@@ -62,6 +62,11 @@ public class EmptyTriplesIterator implements IteratorTripleID {
     @Override
     public TripleComponentOrder getOrder() {
         return order;
+    }
+
+    @Override
+    public long getLastTriplePosition() {
+        throw new NoSuchElementException();
     }
 
     @Override
