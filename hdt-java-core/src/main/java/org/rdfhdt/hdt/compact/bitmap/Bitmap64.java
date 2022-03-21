@@ -222,6 +222,9 @@ public class Bitmap64 implements ModifiableBitmap{
 			return 0;
 		long acc = 0;
 		int end = wordIndex(numbits);
+		if (end >= words.length) {
+			end = words.length - 1;
+		}
 		for (int i = 0; i <= end; i++)
 			acc += Long.bitCount(words[i]);
 		return acc;
