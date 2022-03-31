@@ -11,7 +11,7 @@
     <artifactId>hdt-java-parent</artifactId>
     <packaging>pom</packaging>
     <name>RDF/HDT</name>
-    <version>3.0.0</version>
+    <version>3.0.1</version>
     <description>HDT (Header, Dictionary, Triples) is a compact data structure and binary
         serialization format for RDF that keeps big datasets compressed to save space while
         maintaining search and browse operations without prior decompression. This makes it an ideal
