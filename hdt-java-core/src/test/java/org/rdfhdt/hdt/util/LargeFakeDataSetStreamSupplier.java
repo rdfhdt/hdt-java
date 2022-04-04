@@ -1,24 +1,35 @@
 package org.rdfhdt.hdt.util;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
+import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.io.PrintStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.zip.GZIPOutputStream;
 
 public class LargeFakeDataSetStreamSupplier {
 
-	private static final Charset DEFAULT_CHARSET = Charset.defaultCharset();
+	private static final Charset DEFAULT_CHARSET = ByteStringUtil.STRING_ENCODING;
 
 	/**
 	 * create a lowercase name from a number, to create string without any number in it
@@ -64,6 +75,7 @@ public class LargeFakeDataSetStreamSupplier {
 	private final long maxSize;
 	private final long maxTriples;
 	public int maxFakeType = 10;
+	public int maxLiteralSize = 2;
 	public int maxElementSplit = Integer.MAX_VALUE;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
@@ -89,8 +101,48 @@ public class LargeFakeDataSetStreamSupplier {
 		}
 	}
 
+	public ThreadedStream createNTInputStream(CompressionType compressionType) throws IOException {
+		PipedOutputStream pout = new PipedOutputStream();
+		InputStream is = new PipedInputStream(pout);
+		OutputStream out;
+
+		if (compressionType != null) {
+			switch (compressionType) {
+				case NONE:
+					out = pout;
+					break;
+				case XZ:
+					out = new XZCompressorOutputStream(pout);
+					break;
+				case BZIP:
+					out = new BZip2CompressorOutputStream(pout);
+					break;
+				case GZIP:
+					out = new GZIPOutputStream(pout);
+					break;
+				default:
+					throw new NotImplementedException(compressionType.name());
+			}
+		} else {
+			out = pout;
+		}
+
+		ExceptionThread run = new ExceptionThread(() -> {
+			try (PrintStream ps = new PrintStream(out, true)) {
+				Iterator<TripleString> it = createTripleStringStream();
+				while (it.hasNext()) {
+					it.next().dumpNtriple(ps);
+				}
+			}
+		},
+				"ThreadedFakedStream");
+		run.start();
+
+		return new ThreadedStream(run, is);
+	}
+
 	public HDT createFakeHDTTwoPass(HDTOptions spec) throws ParserException, IOException {
-		Path f = Paths.get("tempNtFile.nt").toAbsolutePath();
+		Path f = Path.of("tempNtFile.nt").toAbsolutePath();
 		try {
 			createNTFile(f.toString());
 			spec.set("loader.type", "two-pass");
@@ -130,14 +182,22 @@ public class LargeFakeDataSetStreamSupplier {
 		if (random.nextBoolean()) {
 			return createPredicate();
 		}
-
-		String text = "\"" + stringNameOfInt(random.nextInt(maxElementSplit)) + "\"";
-		if (random.nextBoolean()) {
+		int size = random.nextInt(maxLiteralSize);
+		StringBuilder litText = new StringBuilder();
+		for (int i = 0; i < size; i++) {
+			litText.append(stringNameOfInt(random.nextInt(maxElementSplit))).append(" ");
+		}
+		String text = "\"" + litText + "\"";
+		int litType = random.nextInt(3);
+		if (litType == 1) {
 			// language node
 			return text + "@" + stringNameOfInt(random.nextInt(maxElementSplit));
-		} else {
+		} else if (litType == 2) {
 			// typed node
 			return text + "^^<" + createType() + ">";
+		} else {
+			// no type/language node
+			return text;
 		}
 	}
 
@@ -185,4 +245,37 @@ public class LargeFakeDataSetStreamSupplier {
 		}
 	}
 
+	public LargeFakeDataSetStreamSupplier withMaxFakeType(int maxFakeType) {
+		this.maxFakeType = maxFakeType;
+		return this;
+	}
+
+	public LargeFakeDataSetStreamSupplier withMaxElementSplit(int maxElementSplit) {
+		this.maxElementSplit = maxElementSplit;
+		return this;
+	}
+
+	public LargeFakeDataSetStreamSupplier withMaxLiteralSize(int maxLiteralSize) {
+		this.maxLiteralSize = maxLiteralSize;
+		return this;
+
+	}
+
+	public static class ThreadedStream {
+		private final ExceptionThread thread;
+		private final InputStream stream;
+
+		public ThreadedStream(ExceptionThread thread, InputStream stream) {
+			this.thread = thread;
+			this.stream = stream;
+		}
+
+		public ExceptionThread getThread() {
+			return thread;
+		}
+
+		public InputStream getStream() {
+			return stream;
+		}
+	}
 }

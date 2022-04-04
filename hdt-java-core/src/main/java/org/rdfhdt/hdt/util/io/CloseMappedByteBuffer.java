@@ -41,14 +41,18 @@ public class CloseMappedByteBuffer implements Closeable {
         this.duplicated = duplicated;
         this.buffer = buffer;
         if (mapTest && !duplicated) {
-            MAP_TEST_MAP.put(id, new Throwable("MAP " + filename + "#" + id + "|"+ buffer));
+            synchronized (MAP_TEST_MAP) {
+                MAP_TEST_MAP.put(id, new Throwable("MAP " + filename + "#" + id + "|" + buffer));
+            }
         }
     }
 
     @Override
     public void close() {
         if (mapTest && !duplicated) {
-            MAP_TEST_MAP.remove(id);
+            synchronized (MAP_TEST_MAP) {
+                MAP_TEST_MAP.remove(id);
+            }
         }
         IOUtil.cleanBuffer(buffer);
     }

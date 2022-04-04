@@ -25,7 +25,11 @@ public interface DictionaryPrivate extends Dictionary {
 	 * Loads all information from another dictionary into this dictionary.
 	 */
 	void load(TempDictionary other, ProgressListener listener);
-	
+	/**
+	 * same as {@link #load(TempDictionary, org.rdfhdt.hdt.listener.ProgressListener)} but read all the section at the same time
+	 */
+	void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException;
+
 	/**
 	 * Saves the dictionary to a OutputStream
 	 */

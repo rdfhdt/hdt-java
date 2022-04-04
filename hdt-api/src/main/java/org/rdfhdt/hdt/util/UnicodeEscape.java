@@ -100,6 +100,10 @@ public class UnicodeEscape {
 				}
 			}
 		}
+
+        if (last == label.length()) {
+            last--;
+        }
         
         for (int i = first; i <= last; i++) {
             char c = label.charAt(i);

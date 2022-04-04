@@ -27,7 +27,9 @@
 
 package org.rdfhdt.hdt.util.listener;
 
+import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.concurrent.SyncListener;
 
 /**
  * @author mario.arias
@@ -45,7 +47,7 @@ public class ListenerUtil {
 	
 	public static void notifyCond(ProgressListener listener, String message, long value, long total) {
 		if(listener!=null && (value%5000==0)) {
-			listener.notifyProgress( ((value)*100/total), message);
+			listener.notifyProgress( (float) ((value)*100/total), message);
 		}
 	}
 	
@@ -53,5 +55,24 @@ public class ListenerUtil {
 		if(listener!=null && (counter%100000==0)) {
 			listener.notifyProgress( ((value)*100/total), message);
 		}
+	}
+
+	/**
+	 * convert a progress listener to a {@link org.rdfhdt.hdt.listener.MultiThreadListener}
+	 * @param listener the listener
+	 * @return a new multi thread listener, or the listener if it was multi
+	 */
+	public static MultiThreadListener multiThreadListener(ProgressListener listener) {
+		// null, create an empty one
+		if (listener == null) {
+			return new PrefixMultiThreadListener((a, b) -> {
+			});
+		}
+		// already a multi thread listener
+		if (listener instanceof MultiThreadListener) {
+			return (MultiThreadListener) listener;
+		}
+		// create a sync version of a prefix one
+		return new PrefixMultiThreadListener(SyncListener.of(listener));
 	}
 }

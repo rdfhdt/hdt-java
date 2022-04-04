@@ -33,7 +33,7 @@ import java.nio.file.StandardOpenOption;
 
 //Implementing an array of longs that is backed up on disk. Following this: http://vanillajava.blogspot.fr/2011/12/using-memory-mapped-file-for-huge.html
 
-public class LongArrayDisk implements Closeable {
+public class LongArrayDisk implements Closeable, LongArray {
     private static final long MAPPING_SIZE = 1 << 30;
     private FileChannel channel;
     private CloseMappedByteBuffer[] mappings;
@@ -118,6 +118,7 @@ public class LongArrayDisk implements Closeable {
         channel = null;
     }
 
+    @Override
     public long get(long x) {
         long p = x * 8;
         int block = (int) (p / MAPPING_SIZE);
@@ -129,6 +130,7 @@ public class LongArrayDisk implements Closeable {
         return this.get(x);
     }
 
+    @Override
     public void set(long x, long y) {
         long p = x * 8;
         int block = (int) (p / MAPPING_SIZE);
@@ -136,6 +138,7 @@ public class LongArrayDisk implements Closeable {
         mappings[block].putLong(offset, y);
     }
 
+    @Override
     public long length() {
         return size;
     }
@@ -189,3 +192,4 @@ public class LongArrayDisk implements Closeable {
     }
 
 }
+

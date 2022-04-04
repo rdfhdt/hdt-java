@@ -161,9 +161,9 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
 
     @Override
     public void set(long position, long value) {
-        //if(value<0 || value>maxvalue) {
-        //throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
-        //}
+        if (value<0 || value>maxvalue) {
+            throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
+        }
         //System.out.println("numbits "+this.numbits);
         setField(data, numbits, position, value);
     }
