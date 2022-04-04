@@ -624,7 +624,7 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                             numBlocks++;
 
                             // if a buffer is filled, flush the byteOut and store it
-                            if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) {
+                            if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0) || byteOut.size() > 200000) {
                                 storedBuffersSize += byteOut.size();
                                 byteOut.flush();
                                 byte[] array = byteOut.toByteArray();

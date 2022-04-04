@@ -298,8 +298,6 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
         public int count() {
             int i = 0;
-            forEachRemaining(a -> {
-            });
             while (hasNext()) {
                 // next();
                 i++;

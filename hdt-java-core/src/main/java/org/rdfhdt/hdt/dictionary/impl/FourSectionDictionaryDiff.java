@@ -221,8 +221,6 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         
         public int count() {
             int i = 0;
-            forEachRemaining(a -> {
-            });
             while (hasNext()) {
                 // next();
                 i++;

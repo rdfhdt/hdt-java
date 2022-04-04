@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 
@@ -70,8 +71,12 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
 	}
-	
+
 	public void append(byte [] data, int offset, int len) {
+		this.replace(used, data, offset, len);
+	}
+
+	public void append(BigByteBuffer data, long offset, int len) {
 		this.replace(used, data, offset, len);
 	}
 	
@@ -82,11 +87,17 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		}
 		used+=other.length();
 	}
-	
-	
+
+
 	public void replace(int pos, byte [] data, int offset, int len) {
 		ensureSize(pos+len);
 		System.arraycopy(data, offset, buffer, pos, len);
+		used = pos+len;
+	}
+
+	public void replace(int pos, BigByteBuffer data, long offset, int len) {
+		ensureSize(pos+len);
+		data.get(buffer, offset, pos, len);
 		used = pos+len;
 	}
 	
