@@ -4,17 +4,28 @@ import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
-import org.rdfhdt.hdt.dictionary.impl.utilCat.*;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatElement;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatIntersection;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatUnion;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.SectionUtil;
 import org.rdfhdt.hdt.dictionary.impl.utilDiff.DiffWrapper;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 public class FourSectionDictionaryDiff implements DictionaryDiff {
 
@@ -29,7 +40,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
     }
 
     @Override
-    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) {
+    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate", new CatMapping(location, "predicate", dictionary.getPredicates().getNumberOfElements()));
         allMappings.put("subject", new CatMapping(location, "subject", dictionary.getSubjects().getNumberOfElements()));
         allMappings.put("object", new CatMapping(location, "object", dictionary.getObjects().getNumberOfElements()));
@@ -60,11 +71,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         listSkipSubj.add(itSkipSubs);
 
         SharedWrapper sharedWrapper = new SharedWrapper(0, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
-        long numNewSubj = 0;
-        while (sharedWrapper.hasNext()) {
-            sharedWrapper.next();
-            numNewSubj++;
-        }
+        long numNewSubj = sharedWrapper.count();
         sharedWrapper = new SharedWrapper(0, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
         listSkipSubj.add(sharedWrapper);
 
@@ -84,11 +91,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
 
         // flag = 1 for objects
         sharedWrapper = new SharedWrapper(1, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
-        long numNewObj = 0;
-        while (sharedWrapper.hasNext()) {
-            numNewObj++;
-            sharedWrapper.next();
-        }
+        long numNewObj = sharedWrapper.count();
         sharedWrapper = new SharedWrapper(1, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
         listSkipObjs.add(sharedWrapper);
 
@@ -214,6 +217,17 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         @Override
         public CatElement next() {
             return next;
+        }
+        
+        public int count() {
+            int i = 0;
+            forEachRemaining(a -> {
+            });
+            while (hasNext()) {
+                // next();
+                i++;
+            }
+            return i;
         }
     }
 

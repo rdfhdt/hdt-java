@@ -15,11 +15,11 @@ import java.util.ListIterator;
 public class CatUnion implements Iterator<CatElement> {
     ArrayList<IteratorPlusElement> list;
 
-    private List<Iterator<CatElement>> listIters;
+    private final List<Iterator<CatElement>> listIters;
 
     public CatUnion(List<Iterator<CatElement>> listIters) {
 
-        this.list = new ArrayList<IteratorPlusElement>();
+        this.list = new ArrayList<>();
         this.listIters = new ArrayList<>(listIters);
         int count = 0;
         for (Iterator<CatElement> iter : this.listIters) {
@@ -34,19 +34,14 @@ public class CatUnion implements Iterator<CatElement> {
 
     @Override
     public boolean hasNext() {
-        if (list.size() > 0) {
-            return true;
-        } else {
-            return false;
-        }
+        return list.size() > 0;
     }
 
     @Override
     public CatElement next() {
-        CharSequence element = null;
         ArrayList<CatElement.IteratorPlusPosition> ids = new ArrayList<>();
         list.sort(new IteratorPlusElementComparator());
-        element = list.get(0).element.entity;
+        CharSequence element = list.get(0).element.entity;
         CompactString elementCompactString = new CompactString(element);
         ListIterator<IteratorPlusElement> iteratorPlusElementIterator = list.listIterator();
         while (iteratorPlusElementIterator.hasNext()) {
