@@ -194,7 +194,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				
 				//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 				BigByteBuffer bigByteBuffer = BigByteBuffer.allocate(nextBytePos-bytePos);
-				bigByteBuffer.readStream(in, 0, bigByteBuffer.size());
+				bigByteBuffer.readStream(in, 0, bigByteBuffer.size(), listener);
 				data[buffer]=bigByteBuffer;
 				
 				posFirst[buffer] = bytePos;
@@ -486,7 +486,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 
 			//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
 			BigByteBuffer bigByteBuffer = BigByteBuffer.allocate(nextBytePos-bytePos);
-			bigByteBuffer.readStream(in, 0, bigByteBuffer.size());
+			bigByteBuffer.readStream(in, 0, bigByteBuffer.size(), listener);
 			data[buffer]=bigByteBuffer;
 
 			posFirst[buffer] = bytePos;

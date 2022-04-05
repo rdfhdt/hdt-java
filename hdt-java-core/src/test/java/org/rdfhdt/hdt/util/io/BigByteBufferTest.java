@@ -124,7 +124,7 @@ public class BigByteBufferTest {
 		String file = Objects.requireNonNull(getClass().getClassLoader().getResource("dbpedia.hdt"), "Can't find dbpedia.hdt").getFile();
 
 		try (InputStream stream = IOUtil.getFileInputStream(file)) {
-			buffer.readStream(stream, 0, size);
+			buffer.readStream(stream, 0, size, null);
 		}
 
 		byte[] real = Files.readAllBytes(Paths.get(file));

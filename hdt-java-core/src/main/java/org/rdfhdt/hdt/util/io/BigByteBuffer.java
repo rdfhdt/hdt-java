@@ -167,31 +167,34 @@ public class BigByteBuffer {
 	 * @param input the input stream to read
 	 * @param index the index to start writing
 	 * @param length the length to read
+	 * @param listener listener to notify the state
 	 * @throws IOException any error with the stream
 	 */
-	public void readStream(InputStream input, long index, long length) throws IOException {
+	public void readStream(InputStream input, long index, long length, ProgressListener listener) throws IOException {
 		long remaining = length;
 		long currentIndex = index;
 		int b = getBufferIndex(index);
+		ListenerUtil.notify(listener, "Reading buffer", 0, length);
 		while (remaining > 0) {
 			int offset = getBufferOffset(currentIndex);
 			byte[] buffer = buffers.get(b);
 
 			int read = (int) Math.min(buffer.length - offset, currentIndex + remaining);
-			readStreamInto(input, buffer, offset, read);
+			readStreamInto(input, buffer, offset, read, listener, currentIndex - index, length);
 			remaining -= read;
 			currentIndex += read;
+			ListenerUtil.notify(listener, "Reading buffer", length - remaining, length);
 			b++;
 		}
 	}
 
-	private void readStreamInto(InputStream input, byte[] dst, int start, int length) throws IOException {
+	private void readStreamInto(InputStream input, byte[] dst, int start, int length, ProgressListener listener, long offset, long end) throws IOException {
 		int nRead;
 		int pos = 0;
 
 		while ((nRead = input.read(dst, start, length - pos)) > 0) {
-			// TODO: Notify progress listener
 			pos += nRead;
+			ListenerUtil.notify(listener, "Reading buffer", pos + offset, end);
 		}
 		if (pos != length) {
 			throw new IOException("EOF while reading array from InputStream");
