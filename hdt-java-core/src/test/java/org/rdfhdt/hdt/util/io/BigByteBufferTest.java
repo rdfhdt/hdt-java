@@ -194,7 +194,7 @@ public class BigByteBufferTest {
 		}
 
 		public void generate(long count, int max, Consumer<Entry> e) {
-			ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(count);
+			ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(max);
 			for (long i = 0; i < count; i++) {
 				long index = random.nextInt(max);
 				byte value = (byte) (random.nextInt() & 255);

@@ -261,7 +261,7 @@ public class ByteStringUtil {
 			throw new IllegalArgumentException("Buffer is not Null-Terminated");
 		}
 	}
-	public static int strcmp(CharSequence str, BigMappedByteBuffer buffer, int offset) {
+	public static int strcmp(CharSequence str, BigMappedByteBuffer buffer, long offset) {
 		byte [] buf;
 		int len;
 

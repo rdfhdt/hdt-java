@@ -34,7 +34,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
@@ -69,9 +68,6 @@ import org.slf4j.LoggerFactory;
 public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeable {
 	private static final Logger log = LoggerFactory.getLogger(PFCDictionarySectionMap.class);
 
-	public static final int TYPE_INDEX = 2;
-	public static final int DEFAULT_BLOCK_SIZE = 16;
-	
 	static final int BLOCKS_PER_BYTEBUFFER = 50000;
 	protected FileChannel ch;
 	protected BigMappedByteBuffer[] buffers; // Encoded sequence
@@ -79,12 +75,11 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	protected int blocksize;
 	protected long numstrings;
 	protected Sequence blocks;
-	protected FileInputStream fis; 
 	protected long dataSize;
 
 	private final File f;
 	private final long startOffset;
-    private long endOffset;
+    private final long endOffset;
 
 	@SuppressWarnings("resource")
 	public PFCDictionarySectionMap(CountInputStream input, File f) throws IOException {
@@ -95,7 +90,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 		// Read type
 		int type = crcin.read();
-		if(type!=TYPE_INDEX) {
+		if(type!=PFCDictionarySection.TYPE_INDEX) {
 			throw new IllegalFormatException("Trying to read a DictionarySectionPFC from data that is not of the suitable type");
 		}
 		
@@ -128,14 +123,10 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		buffers = new BigMappedByteBuffer[(int)numBuffers ];
 		posFirst = new long[(int)numBuffers];
 		
-//		System.out.println("Buffers "+buffers.length);
 		while(block<numBlocks-1) {
-			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCKS_PER_BYTEBUFFER);
+			long nextBlock = Math.min(numBlocks-1, block+BLOCKS_PER_BYTEBUFFER);
 			long nextBytePos = blocks.get(nextBlock);
-			
-//			System.out.println("From block "+block+" to "+nextBlock);
-//			System.out.println("From pos "+ bytePos+" to "+nextBytePos);
-//			System.out.println("Total size: "+ (nextBytePos-bytePos));
+
 			buffers[buffer] = BigMappedByteBuffer.ofFileChannel(ch, MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
 			buffers[buffer].order(ByteOrder.LITTLE_ENDIAN);
 			
@@ -164,7 +155,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 				cmp=-1;
 			} else {
 				BigMappedByteBuffer buffer = buffers[(int) (mid/BLOCKS_PER_BYTEBUFFER)];
-				cmp = ByteStringUtil.strcmp(str, buffer, (int)(blocks.get(mid)-posFirst[(int) (mid/BLOCKS_PER_BYTEBUFFER)]));
+				cmp = ByteStringUtil.strcmp(str, buffer, blocks.get(mid)-posFirst[(int) (mid/BLOCKS_PER_BYTEBUFFER)]);
 			}
 			if (cmp<0) {
 				high = mid - 1;
@@ -207,20 +198,20 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return 0;
 	}
 	
-	public int locateInBlock(long block, CharSequence str) {
+	protected long locateInBlock(long block, CharSequence str) {
 		if(block>=blocks.getNumberOfElements()) {
 			return 0;
 		}
 		
 		ReplazableString tempString = new ReplazableString();
 		
-		int idInBlock = 0;
+		long idInBlock = 0;
 		int cshared=0;
 		
 //		dumpBlock(block);
 
 		BigMappedByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
-		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
+		buffer.position(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]);
 		
 		try {
 			if(!buffer.hasRemaining()) {
@@ -279,7 +270,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		
 		long block = (id-1)/blocksize;
 		BigMappedByteBuffer buffer = buffers[(int) (block/BLOCKS_PER_BYTEBUFFER)].duplicate();
-		buffer.position((int)(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]));
+		buffer.position(blocks.get(block)-posFirst[(int) (block/BLOCKS_PER_BYTEBUFFER)]);
 		
 		try {
 			ReplazableString tempString = new ReplazableString();
@@ -318,7 +309,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		if (buffers[0]==null){
 			return Collections.emptyIterator();
 		} else {
-			return new Iterator<CharSequence>() {
+			return new Iterator<>() {
 				long id = 0;
 
 				final ReplazableString tempString = new ReplazableString();
