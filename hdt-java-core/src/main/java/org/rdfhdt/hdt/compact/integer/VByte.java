@@ -34,6 +34,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 
 import org.rdfhdt.hdt.util.Mutable;
+import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 /**
@@ -142,7 +143,7 @@ public class VByte {
 		
 		return i;
 	}
-	
+
 	public static int decode(byte[] data, int offset, Mutable<Long> value) {
 		long out = 0;
 		int i=0;
@@ -153,6 +154,21 @@ public class VByte {
 			shift+=7;
 		}
 		out |= (data[offset+i] & 127) << shift;
+		i++;
+		value.setValue(out);
+		return i;
+	}
+
+	public static int decode(BigByteBuffer data, long offset, Mutable<Long> value) {
+		long out = 0;
+		int i = 0;
+		int shift=0;
+		while( (0x80 & data.get(offset+i))==0) {
+			out |= (data.get(offset+i) & 127) << shift;
+			i++;
+			shift+=7;
+		}
+		out |= (data.get(offset+i) & 127) << shift;
 		i++;
 		value.setValue(out);
 		return i;

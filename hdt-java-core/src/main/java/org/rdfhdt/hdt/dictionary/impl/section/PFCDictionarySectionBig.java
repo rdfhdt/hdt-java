@@ -34,6 +34,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -50,7 +51,7 @@ import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
-import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
@@ -74,11 +75,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	public static final int DEFAULT_BLOCK_SIZE = 16;
 	public static final int BLOCK_PER_BUFFER = 1000000;
 	
-	byte [][] data;
+	BigByteBuffer[] data;
 	long [] posFirst;
 	protected SequenceLog64Big blocks;
 	protected int blocksize;
-	protected int numstrings;
+	protected long numstrings;
 	protected long size;
 	static int filecounter = 0;
 	
@@ -97,7 +98,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		this.blocks = new SequenceLog64Big(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		log.info("numbits:{}", BitUtil.log2(other.size()));
 		Iterator<? extends CharSequence> it = other.getSortedEntries();		
-		this.load((Iterator<? extends CharSequence>)it, other.getNumberOfElements(), listener);
+		this.load(it, other.getNumberOfElements(), listener);
 		
 	}
 	
@@ -176,7 +177,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			long numBlocks = blocks.getNumberOfElements();
 			//System.out.println("numblocks:"+numBlocks);
 
-			long numBuffers = -1;
+			long numBuffers;
 			if(numBlocks > 0){
 				// non empty section
 				numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
@@ -184,15 +185,17 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 				// else empty section then it's zero
 				numBuffers = 0;
 			}
-			data = new byte[(int)numBuffers][];
+			data = new BigByteBuffer[(int)numBuffers];
 			posFirst = new long[(int)numBuffers];
 			
 			while(block<numBlocks-1) {
-				int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
+				long nextBlock = Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 				long nextBytePos = blocks.get(nextBlock);
 				
 				//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
-				data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
+				BigByteBuffer bigByteBuffer = BigByteBuffer.allocate(nextBytePos-bytePos);
+				bigByteBuffer.readStream(in, 0, bigByteBuffer.size(), listener);
+				data[buffer]=bigByteBuffer;
 				
 				posFirst[buffer] = bytePos;
 				
@@ -210,7 +213,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		finally {
 			try {
 				out.close();
-				file.delete();
+				Files.delete(file.toPath());
 			} catch (IOException e) {
 				log.error("Unexpected exception.", e);
 			}
@@ -224,19 +227,19 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	/**
 	 * Locate the block of a string doing binary search.
 	 */
-	protected int locateBlock(CharSequence str) {	
-		int low = 0;
-		int high = (int)blocks.getNumberOfElements() - 1;
-		int max = high;
+	protected long locateBlock(CharSequence str) {
+		long low = 0;
+		long high = blocks.getNumberOfElements() - 1;
+		long max = high;
 		
 		while (low <= high) {
-			int mid = (low + high) >>> 1;
+			long mid = (low + high) >>> 1;
 			
 			int cmp;
 			if(mid==max) {
 				cmp = -1;
 			} else {
-				cmp = ByteStringUtil.strcmp(str, data[mid/BLOCK_PER_BUFFER], (int)(blocks.get(mid)-posFirst[mid/BLOCK_PER_BUFFER]));
+				cmp = ByteStringUtil.strcmp(str, data[(int)(mid/BLOCK_PER_BUFFER)], blocks.get(mid)-posFirst[(int)(mid/BLOCK_PER_BUFFER)]);
 				//System.out.println("Comparing against block: "+ mid + " which is "+ ByteStringUtil.asString(data[mid], 0)+ " Result: "+cmp);
 			}
 
@@ -278,30 +281,30 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		return 0;
 	}
 		
-	protected int locateInBlock(long blocknum, CharSequence str) {
+	protected long locateInBlock(long blocknum, CharSequence str) {
 	
 		ReplazableString tempString = new ReplazableString();
 		
 		Mutable<Long> delta = new Mutable<>(0L);
-		int idInBlock = 0;
+		long idInBlock = 0;
 		int cshared=0;
-		
-		byte [] block = data[(int) (blocknum/BLOCK_PER_BUFFER)];
-		int pos = (int) (blocks.get(blocknum)-posFirst[(int) (blocknum/BLOCK_PER_BUFFER)]);
+
+		BigByteBuffer block = data[(int) (blocknum/BLOCK_PER_BUFFER)];
+		long pos = (blocks.get(blocknum)-posFirst[(int) (blocknum/BLOCK_PER_BUFFER)]);
 		
 		// Read the first string in the block
-		int slen = ByteStringUtil.strlen(block, pos);
+		int slen = (int) ByteStringUtil.strlen(block, pos);
 		tempString.append(block, pos, slen);
 		pos+=slen+1;
 		idInBlock++;
 		
-		while( (idInBlock<blocksize) && (pos<block.length)) 
+		while( (idInBlock<blocksize) && (pos<block.size()))
 		{
 			// Decode prefix
 			pos += VByte.decode(block, pos, delta);
 			
 			// Copy suffix
-			slen = ByteStringUtil.strlen(block, pos);
+			slen = (int) ByteStringUtil.strlen(block, pos);
 			tempString.replace(delta.getValue().intValue(), block, pos, slen);
 			
 			if(delta.getValue()>=cshared)
@@ -326,7 +329,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		}
 
 		// Not found
-		if(pos==block.length || idInBlock== blocksize) {
+		if(pos==block.size() || idInBlock== blocksize) {
 			idInBlock=0;
 		}
 		
@@ -346,22 +349,22 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		// Locate block
 		long blockid = (id-1)/blocksize;
 		long nstring = (id-1)%blocksize;
-		
-		byte [] block = data[(int) (blockid/BLOCK_PER_BUFFER)];
-		int pos = (int) (blocks.get(blockid)-posFirst[(int) (blockid/BLOCK_PER_BUFFER)]);
+
+		BigByteBuffer block = data[(int) (blockid/BLOCK_PER_BUFFER)];
+		long pos = (blocks.get(blockid)-posFirst[(int) (blockid/BLOCK_PER_BUFFER)]);
 		
 		// Copy first string
- 		int len = ByteStringUtil.strlen(block, pos);
+ 		int len = (int) ByteStringUtil.strlen(block, pos);
 		
 		Mutable<Long> delta = new Mutable<>(0L);
 		ReplazableString tempString = new ReplazableString();
 		tempString.append(block, pos, len);
 		
 		// Copy strings until we find our's.
-		for(int i=0;i<nstring;i++) {
+		for(long i=0;i<nstring;i++) {
 			pos+=len+1;
 			pos += VByte.decode(block, pos, delta);
-			len = ByteStringUtil.strlen(block, pos);
+			len = (int) ByteStringUtil.strlen(block, pos);
 			tempString.replace(delta.getValue().intValue(), block, pos, len);
 		}
 		return new CompactString(tempString).getDelayed();
@@ -388,8 +391,8 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
-		return new Iterator<CharSequence>() {
-			int pos;
+		return new Iterator<>() {
+			long pos;
 
 			@Override
 			public boolean hasNext() {
@@ -421,10 +424,9 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		VByte.encode(out, numstrings);		
 		
 		long datasize=0;
-	
-		for (int i =0; i<data.length;i++) {
-			datasize = data[i].length+ datasize;
-			
+
+		for (BigByteBuffer bigByteBuffer : data) {
+			datasize += bigByteBuffer.size();
 		}
 		log.info("datasize:{}", datasize);
 		VByte.encode(out, datasize);
@@ -432,11 +434,10 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		out.writeCRC();
 		blocks.save(output, listener);	// Write blocks directly to output, they have their own CRC check.		
 		out.setCRC(new CRC32());
-		for (int i =0; i<data.length;i++) {			
-		IOUtil.writeBuffer(out, data[i], 0, data[i].length, listener);		
+		for (BigByteBuffer datum : data) {
+			datum.writeStream(out, 0, datum.size(), listener);
 		}
 		out.writeCRC();
-		//throw new NotImplementedException();
 	}
 
 	/* (non-Javadoc)
@@ -453,7 +454,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		if(type!=TYPE_INDEX) {
 			throw new IllegalFormatException("Trying to read a DictionarySectionPFC from data that is not of the suitable type");
 		}
-		numstrings = (int) VByte.decode(in);
+		numstrings = VByte.decode(in);
 		this.size = VByte.decode(in);
 		blocksize = (int)VByte.decode(in);
 		
@@ -476,16 +477,18 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		long bytePos = 0;
 		long numBlocks = blocks.getNumberOfElements();
 		long numBuffers = 1+numBlocks/BLOCK_PER_BUFFER;
-		data = new byte[(int)numBuffers][];
+		data = new BigByteBuffer[(int)numBuffers];
 		posFirst = new long[(int)numBuffers];
 		
 		while(block<numBlocks-1) {
-			int nextBlock = (int) Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
+			long nextBlock = Math.min(numBlocks-1, block+BLOCK_PER_BUFFER);
 			long nextBytePos = blocks.get(nextBlock);
-			
+
 			//System.out.println("Loading block: "+i+" from "+previous+" to "+ current+" of size "+ (current-previous));
-			data[buffer]=IOUtil.readBuffer(in, (int)(nextBytePos-bytePos), null);
-			
+			BigByteBuffer bigByteBuffer = BigByteBuffer.allocate(nextBytePos-bytePos);
+			bigByteBuffer.readStream(in, 0, bigByteBuffer.size(), listener);
+			data[buffer]=bigByteBuffer;
+
 			posFirst[buffer] = bytePos;
 			
 			bytePos = nextBytePos;

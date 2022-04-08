@@ -47,20 +47,20 @@ import java.util.Map;
 
 public class MultipleSectionDictionaryCat implements DictionaryCat {
 
-    private String location;
-    private int DEFAULT_BLOCK_SIZE = 16;
-    private int BLOCK_PER_BUFFER = 1000000;
+    private static final int DEFAULT_BLOCK_SIZE = 16;
+    private static final int BLOCK_PER_BUFFER = 1000000;
+    private static final String NO_DT_OBJECTS = "NO_DATATYPE";
+    private final String location;
     private long numShared;
 
-    private HashMap<String,CatMapping> allMappings = new HashMap<>();
+    private final HashMap<String,CatMapping> allMappings = new HashMap<>();
 
     private CatMappingBack mappingS;
-    private String NO_DT_OBJECTS = "NO_DATATYPE";
     public MultipleSectionDictionaryCat(String location)  {
         this.location = location;
     }
 
-    public void cat(Dictionary dictionary1, Dictionary dictionary2, ProgressListener listener){
+    public void cat(Dictionary dictionary1, Dictionary dictionary2, ProgressListener listener) throws IOException {
 
 
         // Initialize all mappings ......
@@ -73,27 +73,26 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         allMappings.put("O2",new CatMapping(location, "O2",dictionary2.getNAllObjects()));
         allMappings.put("SH1",new CatMapping(location,"SH1",dictionary1.getShared().getNumberOfElements()));
         allMappings.put("SH2",new CatMapping(location,"SH2",dictionary2.getShared().getNumberOfElements()));
-        Iterator hmIterator1 = dictionary1.getAllObjects().entrySet().iterator();
+        Iterator<Map.Entry<String, DictionarySection>> hmIterator1 = dictionary1.getAllObjects().entrySet().iterator();
         int countSubSections1 = 0;
         int countSubSections2 = 0;
 
         while (hmIterator1.hasNext()){
-            Map.Entry entry = (Map.Entry)hmIterator1.next();
+            Map.Entry<String, DictionarySection> entry = hmIterator1.next();
             String prefix = "sub"+countSubSections1;
             if((entry.getKey()).equals(NO_DT_OBJECTS))
-                prefix = (String)entry.getKey();
+                prefix = entry.getKey();
             allMappings.put(prefix+"1",new CatMapping(location,prefix+"1",
-                    ((DictionarySection)entry.getValue()).getNumberOfElements()));
+                    entry.getValue().getNumberOfElements()));
             countSubSections1++;
         }
-        Iterator hmIterator2 = dictionary2.getAllObjects().entrySet().iterator();
+        Iterator<Map.Entry<String, DictionarySection>> hmIterator2 = dictionary2.getAllObjects().entrySet().iterator();
         while (hmIterator2.hasNext()){
-            Map.Entry entry = (Map.Entry)hmIterator2.next();
+            Map.Entry<String, DictionarySection> entry = hmIterator2.next();
             String prefix = "sub"+countSubSections2;
             if((entry.getKey()).equals(NO_DT_OBJECTS))
-                prefix = (String)entry.getKey();
-            allMappings.put(prefix+"2",new CatMapping(location,prefix+"2",
-                    ((DictionarySection)entry.getValue()).getNumberOfElements()));
+                prefix = entry.getKey();
+            allMappings.put(prefix+"2",new CatMapping(location,prefix+"2", entry.getValue().getNumberOfElements()));
             countSubSections2++;
         }
 
@@ -104,7 +103,6 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         int numCommonPredicates = 0;
         CatIntersection commonP1P2 = new CatIntersection(new CatWrapper(dictionary1.getPredicates().getSortedEntries(),"P1"),
                 new CatWrapper(dictionary2.getPredicates().getSortedEntries(),"P2"));
-        long maxPredicates = dictionary1.getPredicates().getNumberOfElements()+dictionary2.getPredicates().getNumberOfElements();
         while (commonP1P2.hasNext()){
             commonP1P2.next();
             numCommonPredicates++;
@@ -210,16 +208,16 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
 
             if(hmIterator1.hasNext()){
                 if(!skip1) {
-                    Map.Entry entry1 = (Map.Entry) hmIterator1.next();
-                    section1 = (DictionarySection)entry1.getValue();
-                    dataType1 = entry1.getKey().toString();
+                    Map.Entry<String, DictionarySection> entry1 = hmIterator1.next();
+                    section1 = entry1.getValue();
+                    dataType1 = entry1.getKey();
                 }
             }
             if(hmIterator2.hasNext()){
                 if(!skip2){
-                    Map.Entry entry2 = (Map.Entry)hmIterator2.next();
-                    section2 = (DictionarySection)entry2.getValue();
-                    dataType2 = entry2.getKey().toString();
+                    Map.Entry<String, DictionarySection> entry2 = hmIterator2.next();
+                    section2 = entry2.getValue();
+                    dataType2 = entry2.getKey();
                 }
             }
             if(section1 != null && section2 != null && dataType1.equals(dataType2)) {
@@ -298,9 +296,9 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             ArrayList<Iterator<CatElement>> countObjectsList = new ArrayList<>();
             if(hmIterator1.hasNext()){
                 if(!skip1) {
-                    Map.Entry entry = (Map.Entry) hmIterator1.next();
-                    dataType1 = (String) entry.getKey();
-                    section1 = ((DictionarySection) entry.getValue());
+                    Map.Entry<String, DictionarySection> entry = hmIterator1.next();
+                    dataType1 = entry.getKey();
+                    section1 = entry.getValue();
                     prefix1 = "sub" + countSubSections1;
                     if (dataType1.equals(NO_DT_OBJECTS))
                         prefix1 = dataType1;
@@ -309,9 +307,9 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             }
             if(hmIterator2.hasNext()){
                 if(!skip2) {
-                    Map.Entry entry = (Map.Entry) hmIterator2.next();
-                    dataType2 = (String) entry.getKey();
-                    section2 = ((DictionarySection) entry.getValue());
+                    Map.Entry<String, DictionarySection> entry = hmIterator2.next();
+                    dataType2 = entry.getKey();
+                    section2 = entry.getValue();
                     prefix2 = "sub" + countSubSections2;
                     if (dataType2.equals(NO_DT_OBJECTS))
                         prefix2 = dataType2;
@@ -427,7 +425,6 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                 numCommonS1O2++;
             }
         }
-        Iterator<? extends CharSequence> it = dictionary2.getSubjects().getSortedEntries();
         int numCommonO1S2 = 0;
         if(dictionary1.getAllObjects().containsKey(NO_DT_OBJECTS)) {
             CatIntersection i2 = new CatIntersection(new CatWrapper(dictionary1.getAllObjects().get(NO_DT_OBJECTS).getSortedEntries(), NO_DT_OBJECTS + "1"), new CatWrapper(dictionary2.getSubjects().getSortedEntries(), "S2"));
@@ -484,7 +481,7 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                         }
                     }
                     InputStream in = new FileInputStream(location + "section" + i);
-                    int b = 0;
+                    int b;
                     while ((b = in.read(buf)) >= 0) {
                         outFinal.write(buf, 0, b);
                         outFinal.flush();
@@ -505,8 +502,8 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         countSubSections1 = 0;
         countSubSections2 = 0;
         while (hmIterator1.hasNext()){
-            Map.Entry entry = (Map.Entry)hmIterator1.next();
-            String dataType = (String)entry.getKey();
+            Map.Entry<String, DictionarySection> entry = hmIterator1.next();
+            String dataType = entry.getKey();
             String prefix = "sub"+countSubSections1;
             if(dataType.equals(NO_DT_OBJECTS))
                 prefix = dataType+"1";
@@ -529,8 +526,8 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         oldId = 0;
         hmIterator2 = dictionary2.getAllObjects().entrySet().iterator();
         while (hmIterator2.hasNext()){
-            Map.Entry entry = (Map.Entry)hmIterator2.next();
-            String dataType = (String)entry.getKey();
+            Map.Entry<String, DictionarySection> entry = hmIterator2.next();
+            String dataType = entry.getKey();
             String prefix = "sub"+countSubSections2;
             if(dataType.equals(NO_DT_OBJECTS))
                 prefix = dataType+"2";
@@ -548,8 +545,6 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                 }
             }
         }
-        //printMappings();
-        //System.out.println("Num shared: "+numShared);
         //calculate the inverse mapping for the subjects, i.e. from the new dictionary subject section to the old ones
         mappingS = new CatMappingBack(location,numSubjects+numShared);
 
@@ -577,43 +572,30 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             }
         }
     }
-    public void printMappings(){
-        Iterator iterMap = allMappings.entrySet().iterator();
-        while (iterMap.hasNext()){
-            Map.Entry entry = (Map.Entry)iterMap.next();
-            CatMapping mapping = (CatMapping)entry.getValue();
-            System.out.println(entry.getKey());
-            for(int i=0;i<mapping.getSize();i++){
-                System.out.println(mapping.getMapping(i)+" type:"+mapping.getType(i));
-            }
-            System.out.println("----------------------");
+    private void catSection(long numEntries, int type, CatUnion itAdd , CatUnion itSkip , HashMap<String,CatMapping> mappings, ProgressListener listener) throws IOException {
+    long numberElements = 0;
+        String name;
+        switch (type) {
+            case 2:
+                name = "subject";
+                break;
+            case 3:
+                name = "object";
+                 break;
+            case 4:
+                name = "predicate";
+                break;
+            default:
+                name = "";
+                break;
         }
-    }
-    public long catSection(long numEntries, int type, CatUnion itAdd , CatUnion itSkip , HashMap<String,CatMapping> mappings, ProgressListener listener) {
-        CRCOutputStream out_buffer = null;
-        long numberElements = 0;
-        try {
-            out_buffer = new CRCOutputStream(new FileOutputStream(location+"section_buffer_"+type), new CRC32());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        try {
-            String name = "";
-            switch (type) {
-                case 2:
-                    name = "subject";
-                    break;
-                case 3:
-                    name = "object";
-                     break;
-                case 4:
-                    name = "predicate";
-            }
-            long storedBuffersSize = 0;
-            long numBlocks = 0;
-            SequenceLog64BigDisk blocks = new SequenceLog64BigDisk(location+"SequenceLog64BigDisk"+type,64, numEntries/16);
-            ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);
+        long storedBuffersSize = 0;
+        long numBlocks = 0;
+        SequenceLog64BigDisk blocks;
+        ByteArrayOutputStream byteOut;
+        try (CRCOutputStream outBuffer = new CRCOutputStream(new FileOutputStream(location+"section_buffer_"+type), new CRC32())) {
+            blocks = new SequenceLog64BigDisk(location+"SequenceLog64BigDisk"+type,64, numEntries/16);
+            byteOut = new ByteArrayOutputStream(16*1024);
             if (numEntries > 0) {
                 CharSequence previousStr=null;
 
@@ -624,32 +606,29 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                 while (itAdd.hasNext()){
                     ListenerUtil.notifyCond(listener, "Analyze section "+name+" ", numberElements, numberElements, numEntries);
                     CatElement nextElement = itAdd.next();
-                    Boolean skip = false;
-                    if(skipElement!= null && nextElement.entity.toString().equals(skipElement.entity.toString()))
-                        skip = true;
-                    else {
+                    if (skipElement!= null && nextElement.entity.toString().equals(skipElement.entity.toString())) {
+                        if(itSkip.hasNext())
+                            skipElement = itSkip.next();
+                        else
+                            skipElement = null;
+                    } else {
                         for (int i = 0; i < nextElement.IDs.size(); i++) {
                             long id = nextElement.IDs.get(i).pos;
                             String iter = nextElement.IDs.get(i).iter.toString();
                             mappings.get(iter).set(id - 1, numberElements + 1, type);
                         }
-                    }
-                    if(skip){
-                        if(itSkip.hasNext())
-                            skipElement = itSkip.next();
-                        else
-                            skipElement = null;
-                    }else{
+
                         String str = nextElement.entity.toString();
                         if (numberElements % DEFAULT_BLOCK_SIZE == 0) {
                             blocks.append(storedBuffersSize + byteOut.size());
                             numBlocks++;
 
                             // if a buffer is filled, flush the byteOut and store it
-                            if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0)) {
+                            if (((numBlocks - 1) % BLOCK_PER_BUFFER == 0) && ((numBlocks - 1) / BLOCK_PER_BUFFER != 0) || byteOut.size() > 200000) {
                                 storedBuffersSize += byteOut.size();
                                 byteOut.flush();
-                                IOUtil.writeBuffer(out_buffer, byteOut.toByteArray(), 0, byteOut.toByteArray().length, null);
+                                byte[] array = byteOut.toByteArray();
+                                IOUtil.writeBuffer(outBuffer, array, 0, array.length, null);
                                 byteOut.close();
                                 byteOut = new ByteArrayOutputStream(16 * 1024);
                             }
@@ -676,39 +655,35 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             blocks.aggressiveTrimToSize();
             byteOut.flush();
             //section.addBuffer(buffer, byteOut.toByteArray());
-            IOUtil.writeBuffer(out_buffer, byteOut.toByteArray(), 0, byteOut.toByteArray().length, null);
-            out_buffer.writeCRC();
-            out_buffer.close();
+            IOUtil.writeBuffer(outBuffer, byteOut.toByteArray(), 0, byteOut.toByteArray().length, null);
+            outBuffer.writeCRC();
+        }
             //Save the section conforming to the HDT format
-            CRCOutputStream out = new CRCOutputStream(new FileOutputStream(location+"section"+type), new CRC8());
+        try (CRCOutputStream out = new CRCOutputStream(new FileOutputStream(location+"section"+type), new CRC8())) {
             //write the index type
             out.write(2);
             //write the number of strings
             VByte.encode(out, numberElements);
             //write the datasize
-            VByte.encode(out, storedBuffersSize+byteOut.size());
+            VByte.encode(out, storedBuffersSize + byteOut.size());
             //wirte the blocksize
             VByte.encode(out, DEFAULT_BLOCK_SIZE);
             //write CRC
             out.writeCRC();
             //write the blocks
-            blocks.save(out, null);	// Write blocks directly to output, they have their own CRC check.
+            blocks.save(out, null);    // Write blocks directly to output, they have their own CRC check.
             blocks.close();
             //write out_buffer
             byte[] buf = new byte[100000];
-            InputStream in = new FileInputStream(location+"section_buffer_"+type);
-            int b = 0;
-            while ( (b = in.read(buf)) >= 0) {
+            InputStream in = new FileInputStream(location + "section_buffer_" + type);
+            int b;
+            while ((b = in.read(buf)) >= 0) {
                 out.write(buf, 0, b);
                 out.flush();
             }
-            out.close();
-            Files.delete(Paths.get(location+"section_buffer_"+type));
-            Files.delete(Paths.get(location+"SequenceLog64BigDisk"+type));
-        } catch (IOException e) {
-            e.printStackTrace();
         }
-        return numberElements;
+        Files.deleteIfExists(Paths.get(location+"section_buffer_"+type));
+        Files.deleteIfExists(Paths.get(location+"SequenceLog64BigDisk"+type));
     }
 
     public CatMappingBack getMappingS() {

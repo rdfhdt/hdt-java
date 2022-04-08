@@ -5,15 +5,22 @@ import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
-import org.rdfhdt.hdt.dictionary.impl.utilCat.*;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatElement;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatIntersection;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.CatUnion;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.SectionUtil;
 import org.rdfhdt.hdt.dictionary.impl.utilDiff.DiffWrapper;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,8 +30,8 @@ import java.util.Map;
 
 public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
-    private String location;
-    private HashMap<String,CatMapping> allMappings = new HashMap<>();
+    private final String location;
+    private final HashMap<String,CatMapping> allMappings = new HashMap<>();
     private CatMapping mappingBack;
     public long numShared;
     public MultipleSectionDictionaryDiff(String location){
@@ -82,11 +89,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
 
         SharedWrapper sharedWrapper = new SharedWrapper(0, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
-        long numNewSubj = 0;
-        while (sharedWrapper.hasNext()){
-            numNewSubj++;
-            sharedWrapper.next();
-        }
+        long numNewSubj = sharedWrapper.count();
         sharedWrapper = new SharedWrapper(0, bitmaps.get("SH_S"), bitmaps.get("SH_O"), dictionary.getShared().getSortedEntries());
         listSkipSubj.add(sharedWrapper);
 
@@ -235,7 +238,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         }
 
     }
-    private long createNoDataTypeSection(Map<String, ModifiableBitmap> bitmaps,Dictionary dictionary,long numObjectsAlreadyAdded,int type){
+    private long createNoDataTypeSection(Map<String, ModifiableBitmap> bitmaps,Dictionary dictionary,long numObjectsAlreadyAdded,int type) throws IOException {
         Bitmap objectsBitMap = bitmaps.get("NO_DATATYPE");
         Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get("NO_DATATYPE").getSortedEntries();
 
@@ -246,11 +249,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
         // flag = 1 for objects
         SharedWrapper sharedWrapper = new SharedWrapper(1, bitmaps.get("SH_S"), bitmaps.get("SH_O"),dictionary.getShared().getSortedEntries());
-        long numNewObj = 0;
-        while (sharedWrapper.hasNext()){
-            numNewObj++;
-            sharedWrapper.next();
-        }
+        long numNewObj = sharedWrapper.count();
         sharedWrapper = new SharedWrapper(1, bitmaps.get("SH_S"), bitmaps.get("SH_O"),dictionary.getShared().getSortedEntries());
         listSkipObjs.add(sharedWrapper);
 
@@ -259,7 +258,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         SectionUtil.createSection(location,numObject,type,new CatUnion(listSkipObjs),new CatUnion(new ArrayList<>()),allMappings,numObjectsAlreadyAdded,null);
         return numObject;
     }
-    private class SharedWrapper implements Iterator<CatElement> {
+    private static class SharedWrapper implements Iterator<CatElement> {
         private final Bitmap bitmapSub;
         private final Bitmap bitmapObj;
         private final Iterator<? extends CharSequence> sectionIter;
@@ -295,6 +294,15 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         @Override
         public CatElement next() {
             return next;
+        }
+
+        public int count() {
+            int i = 0;
+            while (hasNext()) {
+                // next();
+                i++;
+            }
+            return i;
         }
     }
     public HashMap<String, CatMapping> getAllMappings() {

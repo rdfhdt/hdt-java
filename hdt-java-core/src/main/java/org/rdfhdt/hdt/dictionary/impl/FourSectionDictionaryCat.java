@@ -36,12 +36,10 @@ import java.util.*;
 
 public class FourSectionDictionaryCat implements DictionaryCat {
 
-    private String location;
-    private int DEFAULT_BLOCK_SIZE = 16;
-    private int BLOCK_PER_BUFFER = 1000000;
+    private final HashMap<String,CatMapping> allMappings = new HashMap<>();
+    private final String location;
     private long numShared;
 
-    private HashMap<String,CatMapping> allMappings = new HashMap<>();
 
     private CatMappingBack mappingS;
 
@@ -49,7 +47,7 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         this.location = location;
     }
 
-    public void cat(Dictionary dictionary1, Dictionary dictionary2, ProgressListener listener){
+    public void cat(Dictionary dictionary1, Dictionary dictionary2, ProgressListener listener) throws IOException {
         allMappings.put("P1",new CatMapping(location,"P1",dictionary1.getPredicates().getNumberOfElements()));
         allMappings.put("P2",new CatMapping(location,"P2",dictionary2.getPredicates().getNumberOfElements()));
         allMappings.put("S1",new CatMapping(location,"S1",dictionary1.getSubjects().getNumberOfElements()));
@@ -64,7 +62,6 @@ public class FourSectionDictionaryCat implements DictionaryCat {
 
         int numCommonPredicates = 0;
         CatIntersection commonP1P2 = new CatIntersection(new CatWrapper(dictionary1.getPredicates().getSortedEntries(),"P1"),new CatWrapper(dictionary2.getPredicates().getSortedEntries(),"P2"));
-        long maxPredicates = dictionary1.getPredicates().getNumberOfElements()+dictionary2.getPredicates().getNumberOfElements();
         while (commonP1P2.hasNext()){
             commonP1P2.next();
             numCommonPredicates++;
@@ -76,8 +73,6 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         addPredicatesList.add(new CatWrapper(dictionary1.getPredicates().getSortedEntries(),"P1"));
         addPredicatesList.add(new CatWrapper(dictionary2.getPredicates().getSortedEntries(),"P2"));
         CatUnion itAddPredicates = new CatUnion(addPredicatesList);
-//        while (itAddPredicates.hasNext())
-//            System.out.println(itAddPredicates.next().entity);
         SectionUtil.createSection(location,numPredicates, 4,itAddPredicates, new CatUnion(new ArrayList<>()),allMappings,0, listener);
         System.out.println("SUBJECTS-------------------");
         ArrayList<Iterator<CatElement>> skipSubjectList = new ArrayList<>();
@@ -160,7 +155,6 @@ public class FourSectionDictionaryCat implements DictionaryCat {
             i2.next();
             numCommonS1O2++;
         }
-        Iterator<? extends CharSequence> it = dictionary2.getSubjects().getSortedEntries();
         i2 = new CatIntersection(new CatWrapper(dictionary1.getObjects().getSortedEntries(),"O1"), new CatWrapper(dictionary2.getSubjects().getSortedEntries(),"S2"));
         int numCommonO1S2=0;
         while (i2.hasNext()){
@@ -210,7 +204,7 @@ public class FourSectionDictionaryCat implements DictionaryCat {
                 }
                 try {
                     InputStream in = new FileInputStream(location + "section" + j);
-                    int b = 0;
+                    int b;
                     while ((b = in.read(buf)) >= 0) {
                         outFinal.write(buf, 0, b);
                         outFinal.flush();

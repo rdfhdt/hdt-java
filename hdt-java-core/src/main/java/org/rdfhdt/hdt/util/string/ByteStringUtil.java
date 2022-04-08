@@ -32,6 +32,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -65,11 +66,20 @@ public class ByteStringUtil {
 		}
 		return new String(arr, STRING_ENCODING);
 	}
-	
+
 	public static int strlen(byte [] buff, int off) {
 		int len = buff.length;
 		int pos = off;
 		while(pos<len && buff[pos]!=0) {
+			pos++;
+		}
+		return pos-off;
+	}
+
+	public static long strlen(BigByteBuffer buff, long off) {
+		long len = buff.size();
+		long pos = off;
+		while(pos<len && buff.get(pos) != 0) {
 			pos++;
 		}
 		return pos-off;
@@ -99,13 +109,13 @@ public class ByteStringUtil {
 		}
 		return delta-from;
 	}
-	
+
 	public static int strcmp(CharSequence str, byte [] buff2, int off2) {
 		byte [] buff1;
 		int off1;
 		int len1;
 		int len2=buff2.length;
-		
+
 		if(str instanceof CompactString) {
 			buff1 = ((CompactString) str).getData();
 			off1=0;
@@ -121,11 +131,11 @@ public class ByteStringUtil {
 		} else {
 			throw new NotImplementedException();
 		}
-		
+
 		int n = Math.min(len1-off1, len2-off2);
-		
+
 		int p1 = off1;
-		int p2 = off2;		
+		int p2 = off2;
 		while( n-- != 0) {
 			int a = buff1[p1++] & 0xFF;
 			int b = buff2[p2++] & 0xFF;
@@ -140,12 +150,63 @@ public class ByteStringUtil {
 				}
 			}
 		}
-		
+
 		if(p1-off1<len1 && buff1[p1]!=0){
 			// Still remaining in string one, second is shorter
 			return 1;
-		} 
+		}
 		if(p2-off2<len2 && buff2[p2]!=0){
+			// Still remaining in string two, first is shorter.
+			return -1;
+		}
+		return 0;
+	}
+	public static int strcmp(CharSequence str, BigByteBuffer buff2, long off2) {
+		byte [] buff1;
+		int off1;
+		int len1;
+		long len2=buff2.size();
+
+		if(str instanceof CompactString) {
+			buff1 = ((CompactString) str).getData();
+			off1=0;
+			len1=buff1.length;
+		} else if(str instanceof String) {
+			buff1 = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
+			off1=0;
+			len1=buff1.length;
+		} else if(str instanceof ReplazableString) {
+			buff1 = ((ReplazableString) str).buffer;
+			off1=0;
+			len1= ((ReplazableString) str).used;
+		} else {
+			throw new NotImplementedException();
+		}
+
+		int n = Math.min(len1-off1, (int) (len2-off2));
+
+		int p1 = off1;
+		long p2 = off2;
+		while( n-- != 0) {
+			int a = buff1[p1++] & 0xFF;
+			int b = buff2.get(p2++) & 0xFF;
+			if(a!=b) {
+				return a-b;
+			}
+			if(a==0) {
+				if(b==0) {
+					return 0;
+				} else {
+					return -1;
+				}
+			}
+		}
+
+		if(p1-off1<len1 && buff1[p1]!=0){
+			// Still remaining in string one, second is shorter
+			return 1;
+		}
+		if(p2-off2<len2 && buff2.get(p2)!=0){
 			// Still remaining in string two, first is shorter.
 			return -1;
 		}
@@ -200,7 +261,7 @@ public class ByteStringUtil {
 			throw new IllegalArgumentException("Buffer is not Null-Terminated");
 		}
 	}
-	public static int strcmp(CharSequence str, BigMappedByteBuffer buffer, int offset) {
+	public static int strcmp(CharSequence str, BigMappedByteBuffer buffer, long offset) {
 		byte [] buf;
 		int len;
 
