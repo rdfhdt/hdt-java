@@ -33,10 +33,10 @@ public class RDFParserTar implements RDFParserCallback {
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
 	@Override
-	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 			InputStream input = IOUtil.getFileInputStream(fileName);
-			this.doParse(input, baseUri, notation, callback);
+			this.doParse(input, baseUri, notation, keepBNode, callback);
 			input.close();
 		} catch (Exception e) {
 			log.error("Unexpected exception parsing file: {}", fileName, e);
@@ -45,7 +45,7 @@ public class RDFParserTar implements RDFParserCallback {
 	}
 
 	@Override
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 
 			final TarArchiveInputStream debInputStream = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream("tar", input);
@@ -62,7 +62,7 @@ public class RDFParserTar implements RDFParserCallback {
 						log.info("Parse from tar: {} as {}", entry.getName(), guessnot);
 						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
 
-						parser.doParse(nonCloseIn, baseUri, guessnot, callback);
+						parser.doParse(nonCloseIn, baseUri, guessnot, keepBNode, callback);
 					}catch (IllegalArgumentException | ParserException e1) {
 						log.error("Unexpected exception.", e1);
 					}

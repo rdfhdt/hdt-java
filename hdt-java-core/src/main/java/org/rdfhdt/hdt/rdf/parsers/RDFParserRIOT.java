@@ -32,6 +32,9 @@ import java.io.InputStream;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
+import org.apache.jena.riot.RDFParser;
+import org.apache.jena.riot.RDFParserBuilder;
+import org.apache.jena.riot.lang.LabelToNode;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -49,6 +52,13 @@ import org.slf4j.LoggerFactory;
  */
 public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	private static final Logger log = LoggerFactory.getLogger(RDFParserRIOT.class);
+	private void parse(InputStream stream, String baseUri, Lang lang, boolean keepBNode) {
+		if (keepBNode) {
+			RDFParser.source(stream).base(baseUri).lang(lang).labelToNode(LabelToNode.createUseLabelAsGiven()).parse(this);
+		} else {
+			RDFParser.source(stream).base(baseUri).lang(lang).parse(this);
+		}
+	}
 
 	private RDFCallback callback;
 	private TripleString triple = new TripleString();
@@ -57,27 +67,9 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
 	@Override
-	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
-		this.callback = callback;
-		try {
-			InputStream input = IOUtil.getFileInputStream(fileName);
-			switch(notation) {
-				case NTRIPLES:
-					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
-					break;
-				case NQUAD:
-					RDFDataMgr.parse(this, input, Lang.NQUADS);
-					break;
-				case RDFXML:
-					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
-					break;
-				case N3:
-				case TURTLE:
-					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
-					break;
-				default:
-					throw new NotImplementedException("Parser not found for format "+notation);
-			}
+	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
+		try (InputStream input = IOUtil.getFileInputStream(fileName)) {
+			doParse(input, baseUri, notation, keepBNode, callback);
 		} catch (FileNotFoundException e) {
 			throw new ParserException(e);
 		} catch (Exception e) {
@@ -87,22 +79,22 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	}
 
 	@Override
-    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		this.callback = callback;
 		try {
 			switch(notation) {
 				case NTRIPLES:
-					RDFDataMgr.parse(this, input, Lang.NTRIPLES);
+					parse(input, baseUri, Lang.NTRIPLES, keepBNode);
 					break;
 				case NQUAD:
-					RDFDataMgr.parse(this, input, Lang.NQUADS);
+					parse(input, baseUri, Lang.NQUADS, keepBNode);
 					break;
 				case RDFXML:
-					RDFDataMgr.parse(this, input, baseUri, Lang.RDFXML);
+					parse(input, baseUri, Lang.RDFXML, keepBNode);
 					break;
 				case N3:
 				case TURTLE:
-					RDFDataMgr.parse(this, input, baseUri, Lang.TURTLE);
+					parse(input, baseUri, Lang.TURTLE, keepBNode);
 					break;
 				default:
 					throw new NotImplementedException("Parser not found for format "+notation);

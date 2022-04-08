@@ -86,7 +86,7 @@ public abstract class AbstractNTriplesParserTest {
         InputStream in = new ByteArrayInputStream(ntriples.getBytes(UTF_8));
 
         final List<TripleString> triples = new ArrayList<>();
-        createParser().doParse(in, "http://example.com#", RDFNotation.NTRIPLES,
+        createParser().doParse(in, "http://example.com#", RDFNotation.NTRIPLES, false,
                 new RDFParserCallback.RDFCallback() {
                     @Override
                     public void processTriple(TripleString triple, long pos) {

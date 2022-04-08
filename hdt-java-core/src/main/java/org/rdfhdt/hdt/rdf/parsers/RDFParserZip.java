@@ -29,10 +29,10 @@ public class RDFParserZip implements RDFParserCallback {
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
 	@Override
-	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 			InputStream input = IOUtil.getFileInputStream(fileName);
-			this.doParse(input, baseUri, notation, callback);
+			this.doParse(input, baseUri, notation, keepBNode, callback);
 			input.close();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -41,7 +41,7 @@ public class RDFParserZip implements RDFParserCallback {
 	}
 
 	@Override
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 			ZipInputStream zin = new ZipInputStream(input);
 			
@@ -56,7 +56,7 @@ public class RDFParserZip implements RDFParserCallback {
 						System.out.println("Parse from zip: "+zipEntry.getName()+" as "+guessnot);
 						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
 
-						parser.doParse(nonCloseIn, baseUri, guessnot, callback);
+						parser.doParse(nonCloseIn, baseUri, guessnot, keepBNode, callback);
 					}catch (IllegalArgumentException e1) {
 						e1.printStackTrace();
 					}catch (ParserException e1) {

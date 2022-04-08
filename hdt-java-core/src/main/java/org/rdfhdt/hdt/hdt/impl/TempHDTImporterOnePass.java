@@ -27,9 +27,6 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
-import java.io.IOException;
-import java.util.Iterator;
-
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -46,9 +43,11 @@ import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
+import java.util.Iterator;
+
 public class TempHDTImporterOnePass implements TempHDTImporter {
 
-	class TripleAppender implements RDFCallback {
+	static class TripleAppender implements RDFCallback {
 		final TempDictionary dict;
 		final TempTriples triples;
 		final ProgressListener listener;
@@ -76,10 +75,10 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 
 	@Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
-			throws IOException, ParserException {
+			throws ParserException {
 		
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-		
+
 		// Create Modifiable Instance
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.ONE_PASS);
 		TempDictionary dictionary = modHDT.getDictionary();
@@ -88,7 +87,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 
         // Load RDF in the dictionary and generate triples
         dictionary.startProcessing();
-        parser.doParse(filename, baseUri, notation, appender);
+        parser.doParse(filename, baseUri, notation, true, appender);
         dictionary.endProcessing();
 		
 		// Reorganize both the dictionary and the triples
@@ -100,8 +99,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 		return modHDT; 
 	}
 	
-	public TempHDT loadFromTriples(HDTOptions specs, Iterator<TripleString> iterator, String baseUri, ProgressListener listener)
-			throws IOException {
+	public TempHDT loadFromTriples(HDTOptions specs, Iterator<TripleString> iterator, String baseUri, ProgressListener listener) {
 			
 		// Create Modifiable Instance
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.ONE_PASS);

@@ -51,7 +51,7 @@ public class RDFParserSimple implements RDFParserCallback {
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.RDFCallback)
 	 */
 	@Override
-	public void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		BufferedReader reader;
 		try {
 			reader = IOUtil.getFileReader(fileName);
@@ -60,17 +60,17 @@ public class RDFParserSimple implements RDFParserCallback {
 			throw new ParserException(e);
 		}
 		try {
-			doParse(reader, baseUri, notation, callback);
+			doParse(reader, baseUri, notation, keepBNode, callback);
 		} finally {
 			IOUtil.closeQuietly(reader);
 		}
 	}
 
 	@Override
-    public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+    public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		try {
-			doParse(reader, baseUri, notation, callback);
+			doParse(reader, baseUri, notation, keepBNode, callback);
 		} finally {
 			try {
 				reader.close();
@@ -79,7 +79,7 @@ public class RDFParserSimple implements RDFParserCallback {
 		}
 	}
 
-	private void doParse(BufferedReader reader, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	private void doParse(BufferedReader reader, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 			String line;
 			long numLine = 1;

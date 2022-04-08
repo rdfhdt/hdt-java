@@ -44,6 +44,6 @@ public interface RDFParserCallback {
 		void processTriple(TripleString triple, long pos);
 	}
 	
-	void doParse(String fileName, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
-	void doParse(InputStream in, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException;
+	void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException;
+	void doParse(InputStream in, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException;
 }
