@@ -27,8 +27,6 @@
 
 package org.rdfhdt.hdt.hdt.impl;
 
-import java.io.IOException;
-
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -46,7 +44,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 public class TempHDTImporterTwoPass implements TempHDTImporter {
 
-	class DictionaryAppender implements RDFCallback {
+	static class DictionaryAppender implements RDFCallback {
 
 		final TempDictionary dict;
 		final ProgressListener listener;
@@ -77,7 +75,7 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 	 * @author mario.arias
 	 *
 	 */
-	class TripleAppender2 implements RDFCallback {
+	static class TripleAppender2 implements RDFCallback {
 		final TempDictionary dict;
 		final TempTriples triples;
 		final ProgressListener listener;
@@ -103,7 +101,7 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
     @Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
-			throws IOException, ParserException {
+			throws ParserException {
 		
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
 
@@ -114,14 +112,15 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 
 		// Load RDF in the dictionary
 		dictionary.startProcessing();
-		parser.doParse(filename, baseUri, notation, new DictionaryAppender(dictionary, listener));
+		parser.doParse(filename, baseUri, notation, true, new DictionaryAppender(dictionary, listener));
 		dictionary.endProcessing();
+
 
 		// Reorganize IDs before loading triples
 		modHDT.reorganizeDictionary(listener);
 
 		// Load triples (second pass)
-		parser.doParse(filename, baseUri, notation, new TripleAppender2(dictionary, triples, listener));
+		parser.doParse(filename, baseUri, notation, true, new TripleAppender2(dictionary, triples, listener));
 
 		//reorganize HDT
 		modHDT.reorganizeTriples(listener);

@@ -60,7 +60,7 @@ public class RDFParserRAR implements RDFParserCallback {
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
 	@Override
-	public void doParse(String rarFile, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(String rarFile, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		try {
 			
 			String [] cmdList1 = Arrays.copyOf(cmdList, cmdList.length);
@@ -90,7 +90,7 @@ public class RDFParserRAR implements RDFParserCallback {
 					Process processExtract = extractProcessBuilder.start();
 
 					InputStream in = processExtract.getInputStream();
-					parser.doParse(in, baseUri, guessnot, callback);
+					parser.doParse(in, baseUri, guessnot, keepBNode, callback);
 					
 					in.close();
 					processExtract.waitFor();
@@ -109,7 +109,7 @@ public class RDFParserRAR implements RDFParserCallback {
 	}
 
 	@Override
-	public void doParse(InputStream input, String baseUri, RDFNotation notation, RDFCallback callback) throws ParserException {
+	public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
 		throw new NotImplementedException();
 	}
 

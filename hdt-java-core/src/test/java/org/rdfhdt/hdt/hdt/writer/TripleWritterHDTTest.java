@@ -31,7 +31,7 @@ public class TripleWritterHDTTest {
 			final TripleWriterHDT wr = new TripleWriterHDT("http://example.org", new HDTSpecification(), file.toString(), false);
 			
 			RDFParserCallback pars = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES);
-			pars.doParse("data/test.nt", "http://example.org", RDFNotation.NTRIPLES, new RDFParserCallback.RDFCallback() {	
+			pars.doParse("data/test.nt", "http://example.org", RDFNotation.NTRIPLES, false, new RDFParserCallback.RDFCallback() {
 				@Override
 				public void processTriple(TripleString triple, long pos) {				
 					try {
