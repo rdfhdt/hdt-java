@@ -29,6 +29,8 @@ package org.rdfhdt.hdt.rdf;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserDir;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserHDT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserList;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRAR;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
@@ -50,8 +52,7 @@ public class RDFParserFactory {
 			case RDFXML:
 				return new RDFParserRIOT();
 			case DIR:
-				// FIXME: Implement
-				throw new NotImplementedException("RDFParserDir not implemented");
+				return new RDFParserDir();
 			case LIST:
 				return new RDFParserList();
 			case ZIP:
@@ -60,6 +61,8 @@ public class RDFParserFactory {
 				return new RDFParserTar();
 			case RAR:
 				return new RDFParserRAR();
+			case HDT:
+				return new RDFParserHDT();
 			case JSONLD:
 				// FIXME: Implement
 				throw new NotImplementedException("RDFParserJSONLD not implemented");

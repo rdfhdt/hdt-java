@@ -28,6 +28,9 @@
 package org.rdfhdt.hdt.enums;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 
 /**
  * Enumeration of the different valid notations for RDF data.
@@ -93,8 +96,13 @@ public enum RDFNotation {
 	/**
 	 * Directory with RDF content
 	 */
-	DIR
-	
+	DIR,
+
+	/**
+	 * HDT file
+	 */
+	HDT
+
 	;
 	
 	public static RDFNotation parse(String str) {
@@ -120,12 +128,22 @@ public enum RDFNotation {
 			return ZIP;
 		} else if(str.equals("list")) {
 			return LIST;
+		} else if(str.equals("hdt")) {
+			return HDT;
 		}
 		throw new IllegalArgumentException();
 	}
 	
 	public static RDFNotation guess(String fileName) throws IllegalArgumentException {
 		String str = fileName.toLowerCase();
+
+		try {
+			if (Files.isDirectory(Path.of(fileName))) {
+				return DIR;
+			}
+		} catch (InvalidPathException e) {
+			// not a valid path, so can't be a directory, ignore
+		}
 		
 		int idx = str.lastIndexOf('.');		
 		if(idx!=-1) {
@@ -152,8 +170,11 @@ public enum RDFNotation {
   		} else if(str.endsWith("zip")){
   			return ZIP;
   		} else if(str.endsWith("list")){
-  			return LIST;
-  		}
+			return LIST;
+		} else if(str.endsWith("hdt")){
+			return HDT;
+		}
+
 		throw new IllegalArgumentException("Could not guess the format for "+fileName);
 	}
 	
