@@ -143,11 +143,7 @@ public class ByteStringUtil {
 				return a-b;
 			}
 			if(a==0) {
-				if(b==0) {
-					return 0;
-				} else {
-					return -1;
-				}
+				return 0;
 			}
 		}
 
@@ -164,7 +160,7 @@ public class ByteStringUtil {
 	public static int strcmp(CharSequence str, BigByteBuffer buff2, long off2) {
 		byte [] buff1;
 		int off1;
-		int len1;
+		long len1;
 		long len2=buff2.size();
 
 		if(str instanceof CompactString) {
@@ -183,7 +179,7 @@ public class ByteStringUtil {
 			throw new NotImplementedException();
 		}
 
-		int n = Math.min(len1-off1, (int) (len2-off2));
+		int n = (int) Math.min(len1-off1, len2-off2);
 
 		int p1 = off1;
 		long p2 = off2;
@@ -194,11 +190,7 @@ public class ByteStringUtil {
 				return a-b;
 			}
 			if(a==0) {
-				if(b==0) {
-					return 0;
-				} else {
-					return -1;
-				}
+				return 0;
 			}
 		}
 
@@ -235,7 +227,7 @@ public class ByteStringUtil {
 
 		// Compare
 		int i=0;
-		int n = Math.min(len, buffer.capacity()-offset);
+		long n = Math.min(len, buffer.capacity()-offset);
 		while(i<n) {
 			int v1 = buf[i] & 0xFF;
 			int v2 = buffer.get(offset+i) & 0xFF;

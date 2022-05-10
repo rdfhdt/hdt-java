@@ -95,14 +95,14 @@ public class VByte {
 				throw new IllegalArgumentException();
 			}
 
-			out |= (readbyte & 127) << shift;
+			out |= (readbyte & 127L) << shift;
 
 			if(!in.hasRemaining()) throw new EOFException();
 			readbyte = in.get();
 
 			shift+=7;
 		}
-		out |= (readbyte & 127) << shift;
+		out |= (readbyte & 127L) << shift;
 		return out;
 	}
 
@@ -117,14 +117,14 @@ public class VByte {
 				throw new IllegalArgumentException();
 			}
 
-			out |= (readbyte & 127) << shift;
+			out |= (readbyte & 127L) << shift;
 
 			if(!in.hasRemaining()) throw new EOFException();
 			readbyte = in.get();
 
 			shift+=7;
 		}
-		out |= (readbyte & 127) << shift;
+		out |= (readbyte & 127L) << shift;
 		return out;
 	}
 	
@@ -149,11 +149,11 @@ public class VByte {
 		int i=0;
 		int shift=0;
 		while( (0x80 & data[offset+i])==0) {
-			out |= (data[offset+i] & 127) << shift;
+			out |= (data[offset+i] & 127L) << shift;
 			i++;
 			shift+=7;
 		}
-		out |= (data[offset+i] & 127) << shift;
+		out |= (data[offset+i] & 127L) << shift;
 		i++;
 		value.setValue(out);
 		return i;
@@ -164,11 +164,11 @@ public class VByte {
 		int i = 0;
 		int shift=0;
 		while( (0x80 & data.get(offset+i))==0) {
-			out |= (data.get(offset+i) & 127) << shift;
+			out |= (data.get(offset+i) & 127L) << shift;
 			i++;
 			shift+=7;
 		}
-		out |= (data.get(offset+i) & 127) << shift;
+		out |= (data.get(offset+i) & 127L) << shift;
 		i++;
 		value.setValue(out);
 		return i;
