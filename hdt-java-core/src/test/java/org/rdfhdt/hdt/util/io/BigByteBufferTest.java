@@ -9,6 +9,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
+import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -40,6 +43,7 @@ public class BigByteBufferTest {
 		// save the size if we want to update it
 		oldSize = BigByteBuffer.maxBufferSize;
 	}
+
 	@After
 	public void complete() {
 		BigByteBuffer.maxBufferSize = oldSize;
@@ -54,6 +58,7 @@ public class BigByteBufferTest {
 		Assert.assertEquals(8, buffer.getBuffers().size());
 		Assert.assertEquals(size, buffer.size());
 	}
+
 	@Test
 	@Ignore("large, should be run with at least 3G or ram -Xmx3G")
 	public void capacityBufferLarge() {
@@ -76,6 +81,7 @@ public class BigByteBufferTest {
 		supplier.reset();
 		supplier.generate(size / 10, size, e -> Assert.assertEquals(e.value, buffer.get(e.index)));
 	}
+
 	@Test
 	public void getArr() {
 		int size = 10000;
@@ -137,6 +143,7 @@ public class BigByteBufferTest {
 			assertArrayEquals(real, i, test, 0, test.length - i);
 		}
 	}
+
 	@Test
 	public void writeFileTest() throws IOException {
 		int size = BigByteBuffer.BUFFER_SIZE * 10;
@@ -167,6 +174,60 @@ public class BigByteBufferTest {
 			}
 
 			Files.deleteIfExists(f.toPath());
+		}
+	}
+
+	private CharSequence[] charSequences(String value) {
+		CharSequence[] out = new CharSequence[3];
+		out[0] = value;
+		byte[] bytes = value.getBytes(ByteStringUtil.STRING_ENCODING);
+		out[1] = new ReplazableString(bytes.length);
+		((ReplazableString) out[1]).append(bytes, 0, bytes.length);
+		out[2] = new CompactString(value);
+		return out;
+	}
+
+	private int normalizeCompare(int v) {
+		return Integer.compare(v, 0);
+	}
+
+	@Test
+	public void strcmpTest() {
+		String s1 = "aaaégbbbccc";
+		String s2 = "aaaéeccc";
+
+		CharSequence[] css1 = charSequences(s1);
+		CharSequence[] css2 = charSequences(s2);
+
+		byte[] bs1 = s1.getBytes(ByteStringUtil.STRING_ENCODING);
+		byte[] bs2 = s2.getBytes(ByteStringUtil.STRING_ENCODING);
+
+		BigByteBuffer.maxBufferSize = Math.max(bs1.length, bs2.length) / 2 + 1;
+
+		BigByteBuffer buffer1 = BigByteBuffer.allocate(bs1.length + 4);
+		BigByteBuffer buffer2 = BigByteBuffer.allocate(bs2.length + 5);
+		buffer1.set(1, bs1, 0, bs1.length);
+		buffer1.set(0, (byte) 13);
+		buffer1.set(bs1.length + 1, (byte) 0);
+		buffer1.set(bs1.length + 2, (byte) 42);
+		buffer1.set(bs1.length + 3, (byte) 32);
+		buffer2.set(2, bs2, 0, bs2.length);
+		buffer2.set(0, (byte) 27);
+		buffer2.set(1, (byte) 34);
+		buffer2.set(bs2.length + 2, (byte) 0);
+		buffer2.set(bs2.length + 3, (byte) 67);
+
+		Assert.assertEquals(ByteStringUtil.strlen(buffer1, 1), bs1.length);
+		Assert.assertEquals(ByteStringUtil.strlen(buffer2, 2), bs2.length);
+
+		for (CharSequence cs1 : css1) {
+			for (CharSequence cs2 : css2) {
+				Assert.assertEquals(normalizeCompare(ByteStringUtil.strcmp(cs1, buffer2, 2)), normalizeCompare(s1.compareTo(s2)));
+				Assert.assertEquals(normalizeCompare(ByteStringUtil.strcmp(cs2, buffer1, 1)), normalizeCompare(s2.compareTo(s1)));
+
+				Assert.assertEquals(ByteStringUtil.strcmp(cs1, buffer1, 1), 0);
+				Assert.assertEquals(ByteStringUtil.strcmp(cs2, buffer2, 2), 0);
+			}
 		}
 	}
 
