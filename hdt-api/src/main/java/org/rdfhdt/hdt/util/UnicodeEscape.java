@@ -140,7 +140,21 @@ public class UnicodeEscape {
         
         appendable.append(label.subSequence(last+1, label.length()));
     }
-    
+
+    /**
+     * Unescapes an escaped Unicode string. Any Unicode sequences
+     * (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>) are restored to the
+     * value indicated by the hexadecimal argument and any backslash-escapes
+     * (<code>\"</code>, <code>\\</code>, etc.) are decoded to their original form.
+     *
+     * @param s An escaped Unicode string.
+     * @return The unescaped string.
+     * @throws IllegalArgumentException If the supplied string is not a
+     * correctly escaped N-Triples string.
+     */
+    public static String unescapeString(String s) {
+        return unescapeString(s, 0, s.length());
+    }
     /**
      * Unescapes an escaped Unicode string. Any Unicode sequences
      * (<code>&#x5C;uxxxx</code> and <code>&#x5C;Uxxxxxxxx</code>) are restored to the
@@ -152,20 +166,19 @@ public class UnicodeEscape {
      * @throws IllegalArgumentException If the supplied string is not a
      * correctly escaped N-Triples string.
      */
-    public static String unescapeString(String s) {
-        int backSlashIdx = s.indexOf('\\');
+    public static String unescapeString(String s, int start, int sLength) {
+        int backSlashIdx = s.indexOf('\\', start);
 
-        if (backSlashIdx == -1) {
+        if (backSlashIdx == -1 || backSlashIdx >= sLength) {
             // No escaped characters found
-            return s;
+            return s.substring(start, sLength);
         }
 
-        int startIdx = 0;
-        int sLength = s.length();
+        int startIdx = start;
         StringBuilder sb = new StringBuilder(sLength);
 
-        while (backSlashIdx != -1) {
-            sb.append(s.substring(startIdx, backSlashIdx));
+        while (backSlashIdx != -1 && backSlashIdx < sLength) {
+            sb.append(s, startIdx, backSlashIdx);
 
             if (backSlashIdx + 1 >= sLength) {
                 throw new IllegalArgumentException("Unescaped backslash in: " + s);
@@ -238,7 +251,7 @@ public class UnicodeEscape {
             backSlashIdx = s.indexOf('\\', startIdx);
         }
 
-        sb.append(s.substring(startIdx));
+        sb.append(s, startIdx, sLength);
 
         return sb.toString();
     }

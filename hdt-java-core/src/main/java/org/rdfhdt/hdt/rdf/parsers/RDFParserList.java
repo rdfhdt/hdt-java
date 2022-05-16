@@ -45,6 +45,15 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  *
  */
 public class RDFParserList implements RDFParserCallback {
+	private final boolean simple;
+
+	public RDFParserList(boolean simple) {
+		this.simple = simple;
+	}
+
+	public RDFParserList() {
+		this(false);
+	}
 
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.RDFCallback)
@@ -88,7 +97,7 @@ public class RDFParserList implements RDFParserCallback {
 
 					RDFNotation guessnot = RDFNotation.guess(line);
 					System.out.println("Parse from list: "+line+" as "+guessnot);
-					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
+					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
 
 					parser.doParse(line, baseUri, guessnot, keepBNode, callback);
 				}

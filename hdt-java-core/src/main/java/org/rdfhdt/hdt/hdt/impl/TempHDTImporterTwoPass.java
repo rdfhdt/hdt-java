@@ -99,11 +99,17 @@ public class TempHDTImporterTwoPass implements TempHDTImporter {
 		}
 	}
 
-    @Override
+	private final boolean useSimple;
+
+	public TempHDTImporterTwoPass(boolean useSimple) {
+		this.useSimple = useSimple;
+	}
+
+	@Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws ParserException {
 		
-		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation, useSimple);
 
 		// Create Modifiable Instance and parser
 		TempHDT modHDT = new TempHDTImpl(specs, baseUri, ModeOfLoading.TWO_PASS);

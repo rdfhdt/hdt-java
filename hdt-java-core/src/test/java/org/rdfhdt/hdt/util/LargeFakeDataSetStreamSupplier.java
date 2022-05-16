@@ -119,11 +119,11 @@ public class LargeFakeDataSetStreamSupplier {
 	}
 
 	private CharSequence createPredicate() {
-		return "<http://w" + random.nextInt(maxElementSplit) + "i.test.org/#Obj" + random.nextInt(maxElementSplit) + ">";
+		return "http://w" + random.nextInt(maxElementSplit) + "i.test.org/#Obj" + random.nextInt(maxElementSplit);
 	}
 
 	private CharSequence createType() {
-		return "<http://wti.test.org/#Obj" + random.nextInt(maxFakeType) + ">";
+		return "http://wti.test.org/#Obj" + random.nextInt(maxFakeType);
 	}
 
 	private CharSequence createValue() {
@@ -137,7 +137,7 @@ public class LargeFakeDataSetStreamSupplier {
 			return text + "@" + stringNameOfInt(random.nextInt(maxElementSplit));
 		} else {
 			// typed node
-			return text + "^^" + createType();
+			return text + "^^<" + createType() + ">";
 		}
 	}
 

@@ -85,11 +85,28 @@ public class RDFParserSimple implements RDFParserCallback {
 			long numLine = 1;
 			TripleString triple = new TripleString();
 			while((line=reader.readLine())!=null) {
-
-				line = line.trim().replaceAll("\\t"," ");
-				if(!line.startsWith("#")) {
-					triple.read(line);
-					if(!triple.hasEmpty()) {
+				// trim, find start
+				int start = 0;
+				while (start < line.length()) {
+					char c = line.charAt(start);
+					if (c != ' ' && c != '\t') {
+						break;
+					}
+					start++;
+				}
+				// trim, find end
+				int end = line.length() - 1;
+				while (end >= 0 ) {
+					char c = line.charAt(end);
+					if (c != ' ' && c != '\t') {
+						break;
+					}
+					end--;
+				}
+				// check that we have at least one element and this line isn't a comment
+				if (start + 1 < end && line.charAt(start) != '#') {
+					triple.read(line, start, end);
+					if (!triple.hasEmpty()) {
 						//System.out.println(triple);
 						callback.processTriple(triple, 0);
 					} else {
