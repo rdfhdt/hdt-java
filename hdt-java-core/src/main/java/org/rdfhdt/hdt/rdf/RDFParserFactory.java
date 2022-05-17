@@ -34,6 +34,7 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserHDT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserList;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRAR;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
+import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserZip;
 
@@ -43,24 +44,29 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserZip;
  */
 public class RDFParserFactory {
 	public static RDFParserCallback getParserCallback(RDFNotation notation) {
-		
+		return getParserCallback(notation, false);
+	}
+	public static RDFParserCallback getParserCallback(RDFNotation notation, boolean useSimple) {
 		switch(notation) {
-			case NTRIPLES:	
+			case NTRIPLES:
+				if (useSimple) {
+					return new RDFParserSimple();
+				}
 			case NQUAD:
 			case TURTLE:
 			case N3:
 			case RDFXML:
 				return new RDFParserRIOT();
 			case DIR:
-				return new RDFParserDir();
+				return new RDFParserDir(useSimple);
 			case LIST:
 				return new RDFParserList();
 			case ZIP:
-				return new RDFParserZip();
+				return new RDFParserZip(useSimple);
 			case TAR:
-				return new RDFParserTar();
+				return new RDFParserTar(useSimple);
 			case RAR:
-				return new RDFParserRAR();
+				return new RDFParserRAR(useSimple);
 			case HDT:
 				return new RDFParserHDT();
 			case JSONLD:

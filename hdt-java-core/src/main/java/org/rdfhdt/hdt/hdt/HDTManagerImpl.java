@@ -25,6 +25,11 @@ import org.rdfhdt.hdt.util.StopWatch;
 
 public class HDTManagerImpl extends HDTManager {
 
+	private boolean useSimple(HDTOptions spec) {
+		String value = spec.get("parser.ntSimpleParser");
+		return value != null && !value.isEmpty() && !value.equals("false");
+	}
+
 	@Override
 	public HDTOptions doReadOptions(String file) throws IOException {
 		return new HDTSpecification(file);
@@ -90,9 +95,9 @@ public class HDTManagerImpl extends HDTManager {
 		String loaderType = spec.get("loader.type");
 		TempHDTImporter loader;
 		if ("two-pass".equals(loaderType)) {
-			loader = new TempHDTImporterTwoPass();
+			loader = new TempHDTImporterTwoPass(useSimple(spec));
 		} else {
-			loader = new TempHDTImporterOnePass();
+			loader = new TempHDTImporterOnePass(useSimple(spec));
 		}
 		
 		// Create TempHDT
@@ -118,7 +123,7 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	public HDT doGenerateHDT(Iterator<TripleString> triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
 		//choose the importer
-		TempHDTImporterOnePass loader = new TempHDTImporterOnePass();
+		TempHDTImporterOnePass loader = new TempHDTImporterOnePass(false);
 
 		// Create TempHDT
 		TempHDT modHdt = loader.loadFromTriples(spec, triples, baseURI, listener);

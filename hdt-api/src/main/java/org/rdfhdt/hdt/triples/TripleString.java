@@ -204,46 +204,91 @@ public class TripleString {
 	 * @throws ParserException if the line is not RDF complient
 	 */
 	public void read(String line) throws ParserException {
+		read(line, 0, line.length());
+	}
+
+	private int searchNextTabOrSpace(String line, int start, int end) {
+		// searching space
+		int sindex = line.indexOf(' ', start);
+		if (sindex != -1 && sindex < end) {
+			return sindex;
+		}
+
+		// not found, searching tabs
+		int tindex = line.indexOf('\t', start);
+		if (tindex != -1 && tindex < end) {
+			return tindex;
+		}
+
+		// not found
+		return -1;
+	}
+
+	/**
+	 * Read from a line, where each component is separated by space.
+	 * @param line line to read
+	 * @throws ParserException if the line is not RDF complient
+	 */
+	public void read(String line, int start, int end) throws ParserException {
 		int split, posa, posb;
 		this.clear();
 
-		line = line.replace("\\t"," ");
-
 		// SET SUBJECT
-		posa = 0;
-		posb = split = line.indexOf(' ', posa);
+		posa = start;
+		posb = split = searchNextTabOrSpace(line, posa, end);
 
-		if(posb==-1) return;					// Not found, error.
-		if(line.charAt(posa)=='<') posa++;		// Remove <
-		if(line.charAt(posb-1)=='>') posb--;	// Remove >
+		if (posb == -1) {
+			// Not found, error.
+			return;
+		}
+		if (line.charAt(posa) == '<') {
+			posa++;        // Remove <
+			if (line.charAt(posb-1) == '>') {
+				posb--;    // Remove >
+			}
+		}
 
-		this.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		this.setSubject(UnicodeEscape.unescapeString(line, posa, posb));
 
 		// SET PREDICATE
-		posa = split+1;
-		posb = split = line.indexOf(' ', posa);
+		posa = split + 1;
+		posb = split = searchNextTabOrSpace(line, posa, end);
 
-		if(posb==-1) return;
-		if(line.charAt(posa)=='<') posa++;
-		if(posb>posa && line.charAt(posb-1)=='>') posb--;
+		if (posb == -1) {
+			return;
+		}
+		if (line.charAt(posa) == '<') {
+			posa++;
+			if (posb > posa && line.charAt(posb - 1) == '>') {
+				posb--;
+			}
+		}
 
-		this.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		this.setPredicate(UnicodeEscape.unescapeString(line, posa, posb));
 
 		// SET OBJECT
-		posa = split+1;
-		posb = line.length();
+		posa = split + 1;
+		posb = end;
 
-		if(line.charAt(posb-1)=='.') posb--;	// Remove trailing <space> <dot> from NTRIPLES.
-		if(line.charAt(posb-1)==' ') posb--;
+		// Remove trailing <space> <dot> from NTRIPLES.
+		if (line.charAt(posb-1) == '.') {
+			posb--;
+		}
+		char prev = line.charAt(posb-1);
+		if (prev == ' ' || prev == '\t') {
+			posb--;
+		}
 
-		if(line.charAt(posa)=='<') {
+		if (line.charAt(posa) == '<') {
 			posa++;
 
 			// Remove trailing > only if < appears, so "some"^^<http://datatype> is kept as-is.
-			if(posb>posa && line.charAt(posb-1)=='>') posb--;
+			if (posb > posa && line.charAt(posb-1)=='>') {
+				posb--;
+			}
 		}
 
-		this.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		this.setObject(UnicodeEscape.unescapeString(line, posa, posb));
 	}
 
 	/*

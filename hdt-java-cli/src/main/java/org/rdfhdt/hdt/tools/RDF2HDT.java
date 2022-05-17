@@ -71,9 +71,12 @@ public class RDF2HDT implements ProgressListener {
 	
 	@Parameter(names = "-index", description = "Generate also external indices to solve all queries")
 	public boolean generateIndex;
-	
+
 	@Parameter(names = "-quiet", description = "Do not show progress of the conversion")
 	public boolean quiet;
+
+	@Parameter(names = "-canonicalntfile", description = "Only for NTriples input. Use a Fast NT file parser the input should be in a canonical form. See https://www.w3.org/TR/n-triples/#h2_canonical-ntriples")
+	public boolean ntSimpleLoading;
 	
 	public void execute() throws ParserException, IOException {
 		HDTSpecification spec;
@@ -88,7 +91,7 @@ public class RDF2HDT implements ProgressListener {
 		if(baseURI==null) {
 			baseURI = "file://"+rdfInput;
 		}
-		
+
 		RDFNotation notation=null;
 		if(rdfType!=null) {
 			try {
@@ -105,6 +108,10 @@ public class RDF2HDT implements ProgressListener {
 				System.out.println("Could not guess notation for "+rdfInput+" Trying NTriples");
 				notation = RDFNotation.NTRIPLES;
 			}
+		}
+
+		if (ntSimpleLoading) {
+			spec.set("parser.ntSimpleParser", "true");
 		}
 
 		StopWatch sw = new StopWatch();

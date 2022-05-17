@@ -32,7 +32,15 @@ public class RDFParserRAR implements RDFParserCallback {
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
 	private static Boolean available;
-	
+	private boolean simple;
+
+	public RDFParserRAR(boolean simple) {
+		this.simple = simple;
+	}
+	public RDFParserRAR() {
+		this(false);
+	}
+
 	// List files in rar
 //	unrar vb FILE.rar
 
@@ -83,7 +91,7 @@ public class RDFParserRAR implements RDFParserCallback {
 				if(guessnot!=null) {
 					// Create 
 					log.info("Parse from rar: {} as {}", fileName, guessnot);
-					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
+					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
 
 					cmdExtract[4]=fileName;
 					ProcessBuilder extractProcessBuilder = new ProcessBuilder(cmdExtract);

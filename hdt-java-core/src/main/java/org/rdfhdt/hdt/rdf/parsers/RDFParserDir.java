@@ -20,6 +20,15 @@ import java.nio.file.Path;
  */
 public class RDFParserDir implements RDFParserCallback {
 	private static final Logger log = LoggerFactory.getLogger(RDFParserDir.class);
+	private final boolean simple;
+
+	public RDFParserDir(boolean simple) {
+		this.simple = simple;
+	}
+
+	public RDFParserDir() {
+		this(false);
+	}
 
 	@Override
 	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
@@ -46,7 +55,7 @@ public class RDFParserDir implements RDFParserCallback {
 					try {
 						// get the notation of the file
 						childNotation = RDFNotation.guess(child.toFile());
-						rdfParserCallback = RDFParserFactory.getParserCallback(childNotation);
+						rdfParserCallback = RDFParserFactory.getParserCallback(childNotation, simple);
 					} catch (IllegalArgumentException e) {
 						log.warn("Ignore file {}", child, e);
 						return;

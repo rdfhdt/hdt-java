@@ -24,7 +24,16 @@ import org.rdfhdt.hdt.util.io.NonCloseInputStream;
 
 public class RDFParserZip implements RDFParserCallback {
 
-	
+	private final boolean simple;
+
+	public RDFParserZip(boolean simple) {
+		this.simple = simple;
+	}
+
+	public RDFParserZip() {
+		this(false);
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)
 	 */
@@ -54,24 +63,19 @@ public class RDFParserZip implements RDFParserCallback {
 					try {
 						RDFNotation guessnot = RDFNotation.guess(zipEntry.getName());
 						System.out.println("Parse from zip: "+zipEntry.getName()+" as "+guessnot);
-						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot);
+						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
 
 						parser.doParse(nonCloseIn, baseUri, guessnot, keepBNode, callback);
-					}catch (IllegalArgumentException e1) {
-						e1.printStackTrace();
-					}catch (ParserException e1) {
+					} catch (IllegalArgumentException | ParserException e1) {
 						e1.printStackTrace();
 					}
 	        	}
 	        }
 	        // Don't close passed stream.
 
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			throw new ParserException();
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new ParserException();
+			throw new ParserException(e);
 		}
 	}
 
