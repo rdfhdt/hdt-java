@@ -26,35 +26,143 @@
  */
 package org.rdfhdt.hdt.util.io;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.zip.GZIPInputStream;
-
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import pl.edu.icm.jlargearrays.LargeArrayUtils;
+
+import java.io.*;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.util.*;
+import java.util.zip.GZIPInputStream;
 
 /**
  * @author mario.arias
  *
  */
 public class IOUtil {
-
+	private static int mappedBuffer;
 	private IOUtil() {}
+
+	/**
+	 * clean direct allocated buffer
+	 * @param buffer the buffer
+	 */
+	public static void cleanBuffer(ByteBuffer buffer) {
+		if (buffer == null) {
+			return;
+		}
+
+		LargeArrayUtils.UNSAFE.invokeCleaner(buffer);
+	}
+
+	/**
+	 * map a FileChannel, same as {@link FileChannel#map(FileChannel.MapMode, long, long)}, but used to fix unclean map.
+	 * @param ch channel to map
+	 * @param mode mode of the map
+	 * @param position position to map
+	 * @param size size to map
+	 * @return map buffer
+	 * @throws IOException io exception
+	 */
+	public static CloseMappedByteBuffer mapChannel(String filename, FileChannel ch, FileChannel.MapMode mode, long position, long size) throws IOException {
+		return new CloseMappedByteBuffer(filename, ch.map(mode, position, size), false);
+	}
+
+	/**
+	 * call all the close method and merge the exceptions by suppressing them (if multiple)
+	 *
+	 * @param closeables closeables to close
+	 * @throws IOException if one runnable throw an IOException
+	 */
+	public static void closeAll(Closeable... closeables) throws IOException {
+		if (closeables.length == 0) {
+			return;
+		}
+		if (closeables.length == 1) {
+			if (closeables[0] != null) {
+				closeables[0].close();
+			}
+			return;
+		}
+		closeAll(Arrays.asList(closeables));
+	}
+
+	/**
+	 * call all the close method and merge the exceptions by suppressing them (if multiple)
+	 *
+	 * @param closeables closeables to close
+	 * @throws IOException if one runnable throw an IOException
+	 */
+	public static void closeAll(Iterable<? extends Closeable> closeables) throws IOException {
+		Throwable start = null;
+		List<Throwable> throwableList = null;
+		for (Closeable runnable : closeables) {
+			try {
+				if (runnable != null) {
+					runnable.close();
+				}
+			} catch (Throwable e) {
+				if (start != null) {
+					if (throwableList == null) {
+						throwableList = new ArrayList<>();
+						throwableList.add(start);
+					}
+					throwableList.add(e);
+				} else {
+					start = e;
+				}
+			}
+		}
+
+		// do we have an Exception?
+		if (start == null) {
+			return;
+		}
+
+		if (throwableList == null) {
+			throwIOOrRuntime(start);
+			return; // remove warnings
+		}
+
+		// add the start to the list
+
+		Throwable main = throwableList.stream()
+				// get the maximum of severity of the throwable (Error > Runtime > Exception)
+				.max(Comparator.comparing(t -> {
+					if (t instanceof Error) {
+						// worst that can happen
+						return 2;
+					}
+					if (t instanceof RuntimeException) {
+						return 1;
+					}
+					return 0;
+				})).orElseThrow();
+
+		throwableList.stream()
+				.filter(t -> t != main)
+				.forEach(main::addSuppressed);
+
+		throwIOOrRuntime(main);
+	}
+
+	private static void throwIOOrRuntime(Throwable t) throws IOException {
+		if (t instanceof IOException) {
+			throw (IOException) t;
+		}
+		if (t instanceof Error) {
+			throw (Error) t;
+		}
+		if (t instanceof RuntimeException) {
+			throw (RuntimeException) t;
+		}
+		throw new RuntimeException(t);
+	}
 
 	public static InputStream getFileInputStream(String fileName) throws IOException {
 		InputStream input;

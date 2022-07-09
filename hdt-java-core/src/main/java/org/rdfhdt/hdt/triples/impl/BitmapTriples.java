@@ -83,7 +83,7 @@ public class BitmapTriples implements TriplesPrivate {
 	// Index for Y
 	public PredicateIndex predicateIndex;
 	
-	private boolean isClosed=false;
+	private boolean isClosed;
 
 	public BitmapTriples() {
 		this(new HDTSpecification());
@@ -129,10 +129,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 		long number = it.estimatedNumResults();
 		
-		@SuppressWarnings("resource")
 		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(number), number);
-		
-		@SuppressWarnings("resource")
 		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(number), number);
 		
 		ModifiableBitmap bitY = new Bitmap375(number);
@@ -398,7 +395,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 
 
-	private void createIndexObjectMemoryEfficient() {
+	private void createIndexObjectMemoryEfficient() throws IOException {
 		StopWatch global = new StopWatch();
 		StopWatch st = new StopWatch();
 
@@ -406,7 +403,6 @@ public class BitmapTriples implements TriplesPrivate {
 		long maxCount = 0;
 		long numDifferentObjects = 0;
 		long numReservedObjects = 8192;
-		@SuppressWarnings("resource")
 		SequenceLog64Big objectCount = new SequenceLog64Big(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
 		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
 			long val = seqZ.get(i);
@@ -446,12 +442,7 @@ public class BitmapTriples implements TriplesPrivate {
 		// Copy each object reference to its position
 		SequenceLog64Big objectInsertedCount = new SequenceLog64Big(BitUtil.log2(maxCount), numDifferentObjects);
 		objectInsertedCount.resize(numDifferentObjects);
-		File file = null;
-		try {
-			file = File.createTempFile("objectsArray", ".tmp");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		File file = File.createTempFile("objectsArray", ".tmp");
 
 		SequenceLog64BigDisk objectArray = new SequenceLog64BigDisk(file.getAbsolutePath(),
 				BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
@@ -662,7 +653,7 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	@Override
-	public void generateIndex(ProgressListener listener) {		
+	public void generateIndex(ProgressListener listener) throws IOException{
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.generate(listener);
 		

@@ -13,6 +13,7 @@ import org.rdfhdt.hdt.dictionary.impl.utilDiff.DiffWrapper;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +41,15 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         this.location = location;
     }
 
+    @Override
+    public void close() throws IOException {
+        // iterate over all mappings and close them
+        try {
+            IOUtil.closeAll(allMappings.values());
+        } finally {
+            IOUtil.closeAll(mappingBack);
+        }
+    }
     @Override
     public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate", new CatMapping(location, "predicate", dictionary.getPredicates().getNumberOfElements()));
@@ -138,7 +149,6 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         try (OutputStream outFinal = new FileOutputStream(location + "dictionary")) {
             ci.save(outFinal);
 
-            byte[] buf = new byte[100000];
             for (int i = 1; i <= 4; i++) {
                 int j = i;
                 if (i == 4) {
@@ -146,17 +156,9 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
                 } else if (j == 3) {
                     j = 4;
                 }
-                try (InputStream in = new FileInputStream(location + "section" + j)) {
-                    int b;
-                    while ((b = in.read(buf)) >= 0) {
-                        outFinal.write(buf, 0, b);
-                        outFinal.flush();
-                    }
-                }
+                Files.copy(Path.of(location + "section" + j), outFinal);
                 Files.delete(Paths.get(location + "section" + j));
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         mappingBack = new CatMapping(location, "back", numSubj + numShared);
 

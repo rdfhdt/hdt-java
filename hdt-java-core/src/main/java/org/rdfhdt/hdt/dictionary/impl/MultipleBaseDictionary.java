@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCOptimizedExtractor;
 import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.string.CompactString;
@@ -212,7 +213,7 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
 
     @Override
     public DictionarySection getObjects() {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override

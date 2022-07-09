@@ -18,6 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -116,10 +117,8 @@ public class BigByteBufferTest {
 	}
 
 	@Test
-	public void readFileTest() throws IOException {
-		final String rawFileName = Objects.requireNonNull(getClass().getClassLoader().getResource("dbpedia.hdt"), "can't find dbpedia hdt").getFile();
-
-		Path path = Paths.get(rawFileName);
+	public void readFileTest() throws IOException, URISyntaxException {
+		Path path = Paths.get(Objects.requireNonNull(getClass().getClassLoader().getResource("dbpedia.hdt"), "can't find dbpedia hdt").toURI());
 
 		long size = Files.size(path);
 
@@ -127,13 +126,11 @@ public class BigByteBufferTest {
 
 		BigByteBuffer buffer = BigByteBuffer.allocate(size);
 
-		String file = Objects.requireNonNull(getClass().getClassLoader().getResource("dbpedia.hdt"), "Can't find dbpedia.hdt").getFile();
-
-		try (InputStream stream = IOUtil.getFileInputStream(file)) {
+		try (InputStream stream = Files.newInputStream(path)) {
 			buffer.readStream(stream, 0, size, null);
 		}
 
-		byte[] real = Files.readAllBytes(Paths.get(file));
+		byte[] real = Files.readAllBytes(path);
 		byte[] test = new byte[(int) buffer.size()];
 
 		int delta = (int) (size / 10);

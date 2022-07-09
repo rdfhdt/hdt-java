@@ -34,7 +34,7 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
         // FIXME: Read type from spec.
         subjects = new PFCDictionarySectionBig(spec);
         predicates = new PFCDictionarySectionBig(spec);
-        objects = new TreeMap<String, DictionarySectionPrivate>();
+        objects = new TreeMap<>();
         shared = new PFCDictionarySectionBig(spec);
     }
 
@@ -46,7 +46,7 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
         IntermediateListener iListener = new IntermediateListener(listener);
         subjects.load(other.getSubjects(), iListener);
         predicates.load(other.getPredicates(), iListener);
-        Iterator iter = other.getObjects().getEntries();
+        Iterator<? extends CharSequence> iter = other.getObjects().getEntries();
 
         HashMap<String,Long> literalsCounts = ((HashDictionarySection)other.getObjects()).getLiteralsCounts();
         if(literalsCounts.containsKey("NO_DATATYPE"))

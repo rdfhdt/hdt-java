@@ -21,14 +21,15 @@
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
 
 public class CatMapping implements Closeable {
-    private LongArrayDisk mapping = null;
-    private LongArrayDisk mappingType = null;
-    private long size;
+    private final LongArrayDisk mapping;
+    private final LongArrayDisk mappingType;
+    private final long size;
 
     public CatMapping(String location, String section, long size){
         this.size = size;
@@ -54,11 +55,6 @@ public class CatMapping implements Closeable {
     }
 
     public void close() throws IOException {
-        if (mapping != null) {
-            mapping.close();
-        }
-        if (mappingType != null) {
-            mappingType.close();
-        }
+        IOUtil.closeAll(mapping, mappingType);
     }
 }

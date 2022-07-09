@@ -80,10 +80,8 @@ public class DictionarySectionFactory {
 		
 		switch(dictType) {
 		case PFCDictionarySection.TYPE_INDEX:
-				// First try load using the standard PFC 
-			DictionarySectionPrivate section= new PFCDictionarySectionMap(input, f);
-
-			return section;
+				// First try load using the standard PFC
+			return new PFCDictionarySectionMap(input, f);
 		default:
 			throw new IOException("DictionarySection implementation not available for id "+dictType);
 		}

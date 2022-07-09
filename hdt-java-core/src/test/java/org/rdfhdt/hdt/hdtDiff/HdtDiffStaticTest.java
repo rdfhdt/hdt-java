@@ -12,6 +12,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
+import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RunWith(Parameterized.class)
-public class HdtDiffStaticTest {
+public class HdtDiffStaticTest extends AbstractMapMemoryTest {
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> genParam() {
         List<Object[]> list = new ArrayList<>();
@@ -49,24 +50,25 @@ public class HdtDiffStaticTest {
         String hdtFile1 = tempDir.newFile().getAbsolutePath();
         String hdtFile2 = tempDir.newFile().getAbsolutePath();
 
-        HDT hdt1 = HDTManager.generateHDT(file1, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-        hdt1.saveToHDT(hdtFile1, null);
+        try (HDT hdt = HDTManager.generateHDT(file1, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null)) {
+            hdt.saveToHDT(hdtFile1, null);
+        }
 
-        HDT hdt2 = HDTManager.generateHDT(file2, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-        hdt2.saveToHDT(hdtFile2, null);
+        try (HDT hdt = HDTManager.generateHDT(file2, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null)) {
+            hdt.saveToHDT(hdtFile2, null);
+        }
 
-        HDT hdtDiffExcepted = HDTManager.generateHDT(diff, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
+        try (HDT hdtDiffExcepted = HDTManager.generateHDT(diff, HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
+            HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1, hdtFile2, spec, null)) {
 
-        HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1, hdtFile2, spec, null);
+            Assert.assertEquals(
+                    "Dictionaries aren't the same",
+                    hdtDiffExcepted.getDictionary().getType(),
+                    hdtDiffActual.getDictionary().getType()
+            );
 
-
-        Assert.assertEquals(
-                "Dictionaries aren't the same",
-                hdtDiffExcepted.getDictionary().getType(),
-                hdtDiffActual.getDictionary().getType()
-        );
-
-        HdtDiffTest.assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
+            HdtDiffTest.assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
+        }
     }
 
     @Test

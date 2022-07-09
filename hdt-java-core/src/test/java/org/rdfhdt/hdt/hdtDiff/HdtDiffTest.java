@@ -19,6 +19,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
+import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class HdtDiffTest {
+public class HdtDiffTest extends AbstractMapMemoryTest {
     public static class DictionaryTestData {
         public final String dictionaryType;
         public final String dictionaryTempType;
@@ -214,53 +215,57 @@ public class HdtDiffTest {
         File hdtDiffExceptedFile = tempDir.newFile();
         createTestHDT(hdtFile1, hdtFile2, hdtDiffExceptedFile, spec, subjects, predicates, objects, shared, 4);
 
-        HDT hdtDiffExcepted = HDTManager.mapHDT(hdtDiffExceptedFile.getAbsolutePath(), null, spec);
+        try (HDT hdtDiffExcepted = HDTManager.mapHDT(hdtDiffExceptedFile.getAbsolutePath(), null, spec);
+            HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1.getAbsolutePath(), hdtFile2.getAbsolutePath(), spec, null)) {
 
-        HDT hdtDiffActual = HDTManager.diffHDT(hdtFile1.getAbsolutePath(), hdtFile2.getAbsolutePath(), spec, null);
+            Assert.assertEquals(
+                    "Dictionaries aren't the same",
+                    hdtDiffExcepted.getDictionary().getType(),
+                    hdtDiffActual.getDictionary().getType()
+            );
 
-        Assert.assertEquals(
-                "Dictionaries aren't the same",
-                hdtDiffExcepted.getDictionary().getType(),
-                hdtDiffActual.getDictionary().getType()
-        );
-
-        assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
+            assertHdtEquals(hdtDiffExcepted, hdtDiffActual);
+        }
     }
 
     @Test
     public void diffHDTBitIdentityTest() throws IOException {
         File f = tempDir.newFile();
         File location = tempDir.newFile();
-        HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true);
+        try (HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true)) {
 
-        HDT hdtDiffExcepted = hdtTestUtils.hdt;
-        HDT hdtDiffActual = HDTManager.diffHDTBit(location.getAbsolutePath(), f.getAbsolutePath(), new EmptyBitmap(hdtTestUtils.triples), spec, null);
+            HDT hdtDiffExcepted = hdtTestUtils.hdt;
+            try (HDT hdtDiffActual = HDTManager.diffHDTBit(location.getAbsolutePath(), f.getAbsolutePath(), new EmptyBitmap(hdtTestUtils.triples), spec, null)) {
 
-        Assert.assertEquals(
-                "Dictionaries aren't the same",
-                hdtDiffExcepted.getDictionary().getType(),
-                hdtDiffActual.getDictionary().getType()
-        );
+                Assert.assertEquals(
+                        "Dictionaries aren't the same",
+                        hdtDiffExcepted.getDictionary().getType(),
+                        hdtDiffActual.getDictionary().getType()
+                );
 
-        assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+                assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+            }
+        }
     }
     @Test
     public void diffHDTIdentityTest() throws IOException {
         File f = tempDir.newFile();
         File f2 = tempDir.newFile();
-        HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true);
-        new HDTTestUtils(f2, 0, 0, 0, 0, spec, true);
+        try (HDTTestUtils hdtTestUtils = new HDTTestUtils(f, subjects, predicates, objects, shared, spec, true)) {
+            new HDTTestUtils(f2, 0, 0, 0, 0, spec, true).close();
 
-        HDT hdtDiffExcepted = hdtTestUtils.hdt;
-        HDT hdtDiffActual = HDTManager.diffHDT(f.getAbsolutePath(), f2.getAbsolutePath(), spec, null);
+            HDT hdtDiffExcepted = hdtTestUtils.hdt;
+            try (HDT hdtDiffActual = HDTManager.diffHDT(f.getAbsolutePath(), f2.getAbsolutePath(), spec, null)) {
 
-        Assert.assertEquals(
-                "Dictionaries aren't the same",
-                hdtDiffExcepted.getDictionary().getType(),
-                hdtDiffActual.getDictionary().getType()
-        );
+                Assert.assertEquals(
+                        "Dictionaries aren't the same",
+                        hdtDiffExcepted.getDictionary().getType(),
+                        hdtDiffActual.getDictionary().getType()
+                );
 
-        assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+                assertHdtEquals(hdtTestUtils.hdt, hdtDiffActual);
+            }
+        }
 
     }
 }

@@ -4,11 +4,12 @@ import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public interface DictionaryDiff {
+public interface DictionaryDiff extends Closeable {
     /**
      * compute the diff of the previous dictionary
      * @param dictionary previous dictionary

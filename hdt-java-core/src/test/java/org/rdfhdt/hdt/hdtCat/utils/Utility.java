@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.hdtCat.utils;
 
+import org.junit.Assert;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
@@ -10,162 +11,123 @@ import org.rdfhdt.hdt.triples.TripleID;
 import java.util.Iterator;
 import java.util.Map;
 
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 public class Utility {
 
-    public static void printDictionary(Dictionary d){
-        Iterator i = d.getShared().getSortedEntries();
+    public static void printDictionary(Dictionary d) {
+        Iterator<? extends CharSequence> shared = d.getShared().getSortedEntries();
         int count = 0;
         System.out.println("SHARED");
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        while (shared.hasNext()){
+            System.out.println(count +"---"+shared.next().toString());
             count++;
         }
         System.out.println("SUBJECTS");
         count = 0;
-        i = d.getSubjects().getSortedEntries();
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        Iterator<? extends CharSequence> subjects = d.getSubjects().getSortedEntries();
+        while (subjects.hasNext()){
+            System.out.println(count +"---"+subjects.next().toString());
             count++;
         }
         System.out.println("OBJECTS");
         count = 0;
-        i = d.getObjects().getSortedEntries();
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        Iterator<? extends CharSequence> objects = d.getObjects().getSortedEntries();
+        while (objects.hasNext()){
+            System.out.println(count +"---"+objects.next().toString());
             count++;
         }
         System.out.println("PREDICATES");
         count = 0;
-        i = d.getPredicates().getSortedEntries();
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        Iterator<? extends CharSequence> predicates = d.getPredicates().getSortedEntries();
+        while (predicates.hasNext()){
+            System.out.println(count +"---"+predicates.next().toString());
             count++;
         }
     }
-    public static void printCustomDictionary(Dictionary d){
-        Iterator i = d.getShared().getSortedEntries();
+    public static void printCustomDictionary(Dictionary d) {
+        Iterator<? extends CharSequence> shared = d.getShared().getSortedEntries();
         int count = 0;
         System.out.println("SHARED");
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        while (shared.hasNext()){
+            System.out.println(count +"---"+shared.next().toString());
             count++;
         }
         System.out.println("SUBJECTS");
         count = 0;
-        i = d.getSubjects().getSortedEntries();
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        Iterator<? extends CharSequence> subjects = d.getSubjects().getSortedEntries();
+        while (subjects.hasNext()){
+            System.out.println(count +"---"+subjects.next().toString());
             count++;
         }
         System.out.println("OBJECTS");
         count = 0;
-        Iterator iter = d.getAllObjects().entrySet().iterator();
-        while (iter.hasNext()) {
-            i = ((DictionarySection)((Map.Entry)iter.next()).getValue()).getSortedEntries();
-            while (i.hasNext()) {
-                System.out.println(count + "---" + i.next().toString());
+        for (Map.Entry<String, DictionarySection> stringDictionarySectionEntry : d.getAllObjects().entrySet()) {
+            Iterator<? extends CharSequence> entries = stringDictionarySectionEntry.getValue().getSortedEntries();
+            while (entries.hasNext()) {
+                System.out.println(count + "---" + entries.next().toString());
                 count++;
             }
         }
         System.out.println("PREDICATES");
         count = 0;
-        i = d.getPredicates().getSortedEntries();
-        while (i.hasNext()){
-            System.out.println(count +"---"+i.next().toString());
+        subjects = d.getPredicates().getSortedEntries();
+        while (subjects.hasNext()){
+            System.out.println(count +"---"+subjects.next().toString());
             count++;
         }
     }
-    public static void compareDictionary(Dictionary d1, Dictionary d2){
-        Iterator i1 = d1.getShared().getSortedEntries();
-        Iterator i2 = d2.getShared().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
+
+    public static void assertEquals(Iterator<? extends CharSequence> i1, Iterator<? extends CharSequence> i2) {
+        while (i1.hasNext()) {
+            Assert.assertTrue("The dictionaries have a different size", i2.hasNext());
+            Assert.assertEquals(i1.next().toString(),i2.next().toString());
         }
-        i1 = d1.getSubjects().getSortedEntries();
-        i2 = d2.getSubjects().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
-        i1 = d1.getObjects().getSortedEntries();
-        i2 = d2.getObjects().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
-        i1 = d1.getPredicates().getSortedEntries();
-        i2 = d2.getPredicates().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
+        Assert.assertFalse("The dictionaries have a different size", i2.hasNext());
+    }
+
+    public static void compareDictionary(Dictionary d1, Dictionary d2) {
+        assertEquals(
+                d1.getShared().getSortedEntries(),
+                d2.getShared().getSortedEntries()
+        );
+        assertEquals(
+                d1.getSubjects().getSortedEntries(),
+                d2.getSubjects().getSortedEntries()
+        );
+        assertEquals(
+                d1.getObjects().getSortedEntries(),
+                d2.getObjects().getSortedEntries()
+        );
+        assertEquals(
+                d1.getPredicates().getSortedEntries(),
+                d2.getPredicates().getSortedEntries()
+        );
     }
     public static void compareCustomDictionary(Dictionary d1, Dictionary d2){
-        Iterator i1 = d1.getShared().getSortedEntries();
-        Iterator i2 = d2.getShared().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
-        i1 = d1.getSubjects().getSortedEntries();
-        i2 = d2.getSubjects().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
-        Iterator hmIter1 = d1.getAllObjects().entrySet().iterator();
-        Iterator hmIter2 = d2.getAllObjects().entrySet().iterator();
-        while (hmIter1.hasNext()){
-            if(hmIter2.hasNext() == false){
-                assertFalse("The dictionaries have a different number of objects subsections",true);
-            }else{
-                Map.Entry entry1 = (Map.Entry)hmIter1.next();
-                Map.Entry entry2 = (Map.Entry)hmIter2.next();
+        assertEquals(
+                d1.getShared().getSortedEntries(),
+                d2.getShared().getSortedEntries()
+        );
+        assertEquals(
+                d1.getSubjects().getSortedEntries(),
+                d2.getSubjects().getSortedEntries()
+        );
+        Iterator<Map.Entry<String, DictionarySection>> hmIter1 = d1.getAllObjects().entrySet().iterator();
+        Iterator<Map.Entry<String, DictionarySection>> hmIter2 = d2.getAllObjects().entrySet().iterator();
+        while (hmIter1.hasNext()) {
+            Assert.assertTrue("The dictionaries have a different number of objects subsections", hmIter2.hasNext());
+            Map.Entry<String, DictionarySection> entry1 = hmIter1.next();
+            Map.Entry<String, DictionarySection> entry2 = hmIter2.next();
 
-                i1 = ((DictionarySection)entry1.getValue()).getSortedEntries();
-                i2 = ((DictionarySection)entry2.getValue()).getSortedEntries();
-                while (i1.hasNext()){
-                    if (i2.hasNext()!=true){
-                        assertFalse("The subsections have a different size",true);
-                    } else {
-                        String s1 = i1.next().toString();
-                        String s2 = i2.next().toString();
-                        assertEquals(s1,s2);
-                    }
-                }
-            }
+            assertEquals(
+                    entry1.getValue().getSortedEntries(),
+                    entry2.getValue().getSortedEntries()
+            );
         }
-        i1 = d1.getPredicates().getSortedEntries();
-        i2 = d2.getPredicates().getSortedEntries();
-        while (i1.hasNext()){
-            if (i2.hasNext()!=true){
-                assertFalse("The dictionaries have a different size",true);
-            } else {
-                assertEquals(i1.next().toString(),i2.next().toString());
-            }
-        }
+        Assert.assertFalse("The dictionaries have a different number of objects subsections", hmIter2.hasNext());
+        assertEquals(
+                d1.getPredicates().getSortedEntries(),
+                d2.getPredicates().getSortedEntries()
+        );
     }
     public static void printTriples(HDT hdt){
         IteratorTripleID it = hdt.getTriples().searchAll();
@@ -181,10 +143,8 @@ public class Utility {
     public static void compareTriples(HDT hdt1, HDT hdt2){
         IteratorTripleID itOld = hdt1.getTriples().searchAll();
         IteratorTripleID itNew = hdt2.getTriples().searchAll();
-        while (itOld.hasNext()){
-            if (itNew.hasNext()!=true){
-                assertFalse("The number of triples is different",true);
-            }
+        while (itOld.hasNext()) {
+            Assert.assertTrue("The number of triples is different", itNew.hasNext());
             TripleID tripleIDOld = itOld.next();
             String subjectOld = hdt1.getDictionary().idToString(tripleIDOld.getSubject(), TripleComponentRole.SUBJECT).toString();
             String predicateOld = hdt1.getDictionary().idToString(tripleIDOld.getPredicate(), TripleComponentRole.PREDICATE).toString();
@@ -193,12 +153,45 @@ public class Utility {
             String subjectNew = hdt2.getDictionary().idToString(tripleIDNew.getSubject(), TripleComponentRole.SUBJECT).toString();
             String predicateNew = hdt2.getDictionary().idToString(tripleIDNew.getPredicate(), TripleComponentRole.PREDICATE).toString();
             String objectNew = hdt2.getDictionary().idToString(tripleIDNew.getObject(), TripleComponentRole.OBJECT).toString();
-            assertEquals(subjectOld,subjectNew);
-            assertEquals(predicateOld,predicateNew);
-            assertEquals(objectOld,objectNew);
+            Assert.assertEquals(subjectOld,subjectNew);
+            Assert.assertEquals(predicateOld,predicateNew);
+            Assert.assertEquals(objectOld,objectNew);
+        }
+        Assert.assertFalse("The number of triples is different", itNew.hasNext());
+    }
 
+    /**
+     * utility class to create closable from non closeable object
+     * @param object the object to close
+     * @param closeOperation close operation
+     * @return closeable
+     * @param <T> object type
+     * @param <E> close exception type
+     */
+    public static <T, E extends Exception> PackAutoCloseable<T, E> closeableOf(T object, CloseOperation<T, E> closeOperation) {
+        return new PackAutoCloseable<>(object, closeOperation);
+    }
+
+    public static class PackAutoCloseable<T, E extends Exception> implements AutoCloseable {
+        private final T object;
+        private final CloseOperation<T, E> closeOperation;
+
+        private PackAutoCloseable(T object, CloseOperation<T, E> closeOperation) {
+            this.object = object;
+            this.closeOperation = closeOperation;
+        }
+
+        public T getObject() {
+            return object;
+        }
+
+        @Override
+        public void close() throws E {
+            closeOperation.close(object);
         }
     }
 
-
+    public interface CloseOperation<T, E extends Exception> {
+        void close(T object) throws E;
+    }
 }

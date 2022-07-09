@@ -1,189 +1,131 @@
 package org.rdfhdt.hdt.hdtCat;
 
-import org.apache.commons.lang3.SystemUtils;
 import org.junit.Test;
 import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdtCat.utils.Utility;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Iterator;
+import java.net.URL;
+import java.nio.file.Files;
 
-public class HdtCatTest implements ProgressListener {
+public class HdtCatTest extends AbstractMapMemoryTest implements ProgressListener {
 
-    public void help(String file1, String file2, String concat){
-        if (SystemUtils.IS_OS_UNIX) {
-            try {
-                ClassLoader classLoader = getClass().getClassLoader();
-                HDT hdt1 = null;
-                HDT hdt2 = null;
-                String hdt1_location = file1.replace(".nt", ".hdt");
-                String hdt2_location = file2.replace(".nt", ".hdt");
-                hdt1 = HDTManager.generateHDT(new File(file1).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
-                hdt1.saveToHDT(hdt1_location, null);
-                hdt2 = HDTManager.generateHDT(new File(file2).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
-                hdt2.saveToHDT(hdt2_location, null);
-                HDT hdtCatOld = HDTManager.generateHDT(new File(concat).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this);
+    private void help(String filename1, String filename2, String concatFilename) throws ParserException, IOException {
 
-                File file = new File(file1);
-                File theDir = new File(file.getAbsolutePath() + "_tmp");
-                theDir.mkdirs();
-                HDT hdtCatNew = HDTManager.catHDT(theDir.getAbsolutePath(), hdt1_location, hdt2_location, new HDTSpecification(), null);
+        ClassLoader classLoader = getClass().getClassLoader();
+        URL resource = classLoader.getResource(filename1);
+        if (resource == null) {
+            throw new FileNotFoundException(filename1);
+        }
+        String file1 = resource.getFile();
+        URL resource1 = classLoader.getResource(filename2);
+        if (resource1 == null) {
+            throw new FileNotFoundException(filename2);
+        }
+        String file2 = resource1.getFile();
+        URL resource2 = classLoader.getResource(concatFilename);
+        if (resource2 == null) {
+            throw new FileNotFoundException(concatFilename);
+        }
+        String concat = resource2.getFile();
+
+
+        String hdt1Location = file1.replace(".nt", ".hdt");
+        String hdt2Location = file2.replace(".nt", ".hdt");
+        try (HDT hdt = HDTManager.generateHDT(new File(file1).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+            hdt.saveToHDT(hdt1Location, null);
+        }
+        try (HDT hdt = HDTManager.generateHDT(new File(file2).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+            hdt.saveToHDT(hdt2Location, null);
+        }
+        try (HDT hdtCatOld = HDTManager.generateHDT(new File(concat).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+
+            File file = new File(file1);
+            File theDir = new File(file.getAbsolutePath() + "_tmp");
+            Files.createDirectories(theDir.toPath());
+            try (HDT hdtCatNew = HDTManager.catHDT(theDir.getAbsolutePath(), hdt1Location, hdt2Location, new HDTSpecification(), null)) {
 
                 //HDTCat hdtCatNew = new HDTCat(new HDTSpecification(),hdt1,hdt2,this);
-                Utility.printDictionary(hdtCatNew.getDictionary());
                 Utility.compareDictionary(hdtCatOld.getDictionary(), hdtCatNew.getDictionary());
-                Utility.printTriples(hdtCatNew);
-                Utility.compareTriples(hdtCatOld,hdtCatNew);
-
-                try {
-                    Iterator<TripleString> it = hdtCatOld.search("", "", "");
-                    while (it.hasNext()) {
-                        System.out.println(it.next().toString());
-                    }
-
-                } catch (NotFoundException e) {
-                    e.printStackTrace();
-                }
-
-                try {
-                    Iterator<TripleString> it = hdtCatNew.search("", "", "");
-                    while (it.hasNext()) {
-                        System.out.println(it.next().toString());
-                    }
-
-                } catch (NotFoundException e) {
-                    e.printStackTrace();
-                }
-                theDir.delete();
-            } catch (ParserException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                Utility.compareTriples(hdtCatOld, hdtCatNew);
             }
+            Files.delete(theDir.toPath());
         }
     }
 
     @Test
-    public void cat1() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example1.nt").getFile();
-        String file2 = classLoader.getResource("example2.nt").getFile();
-        String concat = classLoader.getResource("example1+2.nt").getFile();
-        help(file1,file2,concat);
+    public void cat1() throws ParserException, IOException {
+        help("example1.nt", "example2.nt", "example1+2.nt");
     }
 
     @Test
-    public void cat2() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example2.nt").getFile();
-        String file2 = classLoader.getResource("example3.nt").getFile();
-        String concat = classLoader.getResource("example2+3.nt").getFile();
-        help(file1,file2,concat);
+    public void cat2() throws ParserException, IOException {
+        help("example2.nt", "example3.nt", "example2+3.nt");
     }
 
     @Test
-    public void cat3() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example4.nt").getFile();
-        String file2 = classLoader.getResource("example5.nt").getFile();
-        String concat = classLoader.getResource("example4+5.nt").getFile();
-        help(file1,file2,concat);
+    public void cat3() throws ParserException, IOException {
+        help("example4.nt", "example5.nt", "example4+5.nt");
     }
 
     @Test
-    public void cat4() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example6.nt").getFile();
-        String file2 = classLoader.getResource("example7.nt").getFile();
-        String concat = classLoader.getResource("example6+7.nt").getFile();
-        help(file1,file2,concat);
+    public void cat4() throws ParserException, IOException {
+        help("example6.nt", "example7.nt", "example6+7.nt");
     }
 
     @Test
-    public void cat5() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example8.nt").getFile();
-        String file2 = classLoader.getResource("example9.nt").getFile();
-        String concat = classLoader.getResource("example8+9.nt").getFile();
-        help(file1,file2,concat);
+    public void cat5() throws ParserException, IOException {
+        help("example8.nt", "example9.nt", "example8+9.nt");
     }
 
     @Test
-    public void cat6() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example10.nt").getFile();
-        String file2 = classLoader.getResource("example11.nt").getFile();
-        String concat = classLoader.getResource("example10+11.nt").getFile();
-        help(file1,file2,concat);
+    public void cat6() throws ParserException, IOException {
+        help("example10.nt", "example11.nt", "example10+11.nt");
     }
 
     @Test
-    public void cat7() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example12.nt").getFile();
-        String file2 = classLoader.getResource("example13.nt").getFile();
-        String concat = classLoader.getResource("example12+13.nt").getFile();
-        help(file1,file2,concat);
+    public void cat7() throws ParserException, IOException {
+        help("example12.nt", "example13.nt", "example12+13.nt");
     }
 
     @Test
-    public void cat9() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example14.nt").getFile();
-        String file2 = classLoader.getResource("example15.nt").getFile();
-        String concat = classLoader.getResource("example14+15.nt").getFile();
-        help(file1,file2,concat);
+    public void cat9() throws ParserException, IOException {
+        help("example14.nt", "example15.nt", "example14+15.nt");
     }
 
     @Test
-    public void cat10() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example16.nt").getFile();
-        String file2 = classLoader.getResource("example17.nt").getFile();
-        String concat = classLoader.getResource("example16+17.nt").getFile();
-        help(file1,file2,concat);
+    public void cat10() throws ParserException, IOException {
+        help("example16.nt", "example17.nt", "example16+17.nt");
     }
 
     @Test
-    public void cat11() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example1.nt").getFile();
-        String file2 = classLoader.getResource("example1.nt").getFile();
-        String concat = classLoader.getResource("example1.nt").getFile();
-        help(file1,file2,concat);
+    public void cat11() throws ParserException, IOException {
+        help("example1.nt", "example1.nt", "example1.nt");
     }
+
     @Test
-    public void cat12() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example18.nt").getFile();
-        String file2 = classLoader.getResource("example19.nt").getFile();
-        String concat = classLoader.getResource("example18+19.nt").getFile();
-        help(file1,file2,concat);
+    public void cat12() throws ParserException, IOException {
+        help("example18.nt", "example19.nt", "example18+19.nt");
     }
+
     @Test
-    public void cat13() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example20.nt").getFile();
-        String file2 = classLoader.getResource("example21.nt").getFile();
-        String concat = classLoader.getResource("example20+21.nt").getFile();
-        help(file1,file2,concat);
+    public void cat13() throws ParserException, IOException {
+        help("example20.nt", "example21.nt", "example20+21.nt");
     }
+
     @Test
-    public void cat14() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        String file1 = classLoader.getResource("example22.nt").getFile();
-        String file2 = classLoader.getResource("example23.nt").getFile();
-        String concat = classLoader.getResource("example22+23.nt").getFile();
-        help(file1,file2,concat);
+    public void cat14() throws ParserException, IOException {
+        help("example22.nt", "example23.nt", "example22+23.nt");
     }
+
     @Override
     public void notifyProgress(float level, String message) {
 

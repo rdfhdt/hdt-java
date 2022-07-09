@@ -12,6 +12,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdtDiff.HdtDiffTest;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
+import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +21,7 @@ import java.util.Collection;
 import java.util.List;
 
 @RunWith(Parameterized.class)
-public class HdtCatRandomTest {
+public class HdtCatRandomTest extends AbstractMapMemoryTest {
 	@Parameterized.Parameters(name = "{0}")
 	public static Collection<Object[]> genParam() {
 		List<Object[]> list = new ArrayList<>();
@@ -56,9 +57,9 @@ public class HdtCatRandomTest {
 		supplier.createAndSaveFakeHDT(spec, hdt1F);
 		supplier.createAndSaveFakeHDT(spec, hdt2F);
 
-		HDT cat = HDTManager.catHDT(location, hdt1F, hdt2F, spec, null);
-		cat.saveToHDT(catOutput, null);
-		cat.close();
+		try (HDT cat = HDTManager.catHDT(location, hdt1F, hdt2F, spec, null)) {
+			cat.saveToHDT(catOutput, null);
+		}
 
 		HDT loadedHDT = HDTManager.loadIndexedHDT(catOutput, null, spec);
 		loadedHDT.close();

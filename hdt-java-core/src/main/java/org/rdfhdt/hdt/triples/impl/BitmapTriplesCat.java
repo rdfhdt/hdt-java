@@ -38,92 +38,92 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.util.BitUtil;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
 public class BitmapTriplesCat {
 
-    private String location;
+    private final String location;
 
     public BitmapTriplesCat(String location){
         this.location = location;
     }
 
-    public void cat(IteratorTripleID it, ProgressListener listener){
-        try {
-            long number = it.estimatedNumResults();
-            SequenceLog64BigDisk vectorY = new SequenceLog64BigDisk(location + "vectorY", BitUtil.log2(number), number);
-            SequenceLog64BigDisk vectorZ = new SequenceLog64BigDisk(location + "vectorZ",BitUtil.log2(number), number);
-            ModifiableBitmap bitY = new Bitmap375();//Disk(location + "bitY",number);
-            ModifiableBitmap bitZ = new Bitmap375();//Disk(location + "bitZ",number);
+    public void cat(IteratorTripleID it, ProgressListener listener) throws IOException {
+        long number = it.estimatedNumResults();
+        SequenceLog64BigDisk vectorY = new SequenceLog64BigDisk(location + "vectorY", BitUtil.log2(number), number);
+        SequenceLog64BigDisk vectorZ = new SequenceLog64BigDisk(location + "vectorZ",BitUtil.log2(number), number);
+        ModifiableBitmap bitY = new Bitmap375();//Disk(location + "bitY",number);
+        ModifiableBitmap bitZ = new Bitmap375();//Disk(location + "bitZ",number);
 
-            long lastX=0, lastY=0, lastZ=0;
-            long x, y, z;
-            long numTriples=0;
+        long lastX=0, lastY=0, lastZ=0;
+        long x, y, z;
+        long numTriples=0;
 
-            while(it.hasNext()) {
-                TripleID triple = it.next();
-                TripleOrderConvert.swapComponentOrder(triple, TripleComponentOrder.SPO, TripleComponentOrder.SPO);
+        while(it.hasNext()) {
+            TripleID triple = it.next();
+            TripleOrderConvert.swapComponentOrder(triple, TripleComponentOrder.SPO, TripleComponentOrder.SPO);
 
-                x = triple.getSubject();
-                y = triple.getPredicate();
-                z = triple.getObject();
-                if(x==0 || y==0 || z==0) {
-                    throw new IllegalFormatException("None of the components of a triple can be null");
-                }
-
-                if(numTriples==0) {
-                    // First triple
-                    vectorY.append(y);
-                    vectorZ.append(z);
-                } else if(x!=lastX) {
-                    if(x!=lastX+1) {
-                        throw new IllegalFormatException("Upper level must be increasing and correlative.");
-                    }
-                    // X changed
-                    bitY.append(true);
-                    vectorY.append(y);
-
-                    bitZ.append(true);
-                    vectorZ.append(z);
-                } else if(y!=lastY) {
-                    if(y<lastY) {
-                        throw new IllegalFormatException("Middle level must be increasing for each parent.");
-                    }
-
-                    // Y changed
-                    bitY.append(false);
-                    vectorY.append(y);
-
-                    bitZ.append(true);
-                    vectorZ.append(z);
-                } else {
-                    if(z<lastZ) {
-                        throw new IllegalFormatException("Lower level must be increasing for each parent.");
-                    }
-
-                    // Z changed
-                    bitZ.append(false);
-                    vectorZ.append(z);
-                }
-
-                lastX = x;
-                lastY = y;
-                lastZ = z;
-
-                ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, number);
-                numTriples++;
+            x = triple.getSubject();
+            y = triple.getPredicate();
+            z = triple.getObject();
+            if(x==0 || y==0 || z==0) {
+                throw new IllegalFormatException("None of the components of a triple can be null");
             }
 
-            if(numTriples>0) {
+            if(numTriples==0) {
+                // First triple
+                vectorY.append(y);
+                vectorZ.append(z);
+            } else if(x!=lastX) {
+                if(x!=lastX+1) {
+                    throw new IllegalFormatException("Upper level must be increasing and correlative.");
+                }
+                // X changed
                 bitY.append(true);
+                vectorY.append(y);
+
                 bitZ.append(true);
+                vectorZ.append(z);
+            } else if(y!=lastY) {
+                if(y<lastY) {
+                    throw new IllegalFormatException("Middle level must be increasing for each parent.");
+                }
+
+                // Y changed
+                bitY.append(false);
+                vectorY.append(y);
+
+                bitZ.append(true);
+                vectorZ.append(z);
+            } else {
+                if(z<lastZ) {
+                    throw new IllegalFormatException("Lower level must be increasing for each parent.");
+                }
+
+                // Z changed
+                bitZ.append(false);
+                vectorZ.append(z);
             }
 
-            vectorY.aggressiveTrimToSize();
-            vectorZ.trimToSize();
+            lastX = x;
+            lastY = y;
+            lastZ = z;
 
-            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(location + "triples"));
+            ListenerUtil.notifyCond(listener, "Converting to BitmapTriples", numTriples, numTriples, number);
+            numTriples++;
+        }
+
+        if(numTriples>0) {
+            bitY.append(true);
+            bitZ.append(true);
+        }
+
+        vectorY.aggressiveTrimToSize();
+        vectorZ.trimToSize();
+
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(location + "triples"))) {
             ControlInfo ci = new ControlInformation();
             ci.setType(ControlInfo.Type.TRIPLES);
             ci.setFormat(HDTVocabulary.TRIPLES_TYPE_BITMAP);
@@ -135,19 +135,12 @@ public class BitmapTriplesCat {
             bitZ.save(bos, iListener);
             vectorY.save(bos, iListener);
             vectorZ.save(bos, iListener);
-            vectorY.close();
-            vectorZ.close();
-            try {
-                Files.delete(Paths.get(location + "vectorY"));
-                Files.delete(Paths.get(location + "vectorZ"));
-            } catch (Exception e) {
-                // swallow this exception intentionally. See javadoc on Files.delete for details.
-            }
-            //Files.delete(Paths.get(location + "bitY"));
-            //Files.delete(Paths.get(location + "bitZ"));
-            bos.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } finally {
+            IOUtil.closeAll(vectorY, vectorZ);
         }
+        Files.delete(Paths.get(location + "vectorY"));
+        Files.delete(Paths.get(location + "vectorZ"));
+        //Files.delete(Paths.get(location + "bitY"));
+        //Files.delete(Paths.get(location + "bitZ"));
     }
 }

@@ -104,14 +104,14 @@ public class LargeFakeDataSetStreamSupplier {
 	}
 
 	public void createAndSaveFakeHDT(HDTOptions spec, String location) throws ParserException, IOException {
-		HDT hdt = createFakeHDT(spec);
-		hdt.saveToHDT(location, null);
-		hdt.close();
+		try (HDT hdt = createFakeHDT(spec)) {
+			hdt.saveToHDT(location, null);
+		}
 	}
 	public void createAndSaveFakeHDTTwoPass(HDTOptions spec, String location) throws ParserException, IOException {
-		HDT hdt = createFakeHDTTwoPass(spec);
-		hdt.saveToHDT(location, null);
-		hdt.close();
+		try (HDT hdt = createFakeHDTTwoPass(spec)) {
+			hdt.saveToHDT(location, null);
+		}
 	}
 
 	private CharSequence createSubject() {

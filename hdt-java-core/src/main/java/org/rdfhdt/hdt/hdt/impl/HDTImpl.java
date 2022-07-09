@@ -411,6 +411,7 @@ public class HDTImpl implements HDTPrivate {
 				}
 			}catch(NullPointerException e) {
 				e.printStackTrace();
+				// FIXME: find why this can happen
 				return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
 			}
 		} else {
@@ -501,7 +502,7 @@ public class HDTImpl implements HDTPrivate {
 	 * @see hdt.hdt.HDT#generateIndex(hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void loadOrCreateIndex(ProgressListener listener) {
+	public void loadOrCreateIndex(ProgressListener listener) throws IOException {
 		if(triples.getNumberOfElements()==0) {
 			// We need no index.
 			return;
@@ -568,6 +569,9 @@ public class HDTImpl implements HDTPrivate {
 
 	@Override
 	public void close() throws IOException {
+		if (isClosed) {
+			return;
+		}
 		isClosed=true;
 		dictionary.close();
 		triples.close();
@@ -580,6 +584,14 @@ public class HDTImpl implements HDTPrivate {
 	}
 	
 	public String getHDTFileName() {
+		if (hdtFileName == null) {
+			try {
+				hdtFileName = Files.createTempFile("hdt_", ".hdt").toAbsolutePath().toString();
+			} catch (IOException e) {
+				hdtFileName = "default.hdt";
+				log.warn("Can't create default HDT file name, using '{}'", hdtFileName, e);
+			}
+		}
 		return hdtFileName;
 	}
 
@@ -599,91 +611,86 @@ public class HDTImpl implements HDTPrivate {
      * @param listener
      */
 	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
-		try {
-			System.out.println("Generating dictionary");
-			FourSectionDictionaryCat dictionaryCat = new FourSectionDictionaryCat(location);
-			dictionaryCat.cat(hdt1.getDictionary(),hdt2.getDictionary(), listener);
-			//map the generated dictionary
+		System.out.println("Generating dictionary");
+		try (FourSectionDictionaryCat dictionaryCat = new FourSectionDictionaryCat(location)) {
+			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
 			ControlInfo ci2 = new ControlInformation();
-			CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
-			FourSectionDictionaryBig dictionary = new FourSectionDictionaryBig(new HDTSpecification());
-			fis.mark(1024);
-			ci2.load(fis);
-			fis.reset();
-			dictionary.mapFromFile(fis, new File(location + "dictionary"),null);
+			//map the generated dictionary
+			FourSectionDictionaryBig dictionary;
+			try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
+				dictionary = new FourSectionDictionaryBig(new HDTSpecification());
+				fis.mark(1024);
+				ci2.load(fis);
+				fis.reset();
+				dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
+			}
+			if (this.dictionary != null) {
+				this.dictionary.close();
+			}
 			this.dictionary = dictionary;
 			System.out.println("Generating triples");
-			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(),hdt2.getTriples(),dictionaryCat);
+			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
 			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
-			bitmapTriplesCat.cat(it,listener);
-			dictionaryCat.closeAll();
-			//Delete the mappings since they are not necessary anymore
-			try {
-				Files.delete( Paths.get(location+"P1"));
-				Files.delete( Paths.get(location+"P1"+"Types"));
-				Files.delete( Paths.get(location+"P2"));
-				Files.delete( Paths.get(location+"P2"+"Types"));
-				Files.delete( Paths.get(location+"SH1"));
-				Files.delete( Paths.get(location+"SH1"+"Types"));
-				Files.delete( Paths.get(location+"SH2"));
-				Files.delete( Paths.get(location+"SH2"+"Types"));
-				Files.delete( Paths.get(location+"S1"));
-				Files.delete( Paths.get(location+"S1"+"Types"));
-				Files.delete( Paths.get(location+"S2"));
-				Files.delete( Paths.get(location+"S2"+"Types"));
-				Files.delete( Paths.get(location+"O1"));
-				Files.delete( Paths.get(location+"O1"+"Types"));
-				Files.delete( Paths.get(location+"O2"));
-				Files.delete( Paths.get(location+"O2"+"Types"));
-			} catch (Exception e) {
-				// swallow this exception intentionally. See javadoc on Files.delete for details.
-			}
-
-			//map the triples
-			CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
-			ci2 = new ControlInformation();
-			ci2.clear();
-			fis2.mark(1024);
-			ci2.load(fis2);
-			fis2.reset();
-			triples = TriplesFactory.createTriples(ci2);
-			triples.mapFromFile(fis2,new File(location + "triples"),null);
-			try {
-				Files.delete(Paths.get(location + "mapping_back_1"));
-				Files.delete(Paths.get(location + "mapping_back_2"));
-				Files.delete(Paths.get(location + "mapping_back_type_1"));
-				Files.delete(Paths.get(location + "mapping_back_type_2"));
-			} catch (Exception e) {
-				// swallow this exception intentionally. See javadoc on Files.delete for details.
-			}
-			System.out.println("Generating header");
-			this.header = HeaderFactory.createHeader(spec);
-			this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
-		} catch (IOException e) {
-			e.printStackTrace();
+			bitmapTriplesCat.cat(it, listener);
 		}
+		//Delete the mappings since they are not necessary anymore
+		Files.delete( Paths.get(location+"P1"));
+		Files.delete( Paths.get(location+"P1"+"Types"));
+		Files.delete( Paths.get(location+"P2"));
+		Files.delete( Paths.get(location+"P2"+"Types"));
+		Files.delete( Paths.get(location+"SH1"));
+		Files.delete( Paths.get(location+"SH1"+"Types"));
+		Files.delete( Paths.get(location+"SH2"));
+		Files.delete( Paths.get(location+"SH2"+"Types"));
+		Files.delete( Paths.get(location+"S1"));
+		Files.delete( Paths.get(location+"S1"+"Types"));
+		Files.delete( Paths.get(location+"S2"));
+		Files.delete( Paths.get(location+"S2"+"Types"));
+		Files.delete( Paths.get(location+"O1"));
+		Files.delete( Paths.get(location+"O1"+"Types"));
+		Files.delete( Paths.get(location+"O2"));
+		Files.delete( Paths.get(location+"O2"+"Types"));
+
+		//map the triples
+		CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
+		ControlInfo ci2 = new ControlInformation();
+		ci2.clear();
+		fis2.mark(1024);
+		ci2.load(fis2);
+		fis2.reset();
+		triples = TriplesFactory.createTriples(ci2);
+		triples.mapFromFile(fis2,new File(location + "triples"),null);
+		Files.delete(Paths.get(location + "mapping_back_1"));
+		Files.delete(Paths.get(location + "mapping_back_2"));
+		Files.delete(Paths.get(location + "mapping_back_type_1"));
+		Files.delete(Paths.get(location + "mapping_back_type_2"));
+		System.out.println("Generating header");
+		this.header = HeaderFactory.createHeader(spec);
+		this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
 	}
 
 	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
 		System.out.println("Generating dictionary");
-		DictionaryCat dictionaryCat = new MultipleSectionDictionaryCat(location);
-		dictionaryCat.cat(hdt1.getDictionary(),hdt2.getDictionary(), listener);
-		//map the generated dictionary
-		ControlInfo ci2 = new ControlInformation();
-		CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")));
-		HDTSpecification spec = new HDTSpecification();
-		spec.setOptions("tempDictionary.impl=multHash;dictionary.type=dictionaryMultiObj;");
-		MultipleSectionDictionaryBig dictionary = new MultipleSectionDictionaryBig(spec);
-		fis.mark(1024);
-		ci2.load(fis);
-		fis.reset();
-		dictionary.mapFromFile(fis, new File(location + "dictionary"),null);
-		this.dictionary = dictionary;
+		try (DictionaryCat dictionaryCat = new MultipleSectionDictionaryCat(location)) {
+			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
+			//map the generated dictionary
+			ControlInfo ci2 = new ControlInformation();
+			try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
+				HDTSpecification spec = new HDTSpecification();
+				spec.setOptions("tempDictionary.impl=multHash;dictionary.type=dictionaryMultiObj;");
+				MultipleSectionDictionaryBig dictionary = new MultipleSectionDictionaryBig(spec);
+				fis.mark(1024);
+				ci2.load(fis);
+				fis.reset();
+				dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
+				this.dictionary = dictionary;
+			}
 
-		System.out.println("Generating triples");
-		BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(),hdt2.getTriples(),dictionaryCat);
-		BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
-		bitmapTriplesCat.cat(it,listener);
+			System.out.println("Generating triples");
+			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
+			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
+			bitmapTriplesCat.cat(it,listener);
+		}
 		//Delete the mappings since they are not necessary anymore
 		Iterator<Map.Entry<String, DictionarySection>> iter = hdt1.getDictionary().getAllObjects().entrySet().iterator();
 		int countSubSections = 0;
@@ -726,14 +733,15 @@ public class HDTImpl implements HDTPrivate {
 		Files.delete(Paths.get(location+"O2"));
 		Files.delete(Paths.get(location+"O2"+"Types"));
 		//map the triples
-		CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")));
-		ci2 = new ControlInformation();
-		ci2.clear();
-		fis2.mark(1024);
-		ci2.load(fis2);
-		fis2.reset();
-		triples = TriplesFactory.createTriples(ci2);
-		triples.mapFromFile(fis2,new File(location + "triples"),null);
+		try (CountInputStream fis2 = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "triples")))) {
+			ControlInformation ci2 = new ControlInformation();
+			ci2.clear();
+			fis2.mark(1024);
+			ci2.load(fis2);
+			fis2.reset();
+			triples = TriplesFactory.createTriples(ci2);
+			triples.mapFromFile(fis2, new File(location + "triples"), null);
+		}
 		Files.delete(Paths.get(location+"mapping_back_1"));
 		Files.delete(Paths.get(location+"mapping_back_2"));
 		Files.delete(Paths.get(location+"mapping_back_type_1"));
@@ -761,28 +769,29 @@ public class HDTImpl implements HDTPrivate {
 
 		Map<String, ModifiableBitmap> bitmaps = iter.getBitmaps();
 
-		DictionaryDiff diff = DictionaryFactory.createDictionaryDiff(hdt.getDictionary(), location);
+		try (DictionaryDiff diff = DictionaryFactory.createDictionaryDiff(hdt.getDictionary(), location)) {
 
-		diff.diff(hdt.getDictionary(), bitmaps, listener);
+			diff.diff(hdt.getDictionary(), bitmaps, listener);
+			//map the generated dictionary
+			ControlInfo ci2 = new ControlInformation();
 
-		//map the generated dictionary
-		ControlInfo ci2 = new ControlInformation();
+			try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
+				fis.mark(1024);
+				ci2.load(fis);
+				fis.reset();
+				DictionaryPrivate dictionary = DictionaryFactory.createDictionary(ci2);
+				dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
+				this.dictionary = dictionary;
+			}
+			log.debug("Generating Triples...");
+			il.notifyProgress(40, "Generating Triples...");
+			// map the triples based on the new dictionary
+			BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff, iter.getCount() + 1);
 
-		try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
-			fis.mark(1024);
-			ci2.load(fis);
-			fis.reset();
-			DictionaryPrivate dictionary = DictionaryFactory.createDictionary(ci2);
-			dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
-			this.dictionary = dictionary;
+			BitmapTriples triples = new BitmapTriples(spec);
+			triples.load(mapIter, listener);
+			this.triples = triples;
 		}
-		log.debug("Generating Triples...");
-		il.notifyProgress(40, "Generating Triples...");
-		// map the triples based on the new dictionary
-		BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff, iter.getCount() + 1);
-		BitmapTriples triples = new BitmapTriples(spec);
-		triples.load(mapIter, listener);
-		this.triples = triples;
 
 		log.debug("Clear data...");
 		il.notifyProgress(80, "Clear data...");
@@ -798,25 +807,21 @@ public class HDTImpl implements HDTPrivate {
 			}
 		}
 
-		try {
-			Files.delete(Paths.get(location+"predicate"));
-			Files.delete(Paths.get(location+"predicate"+"Types"));
-			Files.delete(Paths.get(location+"subject"));
-			Files.delete(Paths.get(location+"subject"+"Types"));
-			Files.delete(Paths.get(location+"object"));
-			Files.delete(Paths.get(location+"object"+"Types"));
-			Files.delete(Paths.get(location+"shared"));
-			Files.delete(Paths.get(location+"shared"+"Types"));
-			Files.delete(Paths.get(location+"back"+"Types"));
-			Files.delete(Paths.get(location+"back"));
-			Files.deleteIfExists(Paths.get(location+"P"));
-			Files.deleteIfExists(Paths.get(location+"S"));
-			Files.deleteIfExists(Paths.get(location+"O"));
-			Files.deleteIfExists(Paths.get(location+"SH_S"));
-			Files.deleteIfExists(Paths.get(location+"SH_O"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		Files.delete(Paths.get(location+"predicate"));
+		Files.delete(Paths.get(location+"predicate"+"Types"));
+		Files.delete(Paths.get(location+"subject"));
+		Files.delete(Paths.get(location+"subject"+"Types"));
+		Files.delete(Paths.get(location+"object"));
+		Files.delete(Paths.get(location+"object"+"Types"));
+		Files.delete(Paths.get(location+"shared"));
+		Files.delete(Paths.get(location+"shared"+"Types"));
+		Files.delete(Paths.get(location+"back"+"Types"));
+		Files.delete(Paths.get(location+"back"));
+		Files.deleteIfExists(Paths.get(location+"P"));
+		Files.deleteIfExists(Paths.get(location+"S"));
+		Files.deleteIfExists(Paths.get(location+"O"));
+		Files.deleteIfExists(Paths.get(location+"SH_S"));
+		Files.deleteIfExists(Paths.get(location+"SH_O"));
 
 		log.debug("Set header...");
 		il.notifyProgress(90, "Set header...");

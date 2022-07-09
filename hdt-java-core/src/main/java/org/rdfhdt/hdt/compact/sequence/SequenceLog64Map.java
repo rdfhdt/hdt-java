@@ -52,6 +52,7 @@ import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
+import org.rdfhdt.hdt.util.io.CloseMappedByteBuffer;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -62,7 +63,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 public class SequenceLog64Map implements Sequence,Closeable { 
 	private static final byte W = 64;
 	private static final long LONGS_PER_BUFFER=128*1024*1024; // 128*8 = 1Gb per chunk.
-	private ByteBuffer [] buffers;
+	private CloseMappedByteBuffer[] buffers;
 	private FileChannel ch;
 	private int numbits;
 	private long numentries;
@@ -130,13 +131,16 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		long maxSize = base+SequenceLog64.numBytesFor(numbits, numentries);
 		int buffer = 0;
 		long block=0;
-		buffers = new ByteBuffer[ (int)(1L+numwords/LONGS_PER_BUFFER) ];
+		if (buffers != null) {
+			IOUtil.closeAll(buffers);
+		}
+		buffers = new CloseMappedByteBuffer[ (int)(1L+numwords/LONGS_PER_BUFFER) ];
 		while(block<numwords) {
 			long current = base+ buffer*8L*LONGS_PER_BUFFER;
 			long next = current+8L*LONGS_PER_BUFFER;
 			long length = Math.min(maxSize, next)-current;
 //			System.out.println("Ini: "+current+ " Max: "+ next+ " Length: "+length);
-			buffers[buffer] = ch.map(MapMode.READ_ONLY, current , length );
+			buffers[buffer] = IOUtil.mapChannel(f.getAbsolutePath(), ch, MapMode.READ_ONLY, current , length);
 			buffers[buffer].order(ByteOrder.LITTLE_ENDIAN);
 			
 			block+=LONGS_PER_BUFFER;
@@ -176,8 +180,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 			return lastword;
 		}
 
-		ByteBuffer buffer = buffers[(int)(w/LONGS_PER_BUFFER)];
-		return buffer.getLong((int)((w%LONGS_PER_BUFFER)*8));
+		return buffers[(int)(w/LONGS_PER_BUFFER)].getLong((int)((w%LONGS_PER_BUFFER)*8));
 	}
 
 	/* (non-Javadoc)
@@ -273,6 +276,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 
 	@Override
 	public void close() throws IOException {
+		IOUtil.closeAll(buffers);
 		buffers=null;
 		ch.close();
 	}
