@@ -39,6 +39,7 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -467,34 +468,19 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
         ci.setInt("elements", numSubjects+numPredicates+numObject+numShared);
 
-        try {
-            ci.save(new FileOutputStream(location + "dictionary"));
-            FileOutputStream outFinal = new FileOutputStream(location + "dictionary",true);
-            byte[] buf = new byte[100000];
+        try (FileOutputStream outFinal = new FileOutputStream(location + "dictionary")) {
+            ci.save(outFinal);
             for (int i = 1; i <= 3 + dataTypes.size(); i++) {
-                try {
-                    if(i == 4){ // write literals map before writing the objects sections
-                        outFinal.write(dataTypes.size());
-                        for(String datatype:dataTypes){
-                            outFinal.write(datatype.length());
-                            IOUtil.writeBuffer(outFinal, datatype.getBytes(), 0, datatype.getBytes().length, listener);
-                        }
+                if(i == 4){ // write literals map before writing the objects sections
+                    outFinal.write(dataTypes.size());
+                    for(String datatype:dataTypes){
+                        outFinal.write(datatype.length());
+                        IOUtil.writeBuffer(outFinal, datatype.getBytes(), 0, datatype.getBytes().length, listener);
                     }
-                    InputStream in = new FileInputStream(location + "section" + i);
-                    int b;
-                    while ((b = in.read(buf)) >= 0) {
-                        outFinal.write(buf, 0, b);
-                        outFinal.flush();
-                    }
-                    in.close();
-                    Files.delete(Paths.get(location + "section" + i));
-                } catch (FileNotFoundException e ){
-                    e.printStackTrace();
                 }
+                Files.copy(Path.of(location + "section" + i), outFinal);
+                Files.delete(Path.of(location + "section" + i));
             }
-            outFinal.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         // create the objects mappings
         long oldId = 0;
@@ -572,6 +558,16 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             }
         }
     }
+    @Override
+    public void close() throws IOException {
+        // iterate over all mappings and close them
+        try {
+            IOUtil.closeAll(allMappings.values());
+        } finally {
+            IOUtil.closeAll(mappingS);
+        }
+    }
+
     private void catSection(long numEntries, int type, CatUnion itAdd , CatUnion itSkip , HashMap<String,CatMapping> mappings, ProgressListener listener) throws IOException {
     long numberElements = 0;
         String name;
@@ -674,13 +670,7 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             blocks.save(out, null);    // Write blocks directly to output, they have their own CRC check.
             blocks.close();
             //write out_buffer
-            byte[] buf = new byte[100000];
-            InputStream in = new FileInputStream(location + "section_buffer_" + type);
-            int b;
-            while ((b = in.read(buf)) >= 0) {
-                out.write(buf, 0, b);
-                out.flush();
-            }
+            Files.copy(Path.of(location + "section_buffer_" + type), out);
         }
         Files.deleteIfExists(Paths.get(location+"section_buffer_"+type));
         Files.deleteIfExists(Paths.get(location+"SequenceLog64BigDisk"+type));

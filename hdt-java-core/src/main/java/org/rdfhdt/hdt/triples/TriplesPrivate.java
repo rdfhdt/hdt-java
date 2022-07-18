@@ -44,7 +44,7 @@ public interface TriplesPrivate extends Triples {
 	 * Generates the associated Index
 	 * @param listener
 	 */
-	void generateIndex(ProgressListener listener);
+	void generateIndex(ProgressListener listener) throws IOException;
 	
 	/**
 	 * Loads the associated Index from an InputStream

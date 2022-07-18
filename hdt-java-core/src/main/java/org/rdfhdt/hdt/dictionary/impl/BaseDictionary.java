@@ -222,30 +222,15 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	}
 	@Override
 	public String dataTypeOfId(long id) {
-		try {
-			throw new IllegalAccessException("Method is not applicable on this dictionary");
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return "";
+		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
 	@Override
 	public TreeMap<String, DictionarySection> getAllObjects() {
-		try {
-			throw new IllegalAccessException("Method is not applicable on this dictionary");
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return null;
+		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
 	@Override
 	public long getNAllObjects() {
-		try {
-			throw new IllegalAccessException("Method is not applicable on this dictionary");
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
-		return 0;
+		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
 	
 }

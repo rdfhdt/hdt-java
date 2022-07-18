@@ -12,6 +12,7 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 
@@ -124,13 +125,7 @@ public class SectionUtil {
             blocks.save(out, null);    // Write blocks directly to output, they have their own CRC check.
             blocks.close();
             //write out_buffer
-            byte[] buf = new byte[100000];
-            InputStream in = new FileInputStream(location + "section_buffer_" + type);
-            int b;
-            while ((b = in.read(buf)) >= 0) {
-                out.write(buf, 0, b);
-                out.flush();
-            }
+            Files.copy(Path.of(location + "section_buffer_" + type), out);
         }
 
         Files.deleteIfExists(Paths.get(location + "section_buffer_" + type));

@@ -12,6 +12,7 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 
@@ -19,7 +20,7 @@ import java.io.IOException;
  * class to generate a synthetic hdt for test purposes.
  * @author ate47
  */
-public class HDTTestUtils {
+public class HDTTestUtils implements Closeable {
 
     /**
      * base URI
@@ -205,4 +206,8 @@ public class HDTTestUtils {
         return hdt.search(tr.getSubject(), tr.getPredicate(), tr.getObject());
     }
 
+    @Override
+    public void close() throws IOException {
+        hdt.close();
+    }
 }

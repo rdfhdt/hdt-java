@@ -106,8 +106,7 @@ public class PFCOptimizedExtractor {
 				}
 				return new CompactString(tempString).getDelayed();
 			} catch (IOException e) {
-				e.printStackTrace();
-				return null;
+				throw new RuntimeException(e);
 			}
 		}
 	}

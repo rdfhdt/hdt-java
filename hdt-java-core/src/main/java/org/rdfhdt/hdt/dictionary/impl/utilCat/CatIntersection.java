@@ -19,6 +19,7 @@
 
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.util.string.CompactString;
 
 import java.util.ArrayList;
@@ -27,8 +28,8 @@ import java.util.Iterator;
 
 public class CatIntersection implements Iterator<CatElement> {
     ArrayList<IteratorPlusElement> list;
-    private Iterator<CatElement> it1;
-    private Iterator<CatElement> it2;
+    private final Iterator<CatElement> it1;
+    private final Iterator<CatElement> it2;
 
     boolean hasNext = false;
     CatElement next;
@@ -61,7 +62,7 @@ public class CatIntersection implements Iterator<CatElement> {
 
     private void helpNext(){
         while (list.size() != 0) {
-            Collections.sort(list, new IteratorPlusElementComparator());
+            list.sort(new IteratorPlusElementComparator());
             if (list.size() == 2) {
 
 
@@ -110,10 +111,6 @@ public class CatIntersection implements Iterator<CatElement> {
 
     @Override
     public void remove() {
-        try {
-            throw new Exception("Not implemented");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        throw new NotImplementedException();
     }
 }

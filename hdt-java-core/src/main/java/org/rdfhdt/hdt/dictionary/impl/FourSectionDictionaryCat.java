@@ -28,9 +28,11 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -191,33 +193,18 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         ci.setFormat(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION);
         ci.setInt("elements", numSubjects+numPredicates+numObject+numShared);
 
-        try {
-            ci.save(new FileOutputStream(location + "dictionary"));
-            FileOutputStream outFinal = new FileOutputStream(location + "dictionary",true);
-            byte[] buf = new byte[100000];
+        try (FileOutputStream outFinal = new FileOutputStream(location + "dictionary")) {
+            ci.save(outFinal);
             for (int i = 1; i <= 4; i++) {
                 int j = i;
-                if (i == 4){
+                if (i == 4) {
                     j = 3;
-                } else if (j == 3){
+                } else if (j == 3) {
                     j = 4;
                 }
-                try {
-                    InputStream in = new FileInputStream(location + "section" + j);
-                    int b;
-                    while ((b = in.read(buf)) >= 0) {
-                        outFinal.write(buf, 0, b);
-                        outFinal.flush();
-                    }
-                    in.close();
-                    Files.delete(Paths.get(location + "section" + j));
-                } catch (FileNotFoundException e ){
-                    e.printStackTrace();
-                }
+                Files.copy(Path.of(location + "section" + j), outFinal);
+                Files.delete(Paths.get(location + "section" + j));
             }
-            outFinal.close();
-        } catch (IOException e) {
-            e.printStackTrace();
         }
         //calculate the inverse mapping for the subjects, i.e. from the new dictionary subject section to the old ones
         mappingS = new CatMappingBack(location,numSubjects+numShared);
@@ -246,23 +233,16 @@ public class FourSectionDictionaryCat implements DictionaryCat {
             }
         }
     }
-    public void closeAll() {
+    @Override
+    public void close() throws IOException {
+        // iterate over all mappings and close them
         try {
-            // iterate over all mappings and close them
-            for(CatMapping mapping:allMappings.values()){
-                doClose(mapping);
-            }
-            doClose(mappingS);
-        } catch (IOException e) {
-            e.printStackTrace();
+            IOUtil.closeAll(allMappings.values());
+        } finally {
+            IOUtil.closeAll(mappingS);
         }
     }
 
-    private static void doClose(Closeable closeable) throws IOException {
-        if (closeable != null){
-            closeable.close();
-        }
-    }
     public CatMappingBack getMappingS() {
         return mappingS;
     }

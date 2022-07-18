@@ -13,6 +13,7 @@ public class BigMappedByteBuffer {
 
     /**
      * create a BigMappedByteBuffer of multiple {@link FileChannel#map(FileChannel.MapMode, long, long)} call
+     * @param filename name to track the filename
      * @param ch the File channel
      * @param mode the mode
      * @param position the position in the file
@@ -20,9 +21,9 @@ public class BigMappedByteBuffer {
      * @return BigMappedByteBuffer
      * @throws IOException if we can't call {@link FileChannel#map(FileChannel.MapMode, long, long)}
      */
-    public static BigMappedByteBuffer ofFileChannel(FileChannel ch, FileChannel.MapMode mode, long position, long size) throws IOException {
+    public static BigMappedByteBuffer ofFileChannel(String filename, FileChannel ch, FileChannel.MapMode mode, long position, long size) throws IOException {
         int bufferCount = (int) ((size - 1) / maxBufferSize) + 1;
-        BigMappedByteBuffer buffer = new BigMappedByteBuffer(new ArrayList<>());
+        BigMappedByteBuffer buffer = new BigMappedByteBuffer(null, new ArrayList<>());
         for (int i = 0; i < bufferCount; i++) {
             long mapSize;
 
@@ -31,26 +32,29 @@ public class BigMappedByteBuffer {
             } else {
                 mapSize = maxBufferSize;
             }
-            buffer.buffers.add(ch.map(mode, position + (long) i * maxBufferSize, mapSize));
+            buffer.buffers.add(IOUtil.mapChannel(filename, ch, mode, position + (long) i * maxBufferSize, mapSize));
         }
         return buffer;
     }
 
-    private final List<ByteBuffer> buffers;
+    private final BigMappedByteBuffer parent;
+    private final List<CloseMappedByteBuffer> buffers;
 
     /**
      * cat multiple buffers
+     * @param parent the parent buffer for force
      * @param buffers the buffers
      */
-    private BigMappedByteBuffer(List<ByteBuffer> buffers) {
+    private BigMappedByteBuffer(BigMappedByteBuffer parent, List<CloseMappedByteBuffer> buffers) {
         this.buffers = buffers;
+        this.parent = parent;
     }
 
-    private BigMappedByteBuffer(BigMappedByteBuffer other, Function<ByteBuffer, ByteBuffer> map) {
-        this(other.buffers.stream().map(map).collect(Collectors.toList()));
+    private BigMappedByteBuffer(BigMappedByteBuffer other, Function<CloseMappedByteBuffer, CloseMappedByteBuffer> map) {
+        this(other, other.buffers.stream().map(map).collect(Collectors.toList()));
     }
 
-    List<ByteBuffer> getBuffers() {
+    List<CloseMappedByteBuffer> getBuffers() {
         return buffers;
     }
 
@@ -66,7 +70,7 @@ public class BigMappedByteBuffer {
      * @return the capacity of the big buffer
      */
     public long capacity() {
-        return buffers.stream().mapToLong(ByteBuffer::capacity).sum();
+        return buffers.stream().mapToLong(CloseMappedByteBuffer::capacity).sum();
     }
 
     private int getBufferOffset(long index) {
@@ -112,7 +116,7 @@ public class BigMappedByteBuffer {
      */
     public long position() {
         long pos = 0;
-        for (ByteBuffer b : buffers) {
+        for (CloseMappedByteBuffer b : buffers) {
             pos += b.position();
             if (b.hasRemaining())
                 break;
@@ -121,10 +125,26 @@ public class BigMappedByteBuffer {
     }
 
     /**
+     * Forces any changes made to this buffer's content to be written to the storage device containing the mapped file.
+     * @see MappedByteBuffer#force()
+     */
+    public void force() {
+        if (parent != null) {
+            parent.force();
+        }
+        for (CloseMappedByteBuffer b : buffers) {
+            // maybe we are in a duplicated buffer
+            if (b.getInternalBuffer() instanceof MappedByteBuffer) {
+                b.force();
+            }
+        }
+    }
+
+    /**
      * @return duplicate the buffer
      */
     public BigMappedByteBuffer duplicate() {
-        return new BigMappedByteBuffer(this, ByteBuffer::duplicate);
+        return new BigMappedByteBuffer(this, b -> new CloseMappedByteBuffer(null, b.duplicate(), true));
     }
 
     /**
@@ -145,7 +165,7 @@ public class BigMappedByteBuffer {
      * rewind the buffer
      */
     public void rewind() {
-        buffers.forEach(ByteBuffer::rewind);
+        buffers.forEach(CloseMappedByteBuffer::rewind);
     }
 
     /**
@@ -161,17 +181,24 @@ public class BigMappedByteBuffer {
 
         if (buffer1 == buffer2) {
             // all the bytes are in the same buffer
-            ByteBuffer b = buffers.get(buffer1);
+            CloseMappedByteBuffer b = buffers.get(buffer1);
             b.get(dst, offset, length);
         } else {
             // we are using 2 buffers
-            ByteBuffer b1 = buffers.get(buffer1);
-            ByteBuffer b2 = buffers.get(buffer2);
+            CloseMappedByteBuffer b1 = buffers.get(buffer1);
+            CloseMappedByteBuffer b2 = buffers.get(buffer2);
 
             int toRead = b1.capacity() - getBufferOffset(position);
 
             b1.get(dst, offset, toRead);
             b2.get(dst, offset + toRead, length - toRead);
         }
+    }
+
+    /**
+     * clean the buffer
+     */
+    public void clean() throws IOException {
+        IOUtil.closeAll(getBuffers());
     }
 }

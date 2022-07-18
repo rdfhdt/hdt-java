@@ -6,6 +6,7 @@ import org.rdfhdt.hdt.compact.array.IntegerArrayTest;
 import org.rdfhdt.hdt.compact.array.LongArrayTest;
 import org.rdfhdt.hdt.compact.bitmap.BitSequence375Test;
 import org.rdfhdt.hdt.compact.integer.VByteTest;
+import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 import org.rdfhdt.hdt.util.io.IOUtilTest;
 
 @RunWith(Suite.class)

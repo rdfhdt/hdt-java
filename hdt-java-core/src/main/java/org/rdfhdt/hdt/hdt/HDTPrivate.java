@@ -36,7 +36,7 @@ public interface HDTPrivate extends HDT {
 	 * 
 	 * @param listener A listener to be notified of the progress.
 	 */
-	void loadOrCreateIndex(ProgressListener listener);
+	void loadOrCreateIndex(ProgressListener listener) throws IOException;
 	
 	void populateHeaderStructure(String baseUri);
 }

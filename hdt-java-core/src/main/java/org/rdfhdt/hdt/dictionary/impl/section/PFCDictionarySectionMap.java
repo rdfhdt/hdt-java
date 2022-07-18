@@ -38,6 +38,7 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 
@@ -127,7 +128,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			long nextBlock = Math.min(numBlocks-1, block+BLOCKS_PER_BYTEBUFFER);
 			long nextBytePos = blocks.get(nextBlock);
 
-			buffers[buffer] = BigMappedByteBuffer.ofFileChannel(ch, MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
+			buffers[buffer] = BigMappedByteBuffer.ofFileChannel(f.getAbsolutePath(), ch, MapMode.READ_ONLY, base+bytePos, nextBytePos-bytePos);
 			buffers[buffer].order(ByteOrder.LITTLE_ENDIAN);
 			
 			posFirst[buffer] = bytePos;
@@ -354,7 +355,14 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	@Override
 	public void close() throws IOException {
 		blocks.close();
-		buffers = null;
+		if (buffers != null) {
+			for (BigMappedByteBuffer buffer: buffers) {
+				if (buffer != null) {
+					buffer.clean();
+				}
+			}
+			buffers = null;
+		}
 		ch.close();
 	}
 

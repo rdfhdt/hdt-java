@@ -29,6 +29,7 @@ import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -36,7 +37,7 @@ import java.io.OutputStream;
 /**
  * Version of Bitmap64 which is backed up on disk
  */
-public class Bitmap64Disk {
+public class Bitmap64Disk implements Closeable {
 
     // Constants
     protected final static int LOGW = 6;
@@ -204,5 +205,10 @@ public class Bitmap64Disk {
 
     public long getRealSizeBytes() {
         return words.length()*8;
+    }
+
+    @Override
+    public void close() throws IOException {
+        words.close();
     }
 }

@@ -278,25 +278,20 @@ public class BitmapTriplesIteratorPositionTest {
         Assert.assertNotNull("ntFile can't be null", ntFile);
 
         Files.copy(ntFile, f.toPath());
-        HDT hdt = HDTManager.generateHDT(f.getAbsolutePath(), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, new HDTSpecification(), null);
-        RDFParserCallback parser = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES);
-
-        List<TripleString> triples = new ArrayList<>();
-        try {
+        try (HDT hdt = HDTManager.generateHDT(f.getAbsolutePath(), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, new HDTSpecification(), null)) {
+            List<TripleString> triples = new ArrayList<>();
             hdt.search("", "", "").forEachRemaining(triples::add);
-        } catch (NotFoundException e) {
-            e.printStackTrace();
-        }
-        TripleString ts = triples.get(10);
-        CharSequence ss = s == 0 ? "" : ts.getSubject();
-        CharSequence sp = p == 0 ? "" : ts.getPredicate();
-        CharSequence so = o == 0 ? "" : ts.getObject();
+            TripleString ts = triples.get(10);
+            CharSequence ss = s == 0 ? "" : ts.getSubject();
+            CharSequence sp = p == 0 ? "" : ts.getPredicate();
+            CharSequence so = o == 0 ? "" : ts.getObject();
 
-        IteratorTripleString it = hdt.search(ss, sp, so);
+            IteratorTripleString it = hdt.search(ss, sp, so);
 
-        while (it.hasNext()) {
-            TripleString tripleString = it.next();
-            Assert.assertEquals("Sorted triple index", getIndex(triples, tripleString), it.getLastTriplePosition());
+            while (it.hasNext()) {
+                TripleString tripleString = it.next();
+                Assert.assertEquals("Sorted triple index", getIndex(triples, tripleString), it.getLastTriplePosition());
+            }
         }
     }
 

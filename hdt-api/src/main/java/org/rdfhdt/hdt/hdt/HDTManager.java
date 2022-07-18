@@ -254,9 +254,10 @@ public abstract class HDTManager {
 	 * Return an indexed HDT that is efficient for all kind of queries, given a not indexed HDT.
 	 * @param hdt file path to index
 	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException when the file cannot be found
 	 * @return HDT
 	 */
-	public static HDT indexedHDT(HDT hdt, ProgressListener listener) {
+	public static HDT indexedHDT(HDT hdt, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doIndexedHDT(hdt, listener);
 	}
 
@@ -346,7 +347,7 @@ public abstract class HDTManager {
 	protected abstract HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
 	protected abstract HDT doLoadIndexedHDT(InputStream hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
 	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
-	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener);
+	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener) throws IOException;
 	protected abstract HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 	protected abstract HDT doGenerateHDT(Iterator<TripleString> iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException;

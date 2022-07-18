@@ -39,6 +39,15 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
     }
 
     @Override
+    public void close() throws IOException {
+        // iterate over all mappings and close them
+        try {
+            IOUtil.closeAll(allMappings.values());
+        } finally {
+            IOUtil.closeAll(mappingBack);
+        }
+    }
+    @Override
     public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate",new CatMapping(location,"predicate",dictionary.getPredicates().getNumberOfElements()));
         allMappings.put("subject",new CatMapping(location,"subject",dictionary.getSubjects().getNumberOfElements()));
