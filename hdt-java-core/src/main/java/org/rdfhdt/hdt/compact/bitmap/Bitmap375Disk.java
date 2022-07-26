@@ -111,7 +111,7 @@ public class Bitmap375Disk extends Bitmap64Disk implements ModifiableBitmap {
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
-        int wordIndex = wordIndex(bitIndex);
+        long wordIndex = wordIndex(bitIndex);
         if(wordIndex>=words.length()) {
             return false;
         }

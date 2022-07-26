@@ -105,9 +105,13 @@ public class SequenceInt32 implements DynamicSequence {
 	@Override
     public void append(long value) {
 		assert value>=0 && value<=Integer.MAX_VALUE;
-		
-		if(data.length<numelements+1) {
-			resizeArray(data.length*2);
+
+		long neededSize = numelements+1L;
+		if (neededSize > Integer.MAX_VALUE - 5) {
+			throw new IllegalArgumentException("Needed size exceeds the maximum size of this data structure " + neededSize);
+		}
+		if(data.length < neededSize) {
+			resizeArray((int) Math.min(Integer.MAX_VALUE - 5L, data.length*2L));
 		}
 		data[numelements++] = (int) value;
 	}
