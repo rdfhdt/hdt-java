@@ -130,9 +130,6 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
 
             list = getTripleID(count).listIterator();
             count ++;
-            if (count%100000==0){
-                System.out.println(count);
-            }
             return list.next();
         }
     }

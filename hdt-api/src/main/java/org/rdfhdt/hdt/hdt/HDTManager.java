@@ -10,6 +10,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.rdf.TripleWriter;
 import org.rdfhdt.hdt.triples.TripleString;
 
@@ -339,6 +340,61 @@ public abstract class HDTManager {
 		return HDTManager.getInstance().doHDTDiffBit(location, hdtFileName, deleteBitmap, hdtFormat, listener);
 	}
 
+
+	/**
+	 * Create an HDT file from an RDF file in a tree, stop the chunk creation with the fluxStop
+	 *
+	 * @param fluxStop Flux stopper
+	 * @param supplier HDT supplier to create initial HDT before cat
+	 * @param rdfFileName File name.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF File (NTriples, N3, RDF-XML...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 *
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the file cannot be parsed
+	 * @return HDT
+	 */
+	public static HDT catTree(RDFFluxStop fluxStop, HDTSupplier supplier, String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doHDTCatTree(fluxStop, supplier, rdfFileName, baseURI, rdfNotation, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF stream, stop the chunk creation with the fluxStop
+	 *
+	 * @param fluxStop Flux stopper
+	 * @param supplier HDT supplier to create initial HDT before cat
+	 * @param rdfStream Stream.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF File (NTriples, N3, RDF-XML...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 *
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the file cannot be parsed
+	 * @return HDT
+	 */
+	public static HDT catTree(RDFFluxStop fluxStop, HDTSupplier supplier, InputStream rdfStream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doHDTCatTree(fluxStop, supplier, rdfStream, baseURI, rdfNotation, hdtFormat, listener);
+	}
+
+	/**
+	 * Create an HDT from an RDF iterator, stop the chunk creation with the fluxStop
+	 *
+	 * @param fluxStop Flux stopper
+	 * @param supplier HDT supplier to create initial HDT before cat
+	 * @param iterator A provider of triples. Must implement hasNext(), next() and estimatedNumResults.
+	 * @param baseURI Base URI for the dataset.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the file cannot be parsed
+	 * @return HDT
+	 */
+	public static HDT catTree(RDFFluxStop fluxStop, HDTSupplier supplier, Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doHDTCatTree(fluxStop, supplier, iterator, baseURI, hdtFormat, listener);
+	}
+
 	// Abstract methods for the current implementation
 	protected abstract HDTOptions doReadOptions(String file) throws IOException;
 	protected abstract HDT doLoadHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
@@ -355,5 +411,8 @@ public abstract class HDTManager {
 	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, String filename, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, InputStream stream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 
 }

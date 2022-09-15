@@ -281,13 +281,9 @@ public class HDTImpl implements HDTPrivate {
 		header.load(input, ci, iListener);
 
 		// Set base URI.
-		try {
-			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
-			if(it.hasNext()) {
-				this.baseUri = it.next().getSubject().toString();
-			}
-		} catch (NotFoundException e) {
-			log.error("Unexpected exception.", e);
+		this.baseUri = header.getBaseURI().toString();
+		if (baseUri.isEmpty()) {
+			log.error("Empty base uri!");
 		}
 
 		// Load dictionary
@@ -611,7 +607,9 @@ public class HDTImpl implements HDTPrivate {
      * @param listener
      */
 	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
-		System.out.println("Generating dictionary");
+		if (listener != null) {
+			listener.notifyProgress(0, "Generating dictionary");
+		}
 		try (FourSectionDictionaryCat dictionaryCat = new FourSectionDictionaryCat(location)) {
 			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
 			ControlInfo ci2 = new ControlInformation();
@@ -628,7 +626,9 @@ public class HDTImpl implements HDTPrivate {
 				this.dictionary.close();
 			}
 			this.dictionary = dictionary;
-			System.out.println("Generating triples");
+			if (listener != null) {
+				listener.notifyProgress(0, "Generating triples");
+			}
 			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
 			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
 			bitmapTriplesCat.cat(it, listener);
@@ -664,13 +664,17 @@ public class HDTImpl implements HDTPrivate {
 		Files.delete(Paths.get(location + "mapping_back_2"));
 		Files.delete(Paths.get(location + "mapping_back_type_1"));
 		Files.delete(Paths.get(location + "mapping_back_type_2"));
-		System.out.println("Generating header");
+		if (listener != null) {
+			listener.notifyProgress(0, "Generating header");
+		}
 		this.header = HeaderFactory.createHeader(spec);
-		this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
+		this.populateHeaderStructure(hdt1.getBaseURI());
 	}
 
 	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
-		System.out.println("Generating dictionary");
+		if (listener != null) {
+			listener.notifyProgress(0, "Generating dictionary");
+		}
 		try (DictionaryCat dictionaryCat = new MultipleSectionDictionaryCat(location)) {
 			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
 			//map the generated dictionary
@@ -686,7 +690,9 @@ public class HDTImpl implements HDTPrivate {
 				this.dictionary = dictionary;
 			}
 
-			System.out.println("Generating triples");
+			if (listener != null) {
+				listener.notifyProgress(0, "Generating triples");
+			}
 			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
 			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
 			bitmapTriplesCat.cat(it,listener);
@@ -746,9 +752,11 @@ public class HDTImpl implements HDTPrivate {
 		Files.delete(Paths.get(location+"mapping_back_2"));
 		Files.delete(Paths.get(location+"mapping_back_type_1"));
 		Files.delete(Paths.get(location+"mapping_back_type_2"));
-		System.out.println("Generating header");
+		if (listener != null) {
+			listener.notifyProgress(0, "Generating header");
+		}
 		this.header = HeaderFactory.createHeader(spec);
-		this.populateHeaderStructure("http://wdaqua.eu/hdtCat/");
+		this.populateHeaderStructure(hdt1.getBaseURI());
 	}
 
 	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
@@ -827,7 +835,7 @@ public class HDTImpl implements HDTPrivate {
 		il.notifyProgress(90, "Set header...");
 		this.header = HeaderFactory.createHeader(spec);
 
-		this.populateHeaderStructure("http://wdaqua.eu/hdtDiff/");
+		this.populateHeaderStructure(hdt.getBaseURI());
 		log.debug("Diff completed.");
 		il.notifyProgress(100, "Diff completed...");
 	}

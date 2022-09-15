@@ -29,6 +29,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.listener.PrefixListener;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -59,7 +60,13 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         allMappings.put("SH1",new CatMapping(location,"SH1",dictionary1.getShared().getNumberOfElements()));
         allMappings.put("SH2",new CatMapping(location,"SH2",dictionary2.getShared().getNumberOfElements()));
 
-        System.out.println("PREDICATES-------------------");
+//        System.out.println("PREDICATES-------------------");
+        ProgressListener iListener;
+
+        iListener = PrefixListener.of("Generate predicates: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
 
 
         int numCommonPredicates = 0;
@@ -67,7 +74,7 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         while (commonP1P2.hasNext()){
             commonP1P2.next();
             numCommonPredicates++;
-            //ListenerUtil.notifyCond(listener, "Analyze common predicates", numCommonPredicates, numCommonPredicates, maxPredicates);
+            //ListenerUtil.notifyCond(iListener, "Analyze common predicates", numCommonPredicates, numCommonPredicates, maxPredicates);
         }
         long numPredicates = dictionary1.getPredicates().getNumberOfElements()+dictionary2.getPredicates().getNumberOfElements()-numCommonPredicates;
 
@@ -75,8 +82,12 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         addPredicatesList.add(new CatWrapper(dictionary1.getPredicates().getSortedEntries(),"P1"));
         addPredicatesList.add(new CatWrapper(dictionary2.getPredicates().getSortedEntries(),"P2"));
         CatUnion itAddPredicates = new CatUnion(addPredicatesList);
-        SectionUtil.createSection(location,numPredicates, 4,itAddPredicates, new CatUnion(new ArrayList<>()),allMappings,0, listener);
-        System.out.println("SUBJECTS-------------------");
+        SectionUtil.createSection(location,numPredicates, 4,itAddPredicates, new CatUnion(new ArrayList<>()),allMappings,0, iListener);
+//        System.out.println("SUBJECTS-------------------");
+        iListener = PrefixListener.of("Generate subjects: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
         ArrayList<Iterator<CatElement>> skipSubjectList = new ArrayList<>();
 
         skipSubjectList.add(new CatIntersection(new CatWrapper(dictionary1.getSubjects().getSortedEntries(),"S1"),new CatWrapper(dictionary2.getShared().getSortedEntries(),"SH2")));
@@ -110,9 +121,13 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         addSubjectsList.add(new CatWrapper(dictionary2.getSubjects().getSortedEntries(),"S2"));
         CatUnion itAddSubjects = new CatUnion(addSubjectsList);
 
-        SectionUtil.createSection(location,numSubjects, 2,itAddSubjects,skipSubject ,allMappings,0, listener);
+        SectionUtil.createSection(location,numSubjects, 2,itAddSubjects,skipSubject ,allMappings,0, iListener);
 
-        System.out.println("OBJECTS-------------------");
+//        System.out.println("OBJECTS-------------------");
+        iListener = PrefixListener.of("Generate objects: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
         ArrayList<Iterator<CatElement>> skipObjectsList = new ArrayList<>();
         skipObjectsList.add(new CatIntersection(new CatWrapper(dictionary1.getObjects().getSortedEntries(),"O1"),new CatWrapper(dictionary2.getShared().getSortedEntries(),"SH2")));
         skipObjectsList.add(new CatIntersection(new CatWrapper(dictionary1.getObjects().getSortedEntries(),"O1"),new CatWrapper(dictionary2.getSubjects().getSortedEntries(),"S2")));
@@ -148,9 +163,13 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         addObjectsList.add(new CatWrapper(dictionary2.getObjects().getSortedEntries(),"O2"));
         CatUnion itAddObjects = new CatUnion(addObjectsList);
 
-        SectionUtil.createSection(location,numObject, 3,itAddObjects,skipObject ,allMappings,0, listener);
+        SectionUtil.createSection(location,numObject, 3,itAddObjects,skipObject ,allMappings,0, iListener);
 
-        System.out.println("SHARED-------------------");
+//        System.out.println("SHARED-------------------");
+        iListener = PrefixListener.of("Generate shared: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
         CatIntersection i2 = new CatIntersection(new CatWrapper(dictionary1.getSubjects().getSortedEntries(),"S1"), new CatWrapper(dictionary2.getObjects().getSortedEntries(),"O2"));
         int numCommonS1O2=0;
         while (i2.hasNext()){
@@ -184,7 +203,7 @@ public class FourSectionDictionaryCat implements DictionaryCat {
         addSharedList.add(new CatIntersection(new CatWrapper(dictionary2.getObjects().getSortedEntries(),"O2"),new CatWrapper(dictionary1.getShared().getSortedEntries(),"SH1")));
 
         CatUnion itAddShared = new CatUnion(addSharedList);
-        SectionUtil.createSection(location,numShared, 1,itAddShared,new CatUnion(new ArrayList<>()) ,allMappings,0, listener);
+        SectionUtil.createSection(location,numShared, 1,itAddShared,new CatUnion(new ArrayList<>()) ,allMappings,0, iListener);
 
 
         //Putting the sections together

@@ -77,7 +77,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
 		String objStr = object.toString();
 		if(objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
-			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), object));
+			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), HeaderUtil.cleanURI(object)));
 		} else {
 			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"'));
 		}

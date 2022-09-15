@@ -35,6 +35,7 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.rdfhdt.hdt.util.listener.PrefixListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.*;
@@ -97,8 +98,14 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             countSubSections2++;
         }
 
+        ProgressListener iListener;
 
-        System.out.println("PREDICATES-------------------");
+//        System.out.println("PREDICATES-------------------");
+        iListener = PrefixListener.of("Generate predicates: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
+
 
 
         int numCommonPredicates = 0;
@@ -114,10 +121,15 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         addPredicatesList.add(new CatWrapper(dictionary1.getPredicates().getSortedEntries(),"P1"));
         addPredicatesList.add(new CatWrapper(dictionary2.getPredicates().getSortedEntries(),"P2"));
         CatUnion itAddPredicates = new CatUnion(addPredicatesList);
-        catSection(numPredicates, 3,itAddPredicates, new CatUnion(new ArrayList<>()),allMappings, listener);
+        catSection(numPredicates, 3,itAddPredicates, new CatUnion(new ArrayList<>()),allMappings, iListener);
 
 
-        System.out.println("SUBJECTS-------------------");
+//        System.out.println("SUBJECTS-------------------");
+        iListener = PrefixListener.of("Generate subjects: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
+
         ArrayList<Iterator<CatElement>> skipSubjectList = new ArrayList<>();
 
         skipSubjectList.add(new CatIntersection(new CatWrapper(dictionary1.getSubjects().getSortedEntries(),"S1"),
@@ -164,9 +176,14 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         addSubjectsList.add(new CatWrapper(dictionary2.getSubjects().getSortedEntries(),"S2"));
         CatUnion itAddSubjects = new CatUnion(addSubjectsList);
 
-        catSection(numSubjects, 2,itAddSubjects,skipSubject ,allMappings, listener);
+        catSection(numSubjects, 2,itAddSubjects,skipSubject ,allMappings, iListener);
 
-        System.out.println("OBJECTS-------------------");
+//        System.out.println("OBJECTS-------------------");
+        iListener = PrefixListener.of("Generate objects: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
+
         ArrayList<Iterator<CatElement>> skipObjectsList = new ArrayList<>();
         if(dictionary1.getAllObjects().containsKey(NO_DT_OBJECTS)) {
             skipObjectsList.add(new CatIntersection(
@@ -406,10 +423,10 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             // subtract the number of objects to be skipped - if creating do data type section
             if(dataType.equals(NO_DT_OBJECTS)) {
                 numberElts -= numSkipObjects;
-                catSection(numberElts, type, itAddObjects, skipObject, allMappings, listener);
+                catSection(numberElts, type, itAddObjects, skipObject, allMappings, iListener);
             }
             else // if catting literals sections .. nothing will move (nothing to be skipped)
-                catSection(numberElts,type,itAddObjects,new CatUnion(new ArrayList<>()),allMappings,listener);
+                catSection(numberElts,type,itAddObjects,new CatUnion(new ArrayList<>()),allMappings,iListener);
             if(numberElts > 0 ) {
                 dataTypes.add(dataType);
                 offsets.put(dataType, total);
@@ -417,7 +434,12 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
             total+=numberElts;
             type++;
         }
-        System.out.println("SHARED-------------------");
+//        System.out.println("SHARED-------------------");
+        iListener = PrefixListener.of("Generate shared: ", listener);
+        if (iListener != null) {
+            iListener.notifyProgress(0, "start");
+        }
+
         int numCommonS1O2 = 0;
         if(dictionary2.getAllObjects().containsKey(NO_DT_OBJECTS)) {
             CatIntersection i2 = new CatIntersection(new CatWrapper(dictionary1.getSubjects().getSortedEntries(), "S1"), new CatWrapper(dictionary2.getAllObjects().get(NO_DT_OBJECTS).getSortedEntries(), NO_DT_OBJECTS + "2"));
@@ -459,7 +481,7 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
         addSharedList.add(new CatIntersection(new CatWrapper(dictionary2.getSubjects().getSortedEntries(),"S2"),new CatWrapper(dictionary1.getShared().getSortedEntries(),"SH1")));
 
         CatUnion itAddShared = new CatUnion(addSharedList);
-        catSection(numShared, 1,itAddShared,new CatUnion(new ArrayList<>()) ,allMappings, listener);
+        catSection(numShared, 1,itAddShared,new CatUnion(new ArrayList<>()) ,allMappings, iListener);
 
 
         //Putting the sections together
@@ -475,7 +497,7 @@ public class MultipleSectionDictionaryCat implements DictionaryCat {
                     outFinal.write(dataTypes.size());
                     for(String datatype:dataTypes){
                         outFinal.write(datatype.length());
-                        IOUtil.writeBuffer(outFinal, datatype.getBytes(), 0, datatype.getBytes().length, listener);
+                        IOUtil.writeBuffer(outFinal, datatype.getBytes(), 0, datatype.getBytes().length, iListener);
                     }
                 }
                 Files.copy(Path.of(location + "section" + i), outFinal);
