@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.util.string;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -57,7 +58,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		used=0;
 	}
 	
-	private ReplazableString(byte [] buffer) {
+	public ReplazableString(byte [] buffer) {
 		this.buffer = buffer;
 		this.used = buffer.length;
 	}
@@ -71,7 +72,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
 	}
-
+	
 	public void append(byte [] data, int offset, int len) {
 		this.replace(used, data, offset, len);
 	}
@@ -79,13 +80,26 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	public void append(BigByteBuffer data, long offset, int len) {
 		this.replace(used, data, offset, len);
 	}
-	
+
 	public void append(CharSequence other) {
 		ensureSize(this.used+other.length());
 		for(int i=0;i<other.length();i++) {
 			buffer[this.used+i] = (byte) other.charAt(i);
 		}
 		used+=other.length();
+	}
+
+	public void replace(CharSequence other) {
+		if (other instanceof ReplazableString) {
+			ReplazableString o2 = (ReplazableString) other;
+			ensureSize(o2.used);
+			System.arraycopy(o2.buffer, 0, buffer, 0, o2.used);
+			used = o2.used;
+		} else {
+			used = 0;
+			byte[] bytes = other.toString().getBytes(StandardCharsets.UTF_8);
+			replace(0, bytes, 0, bytes.length);
+		}
 	}
 
 
@@ -100,7 +114,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		data.get(buffer, offset, pos, len);
 		used = pos+len;
 	}
-	
+
 	public void replace(InputStream in, int pos, int len) throws IOException {
 		ensureSize(pos+len);
 		in.read(buffer, pos, len);

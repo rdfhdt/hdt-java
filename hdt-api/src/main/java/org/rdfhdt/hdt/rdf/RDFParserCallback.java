@@ -40,6 +40,7 @@ import org.rdfhdt.hdt.triples.TripleString;
  *
  */
 public interface RDFParserCallback {
+	@FunctionalInterface
 	interface RDFCallback {
 		void processTriple(TripleString triple, long pos);
 	}

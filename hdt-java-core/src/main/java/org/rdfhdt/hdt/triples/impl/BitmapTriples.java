@@ -49,10 +49,7 @@ import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.options.ControlInfo;
-import org.rdfhdt.hdt.options.ControlInformation;
-import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.*;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -73,7 +70,7 @@ import org.slf4j.LoggerFactory;
 public class BitmapTriples implements TriplesPrivate {
 	private static final Logger log = LoggerFactory.getLogger(BitmapTriples.class);
 
-	protected TripleComponentOrder order=TripleComponentOrder.SPO;
+	protected TripleComponentOrder order;
 	
 	protected Sequence seqY, seqZ, indexZ, predicateCount;
 	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
@@ -90,9 +87,11 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 	
 	public BitmapTriples(HDTOptions spec) {
-		String orderStr = spec.get("triplesOrder");
-		if(orderStr!=null) {
-			order = TripleComponentOrder.valueOf(orderStr);
+		String orderStr = spec.get(HDTOptionsKeys.TRIPLE_ORDER_KEY);
+		if(orderStr == null) {
+			this.order = TripleComponentOrder.SPO;
+		} else {
+			this.order = TripleComponentOrder.valueOf(orderStr);
 		}
 
 		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.y"));
@@ -839,6 +838,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
+	@Override
 	public TripleComponentOrder getOrder() {
 		return this.order;
 	}

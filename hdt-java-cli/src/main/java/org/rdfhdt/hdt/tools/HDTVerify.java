@@ -15,9 +15,8 @@ public class HDTVerify {
 	private HDTVerify() {}
 
 	private static void print(byte[] arr) {
-		for (int i = 0; i < arr.length; i++) {
-			byte b = arr[i];
-			System.out.print(String.format("%02X ", b));
+		for (byte b : arr) {
+			System.out.printf("%02X ", b);
 		}
 		System.out.println();
 	}
@@ -42,11 +41,11 @@ public class HDTVerify {
 			CharSequence charSeq = it.next();
 			String str = charSeq.toString();
 
-			if(lastCharseq!=null && ((cmp=comparator.compare(lastCharseq, charSeq))>0 )) {
+			if(lastCharseq!=null && ((cmp=comparator.compare(lastCharseq, charSeq))>=0 )) {
 				System.out.println("ERRA: "+lastCharseq+" / "+charSeq);
 			}
 
-			if(lastStr!=null && ((cmp2=lastStr.compareTo(str))>0)) {
+			if(lastStr!=null && ((cmp2=lastStr.compareTo(str))>=0)) {
 				System.out.println("ERRB: "+lastStr+" / "+str);
 			}
 
@@ -66,11 +65,15 @@ public class HDTVerify {
 			System.out.println("hdtVerify <file.hdt>");
 			System.exit(-1);
 		}
-		HDT hdt = HDTManager.mapHDT(args[0], null);
-
-		checkDictionarySectionOrder(hdt.getDictionary().getSubjects().getSortedEntries());
-		checkDictionarySectionOrder(hdt.getDictionary().getPredicates().getSortedEntries());
-		checkDictionarySectionOrder(hdt.getDictionary().getObjects().getSortedEntries());
-		checkDictionarySectionOrder(hdt.getDictionary().getShared().getSortedEntries());
+		try (HDT hdt = HDTManager.mapHDT(args[0], null)) {
+			System.out.println("Checking subject entries");
+			checkDictionarySectionOrder(hdt.getDictionary().getSubjects().getSortedEntries());
+			System.out.println("Checking predicate entries");
+			checkDictionarySectionOrder(hdt.getDictionary().getPredicates().getSortedEntries());
+			System.out.println("Checking object entries");
+			checkDictionarySectionOrder(hdt.getDictionary().getObjects().getSortedEntries());
+			System.out.println("Checking shared entries");
+			checkDictionarySectionOrder(hdt.getDictionary().getShared().getSortedEntries());
+		}
 	}
 }

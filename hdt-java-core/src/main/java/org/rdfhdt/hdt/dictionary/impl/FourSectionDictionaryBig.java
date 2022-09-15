@@ -44,6 +44,7 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInfo.Type;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 
@@ -82,6 +83,19 @@ public class FourSectionDictionaryBig extends BaseDictionary {
 		predicates.load(other.getPredicates(), iListener);
 		objects.load(other.getObjects(), iListener);
 		shared.load(other.getShared(), iListener);
+	}
+
+	@Override
+	public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
+		IntermediateListener iListener = new IntermediateListener(null);
+		new ExceptionThread(() -> predicates.load(other.getPredicates(), iListener), "FourSecSAsyncReaderP")
+				.attach(
+						new ExceptionThread(() -> subjects.load(other.getSubjects(), iListener), "FourSecSAsyncReaderS"),
+						new ExceptionThread(() -> shared.load(other.getShared(), iListener), "FourSecSAsyncReaderSh"),
+						new ExceptionThread(() -> objects.load(other.getObjects(), iListener), "FourSecSAsyncReaderO")
+				)
+				.startAll()
+				.joinAndCrashIfRequired();
 	}
 
 	/* (non-Javadoc)

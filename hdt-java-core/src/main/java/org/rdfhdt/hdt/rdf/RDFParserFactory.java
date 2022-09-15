@@ -94,25 +94,8 @@ public class RDFParserFactory {
 	 * @param notation the rdf notation to parse
 	 * @return iterator
 	 */
-	public static Iterator<TripleString> readAsIterator(RDFParserCallback parser, InputStream stream, String baseUri, boolean keepBNode, RDFNotation notation) {
-		return PipedCopyIterator.createOfCallback(TripleStringParser.INSTANCE, pipe -> parser.doParse(stream, baseUri, notation, keepBNode, (triple, pos) -> pipe.addElement(triple)));
+	public static PipedCopyIterator<TripleString> readAsIterator(RDFParserCallback parser, InputStream stream, String baseUri, boolean keepBNode, RDFNotation notation) {
+		return PipedCopyIterator.createOfCallback(pipe -> parser.doParse(stream, baseUri, notation, keepBNode, (triple, pos) -> pipe.addElement(triple.tripleToString())));
 	}
 
-	private static class TripleStringParser implements PipedCopyIterator.Parser<TripleString> {
-		private static final TripleStringParser INSTANCE = new TripleStringParser();
-		@Override
-		public void write(TripleString tripleString, OutputStream stream) throws IOException {
-			PipedCopyIterator.Parser.writeString(tripleString.getSubject(), stream);
-			PipedCopyIterator.Parser.writeString(tripleString.getPredicate(), stream);
-			PipedCopyIterator.Parser.writeString(tripleString.getObject(), stream);
-		}
-
-		@Override
-		public TripleString read(InputStream stream) throws IOException {
-			String s = PipedCopyIterator.Parser.readString(stream);
-			String p = PipedCopyIterator.Parser.readString(stream);
-			String o = PipedCopyIterator.Parser.readString(stream);
-			return new TripleString(s, p, o);
-		}
-	}
 }

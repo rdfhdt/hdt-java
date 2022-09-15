@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.hdt;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.triples.TripleString;
 
 import java.io.IOException;
@@ -19,11 +20,21 @@ public interface HDTSupplier {
 	/**
 	 * @return implementation using in-memory hdt
 	 */
-	static HDTSupplier memory() {
+	static org.rdfhdt.hdt.hdt.HDTSupplier memory() {
 		return (iterator, baseURI, hdtFormat, listener, location) -> {
 			try (HDT hdt = HDTManager.generateHDT(iterator, baseURI, hdtFormat, listener)) {
 				hdt.saveToHDT(location.toAbsolutePath().toString(), listener);
 			}
+		};
+	}
+
+	/**
+	 * @return implementation using in-memory hdt
+	 */
+	static org.rdfhdt.hdt.hdt.HDTSupplier disk() {
+		return (iterator, baseURI, hdtFormat, listener, location) -> {
+			hdtFormat.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, location.toAbsolutePath().toString());
+			HDTManager.generateHDTDisk(iterator, baseURI, hdtFormat, listener).close();
 		};
 	}
 

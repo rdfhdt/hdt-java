@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -291,6 +292,153 @@ public abstract class HDTManager {
 	public static HDT generateHDT(Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
 		return HDTManager.getInstance().doGenerateHDT(iterator, baseURI, hdtFormat, listener);
 	}
+	/**
+	 * Create an HDT file from a RDF stream.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param filename the RDF file name to guess the stream format and compresion.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDT(InputStream fileStream, String baseURI, String filename, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDT(fileStream, baseURI, RDFNotation.guess(filename), CompressionType.guess(filename), hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from a RDF stream.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF stream (NTriples, N3, RDF-XML...)
+	 * @param compressionType Compression type of the RDF stream. (GZIP, ZIP...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDT(InputStream fileStream, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDT(fileStream, baseURI, rdfNotation, compressionType, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from a RDF stream.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF stream (NTriples, N3, RDF-XML...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDT(InputStream fileStream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDT(fileStream, baseURI, rdfNotation, CompressionType.NONE, hdtFormat, listener);
+	}
+
+	/**
+	 * Create an HDT file from an RDF file by sorting the triples on disk, reduce the memory required by increasing the
+	 * IO usage.
+	 * @param rdfFileName RDF file to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF File (NTriples, N3, RDF-XML...)
+	 * @param compressionType Compression type of the RDF file. (GZIP, ZIP...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the RDF file can't be parsed
+	 */
+	public static HDT generateHDTDisk(String rdfFileName, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(rdfFileName, baseURI, rdfNotation, compressionType, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF file without compression by sorting the triples on disk, reduce the memory
+	 * required by increasing the IO usage.
+	 * @param rdfFileName RDF file to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF File (NTriples, N3, RDF-XML...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the RDF file can't be parsed
+	 */
+	public static HDT generateHDTDisk(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(rdfFileName, baseURI, rdfNotation, CompressionType.NONE, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF file by sorting the triples on disk, reduce the memory required by increasing the
+	 * IO usage. Will guess the RDF file compression/format with the file name.
+	 * @param rdfFileName RDF file to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the file cannot be found
+	 * @throws ParserException when the RDF file can't be parsed
+	 */
+	public static HDT generateHDTDisk(String rdfFileName, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(rdfFileName, baseURI, RDFNotation.guess(rdfFileName), CompressionType.guess(rdfFileName), hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF stream by sorting the triples on disk, reduce the memory required by increasing
+	 * the IO usage.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param filename the RDF file name to guess the stream format and compresion.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDTDisk(InputStream fileStream, String baseURI, String filename, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(fileStream, baseURI, RDFNotation.guess(filename), CompressionType.guess(filename), hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF stream by sorting the triples on disk, reduce the memory required by increasing
+	 * the IO usage.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF stream (NTriples, N3, RDF-XML...)
+	 * @param compressionType Compression type of the RDF stream. (GZIP, ZIP...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDTDisk(InputStream fileStream, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(fileStream, baseURI, rdfNotation, compressionType, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF stream by sorting the triples on disk, reduce the memory required by increasing
+	 * the IO usage.
+	 * @param fileStream RDF stream to parse.
+	 * @param baseURI Base URI for the dataset.
+	 * @param rdfNotation Format of the source RDF stream (NTriples, N3, RDF-XML...)
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 * @throws ParserException when the RDF stream can't be parsed
+	 */
+	public static HDT generateHDTDisk(InputStream fileStream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(fileStream, baseURI, rdfNotation, CompressionType.NONE, hdtFormat, listener);
+	}
+	/**
+	 * Create an HDT file from an RDF stream by sorting the triples on disk, reduce the memory required by increasing
+	 * the IO usage.
+	 * @param baseURI Base URI for the dataset.
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @return HDT
+	 * @throws IOException when the stream cannot be used
+	 */
+	public static HDT generateHDTDisk(Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
+		return HDTManager.getInstance().doGenerateHDTDisk(iterator, baseURI, hdtFormat, listener);
+	}
 
 	public static TripleWriter getHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException {
 		return HDTManager.getInstance().doGetHDTWriter(out, baseURI, hdtFormat);
@@ -405,7 +553,11 @@ public abstract class HDTManager {
 	protected abstract HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException;
 	protected abstract HDT doIndexedHDT(HDT hdt, ProgressListener listener) throws IOException;
 	protected abstract HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doGenerateHDT(InputStream fileStream, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 	protected abstract HDT doGenerateHDT(Iterator<TripleString> iterator, String baseURI,	HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doGenerateHDTDisk(String rdfFileName, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doGenerateHDTDisk(InputStream fileStream, String baseURI, RDFNotation rdfNotation, CompressionType compressionType, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
+	protected abstract HDT doGenerateHDTDisk(Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
 	protected abstract TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;

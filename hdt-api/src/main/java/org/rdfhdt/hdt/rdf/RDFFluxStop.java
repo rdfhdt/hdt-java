@@ -4,6 +4,7 @@ import org.rdfhdt.hdt.triples.TripleString;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.function.BinaryOperator;
 
 /**
  * Rdf flux stopper descriptor
@@ -99,4 +100,47 @@ public interface RDFFluxStop {
 	 * restart the flux stop
 	 */
 	void restart();
+
+	/**
+	 * combine 2 rdf flux stop with a boolean operation
+	 * @param fluxStop the other flux stop
+	 * @param operator the operator
+	 * @return rdffluxstop
+	 * @see #and(RDFFluxStop)
+	 * @see #or(RDFFluxStop)
+	 */
+	default RDFFluxStop booleanOp(RDFFluxStop fluxStop, BinaryOperator<Boolean> operator) {
+		return new RDFFluxStop() {
+			@Override
+			public boolean canHandle(TripleString ts) {
+				boolean left = RDFFluxStop.this.canHandle(ts);
+				boolean right = fluxStop.canHandle(ts);
+				return operator.apply(left, right);
+			}
+
+			@Override
+			public void restart() {
+				RDFFluxStop.this.restart();
+				fluxStop.restart();
+			}
+		};
+	}
+
+	/**
+	 * {@link #booleanOp(RDFFluxStop, BinaryOperator)} version for AND
+	 * @param fluxStop other flux stop
+	 * @return rdffluxstop
+	 */
+	default RDFFluxStop and(RDFFluxStop fluxStop) {
+		return booleanOp(fluxStop, (a, b) -> a && b);
+	}
+
+	/**
+	 * {@link #booleanOp(RDFFluxStop, BinaryOperator)} version for OR
+	 * @param fluxStop other flux stop
+	 * @return rdffluxstop
+	 */
+	default RDFFluxStop or(RDFFluxStop fluxStop) {
+		return booleanOp(fluxStop, (a, b) -> a || b);
+	}
 }

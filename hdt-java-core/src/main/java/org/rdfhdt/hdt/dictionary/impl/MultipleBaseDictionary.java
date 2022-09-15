@@ -4,10 +4,12 @@ package org.rdfhdt.hdt.dictionary.impl;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
+import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCOptimizedExtractor;
 import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.string.CompactString;
@@ -322,5 +324,10 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
             return new AbstractMap.SimpleEntry<>(offset +1, size);
         }
         return new AbstractMap.SimpleEntry<>(0L,0L);
+    }
+
+    @Override
+    public void loadAsync(TempDictionary other, ProgressListener listener) {
+        throw new NotImplementedException();
     }
 }

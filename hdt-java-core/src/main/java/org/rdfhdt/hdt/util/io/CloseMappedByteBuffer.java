@@ -19,17 +19,15 @@ public class CloseMappedByteBuffer implements Closeable {
 
     static void crashMapTest() {
         mapTest = false;
-        MAP_TEST_MAP.entrySet().stream()
-                .sorted(Comparator.comparingLong(Map.Entry::getKey))
-                .map(Map.Entry::getValue)
-                .forEach(t -> {
-                    System.out.println("-------------------");
-                    t.printStackTrace();
-                    System.out.println("-------------------");
-                }
-        );
         if (!MAP_TEST_MAP.isEmpty()) {
-            throw new RuntimeException("MAP NOT CLOSE: " + MAP_TEST_MAP.size());
+            AssertionError re = new AssertionError(MAP_TEST_MAP.size() + " MAP(S) NOT CLOSED!");
+
+            MAP_TEST_MAP.entrySet().stream()
+                    .sorted(Comparator.comparingLong(Map.Entry::getKey))
+                    .map(Map.Entry::getValue)
+                    .forEach(re::addSuppressed);
+
+            throw re;
         }
     }
 
@@ -41,14 +39,18 @@ public class CloseMappedByteBuffer implements Closeable {
         this.duplicated = duplicated;
         this.buffer = buffer;
         if (mapTest && !duplicated) {
-            MAP_TEST_MAP.put(id, new Throwable("MAP " + filename + "#" + id + "|"+ buffer));
+            synchronized (MAP_TEST_MAP) {
+                MAP_TEST_MAP.put(id, new Throwable("MAP " + filename + "#" + id + "|" + buffer));
+            }
         }
     }
 
     @Override
     public void close() {
         if (mapTest && !duplicated) {
-            MAP_TEST_MAP.remove(id);
+            synchronized (MAP_TEST_MAP) {
+                MAP_TEST_MAP.remove(id);
+            }
         }
         IOUtil.cleanBuffer(buffer);
     }

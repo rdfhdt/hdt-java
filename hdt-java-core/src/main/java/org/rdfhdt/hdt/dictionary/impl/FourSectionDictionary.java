@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
@@ -44,6 +45,7 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInfo.Type;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -55,7 +57,7 @@ import org.rdfhdt.hdt.util.listener.IntermediateListener;
  */
 public class FourSectionDictionary extends BaseDictionary {
 
-	public FourSectionDictionary(HDTOptions spec, 
+	public FourSectionDictionary(HDTOptions spec,
 			DictionarySectionPrivate s, DictionarySectionPrivate p, DictionarySectionPrivate o, DictionarySectionPrivate sh) {
 		super(spec);
 		this.subjects = s;
@@ -63,7 +65,7 @@ public class FourSectionDictionary extends BaseDictionary {
 		this.objects = o;
 		this.shared = sh;
 	}
-	
+
 	public FourSectionDictionary(HDTOptions spec) {
 		super(spec);
 		// FIXME: Read type from spec.
@@ -83,6 +85,19 @@ public class FourSectionDictionary extends BaseDictionary {
 		predicates.load(other.getPredicates(), iListener);
 		objects.load(other.getObjects(), iListener);
 		shared.load(other.getShared(), iListener);
+	}
+
+	@Override
+	public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
+		IntermediateListener iListener = new IntermediateListener(null);
+		new ExceptionThread(() -> predicates.load(other.getPredicates(), iListener), "FourSecSAsyncReaderP")
+				.attach(
+						new ExceptionThread(() -> subjects.load(other.getSubjects(), iListener), "FourSecSAsyncReaderS"),
+						new ExceptionThread(() -> shared.load(other.getShared(), iListener), "FourSecSAsyncReaderSh"),
+						new ExceptionThread(() -> objects.load(other.getObjects(), iListener), "FourSecSAsyncReaderO")
+				)
+				.startAll()
+				.joinAndCrashIfRequired();
 	}
 
 	/* (non-Javadoc)
@@ -111,7 +126,7 @@ public class FourSectionDictionary extends BaseDictionary {
 		if(ci.getType()!=ControlInfo.Type.DICTIONARY) {
 			throw new IllegalFormatException("Trying to read a dictionary section, but was not dictionary.");
 		}
-		
+
 		IntermediateListener iListener = new IntermediateListener(listener);
 
 		shared = DictionarySectionFactory.loadFrom(input, iListener);
@@ -119,7 +134,7 @@ public class FourSectionDictionary extends BaseDictionary {
 		predicates = DictionarySectionFactory.loadFrom(input, iListener);
 		objects = DictionarySectionFactory.loadFrom(input, iListener);
 	}
-	
+
 	@Override
 	public void mapFromFile(CountInputStream in, File f, ProgressListener listener) throws IOException {
 		ControlInformation ci = new ControlInformation();
@@ -127,13 +142,13 @@ public class FourSectionDictionary extends BaseDictionary {
 		if(ci.getType()!=ControlInfo.Type.DICTIONARY) {
 			throw new IllegalFormatException("Trying to read a dictionary section, but was not dictionary.");
 		}
-		
+
 		IntermediateListener iListener = new IntermediateListener(listener);
 		shared = DictionarySectionFactory.loadFrom(in, f, iListener);
 		subjects = DictionarySectionFactory.loadFrom(in, f, iListener);
 		predicates = DictionarySectionFactory.loadFrom(in, f, iListener);
 		objects = DictionarySectionFactory.loadFrom(in, f, iListener);
-		
+
 		// Use cache only for predicates. Preload only up to 100K predicates.
 		// FIXME: DISABLED
 //		predicates = new DictionarySectionCacheAll(predicates, predicates.getNumberOfElements()<100000);

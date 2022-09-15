@@ -1,6 +1,10 @@
 package org.rdfhdt.hdt.util;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
+import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
+import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
@@ -12,6 +16,7 @@ import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
@@ -20,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Random;
+import java.util.zip.GZIPOutputStream;
 
 public class LargeFakeDataSetStreamSupplier {
 
@@ -95,12 +101,34 @@ public class LargeFakeDataSetStreamSupplier {
 		}
 	}
 
-	public ThreadedStream createNTInputStream() throws IOException {
+	public ThreadedStream createNTInputStream(CompressionType compressionType) throws IOException {
 		PipedOutputStream pout = new PipedOutputStream();
 		InputStream is = new PipedInputStream(pout);
+		OutputStream out;
+
+		if (compressionType != null) {
+			switch (compressionType) {
+				case NONE:
+					out = pout;
+					break;
+				case XZ:
+					out = new XZCompressorOutputStream(pout);
+					break;
+				case BZIP:
+					out = new BZip2CompressorOutputStream(pout);
+					break;
+				case GZIP:
+					out = new GZIPOutputStream(pout);
+					break;
+				default:
+					throw new NotImplementedException(compressionType.name());
+			}
+		} else {
+			out = pout;
+		}
 
 		ExceptionThread run = new ExceptionThread(() -> {
-			try (PrintStream ps = new PrintStream(pout, true)) {
+			try (PrintStream ps = new PrintStream(out, true)) {
 				Iterator<TripleString> it = createTripleStringStream();
 				while (it.hasNext()) {
 					it.next().dumpNtriple(ps);

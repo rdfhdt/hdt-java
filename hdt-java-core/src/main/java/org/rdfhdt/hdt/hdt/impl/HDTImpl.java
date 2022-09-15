@@ -31,7 +31,6 @@ package org.rdfhdt.hdt.hdt.impl;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryCat;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
@@ -50,11 +49,9 @@ import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDT;
-import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
-import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
@@ -70,7 +67,6 @@ import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.TriplesFactory;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
@@ -79,7 +75,6 @@ import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorCat;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorDiff;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorMapDiff;
 import org.rdfhdt.hdt.util.StopWatch;
-import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -97,7 +92,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
@@ -106,75 +100,20 @@ import java.util.zip.GZIPInputStream;
  * Basic implementation of HDT interface
  *
  */
-public class HDTImpl implements HDTPrivate {
+public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPrivate> {
 	private static final Logger log = LoggerFactory.getLogger(HDTImpl.class);
-
-	private final HDTOptions spec;
-
-	protected HeaderPrivate header;
-	protected DictionaryPrivate dictionary;
-	protected TriplesPrivate triples;
 
 	private String hdtFileName;
 	private String baseUri;
 	private boolean isMapped;
 	private boolean isClosed=false;
 
-	private void createComponents() {
-		header = HeaderFactory.createHeader(spec);
-        dictionary = DictionaryFactory.createDictionary(spec);
-        triples = TriplesFactory.createTriples(spec);
-	}
-
-	@Override
-	public void populateHeaderStructure(String baseUri) {
-		if(baseUri==null || baseUri.length()==0) {
-			throw new IllegalArgumentException("baseURI cannot be empty");
-		}
-		
-		if(isClosed) {
-			throw new IllegalStateException("Cannot add header to a closed HDT.");
-		}
-		
-		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
-		header.insert(baseUri, HDTVocabulary.RDF_TYPE, HDTVocabulary.VOID_DATASET);
-
-		// VOID
-		header.insert(baseUri, HDTVocabulary.VOID_TRIPLES, triples.getNumberOfElements());
-		header.insert(baseUri, HDTVocabulary.VOID_PROPERTIES, dictionary.getNpredicates());
-		header.insert(baseUri, HDTVocabulary.VOID_DISTINCT_SUBJECTS, dictionary.getNsubjects());
-		header.insert(baseUri, HDTVocabulary.VOID_DISTINCT_OBJECTS, dictionary.getNobjects());
-
-		// Structure
-		String formatNode = "_:format";
-		String dictNode = "_:dictionary";
-		String triplesNode = "_:triples";
-		String statisticsNode = "_:statistics";
-		String publicationInfoNode = "_:publicationInformation";
-
-		header.insert(baseUri, HDTVocabulary.HDT_FORMAT_INFORMATION, formatNode);
-		header.insert(formatNode, HDTVocabulary.HDT_DICTIONARY, dictNode);
-		header.insert(formatNode, HDTVocabulary.HDT_TRIPLES, triplesNode);
-		header.insert(baseUri, HDTVocabulary.HDT_STATISTICAL_INFORMATION, statisticsNode);
-		header.insert(baseUri, HDTVocabulary.HDT_PUBLICATION_INFORMATION, publicationInfoNode);
-
-		dictionary.populateHeader(header, dictNode);
-		triples.populateHeader(header, triplesNode);
-
-		header.insert(statisticsNode, HDTVocabulary.HDT_SIZE, getDictionary().size()+getTriples().size());
-
-		// Current time
-		header.insert(publicationInfoNode, HDTVocabulary.DUBLIN_CORE_ISSUED, StringUtil.formatDate(new Date()));
-	}
-
 	public HDTImpl(HDTOptions spec) {
-		if (spec == null) {
-			this.spec = new HDTSpecification();
-		} else {
-			this.spec = spec;
-		}
+		super(spec);
 
-		createComponents();
+		header = HeaderFactory.createHeader(this.spec);
+		dictionary = DictionaryFactory.createDictionary(this.spec);
+		triples = TriplesFactory.createTriples(this.spec);
 	}
 
 	@Override
@@ -198,14 +137,7 @@ public class HDTImpl implements HDTPrivate {
 		header.load(input, ci, iListener);
 
 		// Set base URI.
-		try {
-			IteratorTripleString it = header.search("", HDTVocabulary.RDF_TYPE, HDTVocabulary.HDT_DATASET);
-			if(it.hasNext()) {
-				this.baseUri = it.next().getSubject().toString();
-			}
-		} catch (NotFoundException e) {
-			log.error("Unexpected exception.", e);
-		}
+		this.baseUri = header.getBaseURI().toString();
 
 		// Load dictionary
 		ci.clear();
@@ -316,34 +248,6 @@ public class HDTImpl implements HDTPrivate {
 	 * @see hdt.HDT#saveToHDT(java.io.OutputStream)
 	 */
 	@Override
-	public void saveToHDT(OutputStream output, ProgressListener listener) throws IOException {
-		ControlInfo ci = new ControlInformation();
-		IntermediateListener iListener = new IntermediateListener(listener);
-
-		ci.clear();
-		ci.setType(ControlInfo.Type.GLOBAL);
-		ci.setFormat(HDTVocabulary.HDT_CONTAINER);
-		ci.save(output);
-
-		ci.clear();
-		ci.setType(ControlInfo.Type.HEADER);
-		header.save(output, ci, iListener);
-
-		ci.clear();
-		ci.setType(ControlInfo.Type.DICTIONARY);
-		dictionary.save(output, ci, iListener);
-
-		ci.clear();
-		ci.setType(ControlInfo.Type.TRIPLES);
-		triples.save(output, ci, iListener);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see hdt.HDT#saveToHDT(java.io.OutputStream)
-	 */
-	@Override
 	public void saveToHDT(String fileName, ProgressListener listener) throws IOException {
 		OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
 		//OutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
@@ -415,52 +319,16 @@ public class HDTImpl implements HDTPrivate {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see hdt.HDT#getHeader()
-	 */
-	@Override
-	public Header getHeader() {
-		return header;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see hdt.HDT#getDictionary()
-	 */
-	@Override
-	public Dictionary getDictionary() {
-		return dictionary;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see hdt.HDT#getTriples()
-	 */
-	@Override
-	public Triples getTriples() {
-		return triples;
-	}
-
-	/* (non-Javadoc)
-	 * @see hdt.hdt.HDT#getSize()
-	 */
-	@Override
-	public long size() {
-		if(isClosed)
-			return 0;
-
-		return dictionary.size()+triples.size();
-	}
-	
 	public void loadFromParts(HeaderPrivate h, DictionaryPrivate d, TriplesPrivate t) {
 		this.header = h;
 		this.dictionary = d;
 		this.triples = t;
-		isClosed=false;	
+		isClosed=false;
+	}
+
+	@Override
+	public void setBaseUri(String baseUri) {
+		this.baseUri = baseUri;
 	}
 
 	public void loadFromModifiableHDT(TempHDT modHdt, ProgressListener listener) {
@@ -469,8 +337,8 @@ public class HDTImpl implements HDTPrivate {
 		modHdt.reorganizeTriples(listener);
 
         // Get parts
-        TempTriples modifiableTriples = (TempTriples) modHdt.getTriples();
-        TempDictionary modifiableDictionary = (TempDictionary) modHdt.getDictionary();
+        TempTriples modifiableTriples = modHdt.getTriples();
+        TempDictionary modifiableDictionary = modHdt.getDictionary();
 
         // Convert triples to final format
         if(triples.getClass().equals(modifiableTriples.getClass())) {
@@ -591,6 +459,7 @@ public class HDTImpl implements HDTPrivate {
 		return hdtFileName;
 	}
 
+	@Override
 	public boolean isClosed() {
 		return isClosed;
 	}

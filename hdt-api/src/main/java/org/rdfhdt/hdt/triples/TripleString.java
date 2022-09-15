@@ -337,4 +337,16 @@ public class TripleString {
 			out.append('<').append(object).append("> .\n");
 		}
 	}
+
+	/**
+	 * convert all the elements into {@link String} and create a new TripleString
+	 * @return tripleString
+	 */
+	public TripleString tripleToString() {
+		return new TripleString(
+			subject.toString(),
+			predicate.toString(),
+			object.toString()
+		);
+	}
 }

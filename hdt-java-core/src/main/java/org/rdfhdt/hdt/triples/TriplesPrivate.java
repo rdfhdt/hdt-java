@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
@@ -80,4 +81,9 @@ public interface TriplesPrivate extends Triples {
 	 *            The TempTriples input to load from
 	 */
 	void load(TempTriples input, ProgressListener listener);
+
+	/**
+	 * Gets the currently set order(TripleComponentOrder)
+	 */
+	TripleComponentOrder getOrder();
 }

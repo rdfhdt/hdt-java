@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
 import org.rdfhdt.hdt.dictionary.impl.section.HashDictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -49,6 +50,7 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
         predicates.load(other.getPredicates(), iListener);
         Iterator iter = other.getObjects().getEntries();
 
+        // TODO: allow the usage of OneReadDictionarySection
         HashMap<String,Long> literalsCounts = ((HashDictionarySection)other.getObjects()).getLiteralsCounts();
         if(literalsCounts.containsKey("NO_DATATYPE"))
             literalsCounts.put("NO_DATATYPE",literalsCounts.get("NO_DATATYPE") - other.getShared().getNumberOfElements());
@@ -228,5 +230,10 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
             ((DictionarySectionPrivate)entry.getValue()).close();
         }
 
+    }
+
+    @Override
+    public void loadAsync(TempDictionary other, ProgressListener listener) {
+        throw new NotImplementedException();
     }
 }
