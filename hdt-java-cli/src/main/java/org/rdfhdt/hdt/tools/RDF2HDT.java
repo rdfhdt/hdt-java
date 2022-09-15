@@ -33,20 +33,30 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTSupplier;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.util.StopWatch;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
+import org.rdfhdt.hdt.util.StringUtil;
 
 /**
  * @author mario.arias
  *
  */
 public class RDF2HDT implements ProgressListener {
+	/**
+	 * @return a theoretical maximum amount of memory the JVM will attempt to use
+	 */
+	private static long getMaxTreeCatChunkSize() {
+		Runtime runtime = Runtime.getRuntime();
+		return  (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) / (0.85 * 5));
+	}
 
 	public String rdfInput;
 	public String hdtOutput;
@@ -77,7 +87,13 @@ public class RDF2HDT implements ProgressListener {
 
 	@Parameter(names = "-canonicalntfile", description = "Only for NTriples input. Use a Fast NT file parser the input should be in a canonical form. See https://www.w3.org/TR/n-triples/#h2_canonical-ntriples")
 	public boolean ntSimpleLoading;
-	
+
+	@Parameter(names = "-cattree", description = "Use HDTCatTree to split the HDT creation for big dataset")
+	public boolean catTree;
+
+	@Parameter(names = "-cattreelocation", description = "Only with -cattree, set the tree building location")
+	public String catTreeLocation;
+
 	public void execute() throws ParserException, IOException {
 		HDTSpecification spec;
 		if(configFile!=null) {
@@ -115,7 +131,30 @@ public class RDF2HDT implements ProgressListener {
 		}
 
 		StopWatch sw = new StopWatch();
-		HDT hdt = HDTManager.generateHDT(rdfInput, baseURI,notation , spec, this);
+		HDT hdt;
+
+		if (catTree) {
+			if (catTreeLocation != null) {
+				spec.set("loader.cattree.location", catTreeLocation);
+			}
+			spec.set("loader.cattree.futureHDTLocation", hdtOutput);
+
+			long maxTreeCatChunkSize = getMaxTreeCatChunkSize();
+
+			System.out.println("Compute HDT with HDTCatTree using chunk of size: " + StringUtil.humanReadableByteCount(maxTreeCatChunkSize, true));
+
+			hdt = HDTManager.catTree(
+					RDFFluxStop.sizeLimit(maxTreeCatChunkSize),
+					HDTSupplier.memory(),
+					rdfInput,
+					baseURI,
+					notation,
+					spec,
+					this
+			);
+		} else {
+			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation , spec, this);
+		}
 		System.out.println("File converted in: "+sw.stopAndShow());
 
 		try {
@@ -130,7 +169,11 @@ public class RDF2HDT implements ProgressListener {
 
 			// Dump to HDT file
 			sw = new StopWatch();
-			hdt.saveToHDT(hdtOutput, this);
+
+			if (!catTree) {
+				// ignore catTree save because the file is already here
+				hdt.saveToHDT(hdtOutput, this);
+			}
 			System.out.println("HDT saved to file in: "+sw.stopAndShow());
 
 			// Generate index and dump it to .hdt.index file
