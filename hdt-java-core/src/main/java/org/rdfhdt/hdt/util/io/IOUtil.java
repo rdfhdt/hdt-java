@@ -30,7 +30,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
-import pl.edu.icm.jlargearrays.LargeArrayUtils;
+import org.visnow.jlargearrays.LargeArrayUtils;
 
 import java.io.*;
 import java.net.URL;

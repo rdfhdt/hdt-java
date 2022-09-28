@@ -241,8 +241,11 @@ public class SequenceLog64 implements DynamicSequence {
 		}
 		
 		long neededSize = numWordsFor(numbits, numentries+1);
-		if(data.length<neededSize) {
-			resizeArray(data.length*2);
+		if (neededSize > Integer.MAX_VALUE - 5) {
+			throw new IllegalArgumentException("Needed size exceeds the maximum size of this data structure " + neededSize);
+		}
+		if(data.length < neededSize) {
+			resizeArray((int) Math.min(Integer.MAX_VALUE - 5L, data.length*2L));
 		}
 		
 		this.set((int)numentries, value);

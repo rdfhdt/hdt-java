@@ -32,13 +32,13 @@ public class BitmapTriplesIteratorMapDiff implements IteratorTripleID {
     TripleIDComparator tripleIDComparator = new TripleIDComparator(TripleComponentOrder.SPO);
     Bitmap bitArrayDisk;
 
-    public BitmapTriplesIteratorMapDiff(HDT hdtOriginal, Bitmap deleteBitmap, DictionaryDiff dictionaryDiff, long countTriples) {
+    public BitmapTriplesIteratorMapDiff(HDT hdtOriginal, Bitmap deleteBitmap, DictionaryDiff dictionaryDiff) {
         this.subjMapping = dictionaryDiff.getAllMappings().get("subject");
         this.objMapping = dictionaryDiff.getAllMappings().get("object");
         this.predMapping = dictionaryDiff.getAllMappings().get("predicate");
         this.sharedMapping = dictionaryDiff.getAllMappings().get("shared");
         this.dictionaryDiff = dictionaryDiff;
-        this.countTriples = countTriples;
+        this.countTriples = Math.max(0, hdtOriginal.getTriples().getNumberOfElements() - deleteBitmap.countOnes());
         this.triples = hdtOriginal.getTriples();
         this.bitArrayDisk = deleteBitmap;
         list = getTripleID(0).listIterator();

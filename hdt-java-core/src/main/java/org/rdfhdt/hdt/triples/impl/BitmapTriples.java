@@ -129,8 +129,8 @@ public class BitmapTriples implements TriplesPrivate {
 
 		long number = it.estimatedNumResults();
 		
-		SequenceLog64 vectorY = new SequenceLog64(BitUtil.log2(number), number);
-		SequenceLog64 vectorZ = new SequenceLog64(BitUtil.log2(number), number);
+		DynamicSequence vectorY = new SequenceLog64Big(BitUtil.log2(number), number);
+		DynamicSequence vectorZ = new SequenceLog64Big(BitUtil.log2(number), number);
 		
 		ModifiableBitmap bitY = new Bitmap375(number);
 		ModifiableBitmap bitZ = new Bitmap375(number);

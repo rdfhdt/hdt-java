@@ -21,6 +21,7 @@ package org.rdfhdt.hdt.compact.bitmap;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.crc.CRC32;
@@ -37,7 +38,7 @@ import java.io.OutputStream;
 /**
  * Version of Bitmap64 which is backed up on disk
  */
-public class Bitmap64Disk implements Closeable {
+public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
     // Constants
     protected final static int LOGW = 6;
@@ -59,7 +60,7 @@ public class Bitmap64Disk implements Closeable {
     /**
      * Given a bit index, return word index containing it.
      */
-    protected static int wordIndex(long bitIndex) {
+    protected static long wordIndex(long bitIndex) {
         return (int) (bitIndex >>> LOGW);
     }
 
@@ -78,7 +79,7 @@ public class Bitmap64Disk implements Closeable {
         return (int) ((numbits-1) % W)+1;	// +1 To have output in the range 1-64, -1 to compensate.
     }
 
-    protected final void ensureSize(int wordsRequired) {
+    protected final void ensureSize(long wordsRequired) {
         words.resize(Math.max(words.getSize()*2, wordsRequired));
     }
 
@@ -97,12 +98,71 @@ public class Bitmap64Disk implements Closeable {
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
-        int wordIndex = wordIndex(bitIndex);
+        long wordIndex = wordIndex(bitIndex);
         if(wordIndex>=words.length()) {
             return false;
         }
 
         return (words.get(wordIndex) & (1L << bitIndex)) != 0;
+    }
+
+    @Override
+    public long rank1(long pos) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public long rank0(long pos) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public long selectNext1(long fromIndex) {
+        if (fromIndex < 0)
+            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
+
+        long wordIndex = wordIndex(fromIndex);
+        if (wordIndex >= words.length())
+            return -1;
+
+        long word = words.get(wordIndex) & (~0L << fromIndex);
+
+        while (true) {
+            if (word != 0)
+                return ((long)wordIndex * W) + Long.numberOfTrailingZeros(word);
+            if (++wordIndex == words.length())
+                return -1;
+            word = words.get(wordIndex);
+        }
+    }
+
+    @Override
+    public long select0(long n) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public long select1(long n) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public long countOnes() {
+        if (words.length() == 0)
+            return 0;
+        long acc = 0;
+        long end = wordIndex(numbits);
+        if (end >= words.length()) {
+            end = words.length() - 1;
+        }
+        for (int i = 0; i <= end; i++)
+            acc += Long.bitCount(words.get(i));
+        return acc;
+    }
+
+    @Override
+    public long countZeros() {
+        return words.length() * 64L - countOnes();
     }
 
     /* (non-Javadoc)
@@ -116,7 +176,7 @@ public class Bitmap64Disk implements Closeable {
         if (bitIndex < 0)
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
-        int wordIndex = wordIndex(bitIndex);
+        long wordIndex = wordIndex(bitIndex);
         ensureSize(wordIndex+1);
 
         if(value) {
@@ -128,27 +188,13 @@ public class Bitmap64Disk implements Closeable {
         this.numbits = Math.max(this.numbits, bitIndex+1);
     }
 
-    public long selectPrev1(long start) {
-        throw new NotImplementedException();
+    @Override
+    public String getType() {
+        return HDTVocabulary.BITMAP_TYPE_PLAIN;
     }
 
-    public long selectNext1(long fromIndex) {
-        if (fromIndex < 0)
-            throw new IndexOutOfBoundsException("fromIndex < 0: " + fromIndex);
-
-        int wordIndex = wordIndex(fromIndex);
-        if (wordIndex >= words.length())
-            return -1;
-
-        long word = words.get(wordIndex) & (~0L << fromIndex);
-
-        while (true) {
-            if (word != 0)
-                return ((long)wordIndex * W) + Long.numberOfTrailingZeros(word);
-            if (++wordIndex == words.length())
-                return -1;
-            word = words.get(wordIndex);
-        }
+    public long selectPrev1(long start) {
+        throw new NotImplementedException();
     }
 
     public long getWord(int word) {

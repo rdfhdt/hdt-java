@@ -94,7 +94,7 @@ public class SequenceInt64 implements DynamicSequence {
 	@Override
     public void set(long position, long value) {
 		assert position>=0 && position<=Integer.MAX_VALUE;
-		assert value>=0 && value<=Long.MAX_VALUE;
+		assert value>=0;
 		
 		data[(int)position] = value;
 		numelements = (int) Math.max(numelements, position+1);
@@ -102,11 +102,15 @@ public class SequenceInt64 implements DynamicSequence {
 	
 	@Override
     public void append(long value) {
-		assert value>=0 && value<=Long.MAX_VALUE;
+		assert value>=0;
 		assert numelements<Long.MAX_VALUE;
-		
-		if(data.length<numelements+1) {
-			resizeArray(data.length*2);
+
+		long neededSize = numelements+1L;
+		if (neededSize > Integer.MAX_VALUE - 5) {
+			throw new IllegalArgumentException("Needed size exceeds the maximum size of this data structure " + neededSize);
+		}
+		if(data.length < neededSize) {
+			resizeArray((int) Math.min(Integer.MAX_VALUE - 5L, data.length*2L));
 		}
 		data[(int)numelements++] = value;
 	}

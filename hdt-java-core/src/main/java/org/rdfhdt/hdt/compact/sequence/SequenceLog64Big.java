@@ -44,9 +44,8 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
-
-import pl.edu.icm.jlargearrays.LongLargeArray;
-import pl.edu.icm.jlargearrays.LargeArrayUtils;
+import org.visnow.jlargearrays.LargeArrayUtils;
+import org.visnow.jlargearrays.LongLargeArray;
 
 /**
  * @author mario.arias,Lyudmila Balakireva
@@ -55,8 +54,8 @@ import pl.edu.icm.jlargearrays.LargeArrayUtils;
 public class SequenceLog64Big implements DynamicSequence { 
 	private static final byte W = 64;
 	private static final int INDEX = 1073741824;
-	
-    LongLargeArray data;
+
+	LongLargeArray data;
 	private int numbits;
 	private long numentries=0;
 	private long maxvalue;
@@ -77,7 +76,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		long size = numWordsFor(numbits, capacity);
 		LongLargeArray.setMaxSizeOf32bitArray(SequenceLog64Big.INDEX);
 		
-		data = new LongLargeArray(Math.max((int)size,1)); 
+		data = new LongLargeArray(Math.max(size,1));
 	}
 	
 	public SequenceLog64Big(int numbits, long capacity, boolean initialize) {
@@ -158,11 +157,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		//data = Arrays.copyOf(data, size);
 		if(size > 0) {
 			LongLargeArray a = new LongLargeArray(size);
-			if (size < data.length()) {
-				LargeArrayUtils.arraycopy(data, 0, a, 0, size);
-			} else {
-				LargeArrayUtils.arraycopy(data, 0, a, 0, data.length());
-			}
+			LargeArrayUtils.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
 			data = a;
 		}else{
 			this.numentries = 0;
@@ -182,7 +177,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		// Count and calculate number of bits needed per element.
 		while(elements.hasNext()) {
 			long val = elements.next();
-			max = val>max ? val : max;
+			max = Math.max(val, max);
 			numentries++;
 		}
 		
@@ -208,7 +203,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		// Count and calculate number of bits needed per element.
 		for (int i=0;i<elements.size();i++){
 			long val = elements.get(i).longValue();
-			max = val>max ? val : max;
+			max = Math.max(val, max);
 			numentries++;
 		}
 		
