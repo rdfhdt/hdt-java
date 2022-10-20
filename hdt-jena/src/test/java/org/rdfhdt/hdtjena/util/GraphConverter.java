@@ -39,8 +39,9 @@ public class GraphConverter {
         IteratorTripleString tripleIter = new JenaModelIterator(model);
         HDTPrivate hdt;
         try {
-            hdt = (HDTPrivate) HDTManager.generateHDT(tripleIter, "http://example.com", new HDTSpecification(), null);
-            hdt.loadOrCreateIndex(null);
+            HDTSpecification spec = new HDTSpecification();
+            hdt = (HDTPrivate) HDTManager.generateHDT(tripleIter, "http://example.com", spec, null);
+            hdt.loadOrCreateIndex(null, spec);
         } catch (IOException | ParserException e) {
             throw new RuntimeException(e);
         }

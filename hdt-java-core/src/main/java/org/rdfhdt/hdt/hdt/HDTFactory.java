@@ -33,6 +33,8 @@ import org.rdfhdt.hdt.hdt.impl.TempHDTImpl;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 
+import java.io.IOException;
+
 /**
  * Factory that creates HDT objects
  * 
@@ -45,7 +47,7 @@ public class HDTFactory {
 	 * 
 	 * @return HDT
 	 */
-	public static HDT createHDT() {
+	public static HDT createHDT() throws IOException {
 		return new HDTImpl(new HDTSpecification());
 	}
 
@@ -54,7 +56,7 @@ public class HDTFactory {
 	 * 
 	 * @return HDT
 	 */
-	public static HDT createHDT(HDTOptions spec) {
+	public static HDT createHDT(HDTOptions spec) throws IOException {
 		return new HDTImpl(spec);
 	}
 	

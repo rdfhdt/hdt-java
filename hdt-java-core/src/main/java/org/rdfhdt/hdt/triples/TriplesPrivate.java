@@ -9,6 +9,7 @@ import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 
 public interface TriplesPrivate extends Triples {
@@ -45,7 +46,7 @@ public interface TriplesPrivate extends Triples {
 	 * Generates the associated Index
 	 * @param listener
 	 */
-	void generateIndex(ProgressListener listener) throws IOException;
+	void generateIndex(ProgressListener listener, HDTOptions spec) throws IOException;
 	
 	/**
 	 * Loads the associated Index from an InputStream

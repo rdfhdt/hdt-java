@@ -93,7 +93,7 @@ public class HDTManagerImpl extends HDTManager {
 	public HDT doLoadIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
 		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFileName, listener);
-		hdt.loadOrCreateIndex(listener);
+		hdt.loadOrCreateIndex(listener, spec);
 		return hdt;
 	}
 
@@ -102,7 +102,7 @@ public class HDTManagerImpl extends HDTManager {
 	public HDT doMapIndexedHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
 		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.mapFromHDT(new File(hdtFileName), 0, listener);
-		hdt.loadOrCreateIndex(listener);
+		hdt.loadOrCreateIndex(listener, spec);
 		return hdt;
 	}
 
@@ -110,13 +110,13 @@ public class HDTManagerImpl extends HDTManager {
 	public HDT doLoadIndexedHDT(InputStream hdtFile, ProgressListener listener, HDTOptions spec) throws IOException {
 		HDTPrivate hdt = new HDTImpl(spec);
 		hdt.loadFromHDT(hdtFile, listener);
-		hdt.loadOrCreateIndex(listener);
+		hdt.loadOrCreateIndex(listener, spec);
 		return hdt;
 	}
 
 	@Override
 	public HDT doIndexedHDT(HDT hdt, ProgressListener listener) throws IOException {
-		((HDTPrivate) hdt).loadOrCreateIndex(listener);
+		((HDTPrivate)hdt).loadOrCreateIndex(listener, new HDTSpecification());
 		return hdt;
 	}
 

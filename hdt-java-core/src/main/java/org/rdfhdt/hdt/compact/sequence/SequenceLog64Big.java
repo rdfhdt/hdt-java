@@ -156,9 +156,11 @@ public class SequenceLog64Big implements DynamicSequence {
 	private void resizeArray(long size) {
 		//data = Arrays.copyOf(data, size);
 		if(size > 0) {
-			LongLargeArray a = new LongLargeArray(size);
-			LargeArrayUtils.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
-			data = a;
+			if (data.length() != size) {
+				LongLargeArray a = new LongLargeArray(size);
+				LargeArrayUtils.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
+				data = a;
+			}
 		}else{
 			this.numentries = 0;
 		}
@@ -295,7 +297,8 @@ public class SequenceLog64Big implements DynamicSequence {
     public void trimToSize() {
 		resizeArray(numWordsFor(numbits, numentries));
 	}
-	
+
+	@Override
 	public void resize(long numentries) {
 		this.numentries = numentries;
 		resizeArray(numWordsFor(numbits, numentries));

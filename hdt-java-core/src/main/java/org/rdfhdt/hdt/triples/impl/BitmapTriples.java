@@ -27,27 +27,25 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
+import org.apache.commons.io.file.PathUtils;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap375Disk;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.compact.sequence.*;
+import org.rdfhdt.hdt.compact.sequence.DynamicSequence;
+import org.rdfhdt.hdt.compact.sequence.Sequence;
+import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64Big;
+import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
-import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.*;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -57,11 +55,24 @@ import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
+import org.rdfhdt.hdt.util.io.CountOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * @author mario.arias
@@ -79,20 +90,25 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	// Index for Y
 	public PredicateIndex predicateIndex;
-	
+
+	boolean diskSequence;
+	CreateOnUsePath diskSequenceLocation;
+
 	private boolean isClosed;
 
-	public BitmapTriples() {
+	public BitmapTriples() throws IOException {
 		this(new HDTSpecification());
 	}
 	
-	public BitmapTriples(HDTOptions spec) {
+	public BitmapTriples(HDTOptions spec) throws IOException {
 		String orderStr = spec.get(HDTOptionsKeys.TRIPLE_ORDER_KEY);
 		if(orderStr == null) {
 			this.order = TripleComponentOrder.SPO;
 		} else {
 			this.order = TripleComponentOrder.valueOf(orderStr);
 		}
+
+		loadDiskSequence(spec);
 
 		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.y"));
 		bitmapZ = BitmapFactory.createBitmap(spec.get("bitmap.z"));
@@ -105,21 +121,48 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		isClosed=false;
 	}
-	
-	public BitmapTriples(Sequence seqY, Sequence seqZ, Bitmap bitY, Bitmap bitZ, TripleComponentOrder order) {
+
+	public BitmapTriples(HDTOptions spec, Sequence seqY, Sequence seqZ, Bitmap bitY, Bitmap bitZ, TripleComponentOrder order) throws IOException {
 		this.seqY = seqY;
 		this.seqZ = seqZ;
 		this.bitmapY = bitY;
 		this.bitmapZ = bitZ;
 		this.order = order;
-		
+
+		loadDiskSequence(spec);
+
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
 
 		isClosed=false;
 	}
-	
-	
+
+	private void loadDiskSequence(HDTOptions spec) throws IOException {
+		String optDisk = spec == null ? null : spec.get("bitmaptriples.sequence.disk");
+		diskSequence = optDisk != null && optDisk.equalsIgnoreCase("true");
+
+
+		if (diskSequenceLocation != null) {
+			diskSequenceLocation.close();
+		}
+
+		if (diskSequence) {
+			assert spec != null; // happy compiler
+			String optDiskLocation = spec.get("bitmaptriples.sequence.disk.location");
+			if (optDiskLocation != null && !optDiskLocation.isEmpty()) {
+				diskSequenceLocation = new CreateOnUsePath(Path.of(optDiskLocation));
+			} else {
+				diskSequenceLocation = new CreateOnUsePath();
+			}
+		} else {
+			diskSequenceLocation = null;
+		}
+	}
+
+	public PredicateIndex getPredicateIndex() {
+		return predicateIndex;
+	}
+
 	public Sequence getPredicateCount() {
 		return predicateCount;
 	}
@@ -362,7 +405,6 @@ public class BitmapTriples implements TriplesPrivate {
 
 	@Override
 	public void mapFromFile(CountInputStream input, File f,	ProgressListener listener) throws IOException {
-		
 		ControlInformation ci = new ControlInformation();
 		ci.load(input);
 		if(ci.getType()!=ControlInfo.Type.TRIPLES) {
@@ -392,9 +434,70 @@ public class BitmapTriples implements TriplesPrivate {
 		isClosed=false;
 	}
 
+	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity, boolean forceDisk) throws IOException {
+		if (forceDisk && !diskSequence) {
+			Path path = Files.createTempFile(name, ".bin");
+			return new SequenceLog64BigDisk(path, size, capacity, true) {
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						Files.deleteIfExists(path);
+					}
+				}
+			};
+		} else {
+			return createSequence64(baseDir, name, size, capacity);
+		}
+	}
 
+	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity) {
+		if (diskSequence) {
+			Path path = baseDir.resolve(name);
+			return new SequenceLog64BigDisk(path, size, capacity, true) {
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						Files.deleteIfExists(path);
+					}
+				}
+			};
+		} else {
+			return new SequenceLog64Big(size, capacity, true);
+		}
+	}
 
-	private void createIndexObjectMemoryEfficient() throws IOException {
+	private ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
+		if (diskSequence) {
+			Path path = baseDir.resolve(name);
+			return new Bitmap375Disk(path, size) {
+				@Override
+				public void close() throws IOException {
+					try {
+						super.close();
+					} finally {
+						Files.deleteIfExists(path);
+					}
+				}
+			};
+		} else {
+			return new Bitmap375(size);
+		}
+	}
+
+	private void createIndexObjectMemoryEfficient(HDTOptions specIndex) throws IOException {
+		loadDiskSequence(specIndex);
+
+		Path diskLocation;
+		if (diskSequence) {
+			diskLocation = diskSequenceLocation.createOrGetPath();
+		} else {
+			diskLocation = null;
+		}
+
 		StopWatch global = new StopWatch();
 		StopWatch st = new StopWatch();
 
@@ -402,142 +505,169 @@ public class BitmapTriples implements TriplesPrivate {
 		long maxCount = 0;
 		long numDifferentObjects = 0;
 		long numReservedObjects = 8192;
-		SequenceLog64Big objectCount = new SequenceLog64Big(BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects, true);
-		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
-			long val = seqZ.get(i);
-			if(val==0) {
-				throw new RuntimeException("ERROR: There is a zero value in the Z level.");
-			}
-			if(numReservedObjects<val) {
-				while(numReservedObjects<val) {
-					numReservedObjects <<=1;
-				}
-				objectCount.resize(numReservedObjects);
-			}
-			if(numDifferentObjects<val) {
-				numDifferentObjects=val;
-			}
+		ModifiableBitmap bitmapIndex = null;
+		DynamicSequence predCount = null;
+		DynamicSequence objectArray = null;
 
-			long count = objectCount.get(val-1)+1;
-			maxCount = count>maxCount ? count : maxCount;
-			objectCount.set(val-1, count);
-		}
-		log.info("Count Objects in {} Max was: {}", st.stopAndShow(), maxCount);
-		st.reset();
-
-		// Calculate bitmap that separates each object sublist.
-		Bitmap375 bitmapIndex = new Bitmap375(seqZ.getNumberOfElements());
-		long tmpCount=0;
-		for(long i=0;i<numDifferentObjects;i++) {
-			tmpCount += objectCount.get(i);
-			bitmapIndex.set(tmpCount-1, true);
-		}
-		bitmapIndex.set(seqZ.getNumberOfElements()-1, true);
-		log.info("Bitmap in {}", st.stopAndShow());
-		IOUtil.closeQuietly(objectCount);
-		objectCount=null;
-		st.reset();
-
-		// Copy each object reference to its position
-		SequenceLog64Big objectInsertedCount = new SequenceLog64Big(BitUtil.log2(maxCount), numDifferentObjects);
-		objectInsertedCount.resize(numDifferentObjects);
-		File file = File.createTempFile("objectsArray", ".tmp");
-
-		SequenceLog64BigDisk objectArray = new SequenceLog64BigDisk(file.getAbsolutePath(),
-				BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
-		objectArray.resize(seqZ.getNumberOfElements());
-
-		for(long i=0;i<seqZ.getNumberOfElements(); i++) {
-			long objectValue = seqZ.get(i);
-			long posY = i>0 ?  bitmapZ.rank1(i-1) : 0;
-
-			long insertBase = objectValue==1 ? 0 : bitmapIndex.select1(objectValue-1)+1;
-			long insertOffset = objectInsertedCount.get(objectValue-1);
-			objectInsertedCount.set(objectValue-1, insertOffset+1);
-
-			objectArray.set(insertBase+insertOffset, posY);
-		}
-		log.info("Object references in {}", st.stopAndShow());
-		IOUtil.closeQuietly(objectInsertedCount);
-		objectInsertedCount=null;
-		st.reset();
-
-
-		long object=1;
-		long first = 0;
-		long last = bitmapIndex.selectNext1(first)+1;
-		do {
-			long listLen = last-first;
-
-			// Sublists of one element do not need to be sorted.
-
-			// Hard-coded size 2 for speed (They are quite common).
-			if(listLen==2) {
-				long aPos = objectArray.get(first);
-				long a = seqY.get(aPos);
-				long bPos = objectArray.get(first+1);
-				long b = seqY.get(bPos);
-				if(a>b) {
-					objectArray.set(first, bPos);
-					objectArray.set(first+1, aPos);
-				}
-			} else if(listLen>2) {
-				class Pair {
-					Long valueY;
-					Long positionY;
-					@Override public String toString() { return String.format("%d %d", valueY,positionY); }
-				}
-
-				// FIXME: Sort directly without copying?
-				ArrayList<Pair> list=new ArrayList<Pair>((int)listLen);
-
-				// Create temporary list of (position, predicate)
-				for(long i=first; i<last;i++) {
-					Pair p = new Pair();
-					p.positionY = objectArray.get(i);
-					p.valueY = seqY.get(p.positionY);
-					list.add(p);
-				}
-
-				// Sort
-				list.sort((Pair o1, Pair o2) -> {
-					if (o1.valueY.equals(o2.valueY)) {
-						return o1.positionY.compareTo(o2.positionY);
+		try {
+			try (DynamicSequence objectCount = createSequence64(diskLocation, "objectCount", BitUtil.log2(seqZ.getNumberOfElements()), numReservedObjects)) {
+				for (long i = 0; i < seqZ.getNumberOfElements(); i++) {
+					long val = seqZ.get(i);
+					if (val == 0) {
+						throw new RuntimeException("ERROR: There is a zero value in the Z level.");
 					}
-					return o1.valueY.compareTo(o2.valueY);
-				});
+					if (numReservedObjects < val) {
+						while (numReservedObjects < val) {
+							numReservedObjects <<= 1;
+						}
+						objectCount.resize(numReservedObjects);
+					}
+					if (numDifferentObjects < val) {
+						numDifferentObjects = val;
+					}
 
-				// Copy back
-				for(long i=first; i<last;i++) {
-					Pair pair = list.get((int)(i-first));
-					objectArray.set(i, pair.positionY);
+					long count = objectCount.get(val - 1) + 1;
+					maxCount = Math.max(count, maxCount);
+					objectCount.set(val - 1, count);
+				}
+				log.info("Count Objects in {} Max was: {}", st.stopAndShow(), maxCount);
+				st.reset();
+
+				// Calculate bitmap that separates each object sublist.
+				bitmapIndex = createBitmap375(diskLocation, "bitmapIndex", seqZ.getNumberOfElements());
+				long tmpCount = 0;
+				for (long i = 0; i < numDifferentObjects; i++) {
+					tmpCount += objectCount.get(i);
+					bitmapIndex.set(tmpCount - 1, true);
+				}
+				bitmapIndex.set(seqZ.getNumberOfElements() - 1, true);
+				log.info("Bitmap in {}", st.stopAndShow());
+			}
+			st.reset();
+
+			objectArray = createSequence64(diskLocation, "objectArray", BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements(), true);
+			objectArray.resize(seqZ.getNumberOfElements());
+
+			// Copy each object reference to its position
+			try (DynamicSequence objectInsertedCount = createSequence64(diskLocation, "objectInsertedCount", BitUtil.log2(maxCount), numDifferentObjects)) {
+				objectInsertedCount.resize(numDifferentObjects);
+
+				for (long i = 0; i < seqZ.getNumberOfElements(); i++) {
+					long objectValue = seqZ.get(i);
+					long posY = i > 0 ? bitmapZ.rank1(i - 1) : 0;
+
+					long insertBase = objectValue == 1 ? 0 : bitmapIndex.select1(objectValue - 1) + 1;
+					long insertOffset = objectInsertedCount.get(objectValue - 1);
+					objectInsertedCount.set(objectValue - 1, insertOffset + 1);
+
+					objectArray.set(insertBase + insertOffset, posY);
+				}
+				log.info("Object references in {}", st.stopAndShow());
+			}
+			st.reset();
+
+
+			long object = 1;
+			long first = 0;
+			long last = bitmapIndex.selectNext1(first) + 1;
+			do {
+				long listLen = last - first;
+
+				// Sublists of one element do not need to be sorted.
+
+				// Hard-coded size 2 for speed (They are quite common).
+				if (listLen == 2) {
+					long aPos = objectArray.get(first);
+					long a = seqY.get(aPos);
+					long bPos = objectArray.get(first + 1);
+					long b = seqY.get(bPos);
+					if (a > b) {
+						objectArray.set(first, bPos);
+						objectArray.set(first + 1, aPos);
+					}
+				} else if (listLen > 2) {
+					class Pair {
+						Long valueY;
+						Long positionY;
+
+						@Override
+						public String toString() {
+							return String.format("%d %d", valueY, positionY);
+						}
+					}
+
+					// FIXME: Sort directly without copying?
+					ArrayList<Pair> list = new ArrayList<>((int) listLen);
+
+					// Create temporary list of (position, predicate)
+					for (long i = first; i < last; i++) {
+						Pair p = new Pair();
+						p.positionY = objectArray.get(i);
+						p.valueY = seqY.get(p.positionY);
+						list.add(p);
+					}
+
+					// Sort
+					list.sort((Pair o1, Pair o2) -> {
+						if (o1.valueY.equals(o2.valueY)) {
+							return o1.positionY.compareTo(o2.positionY);
+						}
+						return o1.valueY.compareTo(o2.valueY);
+					});
+
+					// Copy back
+					for (long i = first; i < last; i++) {
+						Pair pair = list.get((int) (i - first));
+						objectArray.set(i, pair.positionY);
+					}
+				}
+
+				first = last;
+				last = bitmapIndex.selectNext1(first) + 1;
+				object++;
+			} while (object <= numDifferentObjects);
+
+			log.info("Sort object sublists in {}", st.stopAndShow());
+			st.reset();
+
+			// Count predicates
+			predCount = createSequence64(diskLocation, "predCount", BitUtil.log2(seqY.getNumberOfElements()), 0);
+			for (long i = 0; i < seqY.getNumberOfElements(); i++) {
+				// Read value
+				long val = seqY.get(i);
+
+				// Grow if necessary
+				if (predCount.getNumberOfElements() < val) {
+					predCount.resize(val);
+				}
+
+				// Increment
+				predCount.set(val - 1, predCount.get(val - 1) + 1);
+			}
+			predCount.trimToSize();
+			log.info("Count predicates in {}", st.stopAndShow());
+		} catch (Throwable t) {
+			try {
+				throw t;
+			} finally {
+				try {
+					if (bitmapIndex instanceof Closeable) {
+						((Closeable) bitmapIndex).close();
+					}
+				} finally {
+					try {
+						if (objectArray != null) {
+							objectArray.close();
+						}
+					} finally {
+						if (predCount != null) {
+							predCount.close();
+						}
+					}
 				}
 			}
-
-			first = last;
-			last = bitmapIndex.selectNext1(first)+1;
-			object++;
-		} while(object<=numDifferentObjects);
-
-		log.info("Sort object sublists in {}", st.stopAndShow());
-		st.reset();
-
-		// Count predicates
-		SequenceLog64Big predCount = new SequenceLog64Big(BitUtil.log2(seqY.getNumberOfElements()));
-		for(long i=0;i<seqY.getNumberOfElements(); i++) {
-			// Read value
-			long val = seqY.get(i);
-
-			// Grow if necessary
-			if(predCount.getNumberOfElements()<val) {
-				predCount.resize(val);
-			}
-
-			// Increment
-			predCount.set(val-1, predCount.get(val-1)+1);
 		}
-		predCount.trimToSize();
-		log.info("Count predicates in {}", st.stopAndShow());
+
 		this.predicateCount = predCount;
 		st.reset();
 
@@ -591,7 +721,7 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		System.out.println("Serialize object lists");
 		// Serialize
-		SequenceLog64 indexZ = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), list.size());
+		DynamicSequence indexZ = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), list.size());
 		Bitmap375 bitmapIndexZ = new Bitmap375(seqY.getNumberOfElements());
 		long pos = 0;
 		
@@ -648,12 +778,12 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	@Override
-	public void generateIndex(ProgressListener listener) throws IOException{
+	public void generateIndex(ProgressListener listener, HDTOptions specIndex) throws IOException{
 		predicateIndex = new PredicateIndexArray(this);
-		predicateIndex.generate(listener);
+		predicateIndex.generate(listener, specIndex);
 		
 		//createIndexObjects();
-		createIndexObjectMemoryEfficient();	
+		createIndexObjectMemoryEfficient(specIndex);
 	}
 
 	/* (non-Javadoc)
@@ -764,19 +894,83 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 		
 
+		IOUtil.closeObject(bitmapIndexZ);
+		bitmapIndexZ = null;
+
 		bitmapIndexZ = BitmapFactory.createBitmap(input);
-		bitmapIndexZ.load(input, iListener);
-		
-		indexZ = SequenceFactory.createStream(input);
-		indexZ.load(input, iListener);
+		try {
+			bitmapIndexZ.load(input, iListener);
 
-		predicateIndex = new PredicateIndexArray(this);
-		predicateIndex.load(input);
-		
-		predicateCount = SequenceFactory.createStream(input);
-		predicateCount.load(input, iListener);
+			if (indexZ != null) {
+				try {
+					indexZ.close();
+				} finally {
+					indexZ = null;
+				}
+			}
 
-		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
+			indexZ = SequenceFactory.createStream(input);
+			try {
+				indexZ.load(input, iListener);
+
+				if (predicateIndex != null) {
+					try {
+						predicateIndex.close();
+					} finally {
+						predicateIndex = null;
+					}
+				}
+
+				predicateIndex = new PredicateIndexArray(this);
+				try {
+					predicateIndex.load(input);
+
+					if (predicateCount != null) {
+						try {
+							predicateCount.close();
+						} finally {
+							predicateCount = null;
+						}
+					}
+
+					predicateCount = SequenceFactory.createStream(input);
+					try {
+						predicateCount.load(input, iListener);
+
+						this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
+					} catch (Throwable t) {
+						try {
+							predicateCount.close();
+						} finally {
+							predicateCount = null;
+							this.adjIndex = null;
+						}
+						throw t;
+					}
+				} catch (Throwable t) {
+					try {
+						predicateIndex.close();
+					} finally {
+						predicateIndex = null;
+					}
+					throw t;
+				}
+			} catch (Throwable t) {
+				try {
+					indexZ.close();
+				} finally {
+					indexZ = null;
+				}
+				throw t;
+			}
+		} catch (Throwable t) {
+			try {
+				IOUtil.closeObject(bitmapIndexZ);
+			} finally {
+				bitmapIndexZ = null;
+			}
+			throw t;
+		}
 	}
 
 	@Override
@@ -806,6 +1000,10 @@ public class BitmapTriples implements TriplesPrivate {
 		
 		indexZ = SequenceFactory.createStream(input, f);
 
+		if (predicateIndex != null) {
+			predicateIndex.close();
+		}
+
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.mapIndex(input, f, iListener);
 
@@ -817,20 +1015,54 @@ public class BitmapTriples implements TriplesPrivate {
 	@Override
 	public void close() throws IOException {
 		isClosed=true;
-		if(seqY!=null) {
-			seqY.close(); seqY=null;
-		}
-		if(seqZ!=null) { 
-			seqZ.close(); seqZ=null;
-		}
-		if(indexZ!=null) {
-			indexZ.close(); indexZ=null;
-		}
-		if(predicateCount!=null) {
-			predicateCount.close(); predicateCount=null;
-		}
-		if(predicateIndex!=null) {
-			predicateIndex.close(); predicateIndex=null;
+		try {
+			if (diskSequenceLocation != null) {
+				try {
+					diskSequenceLocation.close();
+				} finally {
+					diskSequenceLocation = null;
+				}
+			}
+		} finally {
+			try {
+				if (seqY != null) {
+					seqY.close();
+					seqY = null;
+				}
+			} finally {
+				try {
+					if (seqZ != null) {
+						seqZ.close();
+						seqZ=null;
+					}
+				} finally {
+					try {
+						if (indexZ != null) {
+							indexZ.close();
+							indexZ=null;
+						}
+					} finally {
+						try {
+							if (predicateCount != null) {
+								predicateCount.close();
+								predicateCount=null;
+							}
+						} finally {
+							try {
+								if (predicateIndex != null) {
+									predicateIndex.close();
+									predicateIndex = null;
+								}
+							} finally {
+								if (bitmapIndexZ instanceof Closeable) {
+									((Closeable) bitmapIndexZ).close();
+									bitmapIndexZ = null;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
@@ -861,6 +1093,35 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	public Bitmap getBitmapIndex(){
 		return bitmapIndexZ;
+	}
+
+	private static class CreateOnUsePath implements Closeable {
+		boolean mkdir;
+		Path path;
+
+		public CreateOnUsePath() {
+			this(null);
+		}
+
+		public CreateOnUsePath(Path path) {
+			this.path = path;
+		}
+
+		public Path createOrGetPath() throws IOException {
+			if (path == null) {
+				path = Files.createTempDirectory("bitmapTriple");
+			} else {
+				Files.createDirectories(path);
+			}
+			return path;
+		}
+
+		@Override
+		public void close() throws IOException {
+			if (mkdir) {
+				PathUtils.deleteDirectory(path);
+			}
+		}
 	}
 }
 

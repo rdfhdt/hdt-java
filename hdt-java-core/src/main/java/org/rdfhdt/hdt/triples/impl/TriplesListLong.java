@@ -360,7 +360,7 @@ public class TriplesListLong implements TempTriples {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener) {
+	public void generateIndex(ProgressListener listener, HDTOptions specIndex) {
 		// TODO Auto-generated method stub
 
 	}

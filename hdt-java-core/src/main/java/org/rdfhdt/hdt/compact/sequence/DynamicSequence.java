@@ -56,4 +56,6 @@ public interface DynamicSequence extends Sequence, LongArray {
 	default long length() {
 		return getNumberOfElements();
 	}
+
+	void resize(long size);
 }

@@ -27,6 +27,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 /**
@@ -48,6 +49,14 @@ public class Bitmap375Disk extends Bitmap64Disk implements ModifiableBitmap {
     }
 
     public Bitmap375Disk(String location, long nbits) {
+        super(location, nbits);
+    }
+
+    public Bitmap375Disk(Path location) {
+        super(location);
+    }
+
+    public Bitmap375Disk(Path location, long nbits) {
         super(location, nbits);
     }
 

@@ -17,6 +17,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import static org.junit.Assert.assertEquals;
+
 public class LongArrayDiskTest  extends AbstractMapMemoryTest {
 
     @Rule
@@ -38,7 +40,7 @@ public class LongArrayDiskTest  extends AbstractMapMemoryTest {
         try (LongArrayDisk array = new LongArrayDisk(arraydisk, size)) {
             for (int i = 0; i < size; i++) {
                 array.set(i, i * 2);
-                Assert.assertEquals("index #" + i, i * 2, array.get(i));
+                assertEquals("index #" + i, i * 2, array.get(i));
             }
         }
 
@@ -61,17 +63,45 @@ public class LongArrayDiskTest  extends AbstractMapMemoryTest {
                 IOUtil.cleanBuffer(map);
             }
         }
-        Assert.assertEquals(f1, f2);
+        assertEquals(f1, f2);
 
         try (LongArrayDisk array = new LongArrayDisk(arraydisk, size, false)) {
             for (int i = 0; i < size; i++) {
-                Assert.assertEquals("index #" + i, i * 2, array.get(i));
+                assertEquals("index #" + i, i * 2, array.get(i));
             }
         }
 
         Assert.assertTrue(Files.exists(arraydisk));
         Files.delete(arraydisk);
         Assert.assertFalse(Files.exists(arraydisk));
+    }
+
+    @Test
+    public void resizeTest() throws IOException {
+        Path root = tempDir.getRoot().toPath();
+
+        try (LongArrayDisk array = new LongArrayDisk(root.resolve("file"), 4)) {
+
+            assertEquals(array.length(), 4);
+
+            array.set(0, 1);
+            array.set(1, 2);
+            array.set(2, 3);
+            array.set(3, 4);
+
+
+            assertEquals(array.get(0), 1);
+            assertEquals(array.get(1), 2);
+            assertEquals(array.get(2), 3);
+            assertEquals(array.get(3), 4);
+
+            array.resize(8);
+
+            assertEquals(array.get(0), 1);
+            assertEquals(array.get(1), 2);
+            assertEquals(array.get(2), 3);
+            assertEquals(array.get(3), 4);
+        }
     }
 
 }

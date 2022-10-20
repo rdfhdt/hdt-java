@@ -26,10 +26,14 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 //Implementing an array of longs that is backed up on disk. Following this: http://vanillajava.blogspot.fr/2011/12/using-memory-mapped-file-for-huge.html
 
@@ -75,18 +79,7 @@ public class LongArrayDisk implements Closeable, LongArray {
                 mappings[block] = IOUtil.mapChannel(location.toAbsolutePath().toString(), channel, FileChannel.MapMode.READ_WRITE, block * MAPPING_SIZE, sizeMapping);
             }
             if (overwrite) {
-                int lastBlock = 0;
-                for (long i = 0; i < this.size; i++) {
-                    if (i % 10000000 == 0) {
-                        int currentBlock = (int) (i / MAPPING_SIZE);
-                        //This is done because otherwise the changes are not written to disk fast enough
-                        for (int b = lastBlock; b <= currentBlock; b++) {
-                            mappings[b].force();
-                        }
-                        lastBlock = currentBlock;
-                    }
-                    this.set(i, 0);
-                }
+                set0(0, this.size);
             }
         } catch (IOException e) {
             try {
@@ -131,11 +124,14 @@ public class LongArrayDisk implements Closeable, LongArray {
     }
 
     @Override
-    public void set(long x, long y) {
-        long p = x * 8;
+    public void set(long index, long value) {
+        if (index >= size || index < 0) {
+            throw new IndexOutOfBoundsException();
+        }
+        long p = index * 8;
         int block = (int) (p / MAPPING_SIZE);
         int offset = (int) (p % MAPPING_SIZE);
-        mappings[block].putLong(offset, y);
+        mappings[block].putLong(offset, value);
     }
 
     @Override
@@ -143,16 +139,82 @@ public class LongArrayDisk implements Closeable, LongArray {
         return size;
     }
 
-    public void resize(long newSize) {
+    public void set0(long start, long end) {
+        if (start >= end) {
+            // TODO: trim the file after end
+            return;
+        }
+        int startBlock = (int) (start / MAPPING_SIZE);
+        int endBlock = (int) ((end - 1) / MAPPING_SIZE);
+
+        // 0 buffer
+        byte[] zeros = new byte[4096];
+
+        int c = 0;
+        int lastBlock = startBlock;
+        for (int i = startBlock; i <= endBlock; i++) {
+            CloseMappedByteBuffer mapping = mappings[i];
+            int capacity = mapping.capacity();
+
+
+            int startBuffer;
+            int endBuffer;
+
+            if (i == startBlock) {
+                startBuffer = (int) (start % MAPPING_SIZE);
+            } else {
+                startBuffer = 0;
+            }
+            if (i == endBlock) {
+                endBuffer = (int) (end % MAPPING_SIZE);
+            } else {
+                endBuffer = capacity;
+            }
+
+            int toWrite = (endBuffer - startBuffer) * 8;
+
+            while (toWrite > 0) {
+                mapping.position(startBuffer * 8);
+                int w = Math.min(toWrite, zeros.length);
+
+                mapping.put(zeros, 0, w);
+
+                toWrite -= w;
+                c += w;
+                if (c > 10000000) {
+                    c = 0;
+                    for (int j = lastBlock; j < i; j++) {
+                        mappings[j].force();
+                    }
+                    lastBlock = i;
+                }
+            }
+        }
+        for (int j = lastBlock; j <= endBlock; j++) {
+            mappings[j].force();
+        }
+    }
+
+    public void resize(long newSize) throws IOException {
+        if (this.size == newSize) {
+            return;
+        }
         long oldSize = this.size;
         this.size = newSize;
         long sizeBit = getSizeBits();
 
         int blocks = (int) Math.ceil((double) sizeBit / MAPPING_SIZE);
         CloseMappedByteBuffer[] mappings = new CloseMappedByteBuffer[blocks];
-        int block = 0;
         try {
-            for (; block < blocks; block++) {
+            for (CloseMappedByteBuffer mapping : mappings) {
+                if (mapping != null) {
+                    mapping.force();
+                }
+            }
+            IOUtil.closeAll(this.mappings);
+            this.mappings = null;
+
+            for (int block = 0; block < blocks; block++) {
                 long sizeMapping;
                 if (block + 1 == blocks && sizeBit % MAPPING_SIZE != 0) {
                     sizeMapping = Math.min(MAPPING_SIZE, sizeBit % MAPPING_SIZE);
@@ -162,24 +224,15 @@ public class LongArrayDisk implements Closeable, LongArray {
                 mappings[block] = IOUtil.mapChannel(location.toAbsolutePath().toString(), channel, FileChannel.MapMode.READ_WRITE, block * MAPPING_SIZE, sizeMapping);
             }
             // close previous mapping
-            IOUtil.closeAll(this.mappings);
             this.mappings = mappings;
 
-            for (long i = oldSize; i < newSize; i++) {
-                if (i % 10000000 == 0) { //This is done because otherwise the changes are not written to disk fast enough
-                    for (int b = 0; b < blocks; b++) {
-                        mappings[b].force();
-                    }
-                }
-                this.set(i, 0);
-            }
-        } catch (IOException e) {
+            set0(oldSize, newSize);
+        } catch (Throwable e) {
             try {
+                throw e;
+            } finally {
                 IOUtil.closeAll(mappings);
-            } catch (IOException ee) {
-                e.addSuppressed(ee);
             }
-            throw new RuntimeException("Resize failed", e);
         }
     }
 

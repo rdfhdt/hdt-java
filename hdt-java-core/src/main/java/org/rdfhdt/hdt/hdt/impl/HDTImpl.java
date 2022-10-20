@@ -111,7 +111,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 	private boolean isMapped;
 	private boolean isClosed=false;
 
-	public HDTImpl(HDTOptions spec) {
+	public HDTImpl(HDTOptions spec) throws IOException {
 		super(spec);
 
 		header = HeaderFactory.createHeader(this.spec);
@@ -369,7 +369,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 	 * @see hdt.hdt.HDT#generateIndex(hdt.listener.ProgressListener)
 	 */
 	@Override
-	public void loadOrCreateIndex(ProgressListener listener) throws IOException {
+	public void loadOrCreateIndex(ProgressListener listener, HDTOptions spec) throws IOException {
 		if(triples.getNumberOfElements()==0) {
 			// We need no index.
 			return;
@@ -402,7 +402,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 
 			// GENERATE
 			StopWatch st = new StopWatch();
-			triples.generateIndex(listener);
+			triples.generateIndex(listener, spec);
 
 			// SAVE
 			if(this.hdtFileName!=null) {

@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptions;
 
 /**
  * HDT Operations that are using internally from the implementation.
@@ -36,7 +37,7 @@ public interface HDTPrivate extends HDT {
 	 * 
 	 * @param listener A listener to be notified of the progress.
 	 */
-	void loadOrCreateIndex(ProgressListener listener) throws IOException;
+	void loadOrCreateIndex(ProgressListener listener, HDTOptions disk) throws IOException;
 	
 	void populateHeaderStructure(String baseUri);
 }

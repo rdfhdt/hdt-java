@@ -32,6 +32,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -53,16 +54,31 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
     }
 
     public SequenceLog64BigDisk(String location, int numbits, long capacity) {
+        this(location, numbits, capacity, false);
+    }
+
+    public SequenceLog64BigDisk(String location, int numbits, long capacity, boolean initialize) {
+        this(Path.of(location), numbits, capacity, initialize);
+    }
+    public SequenceLog64BigDisk(Path location) {
+        this(location, W);
+    }
+
+    public SequenceLog64BigDisk(Path location, int numbits) {
+        this(location, numbits, 0);
+    }
+
+    public SequenceLog64BigDisk(Path location, int numbits, long capacity) {
+        this(location, numbits, capacity, false);
+    }
+
+    public SequenceLog64BigDisk(Path location, int numbits, long capacity, boolean initialize) {
         this.numentries = 0;
         this.numbits = numbits;
         this.maxvalue = BitUtil.maxVal(numbits);
         long size = numWordsFor(numbits, capacity);
         data = new LongArrayDisk(location, Math.max(size,1));
-    }
-
-    public SequenceLog64BigDisk(String location, int numbits, long capacity, boolean initialize) {
-        this(location, numbits, capacity);
-        if(initialize) {
+        if (initialize) {
             numentries = capacity;
         }
     }
@@ -132,7 +148,7 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
         }
     }
 
-    private void resizeArray(long size) {
+    private void resizeArray(long size) throws IOException {
         data.resize(size);
     }
 
@@ -179,7 +195,11 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
 
         long neededSize = numWordsFor(numbits, numentries+1);
         if(data.length()<neededSize) {
-            resizeArray(data.length()*2);
+            try {
+                resizeArray(data.length()*2);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         this.set(numentries, value);
         numentries++;
@@ -208,7 +228,11 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
             long totalSize = numWordsFor(numbits, numentries);
 
             if (totalSize!=data.length()){
-                resizeArray(totalSize);
+                try {
+                    resizeArray(totalSize);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
@@ -216,12 +240,20 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
 
     @Override
     public void trimToSize() {
-        resizeArray(numWordsFor(numbits, numentries));
+        try {
+            resizeArray(numWordsFor(numbits, numentries));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void resize(long numentries) {
         this.numentries = numentries;
-        resizeArray(numWordsFor(numbits, numentries));
+        try {
+            resizeArray(numWordsFor(numbits, numentries));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /* (non-Javadoc)

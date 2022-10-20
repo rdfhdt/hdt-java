@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.triples.impl;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,8 +9,10 @@ import java.io.OutputStream;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.*;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
@@ -64,11 +67,12 @@ class PredicateIndexArray implements PredicateIndex {
 	}
 
 	@Override
-	public void generate(ProgressListener listener) {
+	public void generate(ProgressListener listener, HDTOptions specIndex) {
+
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
 		@SuppressWarnings("resource")
-		SequenceLog64Big predCount = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
+		DynamicSequence predCount = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()));
 
 	    long maxCount = 0;
 	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
@@ -90,7 +94,7 @@ class PredicateIndexArray implements PredicateIndex {
 	    predCount.aggressiveTrimToSize();
 
 	    // Convert predicate count to bitmap
-	    Bitmap375 bitmap = new Bitmap375(triples.getSeqY().getNumberOfElements());
+	    ModifiableBitmap bitmap = new Bitmap375(triples.getSeqY().getNumberOfElements());
 	    long tempCountPred=0;
 	    for(long i=0;i<predCount.getNumberOfElements();i++) {
 	        tempCountPred += predCount.get(i);
@@ -105,10 +109,10 @@ class PredicateIndexArray implements PredicateIndex {
 
 
 	    // Create predicate index
-		SequenceLog64Big array = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
+		DynamicSequence array = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
 	    array.resize(triples.getSeqY().getNumberOfElements());
 
-		SequenceLog64Big insertArray = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
+		DynamicSequence insertArray = new SequenceLog64Big(BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
 	    insertArray.resize(bitmap.countOnes());
 
 	    for(long i=0;i<triples.getSeqY().getNumberOfElements(); i++) {
@@ -139,10 +143,19 @@ class PredicateIndexArray implements PredicateIndex {
 
 	@Override
 	public void close() throws IOException {
-		bitmap=null;
-		if(array!=null) {
-			array.close();
+		try {
+			if (array != null) {
+				array.close();
+			}
+		} finally {
+			try {
+				if (bitmap instanceof Closeable) {
+					((Closeable) bitmap).close();
+				}
+			} finally {
+				bitmap=null;
+				array=null;
+			}
 		}
-		array=null;
 	}
 }
