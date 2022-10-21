@@ -31,8 +31,8 @@ public class CompressUtil {
 	/**
 	 * write a sorted list of indexed node
 	 *
-	 * @param strings the nodes to write
-	 * @param output  the output
+	 * @param strings  the nodes to write
+	 * @param output   the output
 	 * @param listener the listener to see the progress
 	 * @throws IOException writing exception
 	 */
@@ -43,9 +43,9 @@ public class CompressUtil {
 	/**
 	 * write a sorted iterator of indexed node
 	 *
-	 * @param it     iterator to write
-	 * @param size   size of the iterator
-	 * @param output the output where to write
+	 * @param it       iterator to write
+	 * @param size     size of the iterator
+	 * @param output   the output where to write
 	 * @param listener the listener to see the progress
 	 * @throws IOException writing exception
 	 */
@@ -70,9 +70,9 @@ public class CompressUtil {
 	/**
 	 * merge two stream together into an output stream
 	 *
-	 * @param stream1 input stream 1
-	 * @param stream2 input stream 2
-	 * @param output  output stream
+	 * @param stream1  input stream 1
+	 * @param stream2  input stream 2
+	 * @param output   output stream
 	 * @param listener the listener to see the progress
 	 * @throws IOException read/writing exception
 	 */
@@ -118,6 +118,7 @@ public class CompressUtil {
 
 	/**
 	 * get the id from a header id
+	 *
 	 * @param headerId the header id
 	 * @return the id
 	 */
@@ -127,6 +128,7 @@ public class CompressUtil {
 
 	/**
 	 * get a header id from an id
+	 *
 	 * @param id the id
 	 * @return the header id
 	 */
@@ -135,14 +137,28 @@ public class CompressUtil {
 	}
 
 	/**
+	 * create a duplicate-free iterator from a sorted exception iterator, a callback for duplicated elements can be used
+	 *
+	 * @param nodes                  iterator sorted iterator
+	 * @param duplicatedNodeConsumer duplicate callback
 	 * @return a char sequence base iterator view of this iterator
 	 */
 	public static DuplicatedIterator asNoDupeCharSequenceIterator(ExceptionIterator<IndexedNode, ?> nodes, DuplicatedNodeConsumer duplicatedNodeConsumer) {
 		return new DuplicatedIterator(nodes.asIterator(), duplicatedNodeConsumer);
 	}
 
+	/**
+	 * Duplicate consumer for the {@link #asNoDupeCharSequenceIterator(org.rdfhdt.hdt.iterator.utils.ExceptionIterator, org.rdfhdt.hdt.util.io.compress.CompressUtil.DuplicatedNodeConsumer)} method
+	 */
 	@FunctionalInterface
 	public interface DuplicatedNodeConsumer {
+		/**
+		 * called when the {@link org.rdfhdt.hdt.util.io.compress.CompressUtil.DuplicatedIterator} find a duplicated element
+		 *
+		 * @param originalIndex   the index id of the first element
+		 * @param duplicatedIndex the index id of the duplicate element
+		 * @param originalHeader  the header of the first element
+		 */
 		void onDuplicated(long originalIndex, long duplicatedIndex, long originalHeader);
 	}
 

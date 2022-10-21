@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.util.io.compress;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
+import org.rdfhdt.hdt.iterator.utils.IndexNodeDeltaMergeExceptionIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
@@ -18,10 +19,11 @@ import java.io.InputStream;
  *
  * @author Antoine Willerval
  */
-public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOException>, Closeable {
+public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOException>, IndexNodeDeltaMergeExceptionIterator.IndexNodeDeltaFetcher<IOException>, Closeable {
 	private final CRCInputStream stream;
 	private final long size;
 	private long index;
+	private int delta;
 	private boolean waiting;
 	private final IndexedNode last;
 	private final ReplazableString tempString;
@@ -55,7 +57,7 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 		if (waiting) {
 			return last;
 		}
-		int delta = (int) VByte.decode(stream);
+		delta = (int) VByte.decode(stream);
 		tempString.replace2(stream, delta);
 		long index = VByte.decode(stream);
 		last.setIndex(index);
@@ -77,6 +79,21 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 		pass();
 		return node;
 	}
+
+	@Override
+	public IndexedNode fetchNode() throws IOException {
+		if (hasNext()) {
+			return next();
+		} else {
+			return null;
+		}
+	}
+
+	@Override
+	public int lastDelta() {
+		return delta;
+	}
+
 	@Override
 	public boolean hasNext() throws IOException {
 		return index < size;

@@ -8,19 +8,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.nio.file.FileSystem;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
-import java.nio.file.WatchEvent;
-import java.nio.file.WatchKey;
-import java.nio.file.WatchService;
+import java.nio.file.*;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 
 /**
  * a file that delete itself when we close it
+ *
+ * @author Antoine Willerval
  */
 public class CloseSuppressPath implements Path, Closeable {
 	public static final int BUFFER_SIZE = 1 << 13;
@@ -39,9 +35,41 @@ public class CloseSuppressPath implements Path, Closeable {
 		return component instanceof CloseSuppressPath ? (CloseSuppressPath) component : new CloseSuppressPath(component);
 	}
 
+	private static Path extract(Path other) {
+		return (other instanceof CloseSuppressPath ? ((CloseSuppressPath) other).getJavaPath() : other);
+	}
+
+	public static Iterable<Path> of(Iterable<Path> component) {
+		return () -> of(component.iterator());
+	}
+
+	public static Iterator<Path> of(Iterator<Path> it) {
+		return new Iterator<>() {
+			@Override
+			public boolean hasNext() {
+				return it.hasNext();
+			}
+
+			@Override
+			public CloseSuppressPath next() {
+				return of(it.next());
+			}
+
+			@Override
+			public void remove() {
+				it.remove();
+			}
+
+			@Override
+			public void forEachRemaining(Consumer<? super Path> action) {
+				it.forEachRemaining(p -> action.accept(of(p)));
+			}
+		};
+	}
+
 	@Override
 	public FileSystem getFileSystem() {
-		return wrapper.getFileSystem();
+		return new CloseSuppressFileSystem(wrapper.getFileSystem());
 	}
 
 	@Override
@@ -50,18 +78,18 @@ public class CloseSuppressPath implements Path, Closeable {
 	}
 
 	@Override
-	public Path getRoot() {
-		return wrapper.getRoot();
+	public CloseSuppressPath getRoot() {
+		return of(wrapper.getRoot());
 	}
 
 	@Override
-	public Path getFileName() {
-		return wrapper.getFileName();
+	public CloseSuppressPath getFileName() {
+		return of(wrapper.getFileName());
 	}
 
 	@Override
-	public Path getParent() {
-		return wrapper.getParent();
+	public CloseSuppressPath getParent() {
+		return of(wrapper.getParent());
 	}
 
 	@Override
@@ -70,18 +98,18 @@ public class CloseSuppressPath implements Path, Closeable {
 	}
 
 	@Override
-	public Path getName(int index) {
-		return wrapper.getName(index);
+	public CloseSuppressPath getName(int index) {
+		return of(wrapper.getName(index));
 	}
 
 	@Override
-	public Path subpath(int beginIndex, int endIndex) {
-		return wrapper.subpath(beginIndex, endIndex);
+	public CloseSuppressPath subpath(int beginIndex, int endIndex) {
+		return of(wrapper.subpath(beginIndex, endIndex));
 	}
 
 	@Override
 	public boolean startsWith(Path other) {
-		return wrapper.startsWith(other);
+		return wrapper.startsWith(extract(other));
 	}
 
 	@Override
@@ -91,7 +119,7 @@ public class CloseSuppressPath implements Path, Closeable {
 
 	@Override
 	public boolean endsWith(Path other) {
-		return wrapper.endsWith(other);
+		return wrapper.endsWith(extract(other));
 	}
 
 	@Override
@@ -100,13 +128,13 @@ public class CloseSuppressPath implements Path, Closeable {
 	}
 
 	@Override
-	public Path normalize() {
-		return wrapper.normalize();
+	public CloseSuppressPath normalize() {
+		return of(wrapper.normalize());
 	}
 
 	@Override
 	public CloseSuppressPath resolve(Path other) {
-		return of(wrapper.resolve(other));
+		return of(wrapper.resolve(extract(other)));
 	}
 
 	@Override
@@ -116,7 +144,7 @@ public class CloseSuppressPath implements Path, Closeable {
 
 	@Override
 	public CloseSuppressPath resolveSibling(Path other) {
-		return of(wrapper.resolveSibling(other));
+		return of(wrapper.resolveSibling(extract(other)));
 	}
 
 	@Override
@@ -126,7 +154,7 @@ public class CloseSuppressPath implements Path, Closeable {
 
 	@Override
 	public CloseSuppressPath relativize(Path other) {
-		return of(wrapper.relativize(other));
+		return of(wrapper.relativize(extract(other)));
 	}
 
 	@Override
@@ -135,8 +163,8 @@ public class CloseSuppressPath implements Path, Closeable {
 	}
 
 	@Override
-	public Path toAbsolutePath() {
-		return wrapper.toAbsolutePath();
+	public CloseSuppressPath toAbsolutePath() {
+		return of(wrapper.toAbsolutePath());
 	}
 
 	@Override
@@ -161,18 +189,18 @@ public class CloseSuppressPath implements Path, Closeable {
 
 	@Override
 	public Iterator<Path> iterator() {
-		return wrapper.iterator();
+		return of(wrapper.iterator());
 	}
 
 	@Override
 	public int compareTo(Path other) {
-		return wrapper.compareTo(other);
+		return wrapper.compareTo(extract(other));
 	}
 
 	@Override
 	public boolean equals(Object other) {
 		if (other instanceof CloseSuppressPath) {
-			return wrapper.equals(((CloseSuppressPath) other).wrapper);
+			return wrapper.equals(((CloseSuppressPath) other).getJavaPath());
 		}
 		return wrapper.equals(other);
 	}
@@ -197,28 +225,20 @@ public class CloseSuppressPath implements Path, Closeable {
 		return wrapper.spliterator();
 	}
 
-	private InputStream openInputStream(boolean buffered) throws IOException {
-		if (buffered) {
-			return openInputStream(BUFFER_SIZE);
-		} else {
-			return Files.newInputStream(wrapper);
-		}
+	public InputStream openInputStream(int bufferSize, OpenOption... options) throws IOException {
+		return new BufferedInputStream(openInputStream(options), bufferSize);
 	}
 
-	public InputStream openInputStream(int bufferSize) throws IOException {
-		return new BufferedInputStream(openInputStream(false), bufferSize);
+	public InputStream openInputStream(OpenOption... options) throws IOException {
+		return Files.newInputStream(this, options);
 	}
 
-	private OutputStream openOutputStream(boolean buffered) throws IOException {
-		if (buffered) {
-			return openOutputStream(BUFFER_SIZE);
-		} else {
-			return Files.newOutputStream(wrapper);
-		}
+	private OutputStream openOutputStream(OpenOption... options) throws IOException {
+		return Files.newOutputStream(this, options);
 	}
 
-	public OutputStream openOutputStream(int bufferSize) throws IOException {
-		return new BufferedOutputStream(openOutputStream(false), bufferSize);
+	public OutputStream openOutputStream(int bufferSize, OpenOption... options) throws IOException {
+		return new BufferedOutputStream(openOutputStream(options), bufferSize);
 	}
 
 	/**
@@ -229,7 +249,7 @@ public class CloseSuppressPath implements Path, Closeable {
 	}
 
 	public void mkdirs() throws IOException {
-		Files.createDirectories(wrapper);
+		Files.createDirectories(this);
 	}
 
 	public Path getJavaPath() {
@@ -239,9 +259,9 @@ public class CloseSuppressPath implements Path, Closeable {
 	@Override
 	public void close() throws IOException {
 		if (isDir) {
-			IOUtil.deleteDirRecurse(wrapper);
+			IOUtil.deleteDirRecurse(this);
 		} else {
-			Files.deleteIfExists(wrapper);
+			Files.deleteIfExists(this);
 		}
 	}
 }

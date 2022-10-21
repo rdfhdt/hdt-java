@@ -4,6 +4,7 @@ import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
 import java.util.Comparator;
 
+
 public class IndexedNode implements Comparable<IndexedNode> {
 	private static final Comparator<CharSequence> NODE_COMPARATOR = CharSequenceComparator.getInstance();
 	private CharSequence node;

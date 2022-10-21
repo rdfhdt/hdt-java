@@ -8,7 +8,9 @@ import org.rdfhdt.hdt.triples.TripleString;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Interface describing an HDT generator method
@@ -17,6 +19,12 @@ import java.util.Iterator;
  */
 @FunctionalInterface
 public interface HDTSupplier {
+	Map<String, HDTSupplier> SUPPLIERS = new HashMap<>() {
+		{
+			put(HDTOptionsKeys.LOADER_CATTREE_HDT_SUPPLIER_VALUE_MEMORY, memory());
+			put(HDTOptionsKeys.LOADER_CATTREE_HDT_SUPPLIER_VALUE_DISK, disk());
+		}
+	};
 	/**
 	 * @return implementation using in-memory hdt
 	 */
@@ -36,6 +44,30 @@ public interface HDTSupplier {
 			hdtFormat.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, location.toAbsolutePath().toString());
 			HDTManager.generateHDTDisk(iterator, baseURI, hdtFormat, listener).close();
 		};
+	}
+
+	/**
+	 * create a HDTSupplier from spec
+	 * @param spec the specs
+	 * @return hdt supplier
+	 */
+	static HDTSupplier fromSpec(HDTOptions spec) {
+		if (spec == null) {
+			return memory();
+		}
+		String supplier = spec.get(HDTOptionsKeys.HDT_SUPPLIER_KEY);
+
+		if (supplier == null || supplier.isEmpty()) {
+			return memory();
+		}
+
+		HDTSupplier s = SUPPLIERS.get(supplier);
+
+		if (s == null) {
+			throw new IllegalArgumentException("Can't find a supplier for name: " + supplier);
+		}
+
+		return s;
 	}
 
 	/**

@@ -15,6 +15,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
+import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
@@ -582,27 +583,24 @@ public class HDTManagerTest {
 			String ntFile = Objects.requireNonNull(getClass().getClassLoader().getResource(file), "Can't find " + file).getFile();
 			// create DISK HDT
 			try (InputStream in = IOUtil.getFileInputStream(ntFile)) {
-				Iterator<TripleString> it = RDFParserFactory.readAsIterator(
+				try (PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
 						RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, true),
 						in, HDTTestUtils.BASE_URI, true, RDFNotation.NTRIPLES
-				);
-				HDT expected = HDTManager.generateHDT(
-						it,
-						HDTTestUtils.BASE_URI,
-						spec,
-						quiet ? null : this
-				);
+				)) {
+					try (HDT expected = HDTManager.generateHDT(
+							it,
+							HDTTestUtils.BASE_URI,
+							spec,
+							quiet ? null : this
+					)) {
+						String testCopy = tempDir.newFile().getAbsolutePath();
+						expected.saveToHDT(testCopy, null);
 
-				String testCopy = tempDir.newFile().getAbsolutePath();
-				expected.saveToHDT(testCopy, null);
-
-				// create MEMORY HDT
-				HDT actual = HDTManager.loadHDT(testCopy);
-
-				try {
-					assertEqualsHDT(expected, actual);
-				} finally {
-					IOUtil.closeAll(expected, actual);
+						// create MEMORY HDT
+						try (HDT actual = HDTManager.loadHDT(testCopy)) {
+							assertEqualsHDT(expected, actual);
+						}
+					}
 				}
 			}
 		}
@@ -620,6 +618,8 @@ public class HDTManagerTest {
 			HDTOptions spec = new HDTSpecification();
 			spec.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, output.resolve("future.hdt").toAbsolutePath().toString());
 			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, output.resolve("gen_dir").toAbsolutePath().toString());
+			spec.set(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true");
+			spec.set(HDTOptionsKeys.PROFILER_KEY, "true");
 			StopWatch watch = new StopWatch();
 			watch.reset();
 			try (HDT hdt = HDTManager.generateHDTDisk(supplier.createTripleStringStream(), "http://ex.ogr/#", spec,
@@ -634,16 +634,41 @@ public class HDTManagerTest {
 			HDTOptions spec = new HDTSpecification();
 			StopWatch watch = new StopWatch();
 			spec.set(HDTOptionsKeys.LOADER_CATTREE_LOCATION_KEY, "C:\\WIKI\\CATTREE\\WORKING");
-			spec.set(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY, "C:\\ISWC\\CATTREE\\future.hdt");
+			spec.set(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY, "C:\\WIKI\\CATTREE\\future.hdt");
 			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, "C:\\WIKI\\CATTREE\\WORKING_HDTDISK");
 			spec.set(HDTOptionsKeys.LOADER_DISK_COMPRESSION_WORKER_KEY, "12");
 			spec.set(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true");
+			spec.set(HDTOptionsKeys.PROFILER_KEY, "true");
 			watch.reset();
 			try (HDT hdt = HDTManager.catTree(
 					RDFFluxStop.sizeLimit(100_000_000_000L) // 300GB free
 							.and(RDFFluxStop.countLimit(700_000_000L) // ~9GB maps
 							), HDTSupplier.disk(),
 					"M:\\WIKI\\latest-all.nt.bz2", HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec,
+					(level, message) -> System.out.println("[" + level + "] " + message)
+			)) {
+				System.out.println(watch.stopAndShow());
+				System.out.println(hdt.getTriples().getNumberOfElements());
+			}
+		}
+		@Test
+		public void bigGenCatTreeDiskTest() throws ParserException, IOException {
+			LargeFakeDataSetStreamSupplier supplier = LargeFakeDataSetStreamSupplier
+					.createSupplierWithMaxSize(10_000_000_000L, 94);
+			HDTOptions spec = new HDTSpecification();
+			StopWatch watch = new StopWatch();
+			spec.set(HDTOptionsKeys.LOADER_CATTREE_LOCATION_KEY, "C:\\WIKI\\CATTREE\\WORKING");
+			spec.set(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY, "C:\\WIKI\\CATTREE\\future.hdt");
+			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, "C:\\WIKI\\CATTREE\\WORKING_HDTDISK");
+			spec.set(HDTOptionsKeys.LOADER_DISK_COMPRESSION_WORKER_KEY, "12");
+			spec.set(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true");
+			spec.set(HDTOptionsKeys.PROFILER_KEY, "true");
+			watch.reset();
+			try (HDT hdt = HDTManager.catTree(
+					RDFFluxStop.sizeLimit(100_000_000_000L) // 300GB free
+							.and(RDFFluxStop.countLimit(700_000_000L) // ~9GB maps
+							), HDTSupplier.disk(),
+					supplier.createTripleStringStream(), HDTTestUtils.BASE_URI, spec,
 					(level, message) -> System.out.println("[" + level + "] " + message)
 			)) {
 				System.out.println(watch.stopAndShow());

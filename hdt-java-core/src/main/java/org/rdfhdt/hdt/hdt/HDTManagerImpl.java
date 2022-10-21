@@ -28,6 +28,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.options.HideHDTOptions;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
@@ -55,10 +56,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class HDTManagerImpl extends HDTManager {
 	private static final Logger logger = LoggerFactory.getLogger(HDTManagerImpl.class);
@@ -126,15 +124,55 @@ public class HDTManagerImpl extends HDTManager {
 		return hdt;
 	}
 
+	private RDFFluxStop readFluxStopOrSizeLimit(HDTOptions spec) {
+		// if no config, use default implementation
+		return Objects.requireNonNullElseGet(
+				RDFFluxStop.readConfig(spec.get(HDTOptionsKeys.RDF_FLUX_STOP_KEY)),
+				() -> {
+					// get the chunk size to base the work
+					String loaderType = spec.get(HDTOptionsKeys.LOADER_CATTREE_LOADERTYPE_KEY);
+
+					if (!HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
+						// memory based implementation, we can only store the NT file
+						return RDFFluxStop.sizeLimit(getMaxChunkSize());
+					}
+
+					// disk based implementation, we only have to reduce the fault-factor of the map files
+					long chunkSize = findBestMemoryChunkDiskMapTreeCat();
+
+					String factorOpt = spec.get(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR);
+					double factor;
+
+					if (factorOpt == null || factorOpt.isEmpty()) {
+						// default value
+						factor = 1.4;
+					} else {
+						factor = Double.parseDouble(factorOpt);
+
+						if (factor <= 0) {
+							throw new IllegalArgumentException(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR + " can't have a negative or 0 value!");
+						}
+					}
+
+					// create a count limit from the chunk size / factor, set a minimum value for low factor
+					return RDFFluxStop.countLimit(Math.max(128, (long) (chunkSize * factor)));
+				}
+		);
+	}
+
 	@Override
 	public HDT doGenerateHDT(String rdfFileName, String baseURI, RDFNotation rdfNotation, HDTOptions spec, ProgressListener listener) throws IOException, ParserException {
 		//choose the importer
 		String loaderType = spec.get(HDTOptionsKeys.LOADER_TYPE_KEY);
 		TempHDTImporter loader;
-		if (HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS.equals(loaderType)) {
+		if (HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
+			return doGenerateHDTDisk(rdfFileName, baseURI, rdfNotation, CompressionType.guess(rdfFileName), spec, listener);
+		} else if (HDTOptionsKeys.LOADER_TYPE_VALUE_CAT.equals(loaderType)) {
+			return doHDTCatTree(readFluxStopOrSizeLimit(spec), HDTSupplier.fromSpec(spec), rdfFileName, baseURI, rdfNotation, spec, listener);
+		} else if (HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS.equals(loaderType)) {
 			loader = new TempHDTImporterTwoPass(useSimple(spec));
 		} else {
-			if (!HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS.equals(loaderType)) {
+			if (loaderType != null && !HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS.equals(loaderType)) {
 				logger.warn("Used the option {} with value {}, which isn't recognize, using default value {}",
 						HDTOptionsKeys.LOADER_TYPE_KEY, loaderType, HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS);
 			}
@@ -168,15 +206,40 @@ public class HDTManagerImpl extends HDTManager {
 		// create a parser for this rdf stream
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation);
 		// read the stream as triples
-		Iterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation);
-
-		return doGenerateHDT(iterator, baseURI, hdtFormat, listener);
+		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation)) {
+			return doGenerateHDT(iterator, baseURI, hdtFormat, listener);
+		}
 	}
 
 	@Override
 	public HDT doGenerateHDT(Iterator<TripleString> triples, String baseURI, HDTOptions spec, ProgressListener listener) throws IOException {
 		//choose the importer
-		TempHDTImporterOnePass loader = new TempHDTImporterOnePass(false);
+		String loaderType = spec.get(HDTOptionsKeys.LOADER_TYPE_KEY);
+		TempHDTImporterOnePass loader;
+		if (HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
+			try {
+				return doGenerateHDTDisk(triples, baseURI, spec, listener);
+			} catch (ParserException e) {
+				throw new RuntimeException(e);
+			}
+		} else if (HDTOptionsKeys.LOADER_TYPE_VALUE_CAT.equals(loaderType)) {
+			try {
+				return doHDTCatTree(readFluxStopOrSizeLimit(spec), HDTSupplier.fromSpec(spec), triples, baseURI, spec, listener);
+			} catch (ParserException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			if (loaderType != null) {
+				if (HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS.equals(loaderType)) {
+					logger.warn("Used the option {} with value {}, which isn't available for stream generation, using default value {}",
+							HDTOptionsKeys.LOADER_TYPE_KEY, loaderType, HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS);
+				} else if (!HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS.equals(loaderType)) {
+					logger.warn("Used the option {} with value {}, which isn't recognize, using default value {}",
+							HDTOptionsKeys.LOADER_TYPE_KEY, loaderType, HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS);
+				}
+			}
+			loader = new TempHDTImporterOnePass(useSimple(spec));
+		}
 
 		// Create TempHDT
 		try (TempHDT modHdt = loader.loadFromTriples(spec, triples, baseURI, listener)) {
@@ -212,9 +275,9 @@ public class HDTManagerImpl extends HDTManager {
 		// create a parser for this rdf stream
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, useSimple(hdtFormat));
 		// read the stream as triples
-		Iterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation);
-
-		return doGenerateHDTDisk(iterator, baseURI, hdtFormat, listener);
+		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation)) {
+			return doGenerateHDTDisk(iterator, baseURI, hdtFormat, listener);
+		}
 	}
 
 	/**
@@ -223,6 +286,28 @@ public class HDTManagerImpl extends HDTManager {
 	static long getMaxChunkSize(int workers) {
 		Runtime runtime = Runtime.getRuntime();
 		return  (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85 / (1.5 * 3 * workers));
+	}
+	/**
+	 * @return a theoretical maximum amount of memory the JVM will attempt to use
+	 */
+	static long getMaxChunkSize() {
+		Runtime runtime = Runtime.getRuntime();
+		return  (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85);
+	}
+
+	private static long findBestMemoryChunkDiskMapTreeCat() {
+		Runtime runtime = Runtime.getRuntime();
+		long maxRam = (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85) / 3;
+
+		int shift = 0;
+
+		while (shift != 63 && (1L << shift) * BitUtil.log2(1L << shift) < maxRam) {
+			shift++;
+		}
+
+		// it will take at most "shift" bits per triple
+		// we divide by 3 for the 3 maps
+		return maxRam / shift;
 	}
 
 	@Override
@@ -247,9 +332,7 @@ public class HDTManagerImpl extends HDTManager {
 		// location of the future HDT file, do not set to create the HDT in memory while mergin
 		String futureHDTLocation = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY);
 
-		Profiler profiler = new Profiler("doGenerateHDTDisk");
-		String profilerString = hdtFormat.get(HDTOptionsKeys.PROFILER_KEY);
-		profiler.setDisabled(profilerString == null || !profilerString.equalsIgnoreCase("true"));
+		Profiler profiler = new Profiler("doGenerateHDTDisk", hdtFormat);
 		// check and set default values if required
 		if (workers == 0) {
 			workers = Runtime.getRuntime().availableProcessors();
@@ -413,10 +496,13 @@ public class HDTManagerImpl extends HDTManager {
 				return hdt;
 			}
 		} finally {
-			profiler.stop();
-			profiler.writeProfiling();
-			listener.notifyProgress(100, "Clearing disk");
-			basePath.close();
+			try {
+				profiler.stop();
+				profiler.writeProfiling();
+				listener.notifyProgress(100, "Clearing disk");
+			} finally {
+				basePath.close();
+			}
 		}
 	}
 
@@ -475,8 +561,9 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	protected HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, InputStream stream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, useSimple(hdtFormat));
-		Iterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, stream, baseURI, true, rdfNotation);
-		return doHDTCatTree(fluxStop, supplier, iterator, baseURI, hdtFormat, listener);
+		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, stream, baseURI, true, rdfNotation)) {
+			return doHDTCatTree(fluxStop, supplier, iterator, baseURI, hdtFormat, listener);
+		}
 	}
 
 	@Override
@@ -490,11 +577,12 @@ public class HDTManagerImpl extends HDTManager {
 			basePath = Path.of(baseNameOpt);
 		}
 
+		// hide the loader type to avoid infinite recursion
+		hdtFormat = new HideHDTOptions(hdtFormat, key -> HDTOptionsKeys.LOADER_TYPE_KEY.equals(key) ? HDTOptionsKeys.LOADER_CATTREE_LOADERTYPE_KEY : key);
+
 		Path futureHDTLocation = Optional.ofNullable(hdtFormat.get(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY)).map(Path::of).orElse(null);
 
-		Profiler profiler = new Profiler("doHDTCatTree");
-		String profilerString = hdtFormat.get(HDTOptionsKeys.PROFILER_KEY);
-		profiler.setDisabled(profilerString == null || !profilerString.equalsIgnoreCase("true"));
+		Profiler profiler = new Profiler("doHDTCatTree", hdtFormat);
 
 		FluxStopTripleStringIterator it = new FluxStopTripleStringIterator(iterator, fluxStop);
 
@@ -555,6 +643,7 @@ public class HDTManagerImpl extends HDTManager {
 
 		// if a future HDT location has been asked, move to it and map the HDT
 		if (futureHDTLocation != null) {
+			Files.createDirectories(futureHDTLocation.getParent());
 			Files.deleteIfExists(futureHDTLocation);
 			Files.move(hdtFile, futureHDTLocation);
 			return HDTManager.mapHDT(futureHDTLocation.toAbsolutePath().toString());

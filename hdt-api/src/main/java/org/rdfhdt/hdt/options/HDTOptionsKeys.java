@@ -1,5 +1,7 @@
 package org.rdfhdt.hdt.options;
 
+import org.rdfhdt.hdt.rdf.RDFFluxStop;
+
 /**
  * keys usable with {@link org.rdfhdt.hdt.options.HDTOptions#set(String, String)}
  * @author Antoine Willerval
@@ -61,9 +63,17 @@ public class HDTOptionsKeys {
 	 * Key for the loading mode of a RDF file for the
 	 * {@link org.rdfhdt.hdt.hdt.HDTManager#generateHDT(String, String, org.rdfhdt.hdt.enums.RDFNotation, HDTOptions, org.rdfhdt.hdt.listener.ProgressListener)}
 	 * method, this key isn't working with the other methods.
-	 * Value can be {@link #LOADER_TYPE_VALUE_ONE_PASS} or {@link #LOADER_TYPE_VALUE_TWO_PASS}.
+	 * Value can be {@link #LOADER_TYPE_VALUE_ONE_PASS}, {@link #LOADER_TYPE_VALUE_TWO_PASS}, {@link #LOADER_TYPE_VALUE_CAT} or {@link #LOADER_TYPE_VALUE_DISK}.
 	 */
 	public static final String LOADER_TYPE_KEY = "loader.type";
+	/**
+	 * Value for {@link #LOADER_TYPE_KEY}, read using disk generation, reduce the RAM usage and increase disk usage
+	 */
+	public static final String LOADER_TYPE_VALUE_DISK = "disk";
+	/**
+	 * Value for {@link #LOADER_TYPE_KEY}, read using HDTCat generation, merge using HDTCat HDT, reduce the RAM usage
+	 */
+	public static final String LOADER_TYPE_VALUE_CAT = "cat";
 	/**
 	 * Value for {@link #LOADER_TYPE_KEY}, read twice the RDF file, reduce the RAM usage
 	 */
@@ -79,15 +89,58 @@ public class HDTOptionsKeys {
 	 */
 	public static final String LOADER_CATTREE_LOCATION_KEY = "loader.cattree.location";
 	/**
+	 * Same as {@link #LOADER_TYPE_KEY} for loader in the CATTREE method
+	 */
+	public static final String LOADER_CATTREE_LOADERTYPE_KEY = "loader.cattree.loadertype";
+	/**
 	 * Key for the location of the future HDT for the {@link org.rdfhdt.hdt.hdt.HDTManager} catTree methods,
 	 * this option will create a hdt file after the HDT generation, the returned HDT will be a mapped HDT of the HDT
 	 * file. slower, increase the disk usage, but drastically reduce the RAM usage. file value.
 	 */
 	public static final String LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY = "loader.cattree.futureHDTLocation";
 	/**
+	 * Key for the fault factor for the {@link org.rdfhdt.hdt.hdt.HDTManager} catTree default value of the
+	 * split size of the RDFFluxStop in the generateHDT method.
+	 */
+	public static final String LOADER_CATTREE_MEMORY_FAULT_FACTOR = "loader.cattree.memoryFaultFactor";
+	/**
+	 * Key for the hdt supplier type, default to memory
+	 */
+	public static final String HDT_SUPPLIER_KEY = "supplier.type";
+	/**
+	 * Value for {@link #HDT_SUPPLIER_KEY}, use HDTGenDisk to create the HDT
+	 */
+	public static final String LOADER_CATTREE_HDT_SUPPLIER_VALUE_DISK = "disk";
+	/**
+	 * Value for {@link #HDT_SUPPLIER_KEY}, use the default memory implementation to create the HDT
+	 */
+	public static final String LOADER_CATTREE_HDT_SUPPLIER_VALUE_MEMORY = "memory";
+	/**
+	 * Key for the rdf flux stop type, default to the maximum memory allocated
+	 */
+	public static final String RDF_FLUX_STOP_KEY = "rdffluxstop.type";
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final String RDF_FLUX_STOP_VALUE_SIZE = "size";
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final String RDF_FLUX_STOP_VALUE_COUNT = "count";
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final String RDF_FLUX_STOP_VALUE_NO_LIMIT = "no_limit";
+
+
+	/**
 	 * Key for enabling the profiler (if implemented), default to false. Boolean value
 	 */
 	public static final String PROFILER_KEY = "profiler";
+	/**
+	 * Key for the profiler output (if implemented). File value
+	 */
+	public static final String PROFILER_OUTPUT_KEY = "profiler.output";
 	/**
 	 * Key for enabling the canonical NTriple file simple parser, default to false. Boolean value
 	 */

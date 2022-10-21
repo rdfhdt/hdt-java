@@ -27,22 +27,22 @@ public class LargeFakeDataSetStreamSupplierTest {
         triples.createNTFile(testNt.toAbsolutePath().toString());
 
         try (InputStream is = Files.newInputStream(testNt)) {
-            PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
+            try (PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
                     RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES),
                     is,
                     HDTTestUtils.BASE_URI,
                     true,
                     RDFNotation.NTRIPLES
-            );
-
-            it.forEachRemaining(s -> {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                System.out.println(s + " " + s.getSubject().getClass());
-            });
+            )) {
+                it.forEachRemaining(s -> {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
+                    System.out.println(s + " " + s.getSubject().getClass());
+                });
+            }
         }
     }
 }

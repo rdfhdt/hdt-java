@@ -27,6 +27,7 @@
 package org.rdfhdt.hdt.tools;
 
 import java.io.IOException;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -131,7 +132,15 @@ public class RDF2HDT implements ProgressListener {
 			spec.setOptions(options);
 		}
 		if (baseURI == null) {
-			baseURI = "file://" + rdfInput;
+			String input = rdfInput.toLowerCase();
+			if (input.startsWith("http") || input.startsWith("ftp")) {
+				baseURI = URI.create(rdfInput).toString();
+			} else {
+				baseURI = Path.of(rdfInput).toUri().toString();
+			}
+			if (!quiet) {
+				System.out.println("base uri not specified, using '" + baseURI + "'");
+			}
 		}
 
 		RDFNotation notation = null;

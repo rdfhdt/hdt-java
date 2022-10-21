@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.hdt.impl.diskimport;
 
 import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
+import org.rdfhdt.hdt.iterator.utils.IndexNodeDeltaMergeExceptionIterator;
 import org.rdfhdt.hdt.iterator.utils.SizeFetcher;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
@@ -441,7 +442,7 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 
 				// section
 				try (OutputStream output = openW.get()) {
-					CompressUtil.writeCompressedSection(CompressNodeMergeIterator.buildOfTree(readers), size, output, il);
+					CompressUtil.writeCompressedSection(IndexNodeDeltaMergeExceptionIterator.buildOfTree(readers), size, output, il);
 				}
 			} finally {
 				if (async) {

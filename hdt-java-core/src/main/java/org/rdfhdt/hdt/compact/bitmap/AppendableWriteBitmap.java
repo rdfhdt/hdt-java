@@ -150,7 +150,7 @@ public class AppendableWriteBitmap implements ModifiableBitmap, Closeable {
 		out.writeCRC();
 
 		// write the storage file, already contains the CRC
-		Files.copy(file.getJavaPath(), output);
+		Files.copy(file, output);
 
 		// delete the file
 		file.close();

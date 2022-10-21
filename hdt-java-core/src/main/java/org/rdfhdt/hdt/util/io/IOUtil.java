@@ -199,7 +199,7 @@ public class IOUtil {
 	public static InputStream getFileInputStream(String fileName, boolean uncompress) throws IOException {
 		InputStream input;
 		String name = fileName.toLowerCase();
-		if (name.startsWith("http:/") || name.startsWith("ftp:/")) {
+		if (name.startsWith("http:/") || name.startsWith("https:/") || name.startsWith("ftp:/")) {
 			URL url = new URL(fileName);
 			URLConnection con = url.openConnection();
 			con.connect();

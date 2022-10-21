@@ -155,7 +155,7 @@ public class IOUtilTest {
 
 		Path p1 = p.resolve("test1");
 		try (CloseSuppressPath csp = CloseSuppressPath.of(p1)) {
-			Files.writeString(csp.getJavaPath(), "test");
+			Files.writeString(csp, "test");
 			Assert.assertTrue(Files.exists(p1));
 		}
 		Assert.assertFalse(Files.exists(p1));
@@ -164,7 +164,7 @@ public class IOUtilTest {
 		Path p2 = p.resolve("test2");
 		try (CloseSuppressPath csp = CloseSuppressPath.of(p2)) {
 			csp.closeWithDeleteRecurse();
-			Path p3 = csp.getJavaPath().resolve("test3/test4/test5");
+			Path p3 = csp.resolve("test3/test4/test5");
 			Path f4 = p3.resolve("child.txt");
 			Files.createDirectories(p3);
 			Files.writeString(f4, "hello world");

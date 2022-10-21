@@ -115,7 +115,7 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 		// Write blocks directly to output, they have their own CRC check.
 		blocks.save(output, listener);
 		// Write blocks data directly to output, the load was writing using a CRC check.
-		Files.copy(tempFilename.getJavaPath(), output);
+		Files.copy(tempFilename, output);
 	}
 
 	@Override
