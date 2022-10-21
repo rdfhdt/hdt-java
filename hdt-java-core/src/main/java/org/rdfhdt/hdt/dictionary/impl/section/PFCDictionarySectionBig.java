@@ -505,7 +505,10 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	public void close() throws IOException {
 		data=null;
 		posFirst=null;
-		blocks.close();
+		//the constructor will not initialize blocks, so it can be null
+		if (blocks != null){
+			blocks.close();
+		}
 		blocks=null;
 	}
 }
