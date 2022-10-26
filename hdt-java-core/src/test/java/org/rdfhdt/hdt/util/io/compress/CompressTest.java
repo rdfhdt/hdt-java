@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
 import java.util.Arrays;
@@ -50,7 +51,11 @@ public class CompressTest {
 		duplicates.add(5L);
 
 		Iterator<IndexedNode> actual = CompressUtil.asNoDupeCharSequenceIterator(
-				ExceptionIterator.of(duplicatedList.iterator()),
+				ExceptionIterator.of(duplicatedList.iterator())
+						.map(in -> {
+							in.setNode(ByteString.of(in.getNode()));
+							return in;
+						}),
 				(originalIndex, duplicatedIndex, oldIndex) ->
 						Assert.assertTrue(duplicates.remove(duplicatedIndex))
 		);

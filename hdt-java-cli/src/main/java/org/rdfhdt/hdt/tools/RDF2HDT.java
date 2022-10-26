@@ -269,10 +269,11 @@ public class RDF2HDT implements ProgressListener {
 	@Override
 	public void notifyProgress(float level, String message) {
 		if(!quiet) {
-			System.out.print("\r"+message + "\t"+ Float.toString(level)+"                            \r");
+			System.out.print("\r"+message + "\t"+ level +"                            \r");
 		}
 	}
-	
+
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Throwable {
 		RDF2HDT rdf2hdt = new RDF2HDT();
 		JCommander com = new JCommander(rdf2hdt, args);

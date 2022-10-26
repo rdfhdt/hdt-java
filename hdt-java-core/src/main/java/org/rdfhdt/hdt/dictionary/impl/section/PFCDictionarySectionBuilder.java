@@ -11,9 +11,9 @@ public class PFCDictionarySectionBuilder {
 	
 	// FIXME: Due to java array indexes being int, only 2GB can be addressed per dictionary section.
 	private byte [] text=new byte[0]; // Encoded sequence
-	private int blocksize;
+	private final int blocksize;
 	private int numstrings;
-	private SequenceLog64 blocks;
+	private final SequenceLog64 blocks;
 	
 	ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);
 	

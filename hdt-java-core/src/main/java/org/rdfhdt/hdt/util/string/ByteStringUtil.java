@@ -69,6 +69,30 @@ public class ByteStringUtil {
 		return new String(arr, STRING_ENCODING);
 	}
 
+	/**
+	 * convert this char sequence to a byte string (if required)
+	 *
+	 * @param sec the char sequence
+	 * @return byte string
+	 */
+	public static ByteString asByteString(CharSequence sec) {
+		sec = DelayedString.unwrap(sec);
+
+		if (sec == null) {
+			return null;
+		}
+
+		if (sec.length() == 0) {
+			return CompactString.EMPTY;
+		}
+
+		if (sec instanceof ByteString) {
+			return (ByteString) sec;
+		}
+		// clone into sec
+		return new CompactString(sec);
+	}
+
 	public static int strlen(byte [] buff, int off) {
 		int len = buff.length;
 		int pos = off;
@@ -305,31 +329,34 @@ public class ByteStringUtil {
 	}
 
 	public static int append(OutputStream out, CharSequence str, int start) throws IOException {
-		byte [] bytes;
-		int len;
-		
 		if(str instanceof DelayedString) {
 			str = ((DelayedString) str).getInternal();
 		}
-		
+
 		if(str instanceof String) {
-			bytes = ((String) str).getBytes(ByteStringUtil.STRING_ENCODING);
-			len = bytes.length;
-		} else if(str instanceof CompactString) {
-			bytes = ((CompactString) str).getData();
-			len = bytes.length;
-		} else if(str instanceof ReplazableString) {
-			bytes = ((ReplazableString) str).getBuffer();
-			len = ((ReplazableString) str).used;
+			return append(out, (String) str, start);
+		} else if(str instanceof ByteString) {
+			return append(out, (ByteString) str, start);
 		} else {
 			throw new NotImplementedException();
 		}
-		
+	}
+
+	public static int append(OutputStream out, ByteString str, int start) throws IOException {
+		return append(out, str.getBuffer(), start, str.length());
+	}
+
+	public static int append(OutputStream out, String str, int start) throws IOException {
+		byte[] bytes = str.getBytes(ByteStringUtil.STRING_ENCODING);
+		return append(out, bytes, start, bytes.length);
+	}
+
+	public static int append(OutputStream out, byte [] bytes, int start, int len) throws IOException {
 		// Write and remove null characters
 		int cur = start;
 		int ini = start;
 		int written = 0;
-		
+
 		while(cur<len) {
 			if(bytes[cur]==0) {
 				out.write(bytes, ini, cur-ini);
@@ -344,5 +371,5 @@ public class ByteStringUtil {
 		}
 		return written;
 	}
-	
+
 }

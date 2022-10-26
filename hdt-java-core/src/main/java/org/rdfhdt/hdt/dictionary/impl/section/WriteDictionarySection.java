@@ -15,7 +15,10 @@ import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 import org.rdfhdt.hdt.util.io.CountOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.CompactString;
+import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,7 +29,8 @@ import java.util.Iterator;
 
 /**
  * Implementation of {@link org.rdfhdt.hdt.dictionary.DictionarySectionPrivate} that write loaded
- * {@link org.rdfhdt.hdt.dictionary.TempDictionarySection} on disk before saving, reducing the size in ram
+ * {@link org.rdfhdt.hdt.dictionary.TempDictionarySection} on disk before saving, reducing the size in ram,
+ * iterator should be a byte string
  *
  * @author Antoine Willerval
  */
@@ -44,13 +48,9 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 		String fn = filename.getFileName().toString();
 		tempFilename = CloseSuppressPath.of(filename.resolveSibling(fn + "_temp"));
 		blockTempFilename = CloseSuppressPath.of(filename.resolveSibling(fn + "_tempblock"));
-		long blockSize = spec.getInt("pfc.blocksize");
+		blockSize = spec.getInt("pfc.blocksize", PFCDictionarySection.DEFAULT_BLOCK_SIZE);
 		if (blockSize < 0) {
 			throw new IllegalArgumentException("negative pfc.blocksize");
-		} else if (blockSize == 0) {
-			this.blockSize = PFCDictionarySection.DEFAULT_BLOCK_SIZE;
-		} else {
-			this.blockSize = blockSize;
 		}
 	}
 
@@ -65,10 +65,10 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 		listener.notifyProgress(0, "Filling section");
 		try (CountOutputStream out = new CountOutputStream(tempFilename.openOutputStream(bufferSize))) {
 			CRCOutputStream crcout = new CRCOutputStream(out, new CRC32());
-			String previousStr = null;
+			ByteString previousStr = null;
 			for (Iterator<? extends CharSequence> it = other.getSortedEntries(); it.hasNext(); currentCount++) {
-				CharSequence sec = it.next();
-				String str = sec.toString();
+				ByteString str = (ByteString) (it.next());
+				assert str != null;
 				if (numberElements % blockSize == 0) {
 					blocks.append(out.getTotalBytes());
 

@@ -110,26 +110,34 @@ public enum RDFNotation {
 			return NTRIPLES;
 		}
 		str = str.toLowerCase();
-		if(str.equals("ntriples")||str.equals("nt")) {
-			return NTRIPLES;
-		} else if(str.equals("n3")) {
-			return N3;
-		} else if(str.equals("nq")||str.equals("nquad")) {
-			return NQUAD;
-		} else if(str.equals("rdfxml")||str.equals("rdf-xml") || str.equals("owl")) {
-			return RDFXML;
-		} else if(str.equals("turtle")) {
-			return TURTLE;
-		} else if(str.equals("rar")) {
-			return RAR;
-		} else if(str.equals("tar")||str.equals("tgz")||str.equals("tbz")||str.equals("tbz2")) {
-			return TAR;
-		} else if(str.equals("zip")) {
-			return ZIP;
-		} else if(str.equals("list")) {
-			return LIST;
-		} else if(str.equals("hdt")) {
-			return HDT;
+		switch (str) {
+			case "ntriples":
+			case "nt":
+				return NTRIPLES;
+			case "n3":
+				return N3;
+			case "nq":
+			case "nquad":
+				return NQUAD;
+			case "rdfxml":
+			case "rdf-xml":
+			case "owl":
+				return RDFXML;
+			case "turtle":
+				return TURTLE;
+			case "rar":
+				return RAR;
+			case "tar":
+			case "tgz":
+			case "tbz":
+			case "tbz2":
+				return TAR;
+			case "zip":
+				return ZIP;
+			case "list":
+				return LIST;
+			case "hdt":
+				return HDT;
 		}
 		throw new IllegalArgumentException();
 	}
@@ -147,7 +155,7 @@ public enum RDFNotation {
 		
 		int idx = str.lastIndexOf('.');		
 		if(idx!=-1) {
-			String ext = str.substring(idx+1, str.length());
+			String ext = str.substring(idx+1);
 			if(ext.equals("gz") || ext.equals("bz") || ext.equals("bz2")|| ext.equals("xz")) {
 				str = str.substring(0,idx);
 			}

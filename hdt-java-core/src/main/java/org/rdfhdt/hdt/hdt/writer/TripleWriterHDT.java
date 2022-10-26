@@ -24,7 +24,7 @@ import org.rdfhdt.hdt.util.StopWatch;
 
 public class TripleWriterHDT implements TripleWriter {
 
-	private OutputStream out;
+	private final OutputStream out;
 	private boolean close=false;
 	HDTOptions spec;
 	String baseUri;

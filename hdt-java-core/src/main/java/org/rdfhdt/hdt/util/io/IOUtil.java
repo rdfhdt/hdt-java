@@ -28,6 +28,7 @@ package org.rdfhdt.hdt.util.io;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.Reference;
@@ -238,7 +239,7 @@ public class IOUtil {
 			}
 			buf.write(value);
 		}
-		return new String(buf.toByteArray()); // Uses default encoding
+		return buf.toString(); // Uses default encoding
 	}
 
 	public static String readChars(InputStream in, int numChars) throws IOException {
@@ -255,6 +256,17 @@ public class IOUtil {
 
 	public static void writeString(OutputStream out, String str) throws IOException {
 		out.write(str.getBytes(ByteStringUtil.STRING_ENCODING));
+	}
+
+
+	public static void writeSizedBuffer(OutputStream output, byte[] buffer, ProgressListener listener) throws IOException {
+		writeSizedBuffer(output, buffer, 0, buffer.length, listener);
+	}
+
+	public static void writeSizedBuffer(OutputStream output, byte[] buffer, int offset, int length, ProgressListener listener) throws IOException {
+		// FIXME: Do by blocks and notify listener
+		VByte.encode(output, length);
+		output.write(buffer, offset, length);
 	}
 
 	public static void writeBuffer(OutputStream output, byte[] buffer, int offset, int length, ProgressListener listener) throws IOException {
@@ -298,7 +310,7 @@ public class IOUtil {
 
 	public static void moveFile(File src, File dst) throws IOException {
 		copyFile(src, dst);
-		src.delete();
+		Files.deleteIfExists(src.toPath());
 	}
 
 	public static void decompressGzip(File src, File trgt) throws IOException {
@@ -319,9 +331,9 @@ public class IOUtil {
 	/**
 	 * Write long, little endian
 	 *
-	 * @param output
-	 * @param value
-	 * @throws IOException
+	 * @param output os
+	 * @param value long
+	 * @throws IOException io exception
 	 */
 	public static void writeLong(OutputStream output, long value) throws IOException {
 		byte[] writeBuffer = new byte[8];
@@ -340,8 +352,8 @@ public class IOUtil {
 	/**
 	 * Read long, little endian.
 	 *
-	 * @param input
-	 * @throws IOException
+	 * @param input is
+	 * @throws IOException io exception
 	 */
 	public static long readLong(InputStream input) throws IOException {
 		int n = 0;
@@ -367,9 +379,9 @@ public class IOUtil {
 	/**
 	 * Write int, little endian
 	 *
-	 * @param output
-	 * @param value
-	 * @throws IOException
+	 * @param output os
+	 * @param value value
+	 * @throws IOException io exception
 	 */
 	public static void writeInt(OutputStream output, int value) throws IOException {
 		byte[] writeBuffer = new byte[4];
@@ -418,6 +430,13 @@ public class IOUtil {
 		return (value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0);
 	}
 
+	public static byte[] readSizedBuffer(InputStream input, ProgressListener listener) throws IOException {
+		long size = VByte.decode(input);
+		if (size > Integer.MAX_VALUE - 5 || size < 0) {
+			throw new IOException("Read bad sized buffer: " + size);
+		}
+		return readBuffer(input, (int) size, listener);
+	}
 	/**
 	 * @param input    din
 	 * @param length   bytes
@@ -517,6 +536,7 @@ public class IOUtil {
 		try {
 			output.close();
 		} catch (IOException e) {
+			// ignore
 		}
 	}
 

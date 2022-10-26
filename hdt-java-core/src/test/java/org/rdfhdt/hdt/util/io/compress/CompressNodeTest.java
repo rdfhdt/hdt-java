@@ -20,10 +20,10 @@ public class CompressNodeTest {
 		out.connect(in);
 		List<IndexedNode> nodes = Arrays.asList(
 				new IndexedNode("bob", 1),
-				new IndexedNode("michel", 3),
+				new IndexedNode("charles", 6),
 				new IndexedNode("jack", 2),
-				new IndexedNode("charles", 6)
-		);
+				new IndexedNode("michel", 3)
+				);
 		new ExceptionThread(() -> {
 			CompressNodeReader reader = new CompressNodeReader(in);
 			Assert.assertEquals(nodes.size(), reader.getSize());
@@ -67,10 +67,10 @@ public class CompressNodeTest {
 		out.connect(in);
 		List<IndexedNode> nodes = Arrays.asList(
 				new IndexedNode("bob", 1),
-				new IndexedNode("michel", 3),
+				new IndexedNode("charles", 6),
 				new IndexedNode("jack", 2),
-				new IndexedNode("charles", 6)
-		);
+				new IndexedNode("michel", 3)
+				);
 		new ExceptionThread(() -> {
 			CompressNodeReader reader = new CompressNodeReader(in);
 			Assert.assertEquals(nodes.size(), reader.getSize());
@@ -109,10 +109,10 @@ public class CompressNodeTest {
 		out.connect(in);
 		List<IndexedNode> nodes = Arrays.asList(
 				new IndexedNode("bob", 1),
-				new IndexedNode("michel", 3),
+				new IndexedNode("charles", 6),
 				new IndexedNode("jack", 2),
-				new IndexedNode("charles", 6)
-		);
+				new IndexedNode("michel", 3)
+				);
 		new ExceptionThread(() -> {
 			CompressNodeReader reader = new CompressNodeReader(in);
 			Assert.assertEquals(nodes.size(), reader.getSize());

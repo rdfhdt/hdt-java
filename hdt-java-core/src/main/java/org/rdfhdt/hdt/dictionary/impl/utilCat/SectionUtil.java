@@ -10,19 +10,21 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Map;
 
 public class SectionUtil {
 
     private static final int DEFAULT_BLOCK_SIZE = 16;
     private static final int BLOCK_PER_BUFFER = 1000000;
 
-    public static void createSection(String location,long numEntries, int type, CatUnion itAdd ,
-                                     CatUnion itSkip , HashMap<String,CatMapping> mappings,long offset, ProgressListener listener)  throws IOException {
+    public static void createSection(String location, long numEntries, int type, CatUnion itAdd ,
+                                     CatUnion itSkip , Map<? extends CharSequence,CatMapping> mappings, long offset, ProgressListener listener)  throws IOException {
         String name = "";
         switch (type) {
             case 2:

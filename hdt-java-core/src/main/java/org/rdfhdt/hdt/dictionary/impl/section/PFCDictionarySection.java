@@ -84,7 +84,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	public void load(TempDictionarySection other, ProgressListener listener) {
 		this.blocks = new SequenceLog64(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		Iterator<? extends CharSequence> it = other.getSortedEntries();
-		this.load((Iterator<? extends CharSequence>)it, other.getNumberOfElements(), listener);
+		this.load(it, other.getNumberOfElements(), listener);
 	}
 	
 	public void load(PFCDictionarySectionBuilder builder) throws IOException {

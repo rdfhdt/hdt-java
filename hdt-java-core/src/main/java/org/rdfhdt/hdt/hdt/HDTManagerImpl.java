@@ -1,29 +1,20 @@
 package org.rdfhdt.hdt.hdt;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
-import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
-import org.rdfhdt.hdt.dictionary.impl.CompressFourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
-import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.hdt.impl.HDTBase;
+import org.rdfhdt.hdt.hdt.impl.HDTDiskImporter;
 import org.rdfhdt.hdt.hdt.impl.HDTImpl;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterOnePass;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterTwoPass;
-import org.rdfhdt.hdt.hdt.impl.WriteHDTImpl;
-import org.rdfhdt.hdt.hdt.impl.diskimport.CompressTripleMapper;
-import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
-import org.rdfhdt.hdt.hdt.impl.diskimport.SectionCompressor;
-import org.rdfhdt.hdt.hdt.impl.diskimport.TripleCompressionResult;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
-import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.header.HeaderUtil;
-import org.rdfhdt.hdt.iterator.utils.*;
-import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.iterator.utils.FluxStopTripleStringIterator;
+import org.rdfhdt.hdt.iterator.utils.MapIterator;
+import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
@@ -33,19 +24,10 @@ import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.rdf.TripleWriter;
-import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleString;
-import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.Profiler;
-import org.rdfhdt.hdt.util.StringUtil;
-import org.rdfhdt.hdt.util.concurrent.KWayMerger;
-import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.rdfhdt.hdt.util.io.compress.MapCompressTripleMerger;
-import org.rdfhdt.hdt.util.io.compress.TripleGenerator;
-import org.rdfhdt.hdt.util.listener.IntermediateListener;
-import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdt.util.listener.PrefixListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +38,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 
 public class HDTManagerImpl extends HDTManager {
 	private static final Logger logger = LoggerFactory.getLogger(HDTManagerImpl.class);
@@ -69,6 +54,17 @@ public class HDTManagerImpl extends HDTManager {
 	@Override
 	public HDTOptions doReadOptions(String file) throws IOException {
 		return new HDTSpecification(file);
+	}
+
+	private HDT loadOrMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+		String loadingMethod = spec.get(HDTOptionsKeys.LOAD_HDT_TYPE_KEY);
+		if (loadingMethod == null || loadingMethod.isEmpty() || HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_MAP.equals(loadingMethod)) {
+			return doMapHDT(hdtFileName, listener, spec);
+		}
+		if (HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_LOAD.equals(loadingMethod)) {
+			return doLoadHDT(hdtFileName, listener, spec);
+		}
+		throw new IllegalArgumentException("Bad loading method: " + loadingMethod);
 	}
 
 	@Override
@@ -126,37 +122,28 @@ public class HDTManagerImpl extends HDTManager {
 
 	private RDFFluxStop readFluxStopOrSizeLimit(HDTOptions spec) {
 		// if no config, use default implementation
-		return Objects.requireNonNullElseGet(
-				RDFFluxStop.readConfig(spec.get(HDTOptionsKeys.RDF_FLUX_STOP_KEY)),
-				() -> {
-					// get the chunk size to base the work
-					String loaderType = spec.get(HDTOptionsKeys.LOADER_CATTREE_LOADERTYPE_KEY);
+		return spec.getFluxStop(HDTOptionsKeys.RDF_FLUX_STOP_KEY,
+			() -> {
+				// get the chunk size to base the work
+				String loaderType = spec.get(HDTOptionsKeys.LOADER_CATTREE_LOADERTYPE_KEY);
 
-					if (!HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
-						// memory based implementation, we can only store the NT file
-						return RDFFluxStop.sizeLimit(getMaxChunkSize());
-					}
-
-					// disk based implementation, we only have to reduce the fault-factor of the map files
-					long chunkSize = findBestMemoryChunkDiskMapTreeCat();
-
-					String factorOpt = spec.get(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR);
-					double factor;
-
-					if (factorOpt == null || factorOpt.isEmpty()) {
-						// default value
-						factor = 1.4;
-					} else {
-						factor = Double.parseDouble(factorOpt);
-
-						if (factor <= 0) {
-							throw new IllegalArgumentException(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR + " can't have a negative or 0 value!");
-						}
-					}
-
-					// create a count limit from the chunk size / factor, set a minimum value for low factor
-					return RDFFluxStop.countLimit(Math.max(128, (long) (chunkSize * factor)));
+				if (!HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
+					// memory based implementation, we can only store the NT file
+					return RDFFluxStop.sizeLimit(getMaxChunkSize());
 				}
+
+				// disk based implementation, we only have to reduce the fault-factor of the map files
+				long triplesCount = findBestMemoryChunkDiskMapTreeCat();
+
+				double factor = spec.getDouble(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR, 1.4);
+
+				if (factor <= 0) {
+					throw new IllegalArgumentException(HDTOptionsKeys.LOADER_CATTREE_MEMORY_FAULT_FACTOR + " can't have a negative or 0 value!");
+				}
+
+				// create a count limit from the chunk size / factor, set a minimum value for low factor
+				return RDFFluxStop.countLimit(Math.max(128, (long) (triplesCount * factor)));
+			}
 		);
 	}
 
@@ -276,17 +263,10 @@ public class HDTManagerImpl extends HDTManager {
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, useSimple(hdtFormat));
 		// read the stream as triples
 		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation)) {
-			return doGenerateHDTDisk(iterator, baseURI, hdtFormat, listener);
+			return doGenerateHDTDisk0(iterator, true, baseURI, hdtFormat, listener);
 		}
 	}
 
-	/**
-	 * @return a theoretical maximum amount of memory the JVM will attempt to use
-	 */
-	static long getMaxChunkSize(int workers) {
-		Runtime runtime = Runtime.getRuntime();
-		return  (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85 / (1.5 * 3 * workers));
-	}
 	/**
 	 * @return a theoretical maximum amount of memory the JVM will attempt to use
 	 */
@@ -312,196 +292,16 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doGenerateHDTDisk(Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener progressListener) throws IOException, ParserException {
-		MultiThreadListener listener = ListenerUtil.multiThreadListener(progressListener);
-		// load config
-		// compression mode
-		String compressMode = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_COMPRESSION_MODE_KEY); // see CompressionResult
-		// worker for compression tasks
-		int workers = (int) hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_COMPRESSION_WORKER_KEY);
-		// maximum size of a chunk
-		long chunkSize = hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_CHUNK_SIZE_KEY);
-		long maxFileOpenedLong = hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_MAX_FILE_OPEN_KEY);
-		long kwayLong = hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_KWAY_KEY);
-		long bufferSizeLong = hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_BUFFER_SIZE_KEY);
-		int maxFileOpened;
-		int ways;
-		int bufferSize;
-		// location of the working directory, will be deleted after generation
-		String baseNameOpt = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY);
-		CloseSuppressPath basePath;
-		// location of the future HDT file, do not set to create the HDT in memory while mergin
-		String futureHDTLocation = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY);
+		return doGenerateHDTDisk0(iterator, hdtFormat.getBoolean(HDTOptionsKeys.LOADER_DISK_NO_COPY_ITERATOR_KEY), baseURI, hdtFormat, progressListener);
+	}
 
-		Profiler profiler = new Profiler("doGenerateHDTDisk", hdtFormat);
-		// check and set default values if required
-		if (workers == 0) {
-			workers = Runtime.getRuntime().availableProcessors();
-		} else if (workers < 0) {
-			throw new IllegalArgumentException("Negative number of workers!");
-		}
-		if (baseNameOpt == null || baseNameOpt.isEmpty()) {
-			basePath = CloseSuppressPath.of(Files.createTempDirectory("hdt-java-generate-disk"));
-		} else {
-			basePath = CloseSuppressPath.of(baseNameOpt);
-		}
-		basePath.closeWithDeleteRecurse();
-		if (chunkSize == 0) {
-			chunkSize = getMaxChunkSize(workers);
-		} else if (chunkSize < 0) {
-			throw new IllegalArgumentException("Negative chunk size!");
-		}
-		if (bufferSizeLong > Integer.MAX_VALUE - 5L || bufferSizeLong < 0) {
-			throw new IllegalArgumentException("Buffer size can't be negative or bigger than the size of an array!");
-		} else if (bufferSizeLong == 0) {
-			bufferSize = CloseSuppressPath.BUFFER_SIZE;
-		} else {
-			bufferSize = (int) bufferSizeLong;
-		}
-		if (maxFileOpenedLong < 0 || maxFileOpenedLong > Integer.MAX_VALUE) {
-			throw new IllegalArgumentException("maxFileOpened can't be negative!");
-		} else if (maxFileOpenedLong == 0) {
-			maxFileOpened = 1024;
-		} else {
-			maxFileOpened = (int) maxFileOpenedLong;
-		}
-		if (kwayLong < 0 || kwayLong > Integer.MAX_VALUE) {
-			throw new IllegalArgumentException("kway can't be negative!");
-		} else if (kwayLong == 0) {
-			ways = Math.max(1, BitUtil.log2(maxFileOpened / workers));
-		} else {
-			ways = (int) kwayLong;
-		}
-		boolean mapHDT = futureHDTLocation != null && !futureHDTLocation.isEmpty();
-
-		// create working directory
-		basePath.mkdirs();
-		try {
-			// compress the triples into sections and compressed triples
-			listener.notifyProgress(0, "Sorting sections with chunk of size: " + StringUtil.humanReadableByteCount(chunkSize, true) + "B with " + ways + "ways and " + workers + " worker(s)");
-
-			AsyncIteratorFetcher<TripleString> source = new AsyncIteratorFetcher<>(iterator);
-
-			profiler.pushSection("section compression");
-			CompressionResult compressionResult;
-			try {
-				compressionResult = new SectionCompressor(
-						basePath.resolve("sectionCompression"),
-						source,
-						listener,
-						bufferSize,
-						chunkSize, 1 << ways
-				).compress(workers, compressMode);
-			} catch (KWayMerger.KWayMergerException | InterruptedException e) {
-				throw new ParserException(e);
-			}
-			profiler.popSection();
-
-			HDTBase<? extends HeaderPrivate, ? extends DictionaryPrivate, ? extends TriplesPrivate> hdt;
-			if (!mapHDT) {
-				// using default implementation
-				hdt = new HDTImpl(hdtFormat);
+	private HDT doGenerateHDTDisk0(Iterator<TripleString> iterator, boolean copyIterator, String baseURI, HDTOptions hdtFormat, ProgressListener progressListener) throws IOException, ParserException {
+		try (HDTDiskImporter hdtDiskImporter = new HDTDiskImporter(hdtFormat, progressListener, baseURI)) {
+			if (copyIterator) {
+				return hdtDiskImporter.runAllSteps(iterator);
 			} else {
-				// using map implementation
-				hdt = new WriteHDTImpl(hdtFormat, basePath.resolve("maphdt"), bufferSize);
-			}
-			hdt.setBaseUri(baseURI);
-
-			listener.unregisterAllThreads();
-			listener.notifyProgress(20, "Create sections and triple mapping");
-
-			profiler.pushSection("dictionary write");
-			// create sections and triple mapping
-			DictionaryPrivate dictionary = hdt.getDictionary();
-			CompressTripleMapper mapper = new CompressTripleMapper(basePath, compressionResult.getTripleCount(), chunkSize);
-			CompressFourSectionDictionary modifiableDictionary = new CompressFourSectionDictionary(compressionResult, mapper, listener);
-			try {
-				dictionary.loadAsync(modifiableDictionary, listener);
-			} catch (InterruptedException e) {
-				throw new ParserException(e);
-			}
-			profiler.popSection();
-
-			// complete the mapper with the shared count and delete compression data
-			compressionResult.delete();
-			mapper.setShared(dictionary.getNshared());
-
-			listener.notifyProgress(40, "Create mapped and sort triple file");
-			// create mapped triples file
-			TripleCompressionResult tripleCompressionResult;
-			TriplesPrivate triples = hdt.getTriples();
-			TripleComponentOrder order = triples.getOrder();
-			profiler.pushSection("triple compression/map");
-			try {
-				MapCompressTripleMerger tripleMapper = new MapCompressTripleMerger(
-						basePath.resolve("tripleMapper"),
-						new AsyncIteratorFetcher<>(new TripleGenerator(compressionResult.getTripleCount())),
-						mapper,
-						listener,
-						order,
-						bufferSize,
-						chunkSize,
-						1 << ways);
-				tripleCompressionResult = tripleMapper.merge(workers, compressMode);
-			} catch (KWayMerger.KWayMergerException | InterruptedException e) {
-				throw new ParserException(e);
-			}
-			profiler.popSection();
-			listener.unregisterAllThreads();
-
-			profiler.pushSection("bit triple creation");
-			try {
-				// create bit triples and load the triples
-				TempTriples tempTriples = tripleCompressionResult.getTriples();
-				IntermediateListener il = new IntermediateListener(listener);
-				il.setRange(80, 90);
-				il.setPrefix("Create bit triples: ");
-				il.notifyProgress(0, "create triples");
-				triples.load(tempTriples, il);
-				tempTriples.close();
-
-				// completed the triples, delete the mapper
-				mapper.delete();
-			} finally {
-				tripleCompressionResult.close();
-			}
-			profiler.popSection();
-			profiler.pushSection("header creation");
-
-			listener.notifyProgress(90, "Create HDT header");
-			// header
-			hdt.populateHeaderStructure(hdt.getBaseURI());
-			hdt.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, compressionResult.getRawSize());
-
-			profiler.popSection();
-			// return the HDT
-			if (mapHDT) {
-				profiler.pushSection("map to hdt");
-				// write the HDT and map it
-				try {
-					hdt.saveToHDT(futureHDTLocation, listener);
-				} finally {
-					hdt.close();
-				}
-				IntermediateListener il = new IntermediateListener(listener);
-				il.setPrefix("Map HDT: ");
-				il.setRange(95, 100);
-				il.notifyProgress(0, "start");
-				try {
-					return doMapHDT(futureHDTLocation, il, hdtFormat);
-				} finally {
-					profiler.popSection();
-				}
-			} else {
-				listener.notifyProgress(100, "HDT completed");
-				return hdt;
-			}
-		} finally {
-			try {
-				profiler.stop();
-				profiler.writeProfiling();
-				listener.notifyProgress(100, "Clearing disk");
-			} finally {
-				basePath.close();
+				// create a copy of the triple at loading time to avoid weird behaviors
+				return hdtDiskImporter.runAllSteps(new MapIterator<>(iterator, TripleString::tripleToString));
 			}
 		}
 	}
@@ -518,8 +318,8 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
-		try (HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
-			 HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat)) {
+		try (HDT hdt1 = loadOrMapHDT(hdtFileName1, listener, hdtFormat);
+			 HDT hdt2 = loadOrMapHDT(hdtFileName2, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
 			if (hdt1.getDictionary() instanceof MultipleSectionDictionary
 					&& hdt2.getDictionary() instanceof MultipleSectionDictionary) {
@@ -534,8 +334,8 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
-		try (HDT hdt1 = doMapHDT(hdtFileName1, listener, hdtFormat);
-			 HDT hdt2 = doMapHDT(hdtFileName2, listener, hdtFormat)) {
+		try (HDT hdt1 = loadOrMapHDT(hdtFileName1, listener, hdtFormat);
+			 HDT hdt2 = loadOrMapHDT(hdtFileName2, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
 			hdt.diff(hdt1, hdt2, listener);
 			return hdt;
@@ -544,9 +344,17 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	protected HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
-		try (HDT hdtOriginal = doMapHDT(hdtFileName, listener, hdtFormat)) {
+		try (HDT hdtOriginal = loadOrMapHDT(hdtFileName, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
-			hdt.diffBit(location, hdtOriginal, deleteBitmap, listener);
+			try {
+				hdt.diffBit(location, hdtOriginal, deleteBitmap, listener);
+			} catch (Throwable t) {
+				try {
+					throw t;
+				} finally {
+					hdt.close();
+				}
+			}
 			return hdt;
 		}
 	}

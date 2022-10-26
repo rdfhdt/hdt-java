@@ -30,14 +30,17 @@ package org.rdfhdt.hdt.dictionary.impl.section;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.CharSequenceCustomComparator;
 import org.rdfhdt.hdt.util.string.CompactString;
@@ -53,24 +56,19 @@ public class HashDictionarySection implements TempDictionarySection {
 	private List<CharSequence> list;
 	private int size;
 	public boolean sorted;
-	boolean isCustom;
-	private HashMap<String,Long> literalsCounts;
+	final boolean isCustom;
+	private final Map<CharSequence,Long> literalsCounts = new HashMap<>();
 	/**
 	 *
 	 */
 	public HashDictionarySection(boolean isCustom) {
-		this(new HDTSpecification());
 		this.isCustom = isCustom;
-	}
-	public HashDictionarySection() {
-		this(new HDTSpecification());
-		this.isCustom = isCustom;
-	}
-	public HashDictionarySection(HDTOptions spec) {
 		map = new HashMap<>();
 		list = new ArrayList<>();
 		size=0;
-		literalsCounts = new HashMap<>();
+	}
+	public HashDictionarySection() {
+		this(false);
 	}
 
 	/* (non-Javadoc)
@@ -78,8 +76,7 @@ public class HashDictionarySection implements TempDictionarySection {
 	 */
 	@Override
 	public long locate(CharSequence s) {
-		CompactString compact = new CompactString(s);
-		Long val = map.get(compact);
+		Long val = map.get(ByteStringUtil.asByteString(s));
 		if(val==null) {
 			return 0;
 		}
@@ -132,31 +129,20 @@ public class HashDictionarySection implements TempDictionarySection {
 	@Override
 	public long add(CharSequence entry) {
 		CharSequence compact = new CompactString(entry);
-		Long pos = map.get(compact);
-		if(pos!=null) {
-			// Found return existing ID.
-			return pos;
-		}
+		return map.computeIfAbsent(compact, key -> {
+			// Not found, insert new
+			list.add(compact);
+			size+=compact.length();
+			sorted = false;
 
-		// Not found, insert new
-		list.add(compact);
-		map.put(compact, (long) list.size());
-
-		size+=compact.length();
-		sorted = false;
-
-		// custom for subsection literals ..
-		if(isCustom){
-			String type = LiteralsUtils.getType(entry);
-			// check if the entry doesn't already exists
-			if(map.get(entry) == null) {
-				if (literalsCounts.containsKey(type)) {
-					literalsCounts.put(type, literalsCounts.get(type) + 1L);
-				} else
-					literalsCounts.put(type, 1L);
+			// custom for subsection literals ..
+			if (isCustom) {
+				CharSequence type = LiteralsUtils.getType(compact);
+				// check if the entry doesn't already exist
+				literalsCounts.compute(type, (key2, count) -> count == null ? 1L : count + 1L);
 			}
-		}
-		return list.size();
+			return (long) list.size();
+		});
 	}
 
 	@Override
@@ -169,18 +155,17 @@ public class HashDictionarySection implements TempDictionarySection {
 	public void sort() {
 		// Update list.
 		list = new ArrayList<>(map.size());
-		for(CharSequence str : map.keySet()) {
-			list.add(str);
-		}
+		list.addAll(map.keySet());
 
 		// Sort list
-		if(isCustom)
-			Collections.sort(list, new CharSequenceCustomComparator());
-		else
-			Collections.sort(list, new CharSequenceComparator());
+		if (isCustom) {
+			list.sort(new CharSequenceCustomComparator());
+		} else {
+			list.sort(new CharSequenceComparator());
+		}
 
 		// Update map indexes
-		for(long i=1;i<=getNumberOfElements();i++) {
+		for (long i = 1; i <= getNumberOfElements(); i++) {
 			map.put(extract(i), i);
 		}
 
@@ -196,17 +181,18 @@ public class HashDictionarySection implements TempDictionarySection {
 	public void clear() {
 		list.clear();
 		map.clear();
-		size=0;
+		size = 0;
 		sorted = false; //because if sorted won't be anymore
 	}
 
 	@Override
 	public void close() throws IOException {
-		map=null;
-		list=null;
+		map = null;
+		list = null;
 	}
 
-	public HashMap<String, Long> getLiteralsCounts() {
+	@Override
+	public Map<CharSequence, Long> getLiteralsCounts() {
 		return literalsCounts;
 	}
 }

@@ -37,13 +37,12 @@ package org.rdfhdt.hdt.cache;
  */
 public class DictionaryCacheArray<T> implements DictionaryCache<T> {
 
-	private Object array[];
+	private Object[] array;
 	final int capacity;
-	int numentries=0;
+	int numentries;
 	
 	public DictionaryCacheArray(int capacity) {
 		array = null;
-		numentries=0;
 		this.capacity=capacity;
 	}
 	

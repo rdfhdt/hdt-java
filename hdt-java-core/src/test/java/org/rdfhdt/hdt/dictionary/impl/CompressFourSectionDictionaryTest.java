@@ -9,6 +9,7 @@ import org.rdfhdt.hdt.iterator.utils.MapIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.compress.CompressTest;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.IOException;
@@ -43,7 +44,7 @@ public class CompressFourSectionDictionaryTest {
 				"4444", "7777"
 		);
 		CompressFourSectionDictionary dictionary = new CompressFourSectionDictionary(result, new FakeNodeConsumer(), (p, m) -> {
-		});
+		}, true);
 		Iterator<? extends CharSequence> su = dictionary.getSubjects().getSortedEntries();
 		Iterator<? extends CharSequence> pr = dictionary.getPredicates().getSortedEntries();
 		Iterator<? extends CharSequence> ob = dictionary.getObjects().getSortedEntries();
@@ -114,17 +115,17 @@ public class CompressFourSectionDictionaryTest {
 
 		@Override
 		public ExceptionIterator<IndexedNode, IOException> getSubjects() {
-			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(subjects).iterator(), s -> new IndexedNode(s, sid++)));
+			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(subjects).iterator(), s -> new IndexedNode(ByteString.of(s), sid++)));
 		}
 
 		@Override
 		public ExceptionIterator<IndexedNode, IOException> getPredicates() {
-			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(predicates).iterator(), s -> new IndexedNode(s, pid++)));
+			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(predicates).iterator(), s -> new IndexedNode(ByteString.of(s), pid++)));
 		}
 
 		@Override
 		public ExceptionIterator<IndexedNode, IOException> getObjects() {
-			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(objects).iterator(), s -> new IndexedNode(s, oid++)));
+			return ExceptionIterator.of(new MapIterator<>(Arrays.asList(objects).iterator(), s -> new IndexedNode(ByteString.of(s), oid++)));
 		}
 
 		@Override

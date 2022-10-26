@@ -20,7 +20,7 @@ public class FourSectionDictionaryEntriesDiff implements DictionaryEntriesDiff {
     private final HDT hdtOriginal;
     private final IteratorTripleID iterator;
     private final Bitmap bitArrayDisk;
-    private final Map<String, ModifiableBitmap> bitmaps;
+    private final Map<CharSequence, ModifiableBitmap> bitmaps;
     private long count;
 
     public FourSectionDictionaryEntriesDiff(HDT hdtOriginal, Bitmap deleteBitmap, IteratorTripleID iterator) {
@@ -76,7 +76,7 @@ public class FourSectionDictionaryEntriesDiff implements DictionaryEntriesDiff {
     }
 
     @Override
-    public Map<String, ModifiableBitmap> getBitmaps() {
+    public Map<CharSequence, ModifiableBitmap> getBitmaps() {
         return bitmaps;
     }
 }

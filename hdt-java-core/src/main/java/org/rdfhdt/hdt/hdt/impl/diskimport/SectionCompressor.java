@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.hdt.impl.diskimport;
 
 import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
 import org.rdfhdt.hdt.iterator.utils.IndexNodeDeltaMergeExceptionIterator;
+import org.rdfhdt.hdt.iterator.utils.MergeExceptionIterator;
 import org.rdfhdt.hdt.iterator.utils.SizeFetcher;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
@@ -41,21 +42,22 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 
 	private final CloseSuppressPath baseFileName;
 	private final AsyncIteratorFetcher<TripleString> source;
-	private boolean done;
 	private final MultiThreadListener listener;
 	private final AtomicLong triples = new AtomicLong();
 	private final AtomicLong ntRawSize = new AtomicLong();
 	private final int bufferSize;
 	private final long chunkSize;
 	private final int k;
+	private final boolean debugSleepKwayDict;
 
-	public SectionCompressor(CloseSuppressPath baseFileName, AsyncIteratorFetcher<TripleString> source, MultiThreadListener listener, int bufferSize, long chunkSize, int k) {
+	public SectionCompressor(CloseSuppressPath baseFileName, AsyncIteratorFetcher<TripleString> source, MultiThreadListener listener, int bufferSize, long chunkSize, int k, boolean debugSleepKwayDict) {
 		this.source = source;
 		this.listener = listener;
 		this.baseFileName = baseFileName;
 		this.bufferSize = bufferSize;
 		this.chunkSize = chunkSize;
 		this.k = k;
+		this.debugSleepKwayDict = debugSleepKwayDict;
 	}
 
 	/*
@@ -187,6 +189,14 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 		listener.notifyProgress(10, "reading triples " + triples.get());
 		TripleString next;
 		while ((next = fetcher.get()) != null) {
+
+			if (debugSleepKwayDict) {
+				try {
+					Thread.sleep(25);
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
+			}
 
 			// load the map triple and write it in the writer
 			long tripleID = triples.incrementAndGet();
@@ -441,8 +451,8 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 				}
 
 				// section
-				try (OutputStream output = openW.get()) {
-					CompressUtil.writeCompressedSection(IndexNodeDeltaMergeExceptionIterator.buildOfTree(readers), size, output, il);
+				try (OutputStream output = openW.get()) { // IndexNodeDeltaMergeExceptionIterator
+					CompressUtil.writeCompressedSection(CompressNodeMergeIterator.buildOfTree(readers), size, output, il);
 				}
 			} finally {
 				if (async) {

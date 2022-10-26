@@ -26,13 +26,7 @@
 package org.rdfhdt.hdtjena.solver;
 
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import org.apache.jena.atlas.iterator.Iter;
-
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.shared.PrefixMapping;
@@ -50,9 +44,14 @@ import org.rdfhdt.hdtjena.bindings.BindingHDTId;
 import org.rdfhdt.hdtjena.bindings.HDTId;
 import org.rdfhdt.hdtjena.util.VarAppearance;
 
+import java.util.Iterator;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
  * For each input binding, emits all tuples matching a triple pattern.  See {@link QueryIterTriplePattern}.
  */
+@SuppressWarnings("deprecation")
 public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
 {
 	
@@ -61,10 +60,8 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
     private final NodeDictionary dictionary ;
     private final Triples triples;
     private final TripleID patternID;
-    
-    private final PrefixMapping prefixMap;
-    
-    // Variables for this tuple after substitution
+
+	// Variables for this tuple after substitution
     private final Var[] var = new Var[3];
     private final boolean[] varIsSO = new boolean[3];
     private final long numSharedSO;
@@ -74,7 +71,7 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         super(input);
         this.dictionary = graph.getNodeDictionary();
         this.triples = graph.getHDT().getTriples();
-		this.prefixMap = NodeDictionary.getMapping(execCxt);
+		PrefixMapping prefixMap = NodeDictionary.getMapping(execCxt);
 		this.numSharedSO = graph.getHDT().getDictionary().getNshared();
 
         // Convert Nodes to a TripleID
@@ -138,42 +135,31 @@ public class StageMatchTripleID extends RepeatApplyIterator<BindingHDTId>
         
         // Filter triples where S or O need to be shared.
         if(varIsSO[0] || varIsSO[2]) {
-           	it = it.filter(new Predicate<TripleID>() {
-				@Override
-				public boolean test(TripleID t) {
-    				if(varIsSO[0] && t.getSubject()>numSharedSO) {
-    					return false;
-    				}
-    				if(varIsSO[2] && t.getObject()>numSharedSO) {
-    					return false;
-    				}
-    				return true;
-				}
-			});
+           	it = it.filter(t -> {
+				   if(varIsSO[0] && t.getSubject()>numSharedSO) {
+					   return false;
+				   }
+				   return !varIsSO[2] || t.getObject() <= numSharedSO;
+			   });
         }
         
         
         // Map TripleID to BindingHDTId
-        Function<TripleID, BindingHDTId> binder = new Function<TripleID, BindingHDTId>()
-        {
-            @Override
-            public BindingHDTId apply(TripleID triple)
-            {
-                BindingHDTId output = new BindingHDTId(input) ;
+        Function<TripleID, BindingHDTId> binder = triple -> {
+			BindingHDTId output = new BindingHDTId(input) ;
 
-                if (var[0] != null && !insert(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT, dictionary), output)) {
-                    return null;
-                }
-                if (var[1] != null && !insert(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE, dictionary), output)) {
-                    return null;
-                }
-                if (var[2] != null && !insert(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT, dictionary), output)) {
-                    return null;
-                }
+			if (!(var[0] == null || insert(var[0], new HDTId(triple.getSubject(), TripleComponentRole.SUBJECT, dictionary), output))) {
+				return null;
+			}
+			if (!(var[1] == null || insert(var[1], new HDTId(triple.getPredicate(), TripleComponentRole.PREDICATE, dictionary), output))) {
+				return null;
+			}
+			if (!(var[2] == null || insert(var[2], new HDTId(triple.getObject(), TripleComponentRole.OBJECT, dictionary), output))) {
+				return null;
+			}
 
-                return output;
-            }
-        };
+			return output;
+		};
         
         return it.map(binder).removeNulls();
     }

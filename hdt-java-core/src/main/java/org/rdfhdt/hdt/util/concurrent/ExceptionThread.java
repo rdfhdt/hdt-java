@@ -1,6 +1,11 @@
 package org.rdfhdt.hdt.util.concurrent;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread allowing exception and returning it when joining it with {@link #joinAndCrashIfRequired()} or by using
@@ -10,6 +15,59 @@ import java.util.Objects;
  * @author Antoine Willerval
  */
 public class ExceptionThread extends Thread {
+	private static final AtomicLong ID_COUNT = new AtomicLong();
+	static boolean debug;
+	static final Stack<Map<Long, Throwable>> DEBUG_STACK = new Stack<>();
+
+	/**
+	 * start the debug of the thread
+	 */
+	public static void startDebug() {
+		debug = true;
+		if (!DEBUG_STACK.isEmpty()) {
+			throw new IllegalArgumentException("non empty debug stack, bad config?");
+		}
+		pushDebugPoint();
+	}
+
+	/**
+	 * push a new sub-set of debug thread
+	 */
+	public static void pushDebugPoint() {
+		DEBUG_STACK.push(Collections.synchronizedMap(new HashMap<>()));
+	}
+
+	/**
+	 * push a new sub-set of debug thread
+	 *
+	 * @param name name to id the pop
+	 */
+	public static void popDebugPoint(String name) {
+		if (DEBUG_STACK.isEmpty()) {
+			throw new IllegalArgumentException("empty debug stack, bad config?");
+		}
+
+		Map<Long, Throwable> map = DEBUG_STACK.pop();
+		if (map.isEmpty()) {
+			return;
+		}
+
+		AssertionError error = new AssertionError("Non empty stack at point " + name);
+
+		map.values().forEach(error::addSuppressed);
+
+		throw error;
+	}
+
+	/**
+	 * end the debug of the thread
+	 */
+	public static void endDebug() {
+		debug = false;
+		popDebugPoint("end debug");
+		DEBUG_STACK.clear();
+	}
+
 	/**
 	 * create exception threads of multiple runnables
 	 *
@@ -17,7 +75,7 @@ public class ExceptionThread extends Thread {
 	 * @param runnables the runnables list, can't be empty
 	 * @return exception thread attached with other runnables
 	 * @throws java.lang.IllegalArgumentException if the array is empty
-	 * @throws java.lang.NullPointerException if an argument is null
+	 * @throws java.lang.NullPointerException     if an argument is null
 	 */
 	public static ExceptionThread async(String name, ExceptionRunnable... runnables) {
 		Objects.requireNonNull(name, "name can't be null!");
@@ -47,8 +105,8 @@ public class ExceptionThread extends Thread {
 		/**
 		 * Runnable used in an {@link org.rdfhdt.hdt.util.concurrent.ExceptionThread}, can throw an exception
 		 *
-		 * @see org.rdfhdt.hdt.util.concurrent.ExceptionThread#ExceptionThread(org.rdfhdt.hdt.util.concurrent.ExceptionThread.ExceptionRunnable, String)
 		 * @throws java.lang.Exception if any
+		 * @see org.rdfhdt.hdt.util.concurrent.ExceptionThread#ExceptionThread(org.rdfhdt.hdt.util.concurrent.ExceptionThread.ExceptionRunnable, String)
 		 */
 		void run() throws Exception;
 	}
@@ -57,10 +115,28 @@ public class ExceptionThread extends Thread {
 	private final ExceptionRunnable target;
 	private ExceptionThread next;
 	private ExceptionThread prev;
+	private final Map<Long, Throwable> debugMap;
+	private final long debugId;
+
+	public ExceptionThread(String name) {
+		this(null, name);
+	}
 
 	public ExceptionThread(ExceptionRunnable target, String name) {
 		super(name);
-		this.target = target;
+		debugId = ID_COUNT.getAndIncrement();
+
+		if (debug) {
+			debugMap = DEBUG_STACK.peek();
+			if (debugMap != null) {
+				// debug
+				debugMap.put(debugId, new Throwable("ExceptionThread #" + name));
+			}
+		} else {
+			debugMap = null;
+		}
+
+		this.target = Objects.requireNonNullElse(target, this::runException);
 	}
 
 	/**
@@ -105,6 +181,14 @@ public class ExceptionThread extends Thread {
 		return this;
 	}
 
+	/**
+	 * implementation used if the runnable is null
+	 * @throws Exception exception
+	 */
+	public void runException() throws Exception {
+		// to impl
+	}
+
 	@Override
 	public final void run() {
 		try {
@@ -120,6 +204,10 @@ public class ExceptionThread extends Thread {
 			}
 			if (this.prev != null) {
 				this.prev.interruptBackward(t);
+			}
+		} finally {
+			if (debugMap != null) {
+				debugMap.remove(debugId);
 			}
 		}
 	}
@@ -152,7 +240,7 @@ public class ExceptionThread extends Thread {
 	 * created. If the thread returned an exception while the current thread is interrupted, the exception will be
 	 * suppressed in the {@link java.lang.InterruptedException}.
 	 *
-	 * @throws InterruptedException interruption while joining the thread
+	 * @throws InterruptedException     interruption while joining the thread
 	 * @throws ExceptionThreadException if the thread or any attached thread returned an exception
 	 */
 	public void joinAndCrashIfRequired() throws InterruptedException {

@@ -167,9 +167,7 @@ public class TripleString {
 	public boolean match(TripleString pattern) {
         if (pattern.getSubject().length() == 0 || equalsCharSequence(pattern.getSubject(), this.subject)) {
             if (pattern.getPredicate().length() == 0 || equalsCharSequence(pattern.getPredicate(), this.predicate)) {
-                if (pattern.getObject().length() == 0 || equalsCharSequence(pattern.getObject(), this.object)) {
-                    return true;
-                }
+				return pattern.getObject().length() == 0 || equalsCharSequence(pattern.getObject(), this.object);
             }
         }
         return false;

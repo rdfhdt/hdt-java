@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.dictionary.impl;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
+import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
@@ -14,24 +15,24 @@ import org.rdfhdt.hdt.dictionary.impl.utilDiff.DiffWrapper;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
     private final String location;
-    private final HashMap<String,CatMapping> allMappings = new HashMap<>();
+    private final Map<String,CatMapping> allMappings = new HashMap<>();
     private CatMapping mappingBack;
     public long numShared;
     public MultipleSectionDictionaryDiff(String location){
@@ -48,15 +49,15 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         }
     }
     @Override
-    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
+    public void diff(Dictionary dictionary, Map<CharSequence, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate",new CatMapping(location,"predicate",dictionary.getPredicates().getNumberOfElements()));
         allMappings.put("subject",new CatMapping(location,"subject",dictionary.getSubjects().getNumberOfElements()));
         int countSubSection = 0;
 
-        for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
+        for (Map.Entry<? extends CharSequence, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
             String subPrefix = "sub"+countSubSection;
-            if(next.getKey().equals("NO_DATATYPE")){
-                subPrefix = "NO_DATATYPE";
+            if(next.getKey().equals(LiteralsUtils.NO_DATATYPE)){
+                subPrefix = LiteralsUtils.NO_DATATYPE.toString();
             }
             allMappings.put(subPrefix,new CatMapping(location,subPrefix,next.getValue().getNumberOfElements()));
             countSubSection++;
@@ -108,18 +109,18 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
 
         // Objects ----------------------------+++++++++++++++++++++++++++++++++----------------------------------------
-        ArrayList<String> dataTypes = new ArrayList<>();
-        HashMap<String,Long> offsets = new HashMap<>();
+        List<CharSequence> dataTypes = new ArrayList<>();
+        Map<CharSequence,Long> offsets = new HashMap<>();
 
         int countSection = 0;
         long totalObjects = 0;
-        for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
+        for (Map.Entry<? extends CharSequence, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
             int type = 4 + dataTypes.size();
-            if(next.getKey().equals("NO_DATATYPE")){
+            if(next.getKey().equals(LiteralsUtils.NO_DATATYPE)){
                 long numNoDataType = createNoDataTypeSection(bitmaps, dictionary,totalObjects,type);
                 if(numNoDataType > 0){
-                    dataTypes.add("NO_DATATYPE");
-                    offsets.put("NO_DATATYPE",totalObjects);
+                    dataTypes.add(LiteralsUtils.NO_DATATYPE);
+                    offsets.put(LiteralsUtils.NO_DATATYPE,totalObjects);
                     totalObjects+= numNoDataType;
                 }
             }else {
@@ -184,32 +185,29 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
         try (OutputStream out = new FileOutputStream(location + "dictionary")) {
             ci.save(out);
-            byte[] buf = new byte[100000];
-            for (int i = 1; i <= 3 +dataTypes.size(); i++) {
-                if(i == 4) { // write literals map before writing the objects sections
-                    out.write(dataTypes.size());
-                    for (String datatype : dataTypes){
-                        out.write(datatype.length());
-                        IOUtil.writeBuffer(out, datatype.getBytes(), 0, datatype.getBytes().length, listener);
-                    }
-                }
-                try (InputStream in = new FileInputStream(location + "section" + i)) {
-                    int b;
-                    while ((b = in.read(buf)) >= 0) {
-                        out.write(buf, 0, b);
-                    }
-                }
-                Files.delete(Paths.get(location + "section" + i));
+            for (int i = 1; i <= 3; i++) {
+                Files.copy(Path.of(location + "section" + i), out);
+                Files.delete(Path.of(location + "section" + i));
+            }
+            VByte.encode(out, dataTypes.size());
+            for(CharSequence datatype:dataTypes){
+                String datatypeStr = datatype.toString();
+                byte[] bytes = datatypeStr.getBytes();
+                IOUtil.writeSizedBuffer(out, bytes, 0, bytes.length, listener);
+            }
+            for (int i = 0; i < dataTypes.size(); i++) {
+                Files.copy(Path.of(location + "section" + (4 + i)), out);
+                Files.delete(Path.of(location + "section" + (4 + i)));
             }
         }
         // create global objects mapping from section by section mappings
         long oldId = 0;
         countSection = 0;
-        for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
-            String dataType = next.getKey();
+        for (CharSequence dataType : dictionary.getAllObjects().keySet()) {
             String subPrefix = "sub"+countSection;
-            if(dataType.equals("NO_DATATYPE"))
-                subPrefix = dataType;
+            if(dataType.equals(LiteralsUtils.NO_DATATYPE)) {
+                subPrefix = dataType.toString();
+            }
 
             if(allMappings.containsKey(subPrefix)){
                 CatMapping mapping = allMappings.get(subPrefix);
@@ -247,11 +245,11 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         }
 
     }
-    private long createNoDataTypeSection(Map<String, ModifiableBitmap> bitmaps,Dictionary dictionary,long numObjectsAlreadyAdded,int type) throws IOException {
-        Bitmap objectsBitMap = bitmaps.get("NO_DATATYPE");
-        Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get("NO_DATATYPE").getSortedEntries();
+    private long createNoDataTypeSection(Map<CharSequence, ModifiableBitmap> bitmaps,Dictionary dictionary,long numObjectsAlreadyAdded,int type) throws IOException {
+        Bitmap objectsBitMap = bitmaps.get(LiteralsUtils.NO_DATATYPE);
+        Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
 
-        DiffWrapper itSkipObjs = new DiffWrapper(objects, objectsBitMap,"NO_DATATYPE");
+        DiffWrapper itSkipObjs = new DiffWrapper(objects, objectsBitMap,LiteralsUtils.NO_DATATYPE);
 
         ArrayList<Iterator<CatElement>> listSkipObjs = new ArrayList<>();
         listSkipObjs.add(itSkipObjs);
@@ -314,7 +312,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
             return i;
         }
     }
-    public HashMap<String, CatMapping> getAllMappings() {
+    public Map<String, CatMapping> getAllMappings() {
         return allMappings;
     }
 

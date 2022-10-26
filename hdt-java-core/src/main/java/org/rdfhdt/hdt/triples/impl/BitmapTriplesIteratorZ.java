@@ -41,21 +41,21 @@ import org.rdfhdt.hdt.triples.TripleID;
 public class BitmapTriplesIteratorZ implements SuppliableIteratorTripleID {
 	private final BitmapTriples triples;
 	private long lastPosition;
-	private final TripleID pattern;
-    private final TripleID returnTriple;
+	private final TripleID returnTriple;
 	private final long patZ;
 	
-	private AdjacencyList adjY, adjZ;
+	private final AdjacencyList adjY;
+	private final AdjacencyList adjZ;
 	long posZ;
 	private long x, y, z;
 	
 	BitmapTriplesIteratorZ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
-		this.pattern = new TripleID(pattern);
+		TripleID pattern1 = new TripleID(pattern);
 		this.returnTriple = new TripleID();
 		
-		TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
-		patZ = this.pattern.getObject();
+		TripleOrderConvert.swapComponentOrder(pattern1, TripleComponentOrder.SPO, triples.order);
+		patZ = pattern1.getObject();
 		if(patZ==0) {
 			throw new IllegalArgumentException("This structure is not meant to process this pattern");
 		}

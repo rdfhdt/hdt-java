@@ -92,8 +92,8 @@ public interface TempDictionary extends Closeable {
 
 	/**
 	 * Get the ID of a given String
-	 * @param subject
-	 * @param role
+	 * @param subject subject
+	 * @param role subject's role
 	 */
-	public long stringToId(CharSequence subject, TripleComponentRole role);
+	long stringToId(CharSequence subject, TripleComponentRole role);
 }

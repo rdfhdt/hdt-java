@@ -10,6 +10,7 @@ import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
@@ -37,8 +38,8 @@ public class HdtDiffStaticTest extends AbstractMapMemoryTest {
 
     public HdtDiffStaticTest(String dictionaryType, String tempDictionaryImpl) {
         spec = new HDTSpecification();
-        spec.set("dictionary.type", dictionaryType);
-        spec.set("tempDictionary.impl", tempDictionaryImpl);
+        spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
+        spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, tempDictionaryImpl);
     }
 
     private void ntFilesDiffTest(String a, String b, String amb) throws IOException, ParserException {

@@ -40,46 +40,35 @@ public class TempHDTImporterTest {
 		return Objects.requireNonNull(getClass().getClassLoader().getResource(f), "Can't find " + f).getFile();
 	}
 	@Test
-	public void bNodeXTest() throws ParserException, IOException, NotFoundException {
-		HDT hdt = HDTManager.generateHDT(getFile("importer/bnode_x.nt"), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-		hdt.search("", "", "").forEachRemaining(System.out::println);
-		hdt.close();
+	public void bNodeXTest() throws ParserException, IOException {
+		HDTManager.generateHDT(getFile("importer/bnode_x.nt"), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null).close();
 	}
 	@Test
-	public void bNodeZTest() throws ParserException, IOException, NotFoundException {
-		HDT hdt = HDTManager.generateHDT(getFile("importer/bnode_z.nt"), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null);
-		hdt.search("", "", "").forEachRemaining(System.out::println);
-		hdt.close();
+	public void bNodeZTest() throws ParserException, IOException {
+		HDTManager.generateHDT(getFile("importer/bnode_z.nt"), HDTTestUtils.BASE_URI, RDFNotation.NTRIPLES, spec, null).close();
 	}
 
 	private Iterator<TripleString> asIt(String file) throws ParserException {
 		List<TripleString> triples = new ArrayList<>();
 		RDFNotation notation = RDFNotation.guess(file);
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation);
-		parser.doParse(file, HDTTestUtils.BASE_URI, notation, true, new RDFParserCallback.RDFCallback() {
-			@Override
-			public void processTriple(TripleString triple, long pos) {
-				// force duplication of the triple string data
-				triples.add(new TripleString(
-						triple.getSubject().toString(),
-						triple.getPredicate().toString(),
-						triple.getObject().toString()
-				));
-			}
+		parser.doParse(file, HDTTestUtils.BASE_URI, notation, true, (triple, pos) -> {
+			// force duplication of the triple string data
+			triples.add(new TripleString(
+					triple.getSubject().toString(),
+					triple.getPredicate().toString(),
+					triple.getObject().toString()
+			));
 		});
 		return triples.iterator();
 	}
 
 	@Test
-	public void bNodeXStreamTest() throws ParserException, IOException, NotFoundException {
-		HDT hdt = HDTManager.generateHDT(asIt(getFile("importer/bnode_x.nt")), HDTTestUtils.BASE_URI, spec, null);
-		hdt.search("", "", "").forEachRemaining(System.out::println);
-		hdt.close();
+	public void bNodeXStreamTest() throws ParserException, IOException {
+		HDTManager.generateHDT(asIt(getFile("importer/bnode_x.nt")), HDTTestUtils.BASE_URI, spec, null).close();
 	}
 	@Test
-	public void bNodeZStreamTest() throws ParserException, IOException, NotFoundException {
-		HDT hdt = HDTManager.generateHDT(asIt(getFile("importer/bnode_z.nt")), HDTTestUtils.BASE_URI, spec, null);
-		hdt.search("", "", "").forEachRemaining(System.out::println);
-		hdt.close();
+	public void bNodeZStreamTest() throws ParserException, IOException {
+		HDTManager.generateHDT(asIt(getFile("importer/bnode_z.nt")), HDTTestUtils.BASE_URI, spec, null).close();
 	}
 }

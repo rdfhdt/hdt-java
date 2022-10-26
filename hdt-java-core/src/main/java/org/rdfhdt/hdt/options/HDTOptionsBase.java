@@ -44,11 +44,6 @@ public class HDTOptionsBase implements HDTOptions {
 		properties = new Properties();
 	}
 
-	/**
-	 * Gets a property value from a property key
-	 *
-	 * @param key
-	 */
 	@Override
     public String get(String key) {
 		return properties.getProperty(key);
@@ -71,12 +66,9 @@ public class HDTOptionsBase implements HDTOptions {
 		}
 	}
 
-	/**
-	 * @param string
-	 */
 	@Override
-    public long getInt(String string) {
-		String val = properties.getProperty(string.trim());
+    public long getInt(String key) {
+		String val = properties.getProperty(key.trim());
 		if(val!=null) {
 			return Long.parseLong(val);
 		}

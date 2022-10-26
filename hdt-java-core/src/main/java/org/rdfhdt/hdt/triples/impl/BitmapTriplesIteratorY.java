@@ -46,21 +46,22 @@ public class BitmapTriplesIteratorY implements SuppliableIteratorTripleID {
 
 	private final BitmapTriples triples;
 	private long lastPosZ, lastNextZ, lastNextY;
-	private final TripleID pattern, returnTriple;
+	private final TripleID returnTriple;
 	private final long patY;
 	
-	private AdjacencyList adjY, adjZ;
+	private final AdjacencyList adjY;
+	private final AdjacencyList adjZ;
 	long posY, posZ;
 	private long prevY, nextY, prevZ, nextZ;
 	private long x, y, z;
 	
 	public BitmapTriplesIteratorY(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
-		this.pattern = new TripleID(pattern);
+		TripleID pattern1 = new TripleID(pattern);
 		this.returnTriple = new TripleID();
 		
-		TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
-		patY = this.pattern.getPredicate();
+		TripleOrderConvert.swapComponentOrder(pattern1, TripleComponentOrder.SPO, triples.order);
+		patY = pattern1.getPredicate();
 		if(patY==0) {
 			throw new IllegalArgumentException("This structure is not meant to process this pattern");
 		}

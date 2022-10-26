@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.util.io.compress;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
@@ -183,8 +184,10 @@ public class CompressUtil {
 			}
 			while (it.hasNext()) {
 				IndexedNode node = it.next();
-				CharSequence next = node.getNode();
-				if (CharSequenceComparator.getInstance().compare(prev, next) == 0) {
+				ByteString next = (ByteString) node.getNode();
+				int cmp = prev.compareTo(next);
+				assert cmp <= 0: "bad order : " + prev + " > " + next;
+				if (cmp == 0) {
 					// same as previous, ignore
 					assert this.id != node.getIndex() : "same index and prevIndex";
 					duplicatedNodeConsumer.onDuplicated(this.id, node.getIndex(), lastHeader);

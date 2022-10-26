@@ -5,14 +5,27 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
+/**
+ * dictionary section assuming the {@link #getSortedEntries()} or the {@link #getEntries()} will only be called once,
+ * it will return an {@link java.lang.IllegalArgumentException} otherwise.
+ *
+ * @author Antoine Willerval
+ */
 public class OneReadDictionarySection implements TempDictionarySection {
-	private final Iterator<? extends CharSequence> reader;
 	private final long size;
+	private final AtomicReference<Iterator<? extends CharSequence>> ref = new AtomicReference<>();
 
 	public OneReadDictionarySection(Iterator<? extends CharSequence> reader, long size) {
-		this.reader = reader;
+		ref.set(reader);
 		this.size = size;
+	}
+
+	@Override
+	public Map<? extends CharSequence, Long> getLiteralsCounts() {
+		return TempDictionarySection.super.getLiteralsCounts();
 	}
 
 	@Override
@@ -42,7 +55,13 @@ public class OneReadDictionarySection implements TempDictionarySection {
 
 	@Override
 	public Iterator<? extends CharSequence> getEntries() {
-		return reader;
+		Iterator<? extends CharSequence> it = ref.getAndSet(null);
+
+		if (it == null) {
+			throw new IllegalArgumentException("This dictionary has already been get");
+		}
+
+		return it;
 	}
 
 	@Override
@@ -67,10 +86,11 @@ public class OneReadDictionarySection implements TempDictionarySection {
 
 	@Override
 	public Iterator<? extends CharSequence> getSortedEntries() {
-		return reader;
+		return getEntries();
 	}
 
 	@Override
 	public void close() throws IOException {
+		ref.getAndSet(null);
 	}
 }

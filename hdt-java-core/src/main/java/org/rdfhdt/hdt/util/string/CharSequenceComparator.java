@@ -52,9 +52,9 @@ public final class CharSequenceComparator implements Comparator<CharSequence> {
 		s1 = DelayedString.unwrap(s1);
 		s2 = DelayedString.unwrap(s2);
 
-		if(s1 instanceof CompactString && s2 instanceof CompactString) {
-			CompactString cs1 = (CompactString) s1;
-			CompactString cs2 = (CompactString) s2;
+		if(s1 instanceof ByteString && s2 instanceof ByteString) {
+			ByteString cs1 = (ByteString) s1;
+			ByteString cs2 = (ByteString) s2;
 			return cs1.compareTo(cs2);
 		}
 		
@@ -63,13 +63,7 @@ public final class CharSequenceComparator implements Comparator<CharSequence> {
 			String rs2 = (String) s2;
 			return rs1.compareTo(rs2);
 		}
-		
-		if(s1 instanceof ReplazableString && s2 instanceof ReplazableString) {
-			ReplazableString cs1 = (ReplazableString) s1;
-			ReplazableString cs2 = (ReplazableString) s2;
-			return cs1.compareTo(cs2);
-		}
-		
+
 		// Slower but safe
 		
 		return s1.toString().compareTo(s2.toString());

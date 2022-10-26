@@ -156,7 +156,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return Long.toString(subject) + " " + predicate + " " + object;
+		return subject + " " + predicate + " " + object;
 	}
 
 	/**
@@ -196,9 +196,7 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		/* Remember that 0 acts as a wildcard */
 		if (subjectPattern == 0 || this.subject == subjectPattern) {
 			if (predicatePattern == 0 || this.predicate == predicatePattern) {
-				if (objectPattern == 0 || this.object == objectPattern) {
-					return true;
-				}
+				return objectPattern == 0 || this.object == objectPattern;
 			}
 		}
 		return false;

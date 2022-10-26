@@ -46,7 +46,7 @@ public interface DictionarySection extends Closeable {
 	 * @return
 	 * 			the corresponding ID in the dictionary
 	 */
-	public long locate(CharSequence s);
+	long locate(CharSequence s);
 
 	/**
 	 * Find the String associated to a given ID
@@ -55,7 +55,7 @@ public interface DictionarySection extends Closeable {
 	 * @return
 	 * 			the corresponding string
 	 */
-	public CharSequence extract(long pos);
+	CharSequence extract(long pos);
 
 	/**
 	 * Size in bytes of the strings held in the dictionary section.
@@ -67,7 +67,7 @@ public interface DictionarySection extends Closeable {
 	 * Number of entries in the dictionary section.
 	 * @return long
 	 */
-	public long getNumberOfElements();
+	long getNumberOfElements();
 
 	/**
 	 * Iterator over all entries in the dictionary, sorted lexicographically.

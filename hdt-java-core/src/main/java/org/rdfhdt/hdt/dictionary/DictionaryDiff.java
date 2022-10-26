@@ -17,7 +17,7 @@ public interface DictionaryDiff extends Closeable {
      * @param listener listener to get the progress
      * @throws IOException io error
      */
-    void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException;
+    void diff(Dictionary dictionary, Map<CharSequence, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException;
 
     /**
      * @return the CatMapping of the diff
@@ -32,5 +32,5 @@ public interface DictionaryDiff extends Closeable {
     /**
      * @return the cat mapping for each section
      */
-    HashMap<String, CatMapping> getAllMappings();
+    Map<String, CatMapping> getAllMappings();
 }

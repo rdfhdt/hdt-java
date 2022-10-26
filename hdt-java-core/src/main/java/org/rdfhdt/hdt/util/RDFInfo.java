@@ -115,10 +115,7 @@ public class RDFInfo {
 	 * Checks if "rdf.triples" property was set by the user
 	 */
 	public static boolean triplesSet(HDTOptions specs){
-		if (specs.get(triples_prop)!=null)
-			return true;
-		else 
-			return false;
+		return specs.get(triples_prop) != null;
 	}
 	
 	/**
@@ -146,7 +143,7 @@ public class RDFInfo {
 	 * 
 	 */
 	public static long countLines(String filename, RDFParserCallback parser, RDFNotation notation)
-			throws FileNotFoundException, IOException, ParserException {
+			throws IOException, ParserException {
 		InputStream is = new BufferedInputStream(new FileInputStream(filename));
 	    try {
 	        byte[] c = new byte[1024];

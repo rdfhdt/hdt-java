@@ -15,7 +15,7 @@ import org.rdfhdt.hdt.triples.TripleString;
 
 public class TripleWriterNtriples implements TripleWriter {
 
-	private Writer out;
+	private final Writer out;
 	private boolean close=false;
 	
 	public TripleWriterNtriples(String outFile, boolean compress) throws IOException {

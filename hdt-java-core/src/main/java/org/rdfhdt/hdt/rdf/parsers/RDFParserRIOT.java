@@ -61,7 +61,7 @@ public class RDFParserRIOT implements RDFParserCallback, StreamRDF {
 	}
 
 	private RDFCallback callback;
-	private TripleString triple = new TripleString();
+	private final TripleString triple = new TripleString();
 
 	/* (non-Javadoc)
 	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.Callback)

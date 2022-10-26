@@ -15,10 +15,8 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -33,7 +31,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
 
 
     private final String location;
-    private final HashMap<String, CatMapping> allMappings = new HashMap<>();
+    private final Map<String, CatMapping> allMappings = new HashMap<>();
     private CatMapping mappingBack;
     public long numShared;
 
@@ -51,7 +49,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
         }
     }
     @Override
-    public void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
+    public void diff(Dictionary dictionary, Map<CharSequence, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
         allMappings.put("predicate", new CatMapping(location, "predicate", dictionary.getPredicates().getNumberOfElements()));
         allMappings.put("subject", new CatMapping(location, "subject", dictionary.getSubjects().getNumberOfElements()));
         allMappings.put("object", new CatMapping(location, "object", dictionary.getObjects().getNumberOfElements()));
@@ -232,7 +230,7 @@ public class FourSectionDictionaryDiff implements DictionaryDiff {
     }
 
     @Override
-    public HashMap<String, CatMapping> getAllMappings() {
+    public Map<String, CatMapping> getAllMappings() {
         return allMappings;
     }
 

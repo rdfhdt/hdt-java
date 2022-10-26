@@ -15,6 +15,7 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.hdtDiff.utils.EmptyBitmap;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -49,10 +50,10 @@ public class HdtDiffTest extends AbstractMapMemoryTest {
     }
 
     public static final DictionaryTestData[] DICTIONARY_TEST_DATA = {
-            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH),
-            new DictionaryTestData(DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG, DictionaryFactory.MOD_DICT_IMPL_HASH),
-            new DictionaryTestData(DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS, DictionaryFactory.MOD_DICT_IMPL_MULT_HASH),
-            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, DictionaryFactory.MOD_DICT_IMPL_HASH_PSFC)
+            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH),
+            new DictionaryTestData(HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH),
+            new DictionaryTestData(HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH),
+            new DictionaryTestData(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC)
     };
 
     /**
@@ -136,7 +137,7 @@ public class HdtDiffTest extends AbstractMapMemoryTest {
         return count;
     }
 
-    @Parameterized.Parameters(name = "{0}")
+    @Parameterized.Parameters(name = "{0} ({2},{3},{4},{5})")
     public static Collection<Object[]> genParam() {
         List<Object[]> list = new ArrayList<>();
         for (DictionaryTestData data : DICTIONARY_TEST_DATA) {
@@ -200,8 +201,8 @@ public class HdtDiffTest extends AbstractMapMemoryTest {
 
     public HdtDiffTest(String dictionaryType, String tempDictionaryImpl, int subjects, int predicates, int objects, int shared) {
         spec = new HDTSpecification();
-        spec.set("dictionary.type", dictionaryType);
-        spec.set("tempDictionary.impl", tempDictionaryImpl);
+        spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
+        spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, tempDictionaryImpl);
         this.subjects = subjects;
         this.predicates = predicates;
         this.objects = objects;

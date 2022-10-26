@@ -72,7 +72,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/**
 	 * Build a TripleID as a copy of another one.
-	 * @param other
+	 * @param other other
 	 */
 	public TripleIDInt(TripleIDInt other) {
 		super();
@@ -134,9 +134,9 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 
 	/**
 	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
-	 * @param subject
-	 * @param predicate
-	 * @param object
+	 * @param subject subject
+	 * @param predicate predicate
+	 * @param object object
 	 */
 	public void setAll(int subject, int predicate, int object) {
 		this.subject = subject;
@@ -208,9 +208,7 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		/* Remember that 0 acts as a wildcard */
 		if (subjectPattern == 0 || this.subject == subjectPattern) {
 			if (predicatePattern == 0 || this.predicate == predicatePattern) {
-				if (objectPattern == 0 || this.object == objectPattern) {
-					return true;
-				}
+				return objectPattern == 0 || this.object == objectPattern;
 			}
 		}
 		return false;

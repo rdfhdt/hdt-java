@@ -5,47 +5,47 @@ import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
-import org.rdfhdt.hdt.dictionary.impl.section.PFCOptimizedExtractor;
 import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
-import org.rdfhdt.hdt.util.string.DelayedString;
 
 import java.util.AbstractMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 public abstract class MultipleBaseDictionary implements DictionaryPrivate {
+    private static final CharSequence SECTION = new CompactString("section");
 
     protected final HDTOptions spec;
 
     protected DictionarySectionPrivate subjects;
     protected DictionarySectionPrivate predicates;
-    protected TreeMap<String,DictionarySectionPrivate> objects;
+    protected TreeMap<CharSequence,DictionarySectionPrivate> objects;
     protected DictionarySectionPrivate shared;
 
     public MultipleBaseDictionary(HDTOptions spec) {
         this.spec = spec;
     }
 
-    protected long getGlobalId(long id, DictionarySectionRole position,CharSequence str) {
+    protected long getGlobalId(long id, DictionarySectionRole position, CharSequence str) {
         switch (position) {
             case SUBJECT:
                 return id + shared.getNumberOfElements();
             case OBJECT: {
-                Iterator iter = objects.entrySet().iterator();
+                Iterator<Map.Entry<CharSequence, DictionarySectionPrivate>> iter = objects.entrySet().iterator();
                 int count = 0;
-                while (iter.hasNext()){
-                    Map.Entry entry = (Map.Entry)iter.next();
-                    count+= ((DictionarySectionPrivate)entry.getValue()).getNumberOfElements();
-                    if(LiteralsUtils.getType(str).equals((String)entry.getKey())){
-                        count -= ((DictionarySectionPrivate)entry.getValue()).getNumberOfElements();
+                CharSequence type = LiteralsUtils.getType(ByteStringUtil.asByteString(str));
+                while (iter.hasNext()) {
+                    Map.Entry<CharSequence, DictionarySectionPrivate> entry = iter.next();
+                    count+= entry.getValue().getNumberOfElements();
+                    if(type.equals(entry.getKey())) {
+                        count -= entry.getValue().getNumberOfElements();
                         break;
                     }
 
@@ -76,18 +76,21 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
                 if(id<=shared.getNumberOfElements()) {
                     return id;
                 } else {
-                    Iterator hmIterator = objects.entrySet().iterator();
+                    Iterator<Map.Entry<CharSequence, DictionarySectionPrivate>> hmIterator = objects.entrySet().iterator();
                     // iterate over all subsections in the objects section
                     long count = 0;
-                    while (hmIterator.hasNext()){
-                        Map.Entry entry = (Map.Entry)hmIterator.next();
-                        long numElts = 0;
-                        if(entry.getValue() instanceof DictionarySectionPrivate)
-                            numElts = ((DictionarySectionPrivate)entry.getValue()).getNumberOfElements();
-                        else if(entry.getValue() instanceof PFCOptimizedExtractor)
-                            numElts = ((PFCOptimizedExtractor)entry.getValue()).getNumStrings();
-                        count+= numElts;
-                        if(id <= shared.getNumberOfElements()+ count){
+                    while (hmIterator.hasNext()) {
+                        Map.Entry<CharSequence, DictionarySectionPrivate> entry = hmIterator.next();
+                        long numElts;
+
+                        //what???
+                        //if (entry.getValue() instanceof PFCOptimizedExtractor) {
+                        //    numElts = ((PFCOptimizedExtractor)entry.getValue()).getNumStrings();
+                        //} else {
+                        numElts = entry.getValue().getNumberOfElements();
+                        //}
+                        count += numElts;
+                        if(id <= shared.getNumberOfElements() + count){
                             count -= numElts;
                             break;
                         }
@@ -106,18 +109,13 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
      */
     @Override
     public long stringToId(CharSequence str, TripleComponentRole position) {
-        str = DelayedString.unwrap(str);
+        str = ByteStringUtil.asByteString(str);
 
-        if(str==null || str.length()==0) {
+        if (str == null || str.length() == 0) {
             return 0;
         }
 
-        if(str instanceof String) {
-            // CompactString is more efficient for the binary search.
-            str = new CompactString(str);
-        }
-
-        long ret=0;
+        long ret;
         switch(position) {
             case SUBJECT:
                 ret = shared.locate(str);
@@ -136,19 +134,20 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
                 }
                 return -1;
             case OBJECT:
-                if(str.charAt(0)!='"') {
+                if (str.charAt(0)!='"') {
                     ret = shared.locate(str);
                     if(ret!=0) {
                         return getGlobalId(ret, DictionarySectionRole.SHARED,str);
                     }
                 }
                 DictionarySectionPrivate subSection = getSubSection(str);
-                if( subSection!= null)
-                    ret = subSection.locate(new CompactString(LiteralsUtils.removeType(str)));
-                else
+                if (subSection!= null) {
+                    ret = subSection.locate(LiteralsUtils.removeType(str));
+                } else {
                     return -1;
-                if(ret!=0) {
-                    return getGlobalId(ret, DictionarySectionRole.OBJECT,str);
+                }
+                if (ret != 0) {
+                    return getGlobalId(ret, DictionarySectionRole.OBJECT, str);
                 }
                 return -1;
             default:
@@ -157,15 +156,8 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
     }
 
     private long getNumberObjectsAllSections(){
-        Iterator hmIterator = objects.entrySet().iterator();
         // iterate over all subsections in the objects section
-        long total = 0;
-        while (hmIterator.hasNext()){
-            Map.Entry entry = (Map.Entry)hmIterator.next();
-            DictionarySectionPrivate subSection = (DictionarySectionPrivate) entry.getValue();
-            total += subSection.getNumberOfElements();
-        }
-        return total;
+        return objects.values().stream().mapToLong(DictionarySection::getNumberOfElements).sum();
     }
     @Override
     public long getNumberOfElements() {
@@ -175,7 +167,10 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
 
     @Override
     public long size() {
-        return subjects.size()+predicates.size()+objects.size()+shared.size();
+        return subjects.size() +
+                predicates.size() +
+                objects.values().stream().mapToLong(DictionarySection::size).sum() +
+                shared.size();
     }
 
     @Override
@@ -209,7 +204,7 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
     }
 
     @Override
-    public TreeMap<String, DictionarySection> getAllObjects() {
+    public Map<? extends CharSequence, DictionarySection> getAllObjects() {
         return new TreeMap<>(this.objects);
     }
 
@@ -223,33 +218,33 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
         return shared;
     }
 
-    private AbstractMap.SimpleEntry<String,DictionarySectionPrivate> getSection(long id, TripleComponentRole role) {
+    private AbstractMap.SimpleEntry<CharSequence,DictionarySectionPrivate> getSection(long id, TripleComponentRole role) {
         switch (role) {
             case SUBJECT:
                 if(id<=shared.getNumberOfElements()) {
-                    return new AbstractMap.SimpleEntry<>("section",shared);
+                    return new AbstractMap.SimpleEntry<>(SECTION,shared);
                 } else {
-                    return new AbstractMap.SimpleEntry<>("section",subjects);
+                    return new AbstractMap.SimpleEntry<>(SECTION,subjects);
                 }
             case PREDICATE:
-                return new AbstractMap.SimpleEntry<>("section",predicates);
+                return new AbstractMap.SimpleEntry<>(SECTION,predicates);
             case OBJECT:
                 if(id<=shared.getNumberOfElements()) {
-                    return new AbstractMap.SimpleEntry<>("section",shared);
+                    return new AbstractMap.SimpleEntry<>(SECTION,shared);
                 } else {
 
-                    Iterator hmIterator = objects.entrySet().iterator();
+                    Iterator<Map.Entry<CharSequence, DictionarySectionPrivate>> hmIterator = objects.entrySet().iterator();
                     // iterate over all subsections in the objects section
                     DictionarySectionPrivate desiredSection = null;
-                    String type = "";
+                    CharSequence type = CompactString.EMPTY;
                     int count = 0;
                     while (hmIterator.hasNext()){
-                        Map.Entry entry = (Map.Entry)hmIterator.next();
-                        DictionarySectionPrivate subSection = (DictionarySectionPrivate)entry.getValue();
+                        Map.Entry<CharSequence, DictionarySectionPrivate> entry = hmIterator.next();
+                        DictionarySectionPrivate subSection = entry.getValue();
                         count += subSection.getNumberOfElements();
                         if(id <= shared.getNumberOfElements()+ count){
                             desiredSection = subSection;
-                            type = (String)entry.getKey();
+                            type = entry.getKey();
                             break;
                         }
                     }
@@ -259,24 +254,23 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
                 throw new IllegalArgumentException();
         }
     }
-    static Pattern pattern = Pattern.compile("@[a-zA-Z0-9\\-]+$");
     /* (non-Javadoc)
      * @see hdt.dictionary.Dictionary#idToString(int, datatypes.TripleComponentRole)
      */
     @Override
     public CharSequence idToString(long id, TripleComponentRole role) {
-        AbstractMap.SimpleEntry<String,DictionarySectionPrivate> section = getSection(id, role);
+        AbstractMap.SimpleEntry<CharSequence,DictionarySectionPrivate> section = getSection(id, role);
         long localId = getLocalId(id, role);
-        if(section.getKey().equals("NO_DATATYPE") || section.getKey().equals("section"))
+        if(section.getKey().equals(LiteralsUtils.NO_DATATYPE) || section.getKey().equals(SECTION))
             return section.getValue().extract(localId);
         else {
-            if(section.getValue() == null){
+            if(section.getValue() == null) {
                 // this should not happen, means that the given id wasn't found in any section
                 System.out.println("Error couldn't find the section for the given ID: ["+id+"]");
                 return null;
             }else {
-                String label = section.getValue().extract(localId).toString();
-                String dType = section.getKey();
+                CharSequence label = section.getValue().extract(localId);
+                CharSequence dType = section.getKey();
                 //Matcher matcher = pattern.matcher(label);
                 if (LiteralsUtils.containsLanguage(label)) {
                     return label;
@@ -287,47 +281,36 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
         }
     }
     private DictionarySectionPrivate getSubSection(CharSequence str){
-        String dataType = "";
-//        if(str.toString().startsWith("\"")) {
-//            if(str.toString().matches("\".*\"\\^\\^<.*>")){
-//                dataType = str.toString().split("\\^")[2];
-//            }else{
-//                dataType = "NO_DATATYPE";
-//            }
-//        }else{
-//            dataType = "NO_DATATYPE";
-//        }
-        dataType = LiteralsUtils.getType(str);
-        return objects.get(dataType);
+        return objects.get(LiteralsUtils.getType(str));
     }
     @Override
-    public String dataTypeOfId(long id) {
+    public CharSequence dataTypeOfId(long id) {
         return getSection(id,TripleComponentRole.OBJECT).getKey();
     }
-    public AbstractMap.SimpleEntry<Long,Long> getDataTypeRange(String dataType){
-        if(!dataType.equals("NO_DATATYPE"))
-            dataType = "<"+dataType+">";
-        if(objects.containsKey(dataType)) { // literals subsection exist
-            Iterator iter = objects.entrySet().iterator();
+
+    public AbstractMap.SimpleEntry<Long,Long> getDataTypeRange(CharSequence dataType){
+        CharSequence seq = LiteralsUtils.embed(ByteStringUtil.asByteString(dataType));
+        if(objects.containsKey(seq)) { // literals subsection exist
+            Iterator<Map.Entry<CharSequence, DictionarySectionPrivate>> iter = objects.entrySet().iterator();
             int count = 0;
             while (iter.hasNext()) {
-                Map.Entry entry = (Map.Entry) iter.next();
-                count += ((DictionarySectionPrivate) entry.getValue()).getNumberOfElements();
-                if (dataType.equals((String) entry.getKey())) {
-                    count -= ((DictionarySectionPrivate) entry.getValue()).getNumberOfElements();
+                Map.Entry<CharSequence, DictionarySectionPrivate> entry = iter.next();
+                count += entry.getValue().getNumberOfElements();
+                if (seq.equals(entry.getKey())) {
+                    count -= entry.getValue().getNumberOfElements();
                     break;
                 }
 
             }
             long offset = shared.getNumberOfElements() + count;
-            long size = offset + objects.get(dataType).getNumberOfElements();
+            long size = offset + objects.get(seq).getNumberOfElements();
             return new AbstractMap.SimpleEntry<>(offset +1, size);
         }
         return new AbstractMap.SimpleEntry<>(0L,0L);
     }
 
     @Override
-    public void loadAsync(TempDictionary other, ProgressListener listener) {
+    public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
         throw new NotImplementedException();
     }
 }

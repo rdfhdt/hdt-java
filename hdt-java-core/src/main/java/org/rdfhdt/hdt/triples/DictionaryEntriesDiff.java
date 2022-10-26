@@ -39,7 +39,7 @@ public interface DictionaryEntriesDiff {
     /**
      * @return the bitmaps
      */
-    Map<String, ModifiableBitmap> getBitmaps();
+    Map<CharSequence, ModifiableBitmap> getBitmaps();
 
     /**
      * create the bitmaps

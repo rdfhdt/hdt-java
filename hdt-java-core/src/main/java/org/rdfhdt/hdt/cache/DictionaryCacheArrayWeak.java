@@ -35,7 +35,7 @@ import java.lang.ref.WeakReference;
  */
 public class DictionaryCacheArrayWeak<T> implements DictionaryCache<T> {
 
-	private Reference<T> array[];
+	private final Reference<T>[] array;
 	
 	@SuppressWarnings("unchecked")
 	public DictionaryCacheArrayWeak(int capacity) {
@@ -57,7 +57,7 @@ public class DictionaryCacheArrayWeak<T> implements DictionaryCache<T> {
 	
 	@Override
 	public void put(long id, T node) {
-		array[(int) (id-1)] = new WeakReference<T>(node);
+		array[(int) (id-1)] = new WeakReference<>(node);
 	}
 
 	@Override

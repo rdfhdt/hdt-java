@@ -27,8 +27,10 @@ public class CompressTripleMapper implements CompressFourSectionDictionary.NodeC
 	private final CloseSuppressPath locationPredicates;
 	private final CloseSuppressPath locationObjects;
 	private long shared = -1;
+	private final long tripleCount;
 
 	public CompressTripleMapper(CloseSuppressPath location, long tripleCount, long chunkSize) {
+		this.tripleCount = tripleCount;
 		locationSubjects = location.resolve("map_subjects");
 		locationPredicates = location.resolve("map_predicates");
 		locationObjects = location.resolve("map_objects");
@@ -130,5 +132,9 @@ public class CompressTripleMapper implements CompressFourSectionDictionary.NodeC
 		checkShared();
 		// compute shared if required
 		return CompressUtil.computeSharedNode(array.get(id), shared);
+	}
+
+	public long getTripleCount() {
+		return tripleCount;
 	}
 }

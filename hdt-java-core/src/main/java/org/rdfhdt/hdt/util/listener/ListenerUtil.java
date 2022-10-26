@@ -65,7 +65,7 @@ public class ListenerUtil {
 	public static MultiThreadListener multiThreadListener(ProgressListener listener) {
 		// null, create an empty one
 		if (listener == null) {
-			return new PrefixMultiThreadListener((a, b) -> {
+			return((a, b, c) -> {
 			});
 		}
 		// already a multi thread listener

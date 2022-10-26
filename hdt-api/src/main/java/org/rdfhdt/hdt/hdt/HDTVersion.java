@@ -17,9 +17,9 @@ public class HDTVersion {
 
 	public static String get_version_string(String delimiter) {
 		return "v" + HDT_VERSION + delimiter + INDEX_VERSION + delimiter + RELEASE_VERSION;
-	};
+	}
 
 	public static String get_index_suffix(String delimiter) {
 		return ".index.v" + HDT_VERSION + delimiter+INDEX_VERSION;
-	};
+	}
 }

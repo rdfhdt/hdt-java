@@ -41,7 +41,7 @@ public class Profiler {
 					throw new IOException("Missing header for the profiling file!");
 				}
 			}
-			p.mainSection = p.new Section(is);
+			p.mainSection = p.new Section(is, 0);
 			if (!is.readCRCAndCheck()) {
 				throw new IllegalArgumentException("CRC doesn't match when reading the CRC!");
 			}
@@ -74,7 +74,7 @@ public class Profiler {
 	public Profiler(String name, HDTOptions spec) {
 		this.name = Objects.requireNonNull(name, "name can't be null!");
 		if (spec != null) {
-			disabled = !"true".equalsIgnoreCase(spec.get(HDTOptionsKeys.PROFILER_KEY));
+			disabled = !spec.getBoolean(HDTOptionsKeys.PROFILER_KEY);
 			String profilerOutputLocation = spec.get(HDTOptionsKeys.PROFILER_OUTPUT_KEY);
 			if (profilerOutputLocation != null && !profilerOutputLocation.isEmpty()) {
 				outputPath = Path.of(profilerOutputLocation);
@@ -194,7 +194,7 @@ public class Profiler {
 		 * @param is input stream
 		 * @throws IOException io exception
 		 */
-		Section(InputStream is) throws IOException {
+		Section(InputStream is, int deep) throws IOException {
 			start = VByte.decode(is);
 			end = VByte.decode(is);
 
@@ -202,10 +202,12 @@ public class Profiler {
 			byte[] nameBytes = IOUtil.readBuffer(is, nameLength, null);
 			name = new String(nameBytes, StandardCharsets.UTF_8);
 
+			maxSize = Math.max(name.length() + deep * 2, maxSize);
+
 			int subSize = (int) VByte.decode(is);
 			subSections = new ArrayList<>(subSize);
 			for (int i = 0; i < subSize; i++) {
-				subSections.add(new Section(is));
+				subSections.add(new Section(is, deep + 1));
 			}
 		}
 
@@ -299,8 +301,12 @@ public class Profiler {
 			end = System.nanoTime();
 		}
 
+		public long getMillis() {
+			return (end - start) / 1_000_000L;
+		}
+
 		void writeProfiling(String prefix, boolean isLast) {
-			System.out.println(prefix + (getSubSections().isEmpty() ? "+--" : "+-+") + " [" + getName() + "] " + "-".repeat(1 + maxSize - getName().length()) + " elapsed=" + (end - start) / 1_000_000L + "ms");
+			System.out.println(prefix + (getSubSections().isEmpty() ? "+--" : "+-+") + " [" + getName() + "] " + "-".repeat(1 + maxSize - getName().length()) + " elapsed=" + getMillis() + "ms");
 			for (int i = 0; i < subSections.size(); i++) {
 				Section s = subSections.get(i);
 				s.writeProfiling(prefix + (isLast ? "  " : "| "), i == subSections.size() - 1);

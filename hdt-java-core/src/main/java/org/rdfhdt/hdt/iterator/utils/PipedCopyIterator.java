@@ -161,6 +161,8 @@ public class PipedCopyIterator<T> implements Iterator<T>, Closeable {
 
     public void closePipe(Throwable e) {
         if (e != null) {
+            // clear the queue to force the exception
+            queue.clear();
             if (e instanceof PipedIteratorException) {
                 this.exception = (PipedIteratorException) e;
             } else {
@@ -215,6 +217,13 @@ public class PipedCopyIterator<T> implements Iterator<T>, Closeable {
             throw new IllegalArgumentException("Thread already attached");
         }
         this.thread = thread;
+    }
+
+    /**
+     * Allow receiving again elements after an end node
+     */
+    public void reset() {
+        this.end = false;
     }
 
     @Override

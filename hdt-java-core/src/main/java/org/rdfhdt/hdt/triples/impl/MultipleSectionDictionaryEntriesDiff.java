@@ -12,7 +12,6 @@ import org.rdfhdt.hdt.triples.TripleID;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Implementation of the {@link DictionaryEntriesDiff} for multiple section dictionaries
@@ -22,8 +21,8 @@ public class MultipleSectionDictionaryEntriesDiff implements DictionaryEntriesDi
     private final HDT hdtOriginal;
     private final IteratorTripleID iterator;
     private final Bitmap bitArrayDisk;
-    private final HashMap<String, ModifiableBitmap> bitmaps;
-    private final HashMap<String, Long> objectsOffsets;
+    private final Map<CharSequence, ModifiableBitmap> bitmaps;
+    private final Map<CharSequence, Long> objectsOffsets;
     private long count;
 
     public MultipleSectionDictionaryEntriesDiff(HDT hdtOriginal, Bitmap deleteBitmap, IteratorTripleID iterator) {
@@ -46,9 +45,9 @@ public class MultipleSectionDictionaryEntriesDiff implements DictionaryEntriesDi
         this.bitmaps.put("S", BitmapFactory.createRWBitmap(dict.getSubjects().getNumberOfElements()));
 
         // create bitmaps for all objects
-        TreeMap<String, DictionarySection> allObjects = dict.getAllObjects();
+        Map<? extends CharSequence, DictionarySection> allObjects = dict.getAllObjects();
         long count = 0;
-        for (Map.Entry<String, DictionarySection> next : allObjects.entrySet()) {
+        for (Map.Entry<? extends CharSequence, DictionarySection> next : allObjects.entrySet()) {
             this.bitmaps.put(next.getKey(), BitmapFactory.createRWBitmap(next.getValue().getNumberOfElements()));
             objectsOffsets.put(next.getKey(), count);
             count += next.getValue().getNumberOfElements();
@@ -76,7 +75,7 @@ public class MultipleSectionDictionaryEntriesDiff implements DictionaryEntriesDi
                 if (objId <= numShared) {
                     this.bitmaps.get("SH_O").set(objId - 1, true);
                 } else {
-                    String dataType = this.hdtOriginal.getDictionary().dataTypeOfId(objId);
+                    CharSequence dataType = this.hdtOriginal.getDictionary().dataTypeOfId(objId);
                     long numObjectsBefore = objectsOffsets.get(dataType);
                     this.bitmaps.get(dataType).set(objId - numObjectsBefore - numShared - 1, true);
                 }
@@ -90,7 +89,7 @@ public class MultipleSectionDictionaryEntriesDiff implements DictionaryEntriesDi
     }
 
     @Override
-    public HashMap<String, ModifiableBitmap> getBitmaps() {
+    public Map<CharSequence, ModifiableBitmap> getBitmaps() {
         return bitmaps;
     }
 }

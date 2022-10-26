@@ -9,10 +9,12 @@ import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.string.ReplazableString;
+import org.rdfhdt.hdt.utils.DebugOrderNodeIterator;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 /**
  * Class to read a compress node file
@@ -27,6 +29,7 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 	private boolean waiting;
 	private final IndexedNode last;
 	private final ReplazableString tempString;
+	private final Consumer<IndexedNode> consumer;
 
 	public CompressNodeReader(InputStream stream) throws IOException {
 		this.stream = new CRCInputStream(stream, new CRC8());
@@ -37,6 +40,7 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 		this.stream.setCRC(new CRC32());
 		this.tempString = new ReplazableString();
 		this.last = new IndexedNode(tempString, -1);
+		consumer = DebugOrderNodeIterator.of("stream", true);
 	}
 
 	public long getSize() {
@@ -61,6 +65,7 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 		tempString.replace2(stream, delta);
 		long index = VByte.decode(stream);
 		last.setIndex(index);
+		consumer.accept(last);
 		waiting = true;
 		return last;
 	}

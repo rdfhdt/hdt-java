@@ -13,7 +13,7 @@ public class DiffWrapper implements Iterator<CatElement> {
 
     public final Iterator<? extends CharSequence> sectionIter;
     public final Bitmap bitmap;
-    public final String iterName;
+    public final CharSequence iterName;
 
     /**
      * create a diffWrapper of the iterator sectionIter with the bitmap bitmap
@@ -22,7 +22,7 @@ public class DiffWrapper implements Iterator<CatElement> {
      * @param bitmap      the bitmap to tell which element to keep
      * @param iterName    the name of the section of the iterator
      */
-    public DiffWrapper(Iterator<? extends CharSequence> sectionIter, Bitmap bitmap, String iterName) {
+    public DiffWrapper(Iterator<? extends CharSequence> sectionIter, Bitmap bitmap, CharSequence iterName) {
         this.sectionIter = sectionIter;
         this.bitmap = bitmap;
         this.iterName = iterName;

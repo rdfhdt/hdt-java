@@ -259,7 +259,7 @@ public class KWayMerger<E, S extends Supplier<E>> {
         }
     }
 
-    private static class Worker extends Thread {
+    private static class Worker extends ExceptionThread {
         private final KWayMerger<?,?> parent;
 
         public Worker(String name, KWayMerger<?,?> parent) {
@@ -268,7 +268,7 @@ public class KWayMerger<E, S extends Supplier<E>> {
         }
 
         @Override
-        public void run() {
+        public void runException() throws Exception {
             try {
                 KWayMergerRunnable task;
 
@@ -277,6 +277,7 @@ public class KWayMerger<E, S extends Supplier<E>> {
                 }
             } catch (Throwable t) {
                 parent.exception(t);
+                throw t;
             }
         }
     }

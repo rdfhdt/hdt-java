@@ -436,7 +436,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
     x: desired key
     n: size of the array
      */
-    public int binarySearch(int arr[], long x, int n) {
+    public int binarySearch(int[] arr, long x, int n) {
         int i, j, m;
         i = 0;
         j = n;
@@ -454,7 +454,7 @@ public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
         return i;
     }
 
-    public int binarySearch(long arr[], long x, int n) {
+    public int binarySearch(long[] arr, long x, int n) {
         int i, j, m;
         i = 0;
         j = n;

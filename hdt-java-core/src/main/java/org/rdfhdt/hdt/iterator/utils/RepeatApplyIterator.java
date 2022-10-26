@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 
 public abstract class RepeatApplyIterator<T> implements Iterator<T>, Closeable
 {
-    private Iterator<T> input ;
+    private final Iterator<T> input ;
     private boolean finished = false ;
     private Iterator<T> currentStage = null ;
 

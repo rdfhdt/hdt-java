@@ -1,6 +1,5 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.OneReadDictionarySection;
@@ -14,19 +13,19 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
-import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.compress.CompressUtil;
-import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
+import org.rdfhdt.hdt.util.string.CompactString;
+import org.rdfhdt.hdt.utils.DebugOrderNodeIterator;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Comparator;
+import java.util.function.Consumer;
 
 /**
  * Version of temp dictionary create the four sections from the SPO compressed sections result, should be loaded in a
  * async way with {@link org.rdfhdt.hdt.dictionary.DictionaryPrivate#loadAsync(org.rdfhdt.hdt.dictionary.TempDictionary, org.rdfhdt.hdt.listener.ProgressListener)}
+ *
  * @author Antoine Willerval
  */
 public class CompressFourSectionDictionary implements TempDictionary {
@@ -39,11 +38,13 @@ public class CompressFourSectionDictionary implements TempDictionary {
 	private static void sendPiped(IndexedNode node, long index, PipedCopyIterator<CharSequence> pipe, CompressUtil.DuplicatedIterator it, NodeConsumerMethod method) {
 		it.setLastHeader(index);
 		method.consume(node.getIndex(), index);
-		pipe.addElement(node.getNode().toString());
+		pipe.addElement(new CompactString(node.getNode()));
 	}
 
-	public CompressFourSectionDictionary(CompressionResult compressionResult, NodeConsumer nodeConsumer, ProgressListener listener) {
+	public CompressFourSectionDictionary(CompressionResult compressionResult, NodeConsumer nodeConsumer, ProgressListener listener, boolean debugOrder) {
 		long splits = Math.max(20, compressionResult.getTripleCount() / 10_000);
+		Consumer<IndexedNode> debugOrderCheckerS = DebugOrderNodeIterator.of(debugOrder, "Subject");
+		Consumer<IndexedNode> debugOrderCheckerO = DebugOrderNodeIterator.of(debugOrder, "Object");
 		// send duplicate to the consumer while reading the nodes
 		CompressUtil.DuplicatedIterator sortedSubject =
 				CompressUtil.asNoDupeCharSequenceIterator(
@@ -89,55 +90,70 @@ public class CompressFourSectionDictionary implements TempDictionary {
 		PipedCopyIterator<CharSequence> shared = new PipedCopyIterator<>();
 		Comparator<CharSequence> comparator = CharSequenceComparator.getInstance();
 		cfsdThread = new ExceptionThread(() -> {
-			long sharedId = 1;
-			long subjectId = 1;
-			long objectId = 1;
-			sharedLoop:
-			while (sortedObject.hasNext() && sortedSubject.hasNext()) {
-				// last was a shared node
-				IndexedNode newSubject = sortedSubject.next();
-				IndexedNode newObject = sortedObject.next();
-				int comp = comparator.compare(newSubject.getNode(), newObject.getNode());
-				while (comp != 0) {
-					if (comp < 0) {
-						sendPiped(newSubject, CompressUtil.getHeaderId(subjectId++), subject, sortedSubject, nodeConsumer::onSubject);
-						if (!sortedSubject.hasNext()) {
-							// no more subjects, send the current object and break the shared loop
-							sendPiped(newObject, CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
-							break sharedLoop;
-						}
-						newSubject = sortedSubject.next();
-					} else {
-						sendPiped(newObject, CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
-						if (!sortedObject.hasNext()) {
-							// no more objects, send the current subject and break the shared loop
+			try {
+				long sharedId = 1;
+				long subjectId = 1;
+				long objectId = 1;
+				sharedLoop:
+				while (sortedObject.hasNext() && sortedSubject.hasNext()) {
+					// last was a shared node
+					IndexedNode newSubject = sortedSubject.next();
+					IndexedNode newObject = sortedObject.next();
+					debugOrderCheckerS.accept(newSubject);
+					debugOrderCheckerO.accept(newObject);
+					int comp = comparator.compare(newSubject.getNode(), newObject.getNode());
+					while (comp != 0) {
+						if (comp < 0) {
 							sendPiped(newSubject, CompressUtil.getHeaderId(subjectId++), subject, sortedSubject, nodeConsumer::onSubject);
-							break sharedLoop;
+							if (!sortedSubject.hasNext()) {
+								// no more subjects, send the current object and break the shared loop
+								sendPiped(newObject, CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
+								break sharedLoop;
+							}
+							newSubject = sortedSubject.next();
+							debugOrderCheckerS.accept(newSubject);
+						} else {
+							sendPiped(newObject, CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
+							if (!sortedObject.hasNext()) {
+								// no more objects, send the current subject and break the shared loop
+								sendPiped(newSubject, CompressUtil.getHeaderId(subjectId++), subject, sortedSubject, nodeConsumer::onSubject);
+								break sharedLoop;
+							}
+							newObject = sortedObject.next();
+							debugOrderCheckerO.accept(newObject);
 						}
-						newObject = sortedObject.next();
+						comp = comparator.compare(newSubject.getNode(), newObject.getNode());
 					}
-					comp = comparator.compare(newSubject.getNode(), newObject.getNode());
+					// shared element
+					long shid = CompressUtil.asShared(sharedId++);
+					sortedSubject.setLastHeader(shid);
+					sortedObject.setLastHeader(shid);
+					nodeConsumer.onSubject(newSubject.getIndex(), shid);
+					nodeConsumer.onObject(newObject.getIndex(), shid);
+					shared.addElement(new CompactString(newSubject.getNode()));
 				}
-				// shared element
-				long shid = CompressUtil.asShared(sharedId++);
-				sortedSubject.setLastHeader(shid);
-				sortedObject.setLastHeader(shid);
-				nodeConsumer.onSubject(newSubject.getIndex(), shid);
-				nodeConsumer.onObject(newObject.getIndex(), shid);
-				shared.addElement(newSubject.getNode().toString());
+				// at least one iterator is empty, closing the shared pipe
+				shared.closePipe();
+				// do we have subjects?
+				while (sortedSubject.hasNext()) {
+					IndexedNode next = sortedSubject.next();
+					debugOrderCheckerS.accept(next);
+					sendPiped(next, CompressUtil.getHeaderId(subjectId++), subject, sortedSubject, nodeConsumer::onSubject);
+				}
+				subject.closePipe();
+				// do we have objects?
+				while (sortedObject.hasNext()) {
+					IndexedNode next = sortedObject.next();
+					debugOrderCheckerO.accept(next);
+					sendPiped(next, CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
+				}
+				object.closePipe();
+			} catch (Throwable t) {
+				object.closePipe(t);
+				subject.closePipe(t);
+				shared.closePipe(t);
+				throw t;
 			}
-			// at least one iterator is empty, closing the shared pipe
-			shared.closePipe();
-			// do we have subjects?
-			while (sortedSubject.hasNext()) {
-				sendPiped(sortedSubject.next(), CompressUtil.getHeaderId(subjectId++), subject, sortedSubject, nodeConsumer::onSubject);
-			}
-			subject.closePipe();
-			// do we have objects?
-			while (sortedObject.hasNext()) {
-				sendPiped(sortedObject.next(), CompressUtil.getHeaderId(objectId++), object, sortedObject, nodeConsumer::onObject);
-			}
-			object.closePipe();
 		}, "CFSDPipeBuilder").startAll();
 
 		// send to the consumer the element while parsing them
@@ -147,7 +163,7 @@ public class CompressFourSectionDictionary implements TempDictionary {
 			sortedPredicate.setLastHeader(header);
 			nodeConsumer.onPredicate(node.getIndex(), header);
 			// force duplication because it's not made in a pipe like with the others
-			return node.getNode().toString();
+			return new CompactString(node.getNode());
 		}), predicates);
 		this.object = new OneReadDictionarySection(object, objects);
 		this.shared = new OneReadDictionarySection(shared, shareds);
@@ -222,7 +238,9 @@ public class CompressFourSectionDictionary implements TempDictionary {
 
 	public interface NodeConsumer {
 		void onSubject(long preMapId, long newMapId);
+
 		void onPredicate(long preMapId, long newMapId);
+
 		void onObject(long preMapId, long newMapId);
 	}
 

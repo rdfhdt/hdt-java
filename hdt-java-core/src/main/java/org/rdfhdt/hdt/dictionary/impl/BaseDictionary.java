@@ -224,7 +224,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		return section.extract(localId);
 	}
 	@Override
-	public String dataTypeOfId(long id) {
+	public CharSequence dataTypeOfId(long id) {
 		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
 	@Override

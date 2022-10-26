@@ -12,8 +12,8 @@ import java.io.InputStream;
  */
 public class CloseInputStream extends InputStream {
 
-	private InputStream in;
-	private Closeable toClose;
+	private final InputStream in;
+	private final Closeable toClose;
 	
 	public CloseInputStream(InputStream in, Closeable toClose) {
 		this.in = in;

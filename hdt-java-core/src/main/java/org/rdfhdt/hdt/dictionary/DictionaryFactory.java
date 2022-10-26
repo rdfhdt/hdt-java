@@ -32,20 +32,45 @@ import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
+
+import java.nio.file.Path;
+import java.util.Objects;
 
 /**
  * Factory that creates Dictionary objects
- *
  */
 public class DictionaryFactory {
 
-	public static final String MOD_DICT_IMPL_HASH = "hash";
-	public static final String MOD_DICT_IMPL_MULT_HASH = "multHash";
-	public static final String MOD_DICT_IMPL_HASH_PSFC = "hashPsfc";
-	public static final String DICTIONARY_TYPE_FOUR_SECTION_BIG ="dictionaryFourBig";
-	public static final String DICTIONARY_TYPE_MULTI_OBJECTS = "dictionaryMultiObj";
-	private DictionaryFactory() {}
+	/**
+	 * @deprecated use {@link org.rdfhdt.hdt.options.HDTOptionsKeys#TEMP_DICTIONARY_IMPL_VALUE_HASH} instead
+	 */
+	@Deprecated
+	public static final String MOD_DICT_IMPL_HASH = HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH;
+	/**
+	 * @deprecated use {@link org.rdfhdt.hdt.options.HDTOptionsKeys#TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH} instead
+	 */
+	@Deprecated
+	public static final String MOD_DICT_IMPL_MULT_HASH = HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH;
+	/**
+	 * @deprecated use {@link org.rdfhdt.hdt.options.HDTOptionsKeys#TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC} instead
+	 */
+	@Deprecated
+	public static final String MOD_DICT_IMPL_HASH_PSFC = HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC;
+	/**
+	 * @deprecated use {@link org.rdfhdt.hdt.options.HDTOptionsKeys#DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG} instead
+	 */
+	@Deprecated
+	public static final String DICTIONARY_TYPE_FOUR_SECTION_BIG = HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG;
+	/**
+	 * @deprecated use {@link org.rdfhdt.hdt.options.HDTOptionsKeys#DICTIONARY_TYPE_VALUE_MULTI_OBJECTS} instead
+	 */
+	@Deprecated
+	public static final String DICTIONARY_TYPE_MULTI_OBJECTS = HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS;
+
+	private DictionaryFactory() {
+	}
 
 	/**
 	 * Creates a default dictionary (HashDictionary)
@@ -58,65 +83,110 @@ public class DictionaryFactory {
 	}
 
 	/**
-	 * Creates a default dictionary (HashDictionary)
+	 * Creates a temp dictionary (allow insert)
 	 *
-	 * @return Dictionary
+	 * @param spec specs to read dictionary
+	 * @return TempDictionary
 	 */
 	public static TempDictionary createTempDictionary(HDTOptions spec) {
-		String name = spec.get("tempDictionary.impl");
+		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY), "");
 
 		// Implementations available in the Core
-		if(name==null || "".equals(name) || MOD_DICT_IMPL_HASH.equals(name)) {
-			return new HashDictionary(spec,false);
-		} else if(MOD_DICT_IMPL_HASH_PSFC.equals(name)){
-			return new PSFCTempDictionary(new HashDictionary(spec,false));
-		} else if(MOD_DICT_IMPL_MULT_HASH.equals(name)){
-			return new HashDictionary(spec,true);
+		switch (name) {
+			case "":
+			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH:
+				return new HashDictionary(spec, false);
+			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC:
+				return new PSFCTempDictionary(new HashDictionary(spec, false));
+			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH:
+				return new HashDictionary(spec, true);
+			default:
+				throw new IllegalFormatException("Implementation of triples not found for " + name);
 		}
-		throw new IllegalFormatException("Implementation of triples not found for "+name);
 	}
 
+	/**
+	 * Creates a dictionary
+	 *
+	 * @param spec specs to read dictionary
+	 * @return Dictionary
+	 */
 	public static DictionaryPrivate createDictionary(HDTOptions spec) {
-		String name = spec.get("dictionary.type");
-		if(name==null || HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
-			return new FourSectionDictionary(spec);
+		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY), "");
+		switch (name) {
+			case "":
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
+				return new FourSectionDictionary(spec);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_PSFC_SECTION:
+				return new PSFCFourSectionDictionary(spec);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG:
+				return new FourSectionDictionaryBig(spec);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS:
+				return new MultipleSectionDictionary(spec);
+			default:
+				throw new IllegalFormatException("Implementation of dictionary not found for " + name);
 		}
-		else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)){
-			return new PSFCFourSectionDictionary(spec);
-		}
-		else if (DICTIONARY_TYPE_FOUR_SECTION_BIG.equals(name)){
-			return new FourSectionDictionaryBig(spec);
-		}else if ((DICTIONARY_TYPE_MULTI_OBJECTS.equals(name))){
-			return new MultipleSectionDictionary(spec);
-		}
-		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
 
+	/**
+	 * Creates a write-dictionary
+	 *
+	 * @param spec       specs to read dictionary
+	 * @param location   write location
+	 * @param bufferSize write buffer sizes
+	 * @return WriteDictionary
+	 */
+	public static DictionaryPrivate createWriteDictionary(HDTOptions spec, Path location, int bufferSize) {
+		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY), "");
+		switch (name) {
+			case "":
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG:
+				return new WriteFourSectionDictionary(spec, location, bufferSize);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS:
+				return new WriteMultipleSectionDictionary(spec, location, bufferSize);
+			default:
+				throw new IllegalFormatException("Implementation of write dictionary not found for " + name);
+		}
+	}
+
+	/**
+	 * Creates a dictionary
+	 *
+	 * @param ci specs to read dictionary
+	 * @return Dictionary
+	 */
 	public static DictionaryPrivate createDictionary(ControlInfo ci) {
 		String name = ci.getFormat();
-		if(HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(name)) {
-			return new FourSectionDictionary(new HDTSpecification());
-		} else if (HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION.equals(name)) {
-			return new PSFCFourSectionDictionary(new HDTSpecification());
-		} else if(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION.equals(name)){
-			return new MultipleSectionDictionary(new HDTSpecification());
+		switch (name) {
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
+				return new FourSectionDictionary(new HDTSpecification());
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION:
+				return new PSFCFourSectionDictionary(new HDTSpecification());
+			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
+				return new MultipleSectionDictionary(new HDTSpecification());
+			default:
+				throw new IllegalFormatException("Implementation of dictionary not found for " + name);
 		}
-		throw new IllegalFormatException("Implementation of dictionary not found for "+name);
 	}
 
 	/**
 	 * create a {@link DictionaryDiff} to create diff of a HDT in a new location
+	 *
 	 * @param dictionary the hdt dictionary
-	 * @param location the location of the new dictionary
+	 * @param location   the location of the new dictionary
 	 * @return dictionaryDiff
 	 */
 	public static DictionaryDiff createDictionaryDiff(Dictionary dictionary, String location) {
 		String type = dictionary.getType();
-		if (HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION.equals(type) || type.equals(HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION))
-			return new FourSectionDictionaryDiff(location);
-		else if (type.equals(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION))
-			return new MultipleSectionDictionaryDiff(location);
-
-		throw new IllegalFormatException("Implementation of DictionaryDiff not found for "+type);
+		switch (type) {
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION:
+				return new FourSectionDictionaryDiff(location);
+			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
+				return new MultipleSectionDictionaryDiff(location);
+			default:
+				throw new IllegalFormatException("Implementation of DictionaryDiff not found for " + type);
+		}
 	}
 }

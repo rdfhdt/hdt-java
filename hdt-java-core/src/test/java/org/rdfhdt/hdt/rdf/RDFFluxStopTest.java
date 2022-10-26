@@ -8,7 +8,13 @@ import static org.junit.Assert.assertNull;
 
 public class RDFFluxStopTest {
     private void assertExportSame(RDFFluxStop flux) {
-        assertEquals(flux, RDFFluxStop.readConfig(flux.asConfig()));
+        String cfg = flux.asConfig();
+        RDFFluxStop readCfg = RDFFluxStop.readConfig(cfg);
+        assertEquals(flux, readCfg);
+        String cfg2 = readCfg.asConfig();
+        assertEquals(cfg, cfg2);
+        RDFFluxStop readCfg2 = RDFFluxStop.readConfig(cfg);
+        assertEquals(flux, readCfg2);
     }
 
     @Test
@@ -16,6 +22,8 @@ public class RDFFluxStopTest {
         assertEquals(HDTOptionsKeys.RDF_FLUX_STOP_VALUE_NO_LIMIT + ":0", RDFFluxStop.noLimit().asConfig());
         assertEquals(HDTOptionsKeys.RDF_FLUX_STOP_VALUE_COUNT + ":42", RDFFluxStop.countLimit(42).asConfig());
         assertEquals(HDTOptionsKeys.RDF_FLUX_STOP_VALUE_SIZE + ":34", RDFFluxStop.sizeLimit(34).asConfig());
+
+        assertEquals("()!(" + HDTOptionsKeys.RDF_FLUX_STOP_VALUE_SIZE + ":34)", RDFFluxStop.sizeLimit(34).not().asConfig());
 
 
         assertEquals(
@@ -36,7 +44,8 @@ public class RDFFluxStopTest {
         );
 
         assertExportSame(RDFFluxStop.countLimit(42).or(RDFFluxStop.sizeLimit(34)));
-        assertExportSame((RDFFluxStop.countLimit(42).and(RDFFluxStop.countLimit(1))).or(RDFFluxStop.sizeLimit(34).and(RDFFluxStop.noLimit())).and(RDFFluxStop.countLimit(23)));
+        assertExportSame(RDFFluxStop.countLimit(42).or(RDFFluxStop.sizeLimit(34)).not());
+        assertExportSame((RDFFluxStop.countLimit(42).and(RDFFluxStop.countLimit(1))).or(RDFFluxStop.sizeLimit(34).not().and(RDFFluxStop.noLimit())).and(RDFFluxStop.countLimit(23)));
 
         assertNull(RDFFluxStop.readConfig(""));
         assertNull(RDFFluxStop.readConfig(null));

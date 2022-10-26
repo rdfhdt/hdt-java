@@ -27,7 +27,10 @@ package org.rdfhdt.hdt.dictionary;
  */
 
 
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+
 import java.util.Iterator;
+import java.util.Map;
 
 /**
  * Interface that specifies the methods for a dictionary section
@@ -69,5 +72,12 @@ public interface TempDictionarySection extends DictionarySection {
 	 * Iterator over all entries in the dictionary, not necessarily sorted.
 	 */
 	Iterator<? extends CharSequence> getEntries();
+
+	/**
+	 * @return the literal counts for MultipleSectionDictionary
+	 */
+	default Map<? extends CharSequence, Long> getLiteralsCounts() {
+		throw new NotImplementedException("getLiteralsCounts()");
+	}
 
 }

@@ -301,7 +301,6 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 		while (it.hasNext()) {
 			assertTrue(itE.hasNext());
 			CharSequence seq = ((AssertionCharSequence) it.next().getNode()).getSequence();
-			System.out.println(seq);
 			assertEquals(itE.next(), seq);
 		}
 		assertFalse(itE.hasNext());

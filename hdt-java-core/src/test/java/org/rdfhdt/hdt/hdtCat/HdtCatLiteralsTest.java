@@ -1,12 +1,18 @@
 package org.rdfhdt.hdt.hdtCat;
 
+import org.apache.commons.io.file.PathUtils;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdtCat.utils.Utility;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 
@@ -15,8 +21,22 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.List;
 
+@RunWith(Parameterized.class)
 public class HdtCatLiteralsTest extends AbstractMapMemoryTest implements ProgressListener {
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<Object> params() {
+        return List.of(HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_MAP, HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_LOAD);
+    }
+
+    @Parameterized.Parameter
+    public String loadingMethod;
+
+    @Rule
+    public TemporaryFolder tempDir = new TemporaryFolder();
 
     private void help(String filename1, String filename2, String concatFilename) throws ParserException, IOException {
         ClassLoader classLoader = getClass().getClassLoader();
@@ -37,18 +57,23 @@ public class HdtCatLiteralsTest extends AbstractMapMemoryTest implements Progres
         String concat = resource2.getFile();
 
 
-        String hdt1Location = file1.replace(".nt", ".hdt");
-        String hdt2Location = file2.replace(".nt", ".hdt");
+
+        String hdt1Location = tempDir.newFile().getAbsolutePath();
+        String hdt2Location = tempDir.newFile().getAbsolutePath();
+
         HDTSpecification spec = new HDTSpecification();
-        spec.setOptions("tempDictionary.impl=multHash;dictionary.type=dictionaryMultiObj;");
+        spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
+        spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
+        spec.set(HDTOptionsKeys.LOAD_HDT_TYPE_KEY, loadingMethod);
+
         try (HDT hdt = HDTManager.generateHDT(new File(file1).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, spec, this)) {
             hdt.saveToHDT(hdt1Location, null);
         }
         try (HDT hdt = HDTManager.generateHDT(new File(file2).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, spec, this)) {
             hdt.saveToHDT(hdt2Location, null);
         }
-        File file = new File(file1);
-        File theDir = new File(file.getAbsolutePath() + "_tmp");
+        File file = tempDir.newFile();
+        File theDir = tempDir.newFolder();
         Files.createDirectories(theDir.toPath());
 
         try (HDT hdtCatNew = HDTManager.catHDT(theDir.getAbsolutePath(), hdt1Location, hdt2Location, spec, null)) {
@@ -59,7 +84,8 @@ public class HdtCatLiteralsTest extends AbstractMapMemoryTest implements Progres
             HDT hdtCatNew = HDTManager.mapIndexedHDT(file.getAbsolutePath() + "_cat.hdt")) {
             Utility.compareCustomDictionary(hdtCatOld.getDictionary(), hdtCatNew.getDictionary());
             Utility.compareTriples(hdtCatOld, hdtCatNew);
-            Files.delete(theDir.toPath());
+        } finally {
+            PathUtils.deleteDirectory(theDir.toPath());
         }
     }
 
@@ -83,8 +109,8 @@ public class HdtCatLiteralsTest extends AbstractMapMemoryTest implements Progres
 //                System.out.println(search.next());
 //            }
 //
-//            Iterator<? extends CharSequence> no_datatype1 = hdt1.getDictionary().getAllObjects().get("NO_DATATYPE").getSortedEntries();
-//            Iterator<? extends CharSequence> no_datatype2 = hdt2.getDictionary().getAllObjects().get("NO_DATATYPE").getSortedEntries();
+//            Iterator<? extends CharSequence> no_datatype1 = hdt1.getDictionary().getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
+//            Iterator<? extends CharSequence> no_datatype2 = hdt2.getDictionary().getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
 //            while (no_datatype1.hasNext()){
 //                CharSequence next1 = no_datatype1.next();
 //                CharSequence next2 = no_datatype2.next();

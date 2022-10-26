@@ -114,11 +114,7 @@ public class BitmapTriplesIteratorCat implements IteratorTripleID {
         if (count<dictionaryCat.getMappingS().size()){
             return true;
         } else {
-            if (list.hasNext()){
-                return true;
-            } else {
-                return false;
-            }
+			return list.hasNext();
         }
     }
 

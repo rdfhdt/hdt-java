@@ -35,6 +35,7 @@ import java.util.Arrays;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 
 /**
@@ -44,7 +45,7 @@ import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
  * @author mario.arias
  *
  */
-public final class ReplazableString implements CharSequence, Comparable<ReplazableString> {
+public final class ReplazableString implements CharSequence, ByteString {
 	
 	byte [] buffer;
 	int used;
@@ -62,7 +63,8 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		this.buffer = buffer;
 		this.used = buffer.length;
 	}
-	
+
+	@Override
 	public byte [] getBuffer() {
 		return buffer;
 	}
@@ -72,7 +74,11 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
 	}
-	
+
+	public void append(byte [] data) {
+		this.append(data, 0, data.length);
+	}
+
 	public void append(byte [] data, int offset, int len) {
 		this.replace(used, data, offset, len);
 	}
@@ -89,12 +95,39 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		used+=other.length();
 	}
 
-	public void replace(CharSequence other) {
+	public void appendNoCompact(CharSequence other) {
+		other = DelayedString.unwrap(other);
+
 		if (other instanceof ReplazableString) {
-			ReplazableString o2 = (ReplazableString) other;
-			ensureSize(o2.used);
-			System.arraycopy(o2.buffer, 0, buffer, 0, o2.used);
-			used = o2.used;
+			ReplazableString rs = (ReplazableString) other;
+			this.append(rs.getBuffer(), 0, rs.used);
+		} else if (other instanceof CompactString) {
+			this.append(((CompactString) other).getData());
+		} else {
+			this.append(other.toString().getBytes(ByteStringUtil.STRING_ENCODING));
+		}
+	}
+
+	public void appendNoCompact(CharSequence other, int offset, int length) {
+		other = DelayedString.unwrap(other);
+
+		if (other instanceof ByteString) {
+			this.append(((ByteString) other).getBuffer(), offset, length);
+		} else {
+			this.append(other.toString().substring(offset, offset + length)
+					.getBytes(ByteStringUtil.STRING_ENCODING));
+		}
+	}
+
+	public void replace(ByteString other) {
+		ensureSize(other.length());
+		System.arraycopy(other.getBuffer(), 0, buffer, 0, other.length());
+		used = other.length();
+	}
+
+	public void replace(CharSequence other) {
+		if (other instanceof ByteString) {
+			replace((ByteString) other);
 		} else {
 			used = 0;
 			byte[] bytes = other.toString().getBytes(StandardCharsets.UTF_8);
@@ -116,9 +149,8 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	}
 
 	public void replace(InputStream in, int pos, int len) throws IOException {
-		ensureSize(pos+len);
-		in.read(buffer, pos, len);
-		used = pos+len;
+		byte[] buffer = IOUtil.readBuffer(in, len, null);
+		replace(pos, buffer, 0, len);
 	}
 
 	public void replace(ByteBuffer in, int pos, int len) throws IOException {
@@ -225,6 +257,9 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public char charAt(int index) {
+		if (index >= used) {
+			throw new StringIndexOutOfBoundsException("Invalid index " + index + " length " + length());
+		}
 		return (char)(buffer[index] & 0xFF);
 	}
 
@@ -312,25 +347,6 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		return new String(buffer, 0, used, ByteStringUtil.STRING_ENCODING);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(ReplazableString other) {
-        int n = Math.min(used, other.used);
-
-        int k = 0;
-        while (k < n) {
-            int c1 = this.buffer[k] & 0xFF;
-            int c2 = other.buffer[k] & 0xFF;
-            if (c1 != c2) {
-                return c1 - c2;
-            }
-            k++;
-        }
-        return used - other.used;
-	}
-	
 	public CharSequence getDelayed() {
 		return new DelayedString(this);
 	}

@@ -56,10 +56,10 @@ public class NodeDictionary {
 	private final Dictionary dictionary;
 
 	@SuppressWarnings("unchecked")
-	private final DictionaryCache<Node> cacheIDtoNode [] = new DictionaryCache[TripleComponentRole.values().length];
+	private final DictionaryCache<Node>[] cacheIDtoNode = new DictionaryCache[TripleComponentRole.values().length];
 	
 	@SuppressWarnings("unchecked")
-	Map<String, Long> cacheNodeToId [] = new Map[TripleComponentRole.values().length];
+	Map<String, Long>[] cacheNodeToId = new Map[TripleComponentRole.values().length];
 	
 	public NodeDictionary(Dictionary dictionary) {
 		this.dictionary = dictionary;
@@ -67,21 +67,21 @@ public class NodeDictionary {
 		// ID TO NODE	
 		final int idToNodeSize = 20000;
 		if(dictionary.getNsubjects()>idToNodeSize) {			
-			cacheIDtoNode[0] = new DictionaryCacheLRI<Node>(idToNodeSize);
+			cacheIDtoNode[0] = new DictionaryCacheLRI<>(idToNodeSize);
 		} else {
-			cacheIDtoNode[0] = new DictionaryCacheArray<Node>((int) dictionary.getNsubjects());
+			cacheIDtoNode[0] = new DictionaryCacheArray<>((int) dictionary.getNsubjects());
 		}
 		
 		if(dictionary.getNpredicates()>idToNodeSize) {
-			cacheIDtoNode[1] = new DictionaryCacheLRI<Node>(idToNodeSize);
+			cacheIDtoNode[1] = new DictionaryCacheLRI<>(idToNodeSize);
 		} else {	
-			cacheIDtoNode[1] = new DictionaryCacheArray<Node>((int) dictionary.getNpredicates());
+			cacheIDtoNode[1] = new DictionaryCacheArray<>((int) dictionary.getNpredicates());
 		}
 		
 		if(dictionary.getNobjects()>idToNodeSize) {			
-			cacheIDtoNode[2] = new DictionaryCacheLRI<Node>(idToNodeSize);
+			cacheIDtoNode[2] = new DictionaryCacheLRI<>(idToNodeSize);
 		} else {
-			cacheIDtoNode[2] = new DictionaryCacheArray<Node>((int) dictionary.getNobjects());
+			cacheIDtoNode[2] = new DictionaryCacheArray<>((int) dictionary.getNobjects());
 		}
 		
 		// NODE TO ID
@@ -192,11 +192,11 @@ public class NodeDictionary {
 	}
 	
 	public static PrefixMapping getMapping(ExecutionContext ctx) {
-		Query query = (Query) ctx.getContext().get(ARQConstants.sysCurrentQuery);		
+		Query query = ctx.getContext().get(ARQConstants.sysCurrentQuery);
 		return query.getPrefixMapping();
 	}
 
-    public static final Var asVar(Node node)
+    public static Var asVar(Node node)
     {
         if ( Var.isVar(node) )
             return Var.alloc(node) ;

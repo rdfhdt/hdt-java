@@ -9,6 +9,7 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
@@ -27,6 +28,11 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.zip.GZIPOutputStream;
 
+/**
+ * Utility class to create fake large dataset
+ *
+ * @author Antoine Willerval
+ */
 public class LargeFakeDataSetStreamSupplier {
 
 	private static final Charset DEFAULT_CHARSET = ByteStringUtil.STRING_ENCODING;
@@ -37,15 +43,29 @@ public class LargeFakeDataSetStreamSupplier {
 	 * @param i id
 	 * @return string
 	 */
-	public static String stringNameOfInt(int i) {
-		String table = "abcdefghijklmnopqrstuvwxyz";
+	public static String stringNameOfInt(int i, boolean unicode) {
 		StringBuilder out = new StringBuilder();
-		int c = i;
-		do {
-			out.append(table.charAt(c % table.length()));
-			c /= table.length();
-		} while (c != 0);
+		if (unicode) {
+			return "" + (char) (30 + Math.min(i, Character.MAX_VALUE - 30));
+		} else {
+			String table = "abcdefghijklmnopqrstuvwxyz";
+			int c = i;
+			do {
+				out.append(table.charAt(c % table.length()));
+				c /= table.length();
+			} while (c != 0);
+		}
 		return out.toString();
+	}
+
+	/**
+	 * create a lowercase name from a number, to create string without any number in it
+	 *
+	 * @param i id
+	 * @return string
+	 */
+	public static String stringNameOfInt(int i) {
+		return stringNameOfInt(i, false);
 	}
 
 	/**
@@ -62,10 +82,24 @@ public class LargeFakeDataSetStreamSupplier {
 		}
 	}
 
+	/**
+	 * create a supplier with a max size
+	 *
+	 * @param maxSize the max size
+	 * @param seed    the seed of the supplier, the same seed will create the same supplier
+	 * @return supplier
+	 */
 	public static LargeFakeDataSetStreamSupplier createSupplierWithMaxSize(long maxSize, long seed) {
 		return new LargeFakeDataSetStreamSupplier(maxSize, Long.MAX_VALUE, seed);
 	}
 
+	/**
+	 * create a supplier with a max count
+	 *
+	 * @param maxTriples the max number of triples
+	 * @param seed       the seed of the supplier, the same seed will create the same supplier
+	 * @return supplier
+	 */
 	public static LargeFakeDataSetStreamSupplier createSupplierWithMaxTriples(long maxTriples, long seed) {
 		return new LargeFakeDataSetStreamSupplier(Long.MAX_VALUE, maxTriples, seed);
 	}
@@ -77,6 +111,9 @@ public class LargeFakeDataSetStreamSupplier {
 	public int maxFakeType = 10;
 	public int maxLiteralSize = 2;
 	public int maxElementSplit = Integer.MAX_VALUE;
+	private long slowStream;
+	private boolean sameTripleString;
+	private boolean unicode;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
 		this.maxSize = maxSize;
@@ -85,22 +122,53 @@ public class LargeFakeDataSetStreamSupplier {
 		reset();
 	}
 
+	/**
+	 * reset the supplier like it was just created
+	 */
 	public void reset() {
 		random = new Random(seed);
 	}
 
+	/**
+	 * @return iterator of triples
+	 */
 	public Iterator<TripleString> createTripleStringStream() {
 		return new FakeStatementIterator();
 	}
 
+	/**
+	 * create a nt file from the stream
+	 *
+	 * @param file the file to write
+	 * @throws IOException io exception
+	 * @see #createNTFile(java.nio.file.Path)
+	 */
 	public void createNTFile(String file) throws IOException {
-		try (FileWriter writer = new FileWriter(file)) {
+		createNTFile(Path.of(file));
+	}
+
+	/**
+	 * create a nt file from the stream
+	 *
+	 * @param file the file to write
+	 * @throws IOException io exception
+	 * @see #createNTFile(java.lang.String)
+	 */
+	public void createNTFile(Path file) throws IOException {
+		try (FileWriter writer = new FileWriter(file.toFile())) {
 			for (Iterator<TripleString> it = createTripleStringStream(); it.hasNext(); ) {
 				it.next().dumpNtriple(writer);
 			}
 		}
 	}
 
+	/**
+	 * create a threaded stream (to close!) with a particular compression
+	 *
+	 * @param compressionType compression type
+	 * @return threaded stream
+	 * @throws IOException io exception
+	 */
 	public ThreadedStream createNTInputStream(CompressionType compressionType) throws IOException {
 		PipedOutputStream pout = new PipedOutputStream();
 		InputStream is = new PipedInputStream(pout);
@@ -141,36 +209,73 @@ public class LargeFakeDataSetStreamSupplier {
 		return new ThreadedStream(run, is);
 	}
 
+	/**
+	 * create an HDT from the stream using two-pass algorithm
+	 *
+	 * @param spec hdt options
+	 * @return hdt
+	 * @throws ParserException parsing exception
+	 * @throws IOException     io exception
+	 */
 	public HDT createFakeHDTTwoPass(HDTOptions spec) throws ParserException, IOException {
 		Path f = Path.of("tempNtFile.nt").toAbsolutePath();
 		try {
-			createNTFile(f.toString());
-			spec.set("loader.type", "two-pass");
+			createNTFile(f);
+			spec.set(HDTOptionsKeys.LOADER_TYPE_KEY, HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS);
 			return HDTManager.generateHDT(f.toString(), "http://w", RDFNotation.NTRIPLES, spec, null);
 		} finally {
 			Files.deleteIfExists(f);
 		}
 	}
+
+	/**
+	 * create an HDT from the stream
+	 *
+	 * @param spec hdt options
+	 * @return hdt
+	 * @throws ParserException parsing exception
+	 * @throws IOException     io exception
+	 */
 	public HDT createFakeHDT(HDTOptions spec) throws ParserException, IOException {
 		return HDTManager.generateHDT(createTripleStringStream(), "http://w", spec, null);
 	}
 
+	/**
+	 * create an HDT from the stream and save it to a file
+	 *
+	 * @param spec     hdt options
+	 * @param location save location
+	 * @throws ParserException parsing exception
+	 * @throws IOException     io exception
+	 */
 	public void createAndSaveFakeHDT(HDTOptions spec, String location) throws ParserException, IOException {
 		try (HDT hdt = createFakeHDT(spec)) {
 			hdt.saveToHDT(location, null);
 		}
 	}
+
+	/**
+	 * create an HDT from the stream using 2pass algorithm and save it to a file
+	 *
+	 * @param spec     hdt options
+	 * @param location save location
+	 * @throws ParserException parsing exception
+	 * @throws IOException     io exception
+	 */
 	public void createAndSaveFakeHDTTwoPass(HDTOptions spec, String location) throws ParserException, IOException {
 		try (HDT hdt = createFakeHDTTwoPass(spec)) {
 			hdt.saveToHDT(location, null);
 		}
 	}
 
-	private CharSequence createSubject() {
-		return createPredicate();
+	private CharSequence createResource() {
+		if (random.nextInt(10) == 0) {
+			return "_:bnode" + random.nextInt(maxElementSplit / 10);
+		}
+		return createIRI();
 	}
 
-	private CharSequence createPredicate() {
+	private CharSequence createIRI() {
 		return "http://w" + random.nextInt(maxElementSplit) + "i.test.org/#Obj" + random.nextInt(maxElementSplit);
 	}
 
@@ -180,12 +285,12 @@ public class LargeFakeDataSetStreamSupplier {
 
 	private CharSequence createValue() {
 		if (random.nextBoolean()) {
-			return createPredicate();
+			return createResource();
 		}
 		int size = random.nextInt(maxLiteralSize);
 		StringBuilder litText = new StringBuilder();
 		for (int i = 0; i < size; i++) {
-			litText.append(stringNameOfInt(random.nextInt(maxElementSplit))).append(" ");
+			litText.append(stringNameOfInt(unicode ? random.nextInt(Character.MAX_VALUE - 30) : random.nextInt(maxElementSplit), unicode));
 		}
 		String text = "\"" + litText + "\"";
 		int litType = random.nextInt(3);
@@ -204,7 +309,14 @@ public class LargeFakeDataSetStreamSupplier {
 	private class FakeStatementIterator implements Iterator<TripleString> {
 		private long size;
 		private long count;
+		private TripleString buffer;
 		private TripleString next;
+
+		FakeStatementIterator() {
+			if (sameTripleString) {
+				buffer = new TripleString();
+			}
+		}
 
 		@Override
 		public boolean hasNext() {
@@ -215,19 +327,34 @@ public class LargeFakeDataSetStreamSupplier {
 				return true;
 			}
 
-			next = new TripleString(
-					createSubject(),
-					createPredicate(),
-					createValue()
-			);
+			CharSequence resource = createResource();
+			CharSequence iri = createIRI();
+			CharSequence value = createValue();
 
-			long estimation = estimateTripleSize(
-					new TripleString(
-							next.getSubject().toString(),
-							next.getPredicate().toString(),
-							next.getObject().toString()
-					)
-			);
+			if (buffer != null) {
+				buffer.setAll(
+						resource,
+						iri,
+						value
+				);
+				next = buffer;
+			} else {
+				next = new TripleString(
+						resource,
+						iri,
+						value
+				);
+			}
+
+			if (slowStream > 0) {
+				try {
+					Thread.sleep(slowStream);
+				} catch (InterruptedException e) {
+					throw new AssertionError(e);
+				}
+			}
+
+			long estimation = estimateTripleSize(next);
 			size += estimation;
 			count++;
 
@@ -245,22 +372,76 @@ public class LargeFakeDataSetStreamSupplier {
 		}
 	}
 
+	/**
+	 * set the maximum number of fake type
+	 *
+	 * @param maxFakeType maximum number
+	 * @return this
+	 */
 	public LargeFakeDataSetStreamSupplier withMaxFakeType(int maxFakeType) {
 		this.maxFakeType = maxFakeType;
 		return this;
 	}
 
+	/**
+	 * set the maximum element split number
+	 *
+	 * @param maxElementSplit maximum number
+	 * @return this
+	 */
 	public LargeFakeDataSetStreamSupplier withMaxElementSplit(int maxElementSplit) {
 		this.maxElementSplit = maxElementSplit;
 		return this;
 	}
 
+	/**
+	 * set the maximum literal size
+	 *
+	 * @param maxLiteralSize maximum number
+	 * @return this
+	 */
 	public LargeFakeDataSetStreamSupplier withMaxLiteralSize(int maxLiteralSize) {
 		this.maxLiteralSize = maxLiteralSize;
 		return this;
 
 	}
 
+	/**
+	 * allow using unicode or not in the literals
+	 *
+	 * @param unicode unicode
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withUnicode(boolean unicode) {
+		this.unicode = unicode;
+		return this;
+	}
+
+	/**
+	 * add a latency to the stream generation
+	 *
+	 * @param slowStream latency (millis)
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withSlowStream(long slowStream) {
+		this.slowStream = slowStream;
+		return this;
+	}
+
+	/**
+	 * use the same {@link org.rdfhdt.hdt.triples.TripleString} object, better to simulate the RDFParser outputs
+	 *
+	 * @param sameTripleString use same triple
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withSameTripleString(boolean sameTripleString) {
+		this.sameTripleString = sameTripleString;
+		return this;
+	}
+
+	/**
+	 * Stream connected to a thread to interrupt in case of Exception
+	 */
 	public static class ThreadedStream {
 		private final ExceptionThread thread;
 		private final InputStream stream;
@@ -270,10 +451,16 @@ public class LargeFakeDataSetStreamSupplier {
 			this.stream = stream;
 		}
 
+		/**
+		 * @return the thread
+		 */
 		public ExceptionThread getThread() {
 			return thread;
 		}
 
+		/**
+		 * @return the stream
+		 */
 		public InputStream getStream() {
 			return stream;
 		}

@@ -10,6 +10,7 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdtDiff.HdtDiffTest;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
 import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
@@ -38,8 +39,8 @@ public class HdtCatRandomTest extends AbstractMapMemoryTest {
 
 	public HdtCatRandomTest(String dictionaryType, String tempDictionaryImpl) {
 		spec = new HDTSpecification();
-		spec.set("dictionary.type", dictionaryType);
-		spec.set("tempDictionary.impl", tempDictionaryImpl);
+		spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
+		spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, tempDictionaryImpl);
 	}
 
 	@Test

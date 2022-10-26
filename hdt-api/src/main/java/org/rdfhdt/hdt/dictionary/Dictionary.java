@@ -27,12 +27,11 @@ package org.rdfhdt.hdt.dictionary;
  */
 
 
-import java.io.Closeable;
-import java.util.HashMap;
-import java.util.TreeMap;
-
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.header.Header;
+
+import java.io.Closeable;
+import java.util.Map;
 
 
 /**
@@ -53,7 +52,7 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the id in the dictionary
 	 * @return String
 	 */
-	public CharSequence idToString(long id, TripleComponentRole position);
+	CharSequence idToString(long id, TripleComponentRole position);
 
 	/**
 	 * Returns the id for a given string
@@ -64,11 +63,7 @@ public interface Dictionary extends Closeable {
 	 *            TriplePosition of the string in the dictionary
 	 * @return int
 	 */
-	public long stringToId(CharSequence str, TripleComponentRole position);
-
-	/**
-	 * Returns the number of elements in the dictionary
-	 */
+	long stringToId(CharSequence str, TripleComponentRole position);
 
 	/**
 	 * Returns the data type of a given literal string
@@ -77,54 +72,57 @@ public interface Dictionary extends Closeable {
 	 *            The id to get the data type for
 	 * @return String
 	 */
-	public String dataTypeOfId(long id);
+	CharSequence dataTypeOfId(long id);
 
-	public long getNumberOfElements();
+	/**
+	 * Returns the number of elements in the dictionary
+	 */
+	long getNumberOfElements();
 
 	/**
 	 * Return the combined size of the sections of the dictionary (in bytes)
 	 */
-	public long size();
+	long size();
 
 	/**
 	 * Returns the number of subjects in the dictionary. Note: Includes shared.
 	 */
-	public long getNsubjects();
+	long getNsubjects();
 
 	/**
 	 * Returns the number of predicates in the dictionary.
 	 */
-	public long getNpredicates();
+	long getNpredicates();
 
 	/**
 	 * Returns the number of objects in the dictionary. Note: Includes shared
 	 */
-	public long getNobjects();
+	long getNobjects();
 
 	/**
 	 * Returns the number of subjects/objects in the dictionary.
 	 */
-	public long getNAllObjects();
-	public long getNshared();
+	long getNAllObjects();
+	long getNshared();
 
-	public DictionarySection getSubjects();
+	DictionarySection getSubjects();
 
-	public DictionarySection getPredicates();
+	DictionarySection getPredicates();
 
-	public DictionarySection getObjects();
+	DictionarySection getObjects();
 
-	public TreeMap<String,DictionarySection> getAllObjects();
+	Map<? extends CharSequence, DictionarySection> getAllObjects();
 
-	public DictionarySection getShared();
+	DictionarySection getShared();
 
 	/**
 	 * Fills the header with information from the dictionary
 	 */
-	public void populateHeader(Header header, String rootNode);
+	void populateHeader(Header header, String rootNode);
 
 	/**
 	 * Returns the type of the dictionary (the way it is written onto file/held in memory)
-	 * @return
+	 * @return type
 	 */
-	public String getType();
+	String getType();
 }

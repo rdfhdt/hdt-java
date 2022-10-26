@@ -14,10 +14,7 @@ public class CatWrapper implements Iterator<CatElement> {
 
     @Override
     public boolean hasNext() {
-        if(sectionIter.hasNext())
-            return true;
-        else
-            return false;
+		return sectionIter.hasNext();
     }
 
     @Override

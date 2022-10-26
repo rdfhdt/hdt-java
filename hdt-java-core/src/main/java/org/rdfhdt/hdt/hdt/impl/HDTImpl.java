@@ -52,6 +52,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
+import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
@@ -60,6 +61,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.DictionaryEntriesDiff;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -74,6 +76,7 @@ import org.rdfhdt.hdt.triples.impl.BitmapTriplesCat;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorCat;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorDiff;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorMapDiff;
+import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -92,7 +95,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.zip.GZIPInputStream;
 
@@ -249,10 +251,10 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 	 */
 	@Override
 	public void saveToHDT(String fileName, ProgressListener listener) throws IOException {
-		OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName));
-		//OutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
-		saveToHDT(out, listener);
-		out.close();
+		try (OutputStream out = new BufferedOutputStream(new FileOutputStream(fileName))) {
+			//OutputStream out = new GZIPOutputStream(new BufferedOutputStream(new FileOutputStream(fileName)));
+			saveToHDT(out, listener);
+		}
 
 		this.hdtFileName = fileName;
 	}
@@ -470,10 +472,10 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 
     /**
      * Merges two hdt files hdt1 and hdt2 on disk at location
-     * @param location
-     * @param hdt1
-     * @param hdt2
-     * @param listener
+     * @param location catlocation
+     * @param hdt1 hdt1
+     * @param hdt2 hdt2
+     * @param listener listener
      */
 	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
 		if (listener != null) {
@@ -538,6 +540,28 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		}
 		this.header = HeaderFactory.createHeader(spec);
 		this.populateHeaderStructure(hdt1.getBaseURI());
+		long rawSize1 = getRawSize(hdt1.getHeader());
+		long rawSize2 = getRawSize(hdt2.getHeader());
+
+		if (rawSize1 != -1 && rawSize2 != -1) {
+			getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, String.valueOf(rawSize1 + rawSize2));
+		}
+	}
+
+	public static long getRawSize(Header header) {
+
+		try {
+			IteratorTripleString rawSize1 = header.search("_:statistics", HDTVocabulary.ORIGINAL_SIZE, "");
+			if (!rawSize1.hasNext()) {
+				return -1;
+			}
+
+			CharSequence obj = rawSize1.next().getObject();
+			// remove "s in "<long>"
+			return Long.parseLong(obj, 1, obj.length() - 1, 10);
+		} catch (NotFoundException e) {
+			return -1;
+		}
 	}
 
 	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
@@ -550,7 +574,8 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			ControlInfo ci2 = new ControlInformation();
 			try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
 				HDTSpecification spec = new HDTSpecification();
-				spec.setOptions("tempDictionary.impl=multHash;dictionary.type=dictionaryMultiObj;");
+				spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
+				spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
 				MultipleSectionDictionaryBig dictionary = new MultipleSectionDictionaryBig(spec);
 				fis.mark(1024);
 				ci2.load(fis);
@@ -567,26 +592,22 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			bitmapTriplesCat.cat(it,listener);
 		}
 		//Delete the mappings since they are not necessary anymore
-		Iterator<Map.Entry<String, DictionarySection>> iter = hdt1.getDictionary().getAllObjects().entrySet().iterator();
 		int countSubSections = 0;
-		while (iter.hasNext()){
-			Map.Entry<String, DictionarySection> entry = iter.next();
-			String dataType = entry.getKey();
-			String prefix = "sub"+countSubSections;
-			if(dataType.equals("NO_DATATYPE"))
-				prefix = dataType;
+		for (CharSequence datatype : hdt1.getDictionary().getAllObjects().keySet()) {
+			String prefix = "sub" + countSubSections;
+			if(datatype.equals(LiteralsUtils.NO_DATATYPE)) {
+				prefix = datatype.toString();
+			}
 			Files.delete(Paths.get(location+prefix+"1"));
 			Files.delete(Paths.get(location+prefix+"1"+"Types"));
 			countSubSections++;
 		}
-		iter = hdt2.getDictionary().getAllObjects().entrySet().iterator();
 		countSubSections = 0;
-		while (iter.hasNext()){
-			Map.Entry<String, DictionarySection> entry = iter.next();
-			String dataType = entry.getKey();
+		for (CharSequence datatype : hdt2.getDictionary().getAllObjects().keySet()){
 			String prefix = "sub"+countSubSections;
-			if(dataType.equals("NO_DATATYPE"))
-				prefix = dataType;
+			if(datatype.equals(LiteralsUtils.NO_DATATYPE)) {
+				prefix = datatype.toString();
+			}
 			Files.delete(Paths.get(location+prefix+"2"));
 			Files.delete(Paths.get(location+prefix+"2"+"Types"));
 			countSubSections++;
@@ -626,6 +647,12 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		}
 		this.header = HeaderFactory.createHeader(spec);
 		this.populateHeaderStructure(hdt1.getBaseURI());
+		long rawSize1 = getRawSize(hdt1.getHeader());
+		long rawSize2 = getRawSize(hdt2.getHeader());
+
+		if (rawSize1 != -1 && rawSize2 != -1) {
+			getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, String.valueOf(rawSize1 + rawSize2));
+		}
 	}
 
 	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
@@ -644,7 +671,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 
 		iter.loadBitmaps();
 
-		Map<String, ModifiableBitmap> bitmaps = iter.getBitmaps();
+		Map<CharSequence, ModifiableBitmap> bitmaps = iter.getBitmaps();
 
 		try (DictionaryDiff diff = DictionaryFactory.createDictionaryDiff(hdt.getDictionary(), location)) {
 
@@ -674,10 +701,11 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		il.notifyProgress(80, "Clear data...");
 		if(!(hdt.getDictionary() instanceof FourSectionDictionary)) {
 			int count = 0;
-			for (Map.Entry<String, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
-				String subPrefix = "sub" + count;
-				if(next.getKey().equals("NO_DATATYPE"))
-					subPrefix = next.getKey();
+			for (CharSequence key : dictionary.getAllObjects().keySet()) {
+				CharSequence subPrefix = "sub" + count;
+				if(key.equals(LiteralsUtils.NO_DATATYPE)) {
+					subPrefix = key;
+				}
 				Files.delete(Paths.get(location + subPrefix));
 				Files.delete(Paths.get(location + subPrefix + "Types"));
 				count++;

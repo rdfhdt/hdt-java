@@ -409,7 +409,7 @@ public class TriplesListLong implements TempTriples {
 	 */
 	public class TriplesListIterator implements SuppliableIteratorTripleID {
 		private long lastPosition;
-		private TriplesListLong triplesList;
+		private final TriplesListLong triplesList;
 		private int pos;
 
 		public TriplesListIterator(TriplesListLong triplesList) {
@@ -431,7 +431,7 @@ public class TriplesListLong implements TempTriples {
 		@Override
 		public TripleID next() {
 			lastPosition = pos;
-			return triplesList.arrayOfTriples.get((int)pos++);
+			return triplesList.arrayOfTriples.get(pos++);
 		}
 
 		/* (non-Javadoc)

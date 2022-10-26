@@ -39,15 +39,15 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DictionaryCacheLRI<T> implements DictionaryCache<T> {
 
-	private Map<Long, T> cache;
-	private long [] arr;
+	private final Map<Long, T> cache;
+	private final long [] arr;
 	private int ptr=0;
 	private final int size;
 	
 	public DictionaryCacheLRI(int size) {
 		this.size = size;
 		arr = new long[size];
-		cache = new ConcurrentHashMap<Long, T>(size);
+		cache = new ConcurrentHashMap<>(size);
 	}
 		
 	/* (non-Javadoc)

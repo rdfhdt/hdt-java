@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.iterator.utils.MapIterator;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.io.compress.CompressUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -60,7 +61,11 @@ public class OneReadDictionarySectionTest {
 		return
 			new MapIterator<>(
 					CompressUtil.asNoDupeCharSequenceIterator(
-							ExceptionIterator.of(nodes.iterator()),
+							ExceptionIterator.of(nodes.iterator())
+									.map(in -> {
+										in.setNode(ByteString.of(in.getNode()));
+										return in;
+									}),
 							(i, j, k) -> {
 							}
 					), IndexedNode::getNode

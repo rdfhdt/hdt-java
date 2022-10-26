@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DictionaryCacheHash<T> implements DictionaryCache<T> {
 
-	private Map<Long, T> hash = new ConcurrentHashMap<>();
+	private final Map<Long, T> hash = new ConcurrentHashMap<>();
 	
 	@Override
 	public T get(long id) {

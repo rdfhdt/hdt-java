@@ -327,27 +327,27 @@ public abstract class IndexNodeDeltaMergeExceptionIterator<E extends Exception> 
 			if (deltaCompare < 0) {
 				// node1 > node2 -> send node2
 				next = last2;
+				pivot = -deltaCompare - 1;
 				if (!send1) {
 					// the last send was the send1, we can send the real delta
 					delta = delta2;
 				} else {
 					// not the same, we need to compare to get the new delta
-					delta = Math.min(delta2, delta);
+					delta = 0;
 				}
-				pivot = -deltaCompare - 1;
 				last2 = null;
 				send1 = false;
 			} else {
 				// node1 < node2 -> send node1
 				next = last1;
+				pivot = deltaCompare - 1;
 				if (send1) {
 					// the last send was the send2, we can send the real delta
 					delta = delta1;
 				} else {
 					// not the same, we need to compare to get the new delta
-					delta = Math.min(delta1, delta);
+					delta = 0;
 				}
-				pivot = deltaCompare - 1;
 				last1 = null;
 				send1 = true;
 			}

@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.options;
 
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 
 /**
@@ -23,6 +24,7 @@ public class HDTOptionsKeys {
 	 * step, faster but increase the RAM usage.
 	 */
 	public static final String LOADER_DISK_COMPRESSION_MODE_VALUE_PARTIAL = "compressionPartial";
+
 	/**
 	 * Key for the {@link org.rdfhdt.hdt.hdt.HDTManager} generateHDTDisk methods,
 	 * say the number of workers to merge the data. default to the number of processor. long value.
@@ -60,6 +62,12 @@ public class HDTOptionsKeys {
 	 */
 	public static final String LOADER_DISK_BUFFER_SIZE_KEY = "loader.disk.fileBufferSize";
 	/**
+	 * Key for {@link org.rdfhdt.hdt.hdt.HDTManager#generateHDTDisk(java.util.Iterator, String, HDTOptions, org.rdfhdt.hdt.listener.ProgressListener)},
+	 * specify that the method doesn't have to copy the triple strings between 2 calls to the iterator, default false
+	 */
+	public static final String LOADER_DISK_NO_COPY_ITERATOR_KEY = "loader.disk.noCopyIterator";
+
+	/**
 	 * Key for the loading mode of a RDF file for the
 	 * {@link org.rdfhdt.hdt.hdt.HDTManager#generateHDT(String, String, org.rdfhdt.hdt.enums.RDFNotation, HDTOptions, org.rdfhdt.hdt.listener.ProgressListener)}
 	 * method, this key isn't working with the other methods.
@@ -82,6 +90,7 @@ public class HDTOptionsKeys {
 	 * Value for {@link #LOADER_TYPE_KEY}, read only once the RDF file, default value
 	 */
 	public static final String LOADER_TYPE_VALUE_ONE_PASS = "one-pass";
+
 	/**
 	 * Key for the location of the working directory {@link org.rdfhdt.hdt.hdt.HDTManager} catTree methods,
 	 * this directory will be deleted after the HDT generation. by default, the value is random, it is recommended to
@@ -103,6 +112,7 @@ public class HDTOptionsKeys {
 	 * split size of the RDFFluxStop in the generateHDT method.
 	 */
 	public static final String LOADER_CATTREE_MEMORY_FAULT_FACTOR = "loader.cattree.memoryFaultFactor";
+
 	/**
 	 * Key for the hdt supplier type, default to memory
 	 */
@@ -131,7 +141,18 @@ public class HDTOptionsKeys {
 	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
 	 */
 	public static final String RDF_FLUX_STOP_VALUE_NO_LIMIT = "no_limit";
-
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final char RDF_FLUX_STOP_VALUE_OP_AND = '&';
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final char RDF_FLUX_STOP_VALUE_OP_OR = '|';
+	/**
+	 * Value type for the {@link #RDF_FLUX_STOP_KEY}, using {@link RDFFluxStop#asConfig()} would be easier
+	 */
+	public static final char RDF_FLUX_STOP_VALUE_OP_NOT = '!';
 
 	/**
 	 * Key for enabling the profiler (if implemented), default to false. Boolean value
@@ -151,6 +172,56 @@ public class HDTOptionsKeys {
 	 */
 	public static final String TRIPLE_ORDER_KEY = "triplesOrder";
 
+	/**
+	 * Option to set how the HDTs are loaded in HDTCat/HDTDiff, default {@link #LOAD_HDT_TYPE_VALUE_MAP}
+	 */
+	public static final String LOAD_HDT_TYPE_KEY = "loader.hdt.type";
+	/**
+	 * load the HDT file into memory
+	 */
+	public static final String LOAD_HDT_TYPE_VALUE_LOAD = "load";
+	/**
+	 * map the HDT file, default value
+	 */
+	public static final String LOAD_HDT_TYPE_VALUE_MAP = "map";
+
+	/**
+	 * Implementation of the temporary dictionary
+	 */
+	public static final String TEMP_DICTIONARY_IMPL_KEY = "tempDictionary.impl";
+	/**
+	 * use Hash map to create the HDT
+	 */
+	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH = "hash";
+	/**
+	 * use Hash map to create the HDT and store the multisection dictionary, mandatory to create MSC
+	 */
+	public static final String TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH = "multHash";
+	/**
+	 * use Hash map with Prefix AND Suffix front-coded (PSFC), mandatory to create PSFC dictionary
+	 */
+	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC = "hashPsfc";
+
+	/**
+	 * Implementation of the dictionary
+	 */
+	public static final String DICTIONARY_TYPE_KEY = "dictionary.type";
+	/**
+	 * 4 Section dictionary
+	 */
+	public static final String DICTIONARY_TYPE_VALUE_FOUR_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION;
+	/**
+	 * Prefix AND Suffix front-coded (PSFC) 4 Section dictionary
+	 */
+	public static final String DICTIONARY_TYPE_VALUE_FOUR_PSFC_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION;
+	/**
+	 * big 4 Section dictionary
+	 */
+	public static final String DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG ="dictionaryFourBig";
+	/**
+	 * multi section dictionary
+	 */
+	public static final String DICTIONARY_TYPE_VALUE_MULTI_OBJECTS = "dictionaryMultiObj";
 
 	private HDTOptionsKeys() {}
 }
