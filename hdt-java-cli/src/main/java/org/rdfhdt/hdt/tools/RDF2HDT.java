@@ -106,6 +106,9 @@ public class RDF2HDT implements ProgressListener {
 	@Parameter(names = "-cattreelocation", description = "Only with -cattree, set the tree building location")
 	public String catTreeLocation;
 
+	@Parameter(names = "-multithread", description = "Use multithread logger")
+	public boolean multiThreadLog;
+
 	private static long findBestMemoryChunkDiskMapTreeCat() {
 		Runtime runtime = Runtime.getRuntime();
 		long maxRam = (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85) / 3;
@@ -228,7 +231,10 @@ public class RDF2HDT implements ProgressListener {
 				listenerConsole.notifyProgress(100, "done");
 			}
 		} else {
-			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation, spec, this);
+			ProgressListener listenerConsole =
+					!quiet ? (multiThreadLog ? new MultiThreadListenerConsole() : this)
+							: null;
+			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation, spec, listenerConsole);
 		}
 		System.out.println("File converted in: "+sw.stopAndShow());
 
