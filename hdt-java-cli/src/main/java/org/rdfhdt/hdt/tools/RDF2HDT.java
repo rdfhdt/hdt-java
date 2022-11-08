@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.tools;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 
 import org.rdfhdt.hdt.enums.CompressionType;
@@ -108,6 +109,11 @@ public class RDF2HDT implements ProgressListener {
 
 	@Parameter(names = "-multithread", description = "Use multithread logger")
 	public boolean multiThreadLog;
+
+	@Parameter(names = "-printoptions", description = "Print options")
+	public boolean printoptions;
+	@Parameter(names = "-color", description = "Print using color (if available)")
+	public boolean color;
 
 	private static long findBestMemoryChunkDiskMapTreeCat() {
 		Runtime runtime = Runtime.getRuntime();
@@ -190,7 +196,7 @@ public class RDF2HDT implements ProgressListener {
 						System.out.println("Using temp directory " + diskLocation);
 					}
 				}
-				MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole() : null;
+				MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 				hdt = HDTManager.catTree(
 						RDFFluxStop.countLimit(findBestMemoryChunkDiskMapTreeCat()),
 						HDTSupplier.disk(),
@@ -225,14 +231,14 @@ public class RDF2HDT implements ProgressListener {
 					System.out.println("Using temp directory " + diskLocation);
 				}
 			}
-			MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole() : null;
+			MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 			hdt = HDTManager.generateHDTDisk(rdfInput, baseURI, notation, CompressionType.guess(rdfInput), spec, listenerConsole);
 			if (listenerConsole != null) {
 				listenerConsole.notifyProgress(100, "done");
 			}
 		} else {
 			ProgressListener listenerConsole =
-					!quiet ? (multiThreadLog ? new MultiThreadListenerConsole() : this)
+					!quiet ? (multiThreadLog ? new MultiThreadListenerConsole(color) : this)
 							: null;
 			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation, spec, listenerConsole);
 		}
@@ -279,12 +285,58 @@ public class RDF2HDT implements ProgressListener {
 		}
 	}
 
+	private String color(int r, int g, int b) {
+		if (!color) {
+			return "";
+		}
+		int color = 16 + 36*r + 6 * g + b;
+		return "\033[38;5;"+color+"m";
+	}
+
+	private String colorReset() {
+		return color ? "\033[0m" : "";
+	}
+
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Throwable {
 		RDF2HDT rdf2hdt = new RDF2HDT();
 		JCommander com = new JCommander(rdf2hdt, args);
 		com.setProgramName("rdf2hdt");
-	
+
+		if (rdf2hdt.printoptions) {
+			Collection<HDTOptionsKeys.Option> values = HDTOptionsKeys.getOptionMap().values();
+
+			for (HDTOptionsKeys.Option opt : values) {
+				System.out.println(rdf2hdt.color(3, 1, 5) + "Key:  " + rdf2hdt.color(5, 1, 0) + opt.getKey());
+				if (!opt.getKeyInfo().desc().isEmpty()) {
+					System.out.println(rdf2hdt.color(3, 1, 5) + "Desc: " + rdf2hdt.colorReset() + opt.getKeyInfo().desc());
+				}
+				System.out.println(rdf2hdt.color(3, 1, 5) + "Type: " + rdf2hdt.colorReset() + opt.getKeyInfo().type().getTitle());
+				switch (opt.getKeyInfo().type()) {
+					case BOOLEAN:
+						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value: " + rdf2hdt.colorReset() + "true|false");
+						break;
+					case ENUM:
+						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value:");
+						int max = opt.getValues().stream().mapToInt(vle -> vle.getValue().length()).max().orElse(0);
+						for (HDTOptionsKeys.OptionValue vle : opt.getValues()) {
+							System.out.print(rdf2hdt.color(3, 3, 3) + "- " + rdf2hdt.colorReset() + vle.getValue());
+							if (!vle.getValueInfo().desc().isEmpty()) {
+								System.out.println(rdf2hdt.color(3, 3, 3) + " ".repeat(max - vle.getValue().length()) + " : " + vle.getValueInfo().desc());
+							} else {
+								System.out.println();
+							}
+						}
+						break;
+					default:
+						break;
+				}
+				System.out.println("\n");
+			}
+
+			return;
+		}
+
 		if(rdf2hdt.parameters.size()==1) {
 			System.err.println("No input file specified, reading from standard input.");
 			rdf2hdt.rdfInput = "-";

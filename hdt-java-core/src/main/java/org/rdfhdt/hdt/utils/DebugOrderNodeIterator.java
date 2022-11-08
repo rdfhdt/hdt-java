@@ -8,13 +8,17 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 
 public class DebugOrderNodeIterator implements Consumer<IndexedNode> {
-	public static boolean isAssertEnable() {
+	private static boolean assertEnabled;
+	static {
 		try {
 			assert false;
-			return false;
 		} catch (AssertionError e) {
-			return true;
+			assertEnabled = true;
 		}
+	}
+
+	public static boolean isAssertEnable() {
+		return assertEnabled;
 	}
 
 	public static Consumer<IndexedNode> of(String name) {

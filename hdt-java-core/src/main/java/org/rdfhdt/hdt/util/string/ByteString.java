@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.util.string;
 
 public interface ByteString extends CharSequence, Comparable<ByteString> {
+	int UTF8_BIG = 2;
 	static ByteString of(CharSequence sec) {
 		return ByteStringUtil.asByteString(sec);
 	}

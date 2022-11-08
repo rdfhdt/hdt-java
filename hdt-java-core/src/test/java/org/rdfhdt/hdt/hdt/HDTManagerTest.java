@@ -845,6 +845,21 @@ public class HDTManagerTest {
 	@Ignore("handTests")
 	public static class HandTest extends HDTManagerTestBase {
 		@Test
+		public void qzdqzdTest() throws ParserException, IOException {
+			String path = "/Users/ate/workspace/qacompany/hdt-java-ate47/hdt-java-package/target/hdt-java-package-3.0.5-distribution/hdt-java-package-3.0.5/bin/shit.nt.gz";
+
+			HDTSpecification spec = new HDTSpecification();
+			spec.load("/Users/ate/workspace/qacompany/hdt-java-ate47/hdt-java-package/target/hdt-java-package-3.0.5-distribution/hdt-java-package-3.0.5/bin/option.hdtspec");
+
+
+			try (HDT hdt = HDTManager.generateHDTDisk(path, "http://ex.ogr/#", spec,
+					(level, message) -> System.out.println("[" + level + "] " + message)
+			)) {
+				System.out.println(hdt.getTriples().getNumberOfElements());
+			}
+
+		}
+		@Test
 		public void bigDiskTest() throws ParserException, IOException {
 			LargeFakeDataSetStreamSupplier supplier = LargeFakeDataSetStreamSupplier
 					.createSupplierWithMaxSize(100_000_000L, 94);

@@ -29,18 +29,40 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 	}
 
 	private final Map<String, String> threadMessages;
+	private final boolean color;
 	private int previous;
 
-	public MultiThreadListenerConsole() {
-		this(ALLOW_ASCII_SEQUENCE);
+	public MultiThreadListenerConsole(boolean color) {
+		this(color, ALLOW_ASCII_SEQUENCE);
 	}
 
-	public MultiThreadListenerConsole(boolean asciiListener) {
+	public MultiThreadListenerConsole(boolean color, boolean asciiListener) {
+		this.color = color;
 		if (asciiListener) {
 			threadMessages = new TreeMap<>();
 		} else {
 			threadMessages = null;
 		}
+	}
+
+	public String color(int r, int g, int b) {
+		if (!color) {
+			return "";
+		}
+		int color = 16 + 36 * r + 6 * g + b;
+		return "\033[38;5;" + color + "m";
+	}
+
+	public String colorReset() {
+		return color ? "\033[0m" : "";
+	}
+
+	public String colorThread() {
+		return color(5, 1, 1);
+	}
+
+	public String colorPercentage() {
+		return color(1, 1, 5);
 	}
 
 	@Override
@@ -68,12 +90,12 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 
 	@Override
 	public synchronized void notifyProgress(String thread, float level, String message) {
-		String msg = "[" + level + "] " + message;
+		String msg = colorPercentage() + "[" + level + "] " + colorReset() + message;
 		if (threadMessages != null) {
 			threadMessages.put(thread, msg);
 			render();
 		} else {
-			System.out.println("[" + thread + "]" + msg);
+			System.out.println(colorThread() + "[" + thread + "]" + colorReset() + msg);
 		}
 	}
 
@@ -89,13 +111,14 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 			message.append(goBackNLine(previous));
 		}
 		// write each thread logs
-		threadMessages.forEach((thread, msg) -> {
-			message.append(ERASE_LINE).append("[").append(thread).append("]").append(msg).append("\n");
-		});
+		threadMessages.forEach((thread, msg) -> message
+				.append(ERASE_LINE)
+				.append(colorThread()).append("[").append(thread).append("]")
+				.append(msg).append("\n"));
 		// remove previous printing
 		int toRemove = previous - lines;
 		if (toRemove > 0) {
-			message.append((ERASE_LINE+"\n").repeat(toRemove)).append(goBackNLine(toRemove));
+			message.append((ERASE_LINE + "\n").repeat(toRemove)).append(goBackNLine(toRemove));
 		}
 		previous = lines;
 

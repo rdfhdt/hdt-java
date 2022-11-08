@@ -211,6 +211,7 @@ public class UnicodeEscape {
                 startIdx = backSlashIdx + 2;
             }
             else if (c == 'u') {
+                // not canonical but whatever
                 // \\uxxxx
                 if (backSlashIdx + 5 >= sLength) {
                     throw new IllegalArgumentException(
@@ -230,6 +231,7 @@ public class UnicodeEscape {
                 }
             }
             else if (c == 'U') {
+                // not canonical but whatever
                 // \\Uxxxxxxxx
                 if (backSlashIdx + 9 >= sLength) {
                     throw new IllegalArgumentException(
@@ -238,8 +240,10 @@ public class UnicodeEscape {
                 String xx = s.substring(backSlashIdx + 2, backSlashIdx + 10);
 
                 try {
-                    c = (char)Integer.parseInt(xx, 16);
-                    sb.append(c);
+                    char[] chars = Character.toChars(Integer.parseInt(xx, 16));
+                    for (char cc : chars) {
+                        sb.append(cc);
+                    }
 
                     startIdx = backSlashIdx + 10;
                 }

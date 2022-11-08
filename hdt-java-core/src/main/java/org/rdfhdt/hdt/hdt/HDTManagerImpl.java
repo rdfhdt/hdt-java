@@ -451,7 +451,7 @@ public class HDTManagerImpl extends HDTManager {
 
 		// if a future HDT location has been asked, move to it and map the HDT
 		if (futureHDTLocation != null) {
-			Files.createDirectories(futureHDTLocation.getParent());
+			Files.createDirectories(futureHDTLocation.toAbsolutePath().getParent());
 			Files.deleteIfExists(futureHDTLocation);
 			Files.move(hdtFile, futureHDTLocation);
 			return HDTManager.mapHDT(futureHDTLocation.toAbsolutePath().toString());
