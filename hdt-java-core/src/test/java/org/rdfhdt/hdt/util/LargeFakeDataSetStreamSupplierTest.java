@@ -1,18 +1,25 @@
 package org.rdfhdt.hdt.util;
 
-import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.rdfhdt.hdt.enums.RDFNotation;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.hdt.HDT;
+import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTManagerTest;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
+import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Iterator;
@@ -22,31 +29,114 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class LargeFakeDataSetStreamSupplierTest {
-    @Rule
-    public TemporaryFolder tempDir = new TemporaryFolder();
-    @Test
-    public void streamTest() throws IOException {
-        LargeFakeDataSetStreamSupplier triples = LargeFakeDataSetStreamSupplier.createSupplierWithMaxTriples(10, 10);
-        Path f = tempDir.newFolder().toPath();
-        Path testNt = f.resolve("test.nt");
-        triples.createNTFile(testNt.toAbsolutePath().toString());
-        triples.reset();
+	@Rule
+	public TemporaryFolder tempDir = new TemporaryFolder();
 
-        Iterator<TripleString> it2 = triples.createTripleStringStream();
-        try (InputStream is = Files.newInputStream(testNt)) {
-            try (PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
-                    RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES),
-                    is,
-                    HDTTestUtils.BASE_URI,
-                    true,
-                    RDFNotation.NTRIPLES
-            )) {
-                it.forEachRemaining(s -> {
-                    assertTrue(it2.hasNext());
-                    assertEquals(it2.next(), s);
-                });
-                assertFalse(it.hasNext());
-            }
-        }
-    }
+	@Test
+	public void streamTest() throws IOException {
+		LargeFakeDataSetStreamSupplier triples = LargeFakeDataSetStreamSupplier.createSupplierWithMaxTriples(10, 10);
+		Path f = tempDir.newFolder().toPath();
+		Path testNt = f.resolve("test.nt");
+		triples.createNTFile(testNt.toAbsolutePath().toString());
+		triples.reset();
+
+		Iterator<TripleString> it2 = triples.createTripleStringStream();
+		try (InputStream is = Files.newInputStream(testNt)) {
+			try (PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
+					RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES),
+					is,
+					HDTTestUtils.BASE_URI,
+					true,
+					RDFNotation.NTRIPLES
+			)) {
+				it.forEachRemaining(s -> {
+					assertTrue(it2.hasNext());
+					assertEquals(it2.next(), s);
+				});
+				assertFalse(it.hasNext());
+			}
+		}
+	}
+
+	@Test
+	public void countTest() {
+		long size = 42;
+		Iterator<TripleString> it = LargeFakeDataSetStreamSupplier.createSupplierWithMaxTriples(size, 34)
+				.createTripleStringStream();
+		int count = 0;
+		while (it.hasNext()) {
+			it.next();
+			count++;
+		}
+		assertEquals(size, count);
+	}
+
+	@Test
+	public void mergeTest() throws IOException, ParserException, NotFoundException {
+		Path root = tempDir.getRoot().toPath();
+		long size = 42;
+		long seed = 54;
+		LargeFakeDataSetStreamSupplier supplier = LargeFakeDataSetStreamSupplier.createSupplierWithMaxSize(size, seed);
+
+		Path p12 = root.resolve("p12.nt");
+		Path p12HDT = root.resolve("p12.hdt");
+		Path p3 = root.resolve("p3.nt");
+		Path p3HDT = root.resolve("p3.hdt");
+
+		try (BufferedWriter w = Files.newBufferedWriter(p12)) {
+			supplier.createNTFile(w);
+			supplier.createNTFile(w);
+		}
+
+		LargeFakeDataSetStreamSupplier supplier2 = LargeFakeDataSetStreamSupplier.createSupplierWithMaxSize(size * 2, seed);
+
+		supplier2.createNTFile(p3);
+
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, true);
+		try {
+			try (
+					InputStream stream = new BufferedInputStream(Files.newInputStream(p12));
+					InputStream stream2 = new BufferedInputStream(Files.newInputStream(p3));
+					PipedCopyIterator<TripleString> it1 = RDFParserFactory.readAsIterator(parser, stream, "http://w", true, RDFNotation.NTRIPLES);
+					PipedCopyIterator<TripleString> it2 = RDFParserFactory.readAsIterator(parser, stream2, "http://w", true, RDFNotation.NTRIPLES)
+			) {
+				while (it1.hasNext()) {
+					assertTrue(it2.hasNext());
+					assertEquals(it1.next(), it2.next());
+				}
+				assertFalse(it2.hasNext());
+			}
+			try (
+					HDT exceptedHdt = HDTManager.generateHDT(
+							p12.toAbsolutePath().toString(), "http://w",
+							RDFNotation.NTRIPLES, new HDTSpecification(), null
+					);
+					HDT actualHDT = HDTManager.generateHDT(
+							p3.toAbsolutePath().toString(), "http://w",
+							RDFNotation.NTRIPLES, new HDTSpecification(), null
+					)
+			) {
+				exceptedHdt.saveToHDT(p12HDT.toAbsolutePath().toString(), null);
+				actualHDT.saveToHDT(p3HDT.toAbsolutePath().toString(), null);
+			}
+
+			try (
+					HDT p1HDTLoad = HDTManager.mapHDT(p12HDT.toAbsolutePath().toString());
+					HDT p3HDTLoad = HDTManager.mapHDT(p3HDT.toAbsolutePath().toString())
+			) {
+				HDTManagerTest.HDTManagerTestBase.assertEqualsHDT(p1HDTLoad, p3HDTLoad);
+				supplier2.reset();
+				try (HDT actual = supplier2.createFakeHDT(new HDTSpecification())) {
+					HDTManagerTest.HDTManagerTestBase.checkHDTConsistency(actual);
+					HDTManagerTest.HDTManagerTestBase.assertEqualsHDT(p3HDTLoad, actual);
+				}
+			}
+		} finally {
+			try {
+				Files.deleteIfExists(p12);
+			} finally {
+				Files.deleteIfExists(p3);
+			}
+		}
+	}
 }

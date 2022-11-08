@@ -17,6 +17,7 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -32,7 +33,7 @@ import java.util.Map;
 public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
     private final String location;
-    private final Map<String,CatMapping> allMappings = new HashMap<>();
+    private final Map<ByteString,CatMapping> allMappings = new HashMap<>();
     private CatMapping mappingBack;
     public long numShared;
     public MultipleSectionDictionaryDiff(String location){
@@ -50,20 +51,22 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
     }
     @Override
     public void diff(Dictionary dictionary, Map<CharSequence, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException {
-        allMappings.put("predicate",new CatMapping(location,"predicate",dictionary.getPredicates().getNumberOfElements()));
-        allMappings.put("subject",new CatMapping(location,"subject",dictionary.getSubjects().getNumberOfElements()));
+        allMappings.put(SectionUtil.SECTION_PREDICATE,new CatMapping(location,SectionUtil.SECTION_PREDICATE,dictionary.getPredicates().getNumberOfElements()));
+        allMappings.put(SectionUtil.SECTION_SUBJECT,new CatMapping(location,SectionUtil.SECTION_SUBJECT,dictionary.getSubjects().getNumberOfElements()));
         int countSubSection = 0;
 
         for (Map.Entry<? extends CharSequence, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
-            String subPrefix = "sub"+countSubSection;
+            ByteString subPrefix;
             if(next.getKey().equals(LiteralsUtils.NO_DATATYPE)){
-                subPrefix = LiteralsUtils.NO_DATATYPE.toString();
+                subPrefix = LiteralsUtils.NO_DATATYPE;
+            } else {
+                subPrefix = SectionUtil.createSub(countSubSection);
             }
-            allMappings.put(subPrefix,new CatMapping(location,subPrefix,next.getValue().getNumberOfElements()));
+            allMappings.put(subPrefix, new CatMapping(location,subPrefix,next.getValue().getNumberOfElements()));
             countSubSection++;
         }
-        allMappings.put("object",new CatMapping(location,"object",dictionary.getNAllObjects()));
-        allMappings.put("shared",new CatMapping(location,"shared",dictionary.getShared().getNumberOfElements()));
+        allMappings.put(SectionUtil.SECTION_OBJECT,new CatMapping(location,SectionUtil.SECTION_OBJECT,dictionary.getNAllObjects()));
+        allMappings.put(SectionUtil.SECTION_SHARED,new CatMapping(location,SectionUtil.SECTION_SHARED,dictionary.getShared().getNumberOfElements()));
 //        allMappings.put("shared_o",new CatMapping(location,"shared_o",dictionary.getShared().getNumberOfElements()));
 
         // Predicates
@@ -71,7 +74,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
         Iterator<? extends CharSequence> predicates = dictionary.getPredicates().getSortedEntries();
 //        CatWrapper itAddPreds = new CatWrapper(predicates,"predicate");
-        DiffWrapper itSkipPreds = new DiffWrapper(predicates,predicatesBitMap,"predicate");
+        DiffWrapper itSkipPreds = new DiffWrapper(predicates,predicatesBitMap,SectionUtil.SECTION_PREDICATE);
 
 //        ArrayList<Iterator<CatElement>> listAddPred = new ArrayList<>();
 //        listAddPred.add(itAddPreds);
@@ -89,7 +92,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         Iterator<? extends CharSequence> subjects = dictionary.getSubjects().getSortedEntries();
 
 //        CatWrapper itAddSubs = new CatWrapper(subjects,"subject");
-        DiffWrapper itSkipSubs = new DiffWrapper(subjects,subjectsBitMap,"subject");
+        DiffWrapper itSkipSubs = new DiffWrapper(subjects,subjectsBitMap,SectionUtil.SECTION_SUBJECT);
 
 //        ArrayList<Iterator<CatElement>> listAddSubj = new ArrayList<>();
 //        listAddSubj.add(itAddSubs);
@@ -109,14 +112,15 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
 
         // Objects ----------------------------+++++++++++++++++++++++++++++++++----------------------------------------
-        List<CharSequence> dataTypes = new ArrayList<>();
-        Map<CharSequence,Long> offsets = new HashMap<>();
+        List<ByteString> dataTypes = new ArrayList<>();
+        Map<ByteString,Long> offsets = new HashMap<>();
 
         int countSection = 0;
         long totalObjects = 0;
         for (Map.Entry<? extends CharSequence, DictionarySection> next : dictionary.getAllObjects().entrySet()) {
             int type = 4 + dataTypes.size();
-            if(next.getKey().equals(LiteralsUtils.NO_DATATYPE)){
+            ByteString key = ByteString.of(next.getKey());
+            if(key.equals(LiteralsUtils.NO_DATATYPE)){
                 long numNoDataType = createNoDataTypeSection(bitmaps, dictionary,totalObjects,type);
                 if(numNoDataType > 0){
                     dataTypes.add(LiteralsUtils.NO_DATATYPE);
@@ -124,10 +128,10 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
                     totalObjects+= numNoDataType;
                 }
             }else {
-                Bitmap objectsBitMap = bitmaps.get(next.getKey());
-                Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get(next.getKey()).getSortedEntries();
+                Bitmap objectsBitMap = bitmaps.get(key);
+                Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get(key).getSortedEntries();
 
-                String subPrefix = "sub"+countSection;
+                ByteString subPrefix = SectionUtil.createSub(countSection);
                 DiffWrapper itSkipObjs = new DiffWrapper(objects, objectsBitMap, subPrefix);
 
                 ArrayList<Iterator<CatElement>> listSkipObjs = new ArrayList<>();
@@ -136,8 +140,8 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
                 long numObject = objectsBitMap.countOnes();
                 // append the data types of the new dictionary if the section still exists ( number of elts > 0 )
                 if (numObject > 0) {
-                    dataTypes.add(next.getKey());
-                    offsets.put(next.getKey(),totalObjects);
+                    dataTypes.add(key);
+                    offsets.put(key,totalObjects);
                 }
                 totalObjects += numObject;
                 SectionUtil.createSection(location, numObject, type, new CatUnion(listSkipObjs), new CatUnion(new ArrayList<>()), allMappings, 0,null);
@@ -151,11 +155,11 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
 
         Iterator<? extends CharSequence> shared = dictionary.getShared().getSortedEntries();
 
-        DiffWrapper sharedSubj = new DiffWrapper(shared, sharedSubjBitMap,"shared");
+        DiffWrapper sharedSubj = new DiffWrapper(shared, sharedSubjBitMap,SectionUtil.SECTION_SHARED);
 
         shared = dictionary.getShared().getSortedEntries();
 
-        DiffWrapper sharedObj = new DiffWrapper(shared,sharedObjBitMap,"shared");
+        DiffWrapper sharedObj = new DiffWrapper(shared,sharedObjBitMap,SectionUtil.SECTION_SHARED);
 
         ArrayList<Iterator<CatElement>> listShared = new ArrayList<>();
         listShared.add(new CatIntersection(sharedSubj,sharedObj));
@@ -168,9 +172,9 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         }
 
         listShared = new ArrayList<>();
-        sharedSubj = new DiffWrapper(dictionary.getShared().getSortedEntries(), sharedSubjBitMap,"shared");
+        sharedSubj = new DiffWrapper(dictionary.getShared().getSortedEntries(), sharedSubjBitMap,SectionUtil.SECTION_SHARED);
 
-        sharedObj = new DiffWrapper(dictionary.getShared().getSortedEntries(), sharedObjBitMap,"shared");
+        sharedObj = new DiffWrapper(dictionary.getShared().getSortedEntries(), sharedObjBitMap,SectionUtil.SECTION_SHARED);
         listShared.add(new CatIntersection(sharedSubj,sharedObj));
 
         SectionUtil.createSection(location,numShared,1,new CatUnion(listShared),new CatUnion(new ArrayList<>()),allMappings,0,listener);
@@ -190,10 +194,8 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
                 Files.delete(Path.of(location + "section" + i));
             }
             VByte.encode(out, dataTypes.size());
-            for(CharSequence datatype:dataTypes){
-                String datatypeStr = datatype.toString();
-                byte[] bytes = datatypeStr.getBytes();
-                IOUtil.writeSizedBuffer(out, bytes, 0, bytes.length, listener);
+            for (ByteString datatype : dataTypes) {
+                IOUtil.writeSizedBuffer(out, datatype.getBuffer(), listener);
             }
             for (int i = 0; i < dataTypes.size(); i++) {
                 Files.copy(Path.of(location + "section" + (4 + i)), out);
@@ -204,42 +206,46 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         long oldId = 0;
         countSection = 0;
         for (CharSequence dataType : dictionary.getAllObjects().keySet()) {
-            String subPrefix = "sub"+countSection;
-            if(dataType.equals(LiteralsUtils.NO_DATATYPE)) {
-                subPrefix = dataType.toString();
+            ByteString subPrefix;
+            ByteString dataTypeB = ByteString.of(dataType);
+            if(dataTypeB.equals(LiteralsUtils.NO_DATATYPE)) {
+                subPrefix = LiteralsUtils.NO_DATATYPE;
+            } else {
+                subPrefix = SectionUtil.createSub(countSection);
             }
 
-            if(allMappings.containsKey(subPrefix)){
+            if (allMappings.containsKey(subPrefix)) {
                 CatMapping mapping = allMappings.get(subPrefix);
                 for (int i = 0; i < mapping.getSize(); i++) {
                     long newId = mapping.getMapping(i);
-                    if (mapping.getType(i) != 1 && offsets.containsKey(dataType)) {
-                        newId = newId + offsets.get(dataType);
+                    Long offset;
+                    if (mapping.getType(i) != 1 && (offset = offsets.get(dataTypeB)) != null) {
+                        newId = newId + offset;
                     }
-                    allMappings.get("object").set(oldId, newId, (int) mapping.getType(i));
+                    allMappings.get(SectionUtil.SECTION_OBJECT).set(oldId, newId, (int) mapping.getType(i));
                     oldId++;
                 }
             }
             countSection++;
         }
-        mappingBack = new CatMapping(location,"back",numSubj+numShared);
+        mappingBack = new CatMapping(location,SectionUtil.BACK,numSubj+numShared);
 
         if(mappingBack.getSize() > 0 ) {
-            for (int i = 0; i < allMappings.get("shared").getSize(); i++) {
-                long type = allMappings.get("shared").getType(i);
+            for (int i = 0; i < allMappings.get(SectionUtil.SECTION_SHARED).getSize(); i++) {
+                long type = allMappings.get(SectionUtil.SECTION_SHARED).getType(i);
                 if (type == 1) {
-                    mappingBack.set(allMappings.get("shared").getMapping(i) - 1, i + 1, 1);
+                    mappingBack.set(allMappings.get(SectionUtil.SECTION_SHARED).getMapping(i) - 1, i + 1, 1);
                 } else if(type == 2){
-                    mappingBack.set(allMappings.get("shared").getMapping(i) + numShared - 1, i + 1, 2);
+                    mappingBack.set(allMappings.get(SectionUtil.SECTION_SHARED).getMapping(i) + numShared - 1, i + 1, 2);
                 }
             }
 
-            for (int i = 0; i < allMappings.get("subject").getSize(); i++) {
-                long type = allMappings.get("subject").getType(i);
+            for (int i = 0; i < allMappings.get(SectionUtil.SECTION_SUBJECT).getSize(); i++) {
+                long type = allMappings.get(SectionUtil.SECTION_SUBJECT).getType(i);
                 if ( type == 1) {
-                    mappingBack.set(allMappings.get("subject").getMapping(i) - 1, (i + 1 + (int) dictionary.getNshared()), 1);
+                    mappingBack.set(allMappings.get(SectionUtil.SECTION_SUBJECT).getMapping(i) - 1, (i + 1 + (int) dictionary.getNshared()), 1);
                 } else if(type == 2){
-                    mappingBack.set(allMappings.get("subject").getMapping(i) + numShared - 1, (i + 1 + (int) dictionary.getNshared()), 2);
+                    mappingBack.set(allMappings.get(SectionUtil.SECTION_SUBJECT).getMapping(i) + numShared - 1, (i + 1 + (int) dictionary.getNshared()), 2);
                 }
             }
         }
@@ -249,7 +255,7 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         Bitmap objectsBitMap = bitmaps.get(LiteralsUtils.NO_DATATYPE);
         Iterator<? extends CharSequence> objects = dictionary.getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
 
-        DiffWrapper itSkipObjs = new DiffWrapper(objects, objectsBitMap,LiteralsUtils.NO_DATATYPE);
+        DiffWrapper itSkipObjs = new DiffWrapper(objects, objectsBitMap, LiteralsUtils.NO_DATATYPE);
 
         ArrayList<Iterator<CatElement>> listSkipObjs = new ArrayList<>();
         listSkipObjs.add(itSkipObjs);
@@ -283,11 +289,11 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
         public boolean hasNext() {
 
             while (sectionIter.hasNext()){
-                CharSequence element = sectionIter.next();
+                ByteString element = ByteString.of(sectionIter.next());
 
                 if( (flag == 0 && bitmapSub.access(count) && !bitmapObj.access(count)) || ( flag == 1 && bitmapObj.access(count) && !bitmapSub.access(count)) ){
                     ArrayList<CatElement.IteratorPlusPosition> IDs = new ArrayList<>();
-                    IDs.add(new CatElement.IteratorPlusPosition("shared",count+1));
+                    IDs.add(new CatElement.IteratorPlusPosition(SectionUtil.SECTION_SHARED,count+1));
                     next = new CatElement(element,IDs);
                     count++;
                     return true;
@@ -312,7 +318,8 @@ public class MultipleSectionDictionaryDiff implements DictionaryDiff {
             return i;
         }
     }
-    public Map<String, CatMapping> getAllMappings() {
+    @Override
+    public Map<ByteString, CatMapping> getAllMappings() {
         return allMappings;
     }
 

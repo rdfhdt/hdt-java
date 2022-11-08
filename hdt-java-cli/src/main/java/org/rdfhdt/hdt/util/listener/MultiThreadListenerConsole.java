@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.util.listener;
 
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 
@@ -58,11 +59,11 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 	}
 
 	public String colorThread() {
-		return color(5, 1, 1);
+		return color(3, 1, 5);
 	}
 
 	public String colorPercentage() {
-		return color(1, 1, 5);
+		return color(5, 1, 0);
 	}
 
 	@Override
@@ -85,17 +86,18 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 			return;
 		}
 		threadMessages.remove(threadName);
+		threadMessages.put("debug", "size: " + threadMessages.size());
 		render();
 	}
 
 	@Override
 	public synchronized void notifyProgress(String thread, float level, String message) {
-		String msg = colorPercentage() + "[" + level + "] " + colorReset() + message;
+		String msg = colorReset() + "[" + colorPercentage() + String.format(level >= 100 ? "%-5.1f" : "%-5.2f", level) + colorReset() + "] " +  message;
 		if (threadMessages != null) {
 			threadMessages.put(thread, msg);
 			render();
 		} else {
-			System.out.println(colorThread() + "[" + thread + "]" + colorReset() + msg);
+			System.out.println(colorReset() + "[" + colorThread() + thread + colorReset() + "]" + msg);
 		}
 	}
 
@@ -110,10 +112,14 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 		if (previous != 0) {
 			message.append(goBackNLine(previous));
 		}
+
+		int maxThreadNameSize = threadMessages.keySet().stream().mapToInt(String::length).max().orElse(0) + 1;
+
 		// write each thread logs
 		threadMessages.forEach((thread, msg) -> message
 				.append(ERASE_LINE)
-				.append(colorThread()).append("[").append(thread).append("]")
+				.append(colorReset()).append("[").append(colorThread()).append(thread).append(colorReset()).append("]")
+				.append(" ").append(".".repeat(maxThreadNameSize - thread.length())).append(" ")
 				.append(msg).append("\n"));
 		// remove previous printing
 		int toRemove = previous - lines;

@@ -19,7 +19,7 @@ import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
-import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.CompactString;
 
@@ -58,12 +58,12 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
 		Iterator<? extends CharSequence> iter = other.getObjects().getEntries();
 
 		// TODO: allow the usage of OneReadDictionarySection
-		Map<CharSequence, Long> literalsCounts = new HashMap<>(other.getObjects().getLiteralsCounts());
+		Map<ByteString, Long> literalsCounts = new HashMap<>(other.getObjects().getLiteralsCounts());
 		literalsCounts.computeIfPresent(LiteralsUtils.NO_DATATYPE, (key, value) -> (value - other.getShared().getNumberOfElements()));
 		CustomIterator customIterator = new CustomIterator(iter, literalsCounts);
 		while (customIterator.hasNext()) {
 			PFCDictionarySection section = new PFCDictionarySection(spec);
-			CharSequence type = LiteralsUtils.getType(customIterator.prev);
+			ByteString type = ByteString.of(LiteralsUtils.getType(customIterator.prev));
 			long numEntries = literalsCounts.get(type);
 
 			section.load(customIterator, numEntries, listener);
@@ -98,48 +98,45 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
 	------------------
 	 */
 	private void writeLiteralsMap(OutputStream output, ProgressListener listener) throws IOException {
-		Iterator<Map.Entry<CharSequence, DictionarySectionPrivate>> hmIterator = objects.entrySet().iterator();
+		Iterator<Map.Entry<ByteString, DictionarySectionPrivate>> hmIterator = objects.entrySet().iterator();
 		int numberOfTypes = objects.size();
 		VByte.encode(output, numberOfTypes);
 
-		List<CharSequence> types = new ArrayList<>();
+		List<ByteString> types = new ArrayList<>();
 
 		while (hmIterator.hasNext()) {
-			Map.Entry<CharSequence, DictionarySectionPrivate> entry = hmIterator.next();
-			CharSequence uri = entry.getKey();
-			String uriStr = uri.toString();
-			byte[] bytes = uriStr.getBytes();
-			VByte.encode(output, bytes.length);
-			IOUtil.writeBuffer(output, bytes, 0, bytes.length, listener);
+			Map.Entry<ByteString, DictionarySectionPrivate> entry = hmIterator.next();
+			ByteString uri = entry.getKey();
+			IOUtil.writeSizedBuffer(output, uri.getBuffer(), 0, uri.length(), listener);
 			types.add(uri);
 		}
-		for (CharSequence type : types) {
+		for (ByteString type : types) {
 			this.objects.get(type).save(output, listener);
 		}
 	}
 
 	private void readLiteralsMap(InputStream input, ProgressListener listener) throws IOException {
 		int numberOfTypes = (int) VByte.decode(input);
-		List<CharSequence> types = new ArrayList<>();
+		List<ByteString> types = new ArrayList<>();
 		for (int i = 0; i < numberOfTypes; i++) {
 			int length = (int) VByte.decode(input);
 			byte[] type = IOUtil.readBuffer(input, length, listener);
 			types.add(new CompactString(type));
 		}
-		for (CharSequence type : types) {
+		for (ByteString type : types) {
 			this.objects.put(type, DictionarySectionFactory.loadFrom(input, listener));
 		}
 	}
 
 	private void mapLiteralsMap(CountInputStream input, File f, ProgressListener listener) throws IOException {
 		int numberOfTypes = (int) VByte.decode(input);
-		List<CharSequence> types = new ArrayList<>();
+		List<ByteString> types = new ArrayList<>();
 		for (int i = 0; i < numberOfTypes; i++) {
 			int length = (int) VByte.decode(input);
 			byte[] type = IOUtil.readBuffer(input, length, listener);
 			types.add(new CompactString(type));
 		}
-		for (CharSequence type : types) {
+		for (ByteString type : types) {
 			this.objects.put(type, DictionarySectionFactory.loadFrom(input, f, listener));
 		}
 
@@ -190,7 +187,7 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
 	}
 
 	@Override
-	public TreeMap<CharSequence, DictionarySection> getAllObjects() {
+	public TreeMap<? extends CharSequence, DictionarySection> getAllObjects() {
 		return new TreeMap<>(objects);
 	}
 

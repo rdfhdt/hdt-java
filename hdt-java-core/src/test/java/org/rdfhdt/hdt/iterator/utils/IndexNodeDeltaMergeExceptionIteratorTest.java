@@ -3,6 +3,8 @@ package org.rdfhdt.hdt.iterator.utils;
 import org.junit.Test;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.string.AssertionCharSequence;
+import org.rdfhdt.hdt.util.string.ByteString;
+import org.rdfhdt.hdt.util.string.CompactString;
 
 import java.util.Iterator;
 import java.util.List;
@@ -126,28 +128,28 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 				new AssertionCharSequence("bbcd", 0)
 		);
 
-		assertEquals("", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(CompactString.EMPTY, ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(0, it.lastDelta());
 
-		assertEquals("", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(CompactString.EMPTY, ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(0, it.lastDelta());
 
-		assertEquals("aaa", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("aaa"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(0, it.lastDelta());
 
-		assertEquals("aab", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("aab"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(2, it.lastDelta());
 
-		assertEquals("aac", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("aac"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(2, it.lastDelta());
 
-		assertEquals("aacd", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("aacd"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(3, it.lastDelta());
 
-		assertEquals("abcd", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("abcd"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(1, it.lastDelta());
 
-		assertEquals("bbcd", ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
+		assertEquals(new CompactString("bbcd"), ((AssertionCharSequence) it.fetchNode().getNode()).getSequence());
 		assertEquals(0, it.lastDelta());
 
 		assertNull(it.fetchNode());
@@ -155,11 +157,11 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 
 	@Test
 	public void mergeComputeTest() {
-		List<CharSequence> output = List.of(
+		List<ByteString> output = Stream.of(
 				"",
 				"a",
 				"b"
-		);
+		).map(ByteString::of).collect(Collectors.toList());
 		IndexNodeDeltaMergeExceptionIterator.IndexNodeDeltaFetcher<RuntimeException> it1 =
 				createFromSortedArray(
 						new AssertionCharSequence("a", 0)
@@ -176,7 +178,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 				2
 		);
 
-		Iterator<CharSequence> itE = output.iterator();
+		Iterator<ByteString> itE = output.iterator();
 		while (it.hasNext()) {
 			CharSequence sequence = ((AssertionCharSequence) it.next().getNode()).getSequence();
 			assertTrue("missing: " + sequence, itE.hasNext());
@@ -188,7 +190,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 
 	@Test
 	public void mergeCountComputeTest() {
-		List<CharSequence> output = List.of(
+		List<ByteString> output = Stream.of(
 				"",
 				"aaa",
 				"aab",
@@ -199,7 +201,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 				"bacdd",
 				"bacde",
 				"bacdz"
-		);
+		).map(ByteString::of).collect(Collectors.toList());
 		IndexNodeDeltaMergeExceptionIterator.IndexNodeDeltaFetcher<RuntimeException> it1 =
 				createFromSortedArray(
 						new AssertionCharSequence("aaa", 0),
@@ -223,7 +225,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 				2
 		);
 
-		Iterator<CharSequence> itE = output.iterator();
+		Iterator<ByteString> itE = output.iterator();
 		while (it.hasNext()) {
 			CharSequence sequence = ((AssertionCharSequence) it.next().getNode()).getSequence();
 			assertTrue("missing: " + sequence, itE.hasNext());
@@ -235,7 +237,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 
 	@Test
 	public void deepMergeComputeTest() {
-		List<CharSequence> output = List.of(
+		List<ByteString> output = Stream.of(
 				"",
 				"aa",
 				"aaa",
@@ -254,7 +256,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 				"bze",
 				"cd",
 				"ce"
-		);
+		).map(ByteString::of).collect(Collectors.toList());
 		IndexNodeDeltaMergeExceptionIterator.IndexNodeDeltaFetcher<RuntimeException> it1 =
 				createFromSortedArray(
 						new AssertionCharSequence("aa", 0),
@@ -297,10 +299,10 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 
 		((IndexNodeDeltaMergeExceptionIterator<?>) it).printMergeTree();
 
-		Iterator<CharSequence> itE = output.iterator();
+		Iterator<ByteString> itE = output.iterator();
 		while (it.hasNext()) {
 			assertTrue(itE.hasNext());
-			CharSequence seq = ((AssertionCharSequence) it.next().getNode()).getSequence();
+			ByteString seq = ((AssertionCharSequence) it.next().getNode()).getSequence();
 			assertEquals(itE.next(), seq);
 		}
 		assertFalse(itE.hasNext());
@@ -311,7 +313,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 		// (tried with 200_000)
 		final long size = 2_000;
 		Random random = new Random(35);
-		List<CharSequence> randy = Stream.generate(() -> {
+		List<ByteString> randy = Stream.generate(() -> {
 					String table = "abcd";
 					StringBuilder bld = new StringBuilder();
 					// +1 because we don't have empty strings during this step
@@ -320,11 +322,11 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 						bld.append(table.charAt(bn % table.length()));
 						bn /= table.length();
 					}
-					return bld.toString();
+					return new CompactString(bld);
 				})
 				.limit(size)
 				.collect(Collectors.toList());
-		List<CharSequence> sortedRandy = randy.stream().sorted().collect(Collectors.toList());
+		List<ByteString> sortedRandy = randy.stream().sorted().collect(Collectors.toList());
 
 		assertEquals(size, sortedRandy.size());
 
@@ -335,7 +337,7 @@ public class IndexNodeDeltaMergeExceptionIteratorTest {
 		);
 
 		int index = 0;
-		Iterator<CharSequence> itE = sortedRandy.iterator();
+		Iterator<ByteString> itE = sortedRandy.iterator();
 		while (it.hasNext()) {
 			assertTrue(itE.hasNext());
 			CharSequence actual = ((AssertionCharSequence) it.next().getNode()).getSequence();

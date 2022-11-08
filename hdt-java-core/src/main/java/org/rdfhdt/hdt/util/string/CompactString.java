@@ -67,13 +67,8 @@ public class CompactString implements CharSequence, Serializable, ByteString {
 	}
 	
 	public CompactString(CharSequence other) {
-		if (other instanceof CompactString) {
-			CompactString str = (CompactString) other;
-			data = Arrays.copyOf(str.data, str.data.length);
-			hash = str.hash;
-		} else if (other instanceof ReplazableString) {
-			ReplazableString str = (ReplazableString) other;
-			data = Arrays.copyOf(str.buffer, str.used);
+		if (other instanceof ByteString) {
+			data = Arrays.copyOf(((ByteString) other).getBuffer(), other.length());
 		} else {
 			data = other.toString().getBytes(ByteStringUtil.STRING_ENCODING);
 		}
@@ -121,7 +116,7 @@ public class CompactString implements CharSequence, Serializable, ByteString {
 	}
 
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public ByteString subSequence(int start, int end) {
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());

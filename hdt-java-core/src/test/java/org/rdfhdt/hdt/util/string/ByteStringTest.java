@@ -1,48 +1,33 @@
 package org.rdfhdt.hdt.util.string;
 
+import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.text.Collator;
 
+import static org.junit.Assert.assertEquals;
+
 public class ByteStringTest {
-	private static void printHex(byte[] b) {
-		for (byte bb : b) {
-			System.out.printf("%2x ", bb);
-		}
-		System.out.println();
-	}
-	private static void printBin(byte[] b) {
-		for (byte bb : b) {
-			String s = Integer.toBinaryString(bb & 0xFF);
-			System.out.print("0".repeat(8 - s.length()) + s + " ");
-		}
-		System.out.println();
-	}
 	@Test
+	@Ignore("failing https://github.com/rdfhdt/hdt-java/issues/177")
 	public void utf32Test() {
-		String ss1 = "\uD85B\uDCE3";
-		String ss2 = "\uF4D1";
+		String ss1 = new String(Character.toChars(0x26ce3)); // 𦳣
+		String ss2 = new String(Character.toChars(0xf4d1)); // 
 
-		ByteString b1 = ByteString.of(ss1);
-		ByteString b2 = ByteString.of(ss2);
+		System.out.println(ss1.compareTo(ss2));
+		System.out.println(Integer.compare(0x26ce3, 0xf4d1));
 
-		assert ss1.equals(b1.toString());
-		assert ss2.equals(b2.toString());
 
-		Collator coll = Collator.getInstance();
+		CompactString b1 = new CompactString(ss1);
+		CompactString b2 = new CompactString(ss2);
 
-		System.out.println("BYTESTRING: " + b1 + (b1.compareTo(b2) < 0 ? " < " : " > ") + b2);
-		System.out.println("STRING    : " + b1 + (b1.toString().compareTo(b2.toString()) < 0 ? " < " : " > ") + b2);
-		System.out.println("COLLATOR  : " + b1 + (coll.compare(b1.toString(), b2.toString()) < 0 ? " < " : " > ") + b2);
+		assertEquals(ss1, b1.toString());
+		assertEquals(ss2, b2.toString());
 
-		printHex(b1.getBuffer());
-		printHex(b2.getBuffer());
+		int cmpByte = Math.max(-1, Math.min(1, b1.compareTo(b2)));
+		int cmpStr = Math.max(-1, Math.min(1, b1.toString().compareTo(b2.toString())));
 
-		printBin(b1.getBuffer());
-		printBin(b2.getBuffer());
-
-		System.out.println(Character.isHighSurrogate(ss1.charAt(0)) + ", " + Character.isLowSurrogate(ss1.charAt(1)));
-		System.out.println(Character.toCodePoint(ss1.charAt(0), ss1.charAt(1)));
-		System.out.println((int) ss2.charAt(0));
+		assertEquals(cmpStr, cmpByte);
 	}
 }

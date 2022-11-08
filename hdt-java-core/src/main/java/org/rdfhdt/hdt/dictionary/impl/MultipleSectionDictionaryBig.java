@@ -18,6 +18,7 @@ import org.rdfhdt.hdt.util.LiteralsUtils;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.CompactString;
 
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -53,13 +55,13 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
         predicates.load(other.getPredicates(), iListener);
         Iterator<? extends CharSequence> iter = other.getObjects().getEntries();
 
-        Map<CharSequence, Long> literalsCounts = ((HashDictionarySection)other.getObjects()).getLiteralsCounts();
+        Map<ByteString, Long> literalsCounts = ((HashDictionarySection)other.getObjects()).getLiteralsCounts();
         literalsCounts.computeIfPresent(LiteralsUtils.NO_DATATYPE, (key, value) -> (value - other.getShared().getNumberOfElements()));
         CustomIterator customIterator = new CustomIterator(iter,literalsCounts);
 
         while (customIterator.hasNext()){
             PFCDictionarySectionBig section = new PFCDictionarySectionBig(spec);
-            String type = LiteralsUtils.getType(customIterator.prev).toString();
+            ByteString type = (ByteString) LiteralsUtils.getType(customIterator.prev);
             long numEntries = literalsCounts.get(type);
 
             section.load(customIterator,numEntries,listener);
@@ -95,33 +97,33 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
         int numberOfTypes = objects.size();
         VByte.encode(output, numberOfTypes);
 
-        ArrayList<CharSequence> types = new ArrayList<>();
+        List<ByteString> types = new ArrayList<>();
 
-        for (CharSequence uriKey : objects.keySet()) {
+        for (ByteString uriKey : objects.keySet()) {
             IOUtil.writeSizedBuffer(output, uriKey.toString().getBytes(), listener);
             types.add(uriKey);
         }
-        for(CharSequence type:types){
+        for(ByteString type : types){
             this.objects.get(type).save(output,listener);
         }
     }
     private void readLiteralsMap(InputStream input,ProgressListener listener) throws IOException {
         int numberOfTypes = (int) VByte.decode(input);
-        ArrayList<CharSequence> types = new ArrayList<>();
+        List<ByteString> types = new ArrayList<>();
         for (int i = 0; i < numberOfTypes; i++) {
             types.add(new CompactString(IOUtil.readSizedBuffer(input, listener)));
         }
-        for(CharSequence type : types){
+        for(ByteString type : types){
             this.objects.put(type,DictionarySectionFactory.loadFrom(input,listener));
         }
     }
     private void mapLiteralsMap(CountInputStream input,File f,ProgressListener listener) throws IOException {
         int numberOfTypes = (int) VByte.decode(input);
-        ArrayList<CharSequence> types = new ArrayList<>();
+        List<ByteString> types = new ArrayList<>();
         for (int i = 0; i < numberOfTypes; i++) {
             types.add(new CompactString(IOUtil.readSizedBuffer(input, listener)));
         }
-        for(CharSequence type : types){
+        for(ByteString type : types){
             this.objects.put(type,DictionarySectionFactory.loadFrom(input,f,listener));
         }
 
@@ -172,7 +174,7 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
     }
 
     @Override
-    public Map<CharSequence, DictionarySection> getAllObjects() {
+    public Map<? extends CharSequence, DictionarySection> getAllObjects() {
         return new TreeMap<>(objects);
     }
 

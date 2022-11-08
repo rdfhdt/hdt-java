@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.utils;
 
 import org.rdfhdt.hdt.triples.IndexedNode;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
@@ -59,7 +60,7 @@ public class DebugOrderNodeIterator implements Consumer<IndexedNode> {
 
 	@Override
 	public void accept(IndexedNode obj) {
-		CharSequence node = obj.getNode();
+		ByteString node = obj.getNode();
 		if (prevBuffer.length() != 0) {
 			int cmp = comparator.compare(prevBuffer, node);
 			if (cmp == 0 && !allowDuplicated) {

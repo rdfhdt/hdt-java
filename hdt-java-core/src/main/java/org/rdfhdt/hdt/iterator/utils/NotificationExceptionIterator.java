@@ -45,7 +45,7 @@ public class NotificationExceptionIterator<T, E extends Exception> implements Ex
 	public T next() throws E {
 		current++;
 		if (current % (size / split) == 0) {
-			listener.notifyProgress((float) current / size, message + " " + current + "/" + size);
+			listener.notifyProgress(100f * current / size, message + " " + current + "/" + size);
 		}
 		return it.next();
 	}

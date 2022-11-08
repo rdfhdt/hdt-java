@@ -5,8 +5,8 @@ import java.util.stream.IntStream;
 /**
  * CharSequence wrapper throwing an {@link java.lang.AssertionError} if we try to read before the minimum index
  */
-public class AssertionCharSequence implements CharSequence {
-	private final CharSequence sequence;
+public class AssertionCharSequence implements ByteString {
+	private final ByteString sequence;
 	private final int minimumRead;
 
 	/**
@@ -15,9 +15,18 @@ public class AssertionCharSequence implements CharSequence {
 	 * @param sequence    wrapped sequence
 	 * @param minimumRead minimum index to read (inclusive)
 	 */
-	public AssertionCharSequence(CharSequence sequence, int minimumRead) {
+	public AssertionCharSequence(ByteString sequence, int minimumRead) {
 		this.sequence = sequence;
 		this.minimumRead = minimumRead;
+	}
+	/**
+	 * create an assertion cs
+	 *
+	 * @param sequence    wrapped sequence
+	 * @param minimumRead minimum index to read (inclusive)
+	 */
+	public AssertionCharSequence(CharSequence sequence, int minimumRead) {
+		this(ByteString.of(sequence), minimumRead);
 	}
 
 	@Override
@@ -34,7 +43,7 @@ public class AssertionCharSequence implements CharSequence {
 	}
 
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public ByteString subSequence(int start, int end) {
 		if (start < minimumRead) {
 			throw new AssertionError("Tried to create subSequence before minimum index! " + start + " / " + minimumRead);
 		}
@@ -56,7 +65,12 @@ public class AssertionCharSequence implements CharSequence {
 		return sequence.codePoints();
 	}
 
-	public CharSequence getSequence() {
+	public ByteString getSequence() {
 		return sequence;
+	}
+
+	@Override
+	public byte[] getBuffer() {
+		return sequence.getBuffer();
 	}
 }

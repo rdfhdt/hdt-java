@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.util.listener;
 
+import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
 /**
@@ -7,36 +8,83 @@ import org.rdfhdt.hdt.listener.ProgressListener;
  *
  * @author Antoine Willerval
  */
-public class PrefixListener implements ProgressListener {
+public abstract class PrefixListener implements ProgressListener {
+	private static class SingleThreadPrefixListener extends PrefixListener {
+		private final ProgressListener listener;
+
+		private SingleThreadPrefixListener(String prefix, ProgressListener listener) {
+			super(prefix);
+			this.listener = listener;
+		}
+
+		@Override
+		public void clearThreads() {
+			// do nothing
+		}
+
+		@Override
+		public void notifyProgress(float level, String message) {
+			listener.notifyProgress(level, prefix + message);
+		}
+	}
+	private static class MultiThreadPrefixListener extends PrefixListener implements MultiThreadListener {
+		private final MultiThreadListener listener;
+
+		private MultiThreadPrefixListener(String prefix, MultiThreadListener listener) {
+			super(prefix);
+			this.listener = listener;
+		}
+
+
+		@Override
+		public void notifyProgress(String thread, float level, String message) {
+			listener.notifyProgress(thread, level, prefix + message);
+		}
+
+		@Override
+		public void unregisterAllThreads() {
+			listener.unregisterAllThreads();
+		}
+
+		@Override
+		public void clearThreads() {
+			unregisterAllThreads();
+		}
+
+		@Override
+		public void registerThread(String threadName) {
+			listener.registerThread(threadName);
+		}
+
+		@Override
+		public void unregisterThread(String threadName) {
+			listener.unregisterThread(threadName);
+		}
+	}
 	/**
-	 * create a prefix listener from another listener
+	 * create a prefix listener from another listener, allow multi-thread listener
 	 *
 	 * @param prefix   prefix to concat to the messages
 	 * @param listener the listener
 	 * @return null if listener is null, listener if prefix is null or empty or a prefix listener
 	 */
-	public static ProgressListener of(String prefix, ProgressListener listener) {
+	public static PrefixListener of(String prefix, ProgressListener listener) {
 		if (listener == null) {
 			return null;
 		}
 
-		if (prefix == null || prefix.isEmpty()) {
-			return listener;
+		if (listener instanceof MultiThreadListener) {
+			return new MultiThreadPrefixListener(prefix, (MultiThreadListener) listener);
+		} else {
+			return new SingleThreadPrefixListener(prefix, listener);
 		}
-
-		return new PrefixListener(prefix, listener);
 	}
 
-	private final String prefix;
-	private final ProgressListener listener;
+	protected final String prefix;
 
-	private PrefixListener(String prefix, ProgressListener listener) {
+	private PrefixListener(String prefix) {
 		this.prefix = prefix;
-		this.listener = listener;
 	}
 
-	@Override
-	public void notifyProgress(float level, String message) {
-		listener.notifyProgress(level, prefix + message);
-	}
+	public abstract void clearThreads();
 }

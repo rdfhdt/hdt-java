@@ -3,23 +3,37 @@ package org.rdfhdt.hdt.options;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+/**
+ * define a key in the HDTOptionsKey class
+ *
+ * @author Antoine Willerval
+ */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Key {
-	enum Type {
-		STRING("String"), PATH("Path"), NUMBER("Number"), DOUBLE("Double"), BOOLEAN("Boolean"), ENUM("Enum");
+    /**
+     * Type enum for a key
+     */
+    enum Type {
+        STRING("String"), PATH("Path"), NUMBER("Number"), DOUBLE("Double"), BOOLEAN("Boolean"), ENUM("Enum");
 
-		private final String title;
+        private final String title;
 
-		Type(String title) {
-			this.title = title;
-		}
+        Type(String title) {
+            this.title = title;
+        }
 
-		public String getTitle() {
-			return title;
-		}
-	}
+        public String getTitle() {
+            return title;
+        }
+    }
 
-	String desc() default  "";
+    /**
+     * @return description of the key
+     */
+    String desc() default "";
 
-	Type type() default Type.STRING;
+    /**
+     * @return type of the key
+     */
+    Type type() default Type.STRING;
 }

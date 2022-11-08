@@ -5,6 +5,7 @@ import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
@@ -30,14 +31,8 @@ public class CompressNodeWriter implements Closeable {
 	}
 
 	public void appendNode(IndexedNode node) throws IOException {
-		CharSequence str = node.getNode();
+		ByteString str = node.getNode();
 		long index = node.getIndex();
-
-		// to avoid bad longestCommonPrefix call
-		// cf: https://github.com/rdfhdt/hdt-java/issues/165
-		if (str instanceof String) {
-			str = new CompactString(str);
-		}
 
 		// Find common part.
 		int delta = ByteStringUtil.longestCommonPrefix(previousStr, str);

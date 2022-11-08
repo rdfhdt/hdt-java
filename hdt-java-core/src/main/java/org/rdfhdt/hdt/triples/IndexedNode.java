@@ -1,23 +1,27 @@
 package org.rdfhdt.hdt.triples;
 
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
 import java.util.Comparator;
 
 
-public class IndexedNode implements Comparable<IndexedNode> {
-	private static final Comparator<CharSequence> NODE_COMPARATOR = CharSequenceComparator.getInstance();
-	private CharSequence node;
+public final class IndexedNode implements Comparable<IndexedNode> {
+	private ByteString node;
 	private long index;
 
-	public IndexedNode(CharSequence node, long index) {
+	public IndexedNode(ByteString node, long index) {
 		this.node = node;
 		this.index = index;
+	}
+
+	public IndexedNode(CharSequence node, long index) {
+		this(ByteString.of(node), index);
 	}
 	public IndexedNode() {
 	}
 
-	public CharSequence getNode() {
+	public ByteString getNode() {
 		return node;
 	}
 
@@ -29,12 +33,12 @@ public class IndexedNode implements Comparable<IndexedNode> {
 		this.index = index;
 	}
 
-	public void setNode(CharSequence node) {
+	public void setNode(ByteString node) {
 		this.node = node;
 	}
 
 	@Override
 	public int compareTo(IndexedNode o) {
-		return NODE_COMPARATOR.compare(node, o.getNode());
+		return node.compareTo(o.node);
 	}
 }

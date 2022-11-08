@@ -1,13 +1,16 @@
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
+import org.rdfhdt.hdt.util.string.ByteString;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 public class CatWrapper implements Iterator<CatElement> {
     public Iterator<? extends CharSequence> sectionIter;
-    public String iterName;
+    public ByteString iterName;
     int count = 0;
-    public CatWrapper(Iterator<? extends CharSequence> sectionIter,String iterName){
+    public CatWrapper(Iterator<? extends CharSequence> sectionIter, ByteString iterName){
         this.sectionIter = sectionIter;
         this.iterName = iterName;
     }
@@ -19,9 +22,9 @@ public class CatWrapper implements Iterator<CatElement> {
 
     @Override
     public CatElement next() {
-        CharSequence entity = sectionIter.next();
+        ByteString entity = ByteString.of(sectionIter.next());
         count++;
-        ArrayList<CatElement.IteratorPlusPosition> IDs = new ArrayList<>();
+        List<CatElement.IteratorPlusPosition> IDs = new ArrayList<>();
 
         IDs.add(new CatElement.IteratorPlusPosition(iterName,count));
         return new CatElement(entity,IDs);

@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.dictionary.impl.section;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -21,11 +22,6 @@ public class OneReadDictionarySection implements TempDictionarySection {
 	public OneReadDictionarySection(Iterator<? extends CharSequence> reader, long size) {
 		ref.set(reader);
 		this.size = size;
-	}
-
-	@Override
-	public Map<? extends CharSequence, Long> getLiteralsCounts() {
-		return TempDictionarySection.super.getLiteralsCounts();
 	}
 
 	@Override

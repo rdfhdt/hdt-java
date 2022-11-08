@@ -1,19 +1,21 @@
 package org.rdfhdt.hdt.util;
 
+import org.rdfhdt.hdt.util.string.ByteString;
+
 import java.util.Iterator;
 import java.util.Map;
 
 public class CustomIterator implements Iterator<CharSequence> {
-    public CharSequence prev = "";
+    public ByteString prev = ByteString.empty();
     boolean first = true;
     Iterator<? extends CharSequence> iter;
-    Map<CharSequence,Long> literalsCounts;
+    Map<? extends CharSequence,Long> literalsCounts;
     private long currCount;
-    public CustomIterator(Iterator<? extends CharSequence> iter, Map<CharSequence,Long> literalsCounts) {
+    public CustomIterator(Iterator<? extends CharSequence> iter, Map<? extends CharSequence,Long> literalsCounts) {
         this.iter = iter;
         this.literalsCounts = literalsCounts;
         if(iter.hasNext()) {
-            prev = iter.next();
+            prev = ByteString.of(iter.next());
             currCount = literalsCounts.get(LiteralsUtils.getType(prev));
             currCount--;
         } else {
@@ -27,7 +29,7 @@ public class CustomIterator implements Iterator<CharSequence> {
             if(first)
                 return true;
             if(iter.hasNext()){
-                prev = iter.next();
+                prev = ByteString.of(iter.next());
                 currCount = literalsCounts.get(LiteralsUtils.getType(prev));
                 currCount--;
                 first = true;
@@ -43,7 +45,7 @@ public class CustomIterator implements Iterator<CharSequence> {
         if(first) {
             first = false;
         } else {
-            prev = iter.next();
+            prev = ByteString.of(iter.next());
             currCount--;
         }
         return LiteralsUtils.removeType(prev);

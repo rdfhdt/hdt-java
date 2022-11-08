@@ -14,6 +14,7 @@ import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,6 +22,7 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -46,7 +48,7 @@ public class LargeFakeDataSetStreamSupplier {
 	public static String stringNameOfInt(int i, boolean unicode) {
 		StringBuilder out = new StringBuilder();
 		if (unicode) {
-			return "" + (char) (30 + Math.min(i, Character.MAX_VALUE - 30));
+			return new String(Character.toChars(Math.min(i, Character.MAX_CODE_POINT)));
 		} else {
 			String table = "abcdefghijklmnopqrstuvwxyz";
 			int c = i;
@@ -155,10 +157,21 @@ public class LargeFakeDataSetStreamSupplier {
 	 * @see #createNTFile(java.lang.String)
 	 */
 	public void createNTFile(Path file) throws IOException {
-		try (FileWriter writer = new FileWriter(file.toFile())) {
-			for (Iterator<TripleString> it = createTripleStringStream(); it.hasNext(); ) {
-				it.next().dumpNtriple(writer);
-			}
+		try (BufferedWriter writer = Files.newBufferedWriter(file)) {
+			createNTFile(writer);
+		}
+	}
+
+	/**
+	 * create a nt file from the stream
+	 *
+	 * @param writer the writer to write
+	 * @throws IOException io exception
+	 * @see #createNTFile(java.lang.String)
+	 */
+	public void createNTFile(Writer writer) throws IOException {
+		for (Iterator<TripleString> it = createTripleStringStream(); it.hasNext(); ) {
+			it.next().dumpNtriple(writer);
 		}
 	}
 
@@ -290,7 +303,7 @@ public class LargeFakeDataSetStreamSupplier {
 		int size = random.nextInt(maxLiteralSize);
 		StringBuilder litText = new StringBuilder();
 		for (int i = 0; i < size; i++) {
-			litText.append(stringNameOfInt(unicode ? random.nextInt(Character.MAX_VALUE - 30) : random.nextInt(maxElementSplit), unicode));
+			litText.append(stringNameOfInt(unicode ? random.nextInt(Character.MAX_CODE_POINT - 30) + 30 : random.nextInt(maxElementSplit), unicode));
 		}
 		String text = "\"" + litText + "\"";
 		int litType = random.nextInt(3);
@@ -308,7 +321,7 @@ public class LargeFakeDataSetStreamSupplier {
 
 	private class FakeStatementIterator implements Iterator<TripleString> {
 		private long size;
-		private long count;
+		private long count = 0;
 		private TripleString buffer;
 		private TripleString next;
 
@@ -320,7 +333,7 @@ public class LargeFakeDataSetStreamSupplier {
 
 		@Override
 		public boolean hasNext() {
-			if (size >= maxSize || count >= maxTriples) {
+			if (size >= maxSize || count > maxTriples) {
 				return false;
 			}
 			if (next != null) {
@@ -358,7 +371,7 @@ public class LargeFakeDataSetStreamSupplier {
 			size += estimation;
 			count++;
 
-			return size < maxSize && count < maxTriples;
+			return size < maxSize && count <= maxTriples;
 		}
 
 		@Override

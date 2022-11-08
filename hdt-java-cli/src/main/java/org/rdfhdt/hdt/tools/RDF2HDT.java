@@ -147,9 +147,7 @@ public class RDF2HDT implements ProgressListener {
 			} else {
 				baseURI = Path.of(rdfInput).toUri().toString();
 			}
-			if (!quiet) {
-				System.out.println("base uri not specified, using '" + baseURI + "'");
-			}
+			warn("base uri not specified, using '" + baseURI + "'");
 		}
 
 		RDFNotation notation = null;
@@ -157,7 +155,7 @@ public class RDF2HDT implements ProgressListener {
 			try {
 				notation = RDFNotation.parse(rdfType);
 			} catch (IllegalArgumentException e) {
-				System.out.println("Notation " + rdfType + " not recognised.");
+				warn("Notation " + rdfType + " not recognised.");
 			}
 		}
 
@@ -165,10 +163,12 @@ public class RDF2HDT implements ProgressListener {
 			try {
 				notation = RDFNotation.guess(rdfInput);
 			} catch (IllegalArgumentException e) {
-				System.out.println("Could not guess notation for " + rdfInput + " Trying NTriples");
+				warn("Could not guess notation for " + rdfInput + " Trying NTriples");
 				notation = RDFNotation.NTRIPLES;
 			}
 		}
+
+		log("Converting " +rdfInput+" to "+hdtOutput+" as "+notation.name());
 
 		if (ntSimpleLoading) {
 			spec.set("parser.ntSimpleParser", "true");
@@ -185,16 +185,12 @@ public class RDF2HDT implements ProgressListener {
 
 			long maxTreeCatChunkSize = getMaxTreeCatChunkSize();
 
-			if (!quiet) {
-				System.out.println("Compute HDT with HDTCatTree using chunk of size: " + StringUtil.humanReadableByteCount(maxTreeCatChunkSize, true));
-			}
+			log("Compute HDT with HDTCatTree using chunk of size: " + StringUtil.humanReadableByteCount(maxTreeCatChunkSize, true));
 
 			if (disk) {
 				if (diskLocation != null) {
 					spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, diskLocation);
-					if (!quiet) {
-						System.out.println("Using temp directory " + diskLocation);
-					}
+					log("Using temp directory " + diskLocation);
 				}
 				MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 				hdt = HDTManager.catTree(
@@ -222,14 +218,12 @@ public class RDF2HDT implements ProgressListener {
 			}
 		} else if (disk) {
 			if (!quiet) {
-				System.out.println("Generating using generateHDTDisk");
+				log("Generating using generateHDTDisk");
 			}
 			spec.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, hdtOutput);
 			if (diskLocation != null) {
 				spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, diskLocation);
-				if (!quiet) {
-					System.out.println("Using temp directory " + diskLocation);
-				}
+				log("Using temp directory " + diskLocation);
 			}
 			MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 			hdt = HDTManager.generateHDTDisk(rdfInput, baseURI, notation, CompressionType.guess(rdfInput), spec, listenerConsole);
@@ -242,30 +236,31 @@ public class RDF2HDT implements ProgressListener {
 							: null;
 			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation, spec, listenerConsole);
 		}
-		System.out.println("File converted in: "+sw.stopAndShow());
+
+		logValue("File converted in ..... ", sw.stopAndShow(), true);
 
 		try {
 			// Show Basic stats
 			if(!quiet){
-				System.out.println("Total Triples: "+hdt.getTriples().getNumberOfElements());
-				System.out.println("Different subjects: "+hdt.getDictionary().getNsubjects());
-				System.out.println("Different predicates: "+hdt.getDictionary().getNpredicates());
-				System.out.println("Different objects: "+hdt.getDictionary().getNobjects());
-				System.out.println("Common Subject/Object:"+hdt.getDictionary().getNshared());
+				logValue("Total Triples ......... ", "" + hdt.getTriples().getNumberOfElements());
+				logValue("Different subjects .... ", "" + hdt.getDictionary().getNsubjects());
+				logValue("Different predicates .. ", "" + hdt.getDictionary().getNpredicates());
+				logValue("Different objects ..... ", "" + hdt.getDictionary().getNobjects());
+				logValue("Common Subject/Object . ", "" + hdt.getDictionary().getNshared());
 			}
 
 			// Dump to HDT file
 			if (!disk && !catTree) {
 				sw = new StopWatch();
 				hdt.saveToHDT(hdtOutput, this);
-				System.out.println("HDT saved to file in: "+sw.stopAndShow());
+				logValue("HDT saved to file in .. ", sw.stopAndShow());
 			}
 
 			// Generate index and dump it to .hdt.index file
 			sw.reset();
 			if(generateIndex) {
 				hdt = HDTManager.indexedHDT(hdt,this);
-				System.out.println("Index generated and saved in: "+sw.stopAndShow());
+				logValue("Index generated and saved in ", sw.stopAndShow());
 			}
 		} finally {
 			if(hdt!=null) hdt.close();
@@ -282,6 +277,29 @@ public class RDF2HDT implements ProgressListener {
 	public void notifyProgress(float level, String message) {
 		if(!quiet) {
 			System.out.print("\r"+message + "\t"+ level +"                            \r");
+		}
+	}
+
+	private String prefix(String pref, int r, int g, int b) {
+		return colorReset() + "[" + color(r, g, b) + pref + colorReset() + "]";
+	}
+
+	private void log(String msg) {
+		if (!quiet) {
+			System.out.println(prefix("INFO", 3, 1, 5) + " " + colorReset() + msg);
+		}
+	}
+	private void logValue(String msg, String value, boolean ignoreQuiet) {
+		if (!quiet || ignoreQuiet) {
+			System.out.println(color(3, 1, 5) + msg + colorReset() + value);
+		}
+	}
+	private void logValue(String msg, String value) {
+		logValue(msg, value, false);
+	}
+	private void warn(String msg) {
+		if (!quiet) {
+			System.out.println(prefix("WARN", 5, 5, 0) + " " + colorReset() + msg);
 		}
 	}
 
@@ -314,10 +332,10 @@ public class RDF2HDT implements ProgressListener {
 				System.out.println(rdf2hdt.color(3, 1, 5) + "Type: " + rdf2hdt.colorReset() + opt.getKeyInfo().type().getTitle());
 				switch (opt.getKeyInfo().type()) {
 					case BOOLEAN:
-						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value: " + rdf2hdt.colorReset() + "true|false");
+						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible values: " + rdf2hdt.colorReset() + "true|false");
 						break;
 					case ENUM:
-						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value:");
+						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value(s):");
 						int max = opt.getValues().stream().mapToInt(vle -> vle.getValue().length()).max().orElse(0);
 						for (HDTOptionsKeys.OptionValue vle : opt.getValues()) {
 							System.out.print(rdf2hdt.color(3, 3, 3) + "- " + rdf2hdt.colorReset() + vle.getValue());
@@ -353,8 +371,6 @@ public class RDF2HDT implements ProgressListener {
 			com.usage();
 			System.exit(1);
 		}
-		
-		System.out.println("Converting "+rdf2hdt.rdfInput+" to "+rdf2hdt.hdtOutput+" as "+rdf2hdt.rdfType);
 		
 		rdf2hdt.execute();
 	}

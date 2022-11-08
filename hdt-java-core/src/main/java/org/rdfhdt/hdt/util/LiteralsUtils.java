@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.util;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.DelayedString;
@@ -14,8 +15,8 @@ public class LiteralsUtils {
 	/**
 	 * no datatype type
 	 */
-	public static final CharSequence NO_DATATYPE = new CompactString(NO_DATATYPE_STR);
-	public static final CharSequence LITERAL_LANG_TYPE = new CompactString(LITERAL_LANG_TYPE_STR);
+	public static final ByteString NO_DATATYPE = new CompactString(NO_DATATYPE_STR);
+	public static final ByteString LITERAL_LANG_TYPE = new CompactString(LITERAL_LANG_TYPE_STR);
 
 	/**
 	 * test if the node is a literal and contains a language
@@ -151,7 +152,7 @@ public class LiteralsUtils {
 		if (containsLanguage(str)) {
 			ReplazableString prefixedValue = new ReplazableString(2 + LITERAL_LANG_TYPE.length() + str.length());
 			prefixedValue.append(new byte[]{'^', '^'}, 0, 2);
-			prefixedValue.append(((CompactString) LITERAL_LANG_TYPE).getData());
+			prefixedValue.append(LITERAL_LANG_TYPE.getBuffer(), 0, LITERAL_LANG_TYPE.length());
 			prefixedValue.appendNoCompact(str);
 			return prefixedValue;
 		}
@@ -245,8 +246,7 @@ public class LiteralsUtils {
 	 * @param s1 string
 	 * @return embed version of s1
 	 */
-	public static CharSequence embed(CharSequence s1) {
-		s1 = DelayedString.unwrap(s1);
+	public static ByteString embed(ByteString s1) {
 		if (s1 == null || s1.length() == 0) {
 			return EmbeddedURI.EMPTY;
 		}
@@ -256,12 +256,14 @@ public class LiteralsUtils {
 		return new EmbeddedURI(s1);
 	}
 
-	private static class EmbeddedURI implements CharSequence {
-		private static final CharSequence EMPTY = new CompactString("<>");
+	private static class EmbeddedURI implements ByteString {
+		private static final ByteString START = new CompactString("<");
+		private static final ByteString END = new CompactString(">");
+		private static final ByteString EMPTY = new CompactString("<>");
 		private int hash;
-		private final CharSequence parent;
+		private final ByteString parent;
 
-		public EmbeddedURI(CharSequence parent) {
+		public EmbeddedURI(ByteString parent) {
 			this.parent = parent;
 		}
 
@@ -282,12 +284,25 @@ public class LiteralsUtils {
 		}
 
 		@Override
-		public CharSequence subSequence(int start, int end) {
+		public byte[] getBuffer() {
+			byte[] buffer = new byte[START.length() + parent.length() + END.length()];
+			System.arraycopy(START.getBuffer(), 0, buffer, 0, START.length());
+			System.arraycopy(parent.getBuffer(), 0, buffer, START.length(), parent.length());
+			System.arraycopy(END.getBuffer(), 0, buffer, START.length() + parent.length(), END.length());
+			return buffer;
+		}
+
+		@Override
+		public ByteString subSequence(int start, int end) {
 			if (start == 0 && end == length()) {
 				return this;
 			}
-			if (start == 0 || end == length()) {
-				return new CompactString(this.toString().subSequence(start, end));
+
+			if (start == 0) {
+				return START.copyAppend(parent.subSequence(0, end - 1));
+			}
+			if (end == length()) {
+				return parent.subSequence(start - 1, parent.length()).copyAppend(END);
 			}
 
 			return parent.subSequence(start - 1, end - 1);

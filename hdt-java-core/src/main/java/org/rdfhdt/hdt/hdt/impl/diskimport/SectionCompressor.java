@@ -18,6 +18,8 @@ import org.rdfhdt.hdt.util.io.compress.CompressNodeMergeIterator;
 import org.rdfhdt.hdt.util.io.compress.CompressNodeReader;
 import org.rdfhdt.hdt.util.io.compress.CompressUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
+import org.rdfhdt.hdt.util.string.ByteString;
+import org.rdfhdt.hdt.util.string.CompactString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +72,8 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 	 * @param seq the subject (before)
 	 * @return the subject mapped
 	 */
-	protected CharSequence convertSubject(CharSequence seq) {
-		return seq.toString();
+	protected ByteString convertSubject(CharSequence seq) {
+		return new CompactString(seq);
 	}
 
 	/**
@@ -80,8 +82,8 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 	 * @param seq the predicate (before)
 	 * @return the predicate mapped
 	 */
-	protected CharSequence convertPredicate(CharSequence seq) {
-		return seq.toString();
+	protected ByteString convertPredicate(CharSequence seq) {
+		return new CompactString(seq);
 	}
 
 	/**
@@ -90,8 +92,8 @@ public class SectionCompressor implements KWayMerger.KWayMergerImpl<TripleString
 	 * @param seq the object (before)
 	 * @return the object mapped
 	 */
-	protected CharSequence convertObject(CharSequence seq) {
-		return seq.toString();
+	protected ByteString convertObject(CharSequence seq) {
+		return new CompactString(seq);
 	}
 
 	/**

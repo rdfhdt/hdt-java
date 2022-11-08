@@ -4,7 +4,6 @@ import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.string.ByteString;
-import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.io.IOException;
@@ -184,7 +183,7 @@ public class CompressUtil {
 			}
 			while (it.hasNext()) {
 				IndexedNode node = it.next();
-				ByteString next = (ByteString) node.getNode();
+				ByteString next = node.getNode();
 				int cmp = prev.compareTo(next);
 				assert cmp <= 0: "bad order : " + prev + " > " + next;
 				if (cmp == 0) {

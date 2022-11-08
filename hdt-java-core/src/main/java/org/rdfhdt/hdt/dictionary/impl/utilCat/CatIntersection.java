@@ -20,10 +20,8 @@
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.util.string.CompactString;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 
 public class CatIntersection implements Iterator<CatElement> {
@@ -62,11 +60,11 @@ public class CatIntersection implements Iterator<CatElement> {
 
     private void helpNext(){
         while (list.size() != 0) {
-            list.sort(new IteratorPlusElementComparator());
+            list.sort(IteratorPlusElement::compareTo);
             if (list.size() == 2) {
 
 
-                if (new CompactString(list.get(0).element.entity).equals(new CompactString(list.get(1).element.entity))) {
+                if (list.get(0).element.entity.equals(list.get(1).element.entity)) {
                     hasNext = true;
                     ArrayList<CatElement.IteratorPlusPosition> ids = new ArrayList<>();
                     ids.addAll(list.get(0).element.IDs);

@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.iterator.utils;
 
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ import java.util.function.ToIntFunction;
 public class FileTripleIterator extends FileChunkIterator<TripleString> {
 	public static long estimateSize(TripleString tripleString) {
 		try {
-			return tripleString.asNtriple().toString().getBytes(ByteStringUtil.STRING_ENCODING).length;
+			return ByteString.of(tripleString.asNtriple()).getBuffer().length;
 		} catch (IOException e) {
 			throw new RuntimeException("Can't estimate the size of the triple " + tripleString, e);
 		}

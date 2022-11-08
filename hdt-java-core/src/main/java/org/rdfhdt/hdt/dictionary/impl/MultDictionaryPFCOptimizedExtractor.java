@@ -3,8 +3,10 @@ package org.rdfhdt.hdt.dictionary.impl;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySectionMap;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCOptimizedExtractor;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.SectionUtil;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
 import java.util.AbstractMap;
@@ -14,7 +16,7 @@ import java.util.TreeMap;
 
 public class MultDictionaryPFCOptimizedExtractor implements OptimizedExtractor{
 	private final PFCOptimizedExtractor shared, subjects, predicates;
-	private final TreeMap<CharSequence,PFCOptimizedExtractor> objects;
+	private final TreeMap<ByteString,PFCOptimizedExtractor> objects;
 	private final long numshared;
 
 	public MultDictionaryPFCOptimizedExtractor(MultipleSectionDictionary origDict) {
@@ -23,20 +25,20 @@ public class MultDictionaryPFCOptimizedExtractor implements OptimizedExtractor{
 		subjects = new PFCOptimizedExtractor((PFCDictionarySectionMap) origDict.subjects);
 		predicates = new PFCOptimizedExtractor((PFCDictionarySectionMap) origDict.predicates);
 		objects = new TreeMap<>(CharSequenceComparator.getInstance());
-		for (Map.Entry<CharSequence, DictionarySection> entry : origDict.getAllObjects().entrySet()) {
-			objects.put(entry.getKey(), new PFCOptimizedExtractor((PFCDictionarySectionMap) entry.getValue()));
+		for (Map.Entry<? extends CharSequence, DictionarySection> entry : origDict.getAllObjects().entrySet()) {
+			objects.put(ByteString.of(entry.getKey()), new PFCOptimizedExtractor((PFCDictionarySectionMap) entry.getValue()));
 		}
 	}
 
 	@Override
 	public CharSequence idToString(long id, TripleComponentRole role) {
-		AbstractMap.SimpleEntry<String,PFCOptimizedExtractor> section = getSection(id, role);
+		AbstractMap.SimpleEntry<ByteString,PFCOptimizedExtractor> section = getSection(id, role);
 		long localId = getLocalId(id, role);
-		if(section.getKey().equals(LiteralsUtils.NO_DATATYPE_STR) || section.getKey().equals("section"))
+		if(section.getKey().equals(LiteralsUtils.NO_DATATYPE) || section.getKey().equals(SectionUtil.SECTION))
 			return section.getValue().extract(localId);
 		else {
 			String label = section.getValue().extract(localId).toString();
-			String dType = section.getKey();
+			ByteString dType = section.getKey();
 			//Matcher matcher = pattern.matcher(label);
 			if(LiteralsUtils.containsLanguage(label)){
 				return label;
@@ -45,32 +47,32 @@ public class MultDictionaryPFCOptimizedExtractor implements OptimizedExtractor{
 			}
 		}
 	}
-	private AbstractMap.SimpleEntry<String,PFCOptimizedExtractor> getSection(long id, TripleComponentRole role) {
+	private AbstractMap.SimpleEntry<ByteString,PFCOptimizedExtractor> getSection(long id, TripleComponentRole role) {
 		switch (role) {
 		case SUBJECT:
 			if(id<=numshared) {
-				return new AbstractMap.SimpleEntry<>("section",shared);
+				return new AbstractMap.SimpleEntry<>(SectionUtil.SECTION,shared);
 			} else {
-				return new AbstractMap.SimpleEntry<>("section",subjects);
+				return new AbstractMap.SimpleEntry<>(SectionUtil.SECTION,subjects);
 			}
 		case PREDICATE:
-			return new AbstractMap.SimpleEntry<>("section",predicates);
+			return new AbstractMap.SimpleEntry<>(SectionUtil.SECTION,predicates);
 		case OBJECT:
 			if(id<= numshared) {
-				return new AbstractMap.SimpleEntry<>("section",shared);
+				return new AbstractMap.SimpleEntry<>(SectionUtil.SECTION,shared);
 		} else {
-			Iterator<Map.Entry<CharSequence, PFCOptimizedExtractor>> hmIterator = objects.entrySet().iterator();
+			Iterator<Map.Entry<ByteString, PFCOptimizedExtractor>> hmIterator = objects.entrySet().iterator();
 			// iterate over all subsections in the objects section
 			PFCOptimizedExtractor desiredSection = null;
-			String type = "";
+			ByteString type = ByteString.empty();
 			int count = 0;
 			while (hmIterator.hasNext()) {
-				Map.Entry<CharSequence, PFCOptimizedExtractor> entry = hmIterator.next();
+				Map.Entry<ByteString, PFCOptimizedExtractor> entry = hmIterator.next();
 				PFCOptimizedExtractor subSection = entry.getValue();
 				count+= subSection.getNumStrings();
 				if(id <= numshared+count){
 					desiredSection = subSection;
-					type = entry.getKey().toString();
+					type = entry.getKey();
 					break;
 				}
 			}
@@ -92,11 +94,11 @@ public class MultDictionaryPFCOptimizedExtractor implements OptimizedExtractor{
 			if(id<=numshared) {
 				return id;
 			} else {
-				Iterator<Map.Entry<CharSequence, PFCOptimizedExtractor>> hmIterator = objects.entrySet().iterator();
+				Iterator<Map.Entry<ByteString, PFCOptimizedExtractor>> hmIterator = objects.entrySet().iterator();
 				// iterate over all subsections in the objects section
 				long count = 0;
 				while (hmIterator.hasNext()){
-					Map.Entry<CharSequence, PFCOptimizedExtractor> entry = hmIterator.next();
+					Map.Entry<ByteString, PFCOptimizedExtractor> entry = hmIterator.next();
 					PFCOptimizedExtractor subSection = entry.getValue();
 					count+= subSection.getNumStrings();
 					if(id <= numshared + count){

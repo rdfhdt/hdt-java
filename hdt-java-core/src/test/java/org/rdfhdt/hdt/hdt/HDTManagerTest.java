@@ -36,6 +36,9 @@ import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.compress.CompressTest;
+import org.rdfhdt.hdt.util.string.ByteString;
+import org.rdfhdt.hdt.util.string.CharSequenceComparator;
+import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.io.File;
 import java.io.IOException;
@@ -45,11 +48,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -65,7 +71,7 @@ import static org.junit.Assert.fail;
 		HDTManagerTest.StaticTest.class
 })
 public class HDTManagerTest {
-	private static class HDTManagerTestBase extends AbstractMapMemoryTest implements ProgressListener {
+	public static class HDTManagerTestBase extends AbstractMapMemoryTest implements ProgressListener {
 		protected static String[][] diskDict() {
 			return new String[][]{
 //					{HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH},
@@ -73,22 +79,38 @@ public class HDTManagerTest {
 			};
 		}
 
+		/**
+		 * disable string order consistency test <a href="https://github.com/rdfhdt/hdt-java/issues/177">GH#177</a>
+		 */
+		protected static final boolean ALLOW_STRING_CONSISTENCY_TEST = false;
 		protected static final long SIZE_VALUE = 1L << 16;
 		protected static final int SEED = 67;
+
+		private HDTManagerTestBase() {
+		}
+
 		@Rule
 		public TemporaryFolder tempDir = new TemporaryFolder();
 		protected HDTSpecification spec;
+		protected Path rootFolder;
 
 		@Before
 		public void setupManager() throws IOException {
 			spec = new HDTSpecification();
-			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, tempDir.newFolder().getAbsolutePath());
+			rootFolder = tempDir.newFolder().toPath();
+			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, rootFolder.toAbsolutePath().toString());
 			ExceptionThread.startDebug();
 		}
 
 		@After
-		public void closeManager() {
+		public void closeManager() throws IOException {
 			ExceptionThread.endDebug();
+			if (Files.exists(rootFolder)) {
+				try (Stream<Path> s = Files.list(rootFolder)) {
+					// might be wrong with some OS hidden files?
+					assertFalse("root folder not empty", s.findAny().isPresent());
+				}
+			}
 		}
 
 		@Override
@@ -96,7 +118,8 @@ public class HDTManagerTest {
 			//		System.out.println("[" + level + "] " + message);
 		}
 
-		protected void assertEqualsHDT(HDT expected, HDT actual) throws NotFoundException {
+		public static void assertEqualsHDT(HDT expected, HDT actual) throws NotFoundException {
+			assertEquals("non matching sizes", expected.getTriples().getNumberOfElements(), actual.getTriples().getNumberOfElements());
 			// test dictionary
 			Dictionary ed = expected.getDictionary();
 			Dictionary ad = actual.getDictionary();
@@ -115,7 +138,7 @@ public class HDTManagerTest {
 					assertEqualsHDT(key.toString(), dictE, dictA);
 				});
 			} else {
-				assertFalse(ad instanceof MultipleBaseDictionary);
+				assertFalse("actual dictionary is of type MultipleBaseDictionary, but ed is, actual: " + ad.getClass() + ", excepted: " + ed.getClass(), ad instanceof MultipleBaseDictionary);
 				assertEqualsHDT("Objects", ed.getObjects(), ad.getObjects());
 			}
 			assertEqualsHDT("Shared", ed.getShared(), ad.getShared());
@@ -149,7 +172,69 @@ public class HDTManagerTest {
 			}
 		}
 
-		protected void assertEqualsHDT(String section, DictionarySection excepted, DictionarySection actual) {
+		public static void checkHDTConsistency(HDT hdt) {
+			Dictionary dict = hdt.getDictionary();
+			Map<CharSequence, DictionarySection> map;
+			map = new HashMap<>();
+			if (dict instanceof MultipleBaseDictionary) {
+				map.putAll(dict.getAllObjects());
+			} else {
+				map.put("Objects", dict.getObjects());
+			}
+			map.put("Subjects", dict.getSubjects());
+			map.put("Predicates", dict.getPredicates());
+			map.put("Shared", dict.getShared());
+
+			ReplazableString prev = new ReplazableString();
+			Comparator<CharSequence> cmp = CharSequenceComparator.getInstance();
+			map.forEach((name, section) -> {
+				prev.clear();
+				String prev2 = "";
+				Iterator<? extends CharSequence> it = section.getSortedEntries();
+				if (it.hasNext()) {
+					prev.replace(it.next());
+				}
+
+				while (it.hasNext()) {
+					CharSequence next = ByteString.of(it.next());
+
+					int cmpV = cmp.compare(prev, next);
+					if (cmpV >= 0) {
+						System.out.print("Prev: ");
+						printHex(prev);
+						System.out.print("Next: ");
+						printHex(next);
+						System.out.print("Prev: ");
+						printBin(prev);
+						System.out.print("Next: ");
+						printBin(next);
+
+						if (cmpV == 0) {
+							fail("[" + name + "] (BS) Duplicated elements! " + prev + " = " + next);
+						}
+						fail("[" + name + "] (BS) Bad order! " + prev + " > " + next);
+					}
+
+					if (ALLOW_STRING_CONSISTENCY_TEST) {
+						String nextStr = next.toString();
+						int cmpV2 = cmp.compare(prev2, nextStr);
+						if (cmpV2 == 0) {
+							fail("[" + name + "] (Str) Duplicated elements! " + prev2 + " = " + next);
+						}
+						if (cmpV2 > 0) {
+							fail("[" + name + "] (Str) Bad order! " + prev2 + " > " + next);
+						}
+
+						assertEquals("str and byteStr compare aren't returning the same results", Math.signum(cmpV2), Math.signum(cmpV), 0.01);
+						prev2 = nextStr;
+					}
+					prev.replace(next);
+				}
+			});
+		}
+
+		protected static void assertEqualsHDT(String section, DictionarySection excepted, DictionarySection actual) {
+			assertEquals("sizes of section " + section + " aren't the same!", excepted.getNumberOfElements(), actual.getNumberOfElements());
 			Iterator<? extends CharSequence> itEx = excepted.getSortedEntries();
 			Iterator<? extends CharSequence> itAc = actual.getSortedEntries();
 			assertEquals("dictionary section sizes don't match", excepted.getNumberOfElements(), actual.getNumberOfElements());
@@ -161,6 +246,25 @@ public class HDTManagerTest {
 				CompressTest.assertCharSequenceEquals(section + " section strings", expectedTriple, actualTriple);
 			}
 			assertFalse("dictionary section " + section + " is bigger than excepted", itAc.hasNext());
+		}
+
+		protected static void printHex(CharSequence seq) {
+			ByteString bs = ByteString.of(seq);
+			byte[] buffer = bs.getBuffer();
+			int len = bs.length();
+			for (int i = 0; i < len; i++) {
+				System.out.printf("%2x ", buffer[i] & 0xFF);
+			}
+			System.out.println();
+		}
+		protected static void printBin(CharSequence seq) {
+			ByteString bs = ByteString.of(seq);
+			byte[] buffer = bs.getBuffer();
+			int len = bs.length();
+			for (int i = 0; i < len; i++) {
+				System.out.print(Integer.toBinaryString(buffer[i] & 0xFF) + " ");
+			}
+			System.out.println();
 		}
 	}
 
@@ -251,7 +355,8 @@ public class HDTManagerTest {
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
 							.withMaxLiteralSize(maxLiteralSize)
-							.withSameTripleString(true);
+							.withSameTripleString(true)
+							.withUnicode(true);
 
 			if (spec.getBoolean("debug.disk.slow.stream")) {
 				supplier.withSlowStream(25);
@@ -269,6 +374,7 @@ public class HDTManagerTest {
 						spec,
 						quiet ? null : this
 				);
+				checkHDTConsistency(actual);
 			} finally {
 				if (actual == null) {
 					genActual.getThread().interrupt();
@@ -290,6 +396,7 @@ public class HDTManagerTest {
 						spec,
 						null
 				);
+				checkHDTConsistency(expected);
 			} finally {
 				if (expected == null) {
 					genExpected.getThread().interrupt();
@@ -316,7 +423,8 @@ public class HDTManagerTest {
 					LargeFakeDataSetStreamSupplier
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
-							.withMaxLiteralSize(maxLiteralSize);
+							.withMaxLiteralSize(maxLiteralSize)
+							.withUnicode(true);
 
 			// create MEMORY HDT
 
@@ -351,10 +459,10 @@ public class HDTManagerTest {
 		public void generateDiskMapTest() throws IOException, ParserException, NotFoundException, InterruptedException {
 			spec.set(HDTOptionsKeys.LOADER_DISK_CHUNK_SIZE_KEY, size);
 			spec.set("debug.disk.build", true);
-			File mapHDT = tempDir.newFile("mapHDTTest.hdt");
-			spec.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, mapHDT.getAbsolutePath());
+			Path mapHDT = tempDir.newFile("mapHDTTest.hdt").toPath();
+			spec.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, mapHDT.toAbsolutePath());
 			generateDiskTest();
-			Files.deleteIfExists(mapHDT.toPath());
+			Files.deleteIfExists(mapHDT);
 		}
 
 		@Test
@@ -363,7 +471,8 @@ public class HDTManagerTest {
 					LargeFakeDataSetStreamSupplier
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
-							.withMaxLiteralSize(maxLiteralSize);
+							.withMaxLiteralSize(maxLiteralSize)
+							.withUnicode(true);
 
 			// create DISK HDT
 			LargeFakeDataSetStreamSupplier.ThreadedStream genActual = supplier.createNTInputStream(CompressionType.NONE);
@@ -412,7 +521,8 @@ public class HDTManagerTest {
 					LargeFakeDataSetStreamSupplier
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
-							.withMaxLiteralSize(maxLiteralSize);
+							.withMaxLiteralSize(maxLiteralSize)
+							.withUnicode(true);
 
 			spec.set("debug.disk.build", true);
 
@@ -502,7 +612,8 @@ public class HDTManagerTest {
 					LargeFakeDataSetStreamSupplier
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
-							.withMaxLiteralSize(maxLiteralSize);
+							.withMaxLiteralSize(maxLiteralSize)
+							.withUnicode(true);
 
 			// create DISK HDT
 			LargeFakeDataSetStreamSupplier.ThreadedStream genActual = supplier.createNTInputStream(CompressionType.NONE);
@@ -552,7 +663,8 @@ public class HDTManagerTest {
 					LargeFakeDataSetStreamSupplier
 							.createSupplierWithMaxSize(maxSize, SEED)
 							.withMaxElementSplit(maxElementSplit)
-							.withMaxLiteralSize(maxLiteralSize);
+							.withMaxLiteralSize(maxLiteralSize)
+							.withUnicode(true);
 
 			// create DISK HDT
 			LargeFakeDataSetStreamSupplier.ThreadedStream genActual = supplier.createNTInputStream(CompressionType.NONE);
@@ -589,6 +701,8 @@ public class HDTManagerTest {
 			assertNotNull(expected);
 			assertNotNull(actual);
 			try {
+				checkHDTConsistency(expected);
+				checkHDTConsistency(actual);
 				assertEqualsHDT(expected, actual); // -1 for the original size ignored by hdtcat
 			} finally {
 				IOUtil.closeAll(expected, actual);
@@ -600,8 +714,9 @@ public class HDTManagerTest {
 	public static class FileDynamicTest extends HDTManagerTestBase {
 		@Parameterized.Parameters(name = "{0}")
 		public static Collection<Object[]> params() {
-			return List.<Object[]>of(
-					new Object[]{"hdtGenDisk/unicode_disk_encode.nt", true, SIZE_VALUE}
+			return List.of(
+					new Object[]{"hdtGenDisk/unicode_disk_encode.nt", true, SIZE_VALUE},
+					new Object[]{"unicodeTest.nt", true, SIZE_VALUE}
 			);
 		}
 
@@ -616,27 +731,25 @@ public class HDTManagerTest {
 		private void generateDiskTest() throws IOException, ParserException, NotFoundException {
 			String ntFile = Objects.requireNonNull(getClass().getClassLoader().getResource(file), "Can't find " + file).getFile();
 			// create DISK HDT
-			HDT actual = HDTManager.generateHDTDisk(
+			try (HDT actual = HDTManager.generateHDTDisk(
 					ntFile,
 					HDTTestUtils.BASE_URI,
 					RDFNotation.NTRIPLES,
 					spec,
 					quiet ? null : this
-			);
-
-			// create MEMORY HDT
-			HDT expected = HDTManager.generateHDT(
-					ntFile,
-					HDTTestUtils.BASE_URI,
-					RDFNotation.NTRIPLES,
-					spec,
-					null
-			);
-
-			try {
-				assertEqualsHDT(expected, actual);
-			} finally {
-				IOUtil.closeAll(expected, actual);
+			)) {
+				// create MEMORY HDT
+				try (HDT expected = HDTManager.generateHDT(
+						ntFile,
+						HDTTestUtils.BASE_URI,
+						RDFNotation.NTRIPLES,
+						spec,
+						null
+				)) {
+					checkHDTConsistency(actual);
+					checkHDTConsistency(expected);
+					assertEqualsHDT(expected, actual);
+				}
 			}
 		}
 

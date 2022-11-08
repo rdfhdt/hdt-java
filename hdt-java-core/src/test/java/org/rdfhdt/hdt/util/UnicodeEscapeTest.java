@@ -57,7 +57,7 @@ public class UnicodeEscapeTest {
 	@Test
 	public void decodeTest() {
 		assertEquals(
-				"\uD877\uDD76",
+				new String(Character.toChars(0x0002dd76)),
 				UnicodeEscape.unescapeString("\\U0002dd76")
 		);
 

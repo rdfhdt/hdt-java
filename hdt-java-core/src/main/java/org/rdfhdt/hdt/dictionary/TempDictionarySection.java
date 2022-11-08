@@ -28,6 +28,7 @@ package org.rdfhdt.hdt.dictionary;
 
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -76,7 +77,7 @@ public interface TempDictionarySection extends DictionarySection {
 	/**
 	 * @return the literal counts for MultipleSectionDictionary
 	 */
-	default Map<? extends CharSequence, Long> getLiteralsCounts() {
+	default Map<? extends ByteString, Long> getLiteralsCounts() {
 		throw new NotImplementedException("getLiteralsCounts()");
 	}
 

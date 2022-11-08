@@ -40,6 +40,7 @@ import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 import org.rdfhdt.hdt.util.string.CharSequenceCustomComparator;
@@ -52,12 +53,12 @@ import org.rdfhdt.hdt.util.string.CompactString;
 public class HashDictionarySection implements TempDictionarySection {
 	public static final int TYPE_INDEX = 1;
 
-	private HashMap<CharSequence, Long> map;
-	private List<CharSequence> list;
+	private Map<ByteString, Long> map;
+	private List<ByteString> list;
 	private int size;
 	public boolean sorted;
 	final boolean isCustom;
-	private final Map<CharSequence,Long> literalsCounts = new HashMap<>();
+	private final Map<ByteString, Long> literalsCounts = new HashMap<>();
 	/**
 	 *
 	 */
@@ -87,7 +88,7 @@ public class HashDictionarySection implements TempDictionarySection {
 	 * @see hdt.dictionary.DictionarySection#extract(int)
 	 */
 	@Override
-	public CharSequence extract(long pos) {
+	public ByteString extract(long pos) {
 		if(pos<=0) {
 			return null;
 		}
@@ -128,7 +129,7 @@ public class HashDictionarySection implements TempDictionarySection {
 
 	@Override
 	public long add(CharSequence entry) {
-		CharSequence compact = new CompactString(entry);
+		ByteString compact = new CompactString(entry);
 		return map.computeIfAbsent(compact, key -> {
 			// Not found, insert new
 			list.add(compact);
@@ -137,7 +138,7 @@ public class HashDictionarySection implements TempDictionarySection {
 
 			// custom for subsection literals ..
 			if (isCustom) {
-				CharSequence type = LiteralsUtils.getType(compact);
+				ByteString type = ByteString.of(LiteralsUtils.getType(compact));
 				// check if the entry doesn't already exist
 				literalsCounts.compute(type, (key2, count) -> count == null ? 1L : count + 1L);
 			}
@@ -147,7 +148,7 @@ public class HashDictionarySection implements TempDictionarySection {
 
 	@Override
 	public void remove(CharSequence seq) {
-		map.remove(seq);
+		map.remove(ByteString.of(seq));
 		sorted = false;
 	}
 
@@ -192,7 +193,7 @@ public class HashDictionarySection implements TempDictionarySection {
 	}
 
 	@Override
-	public Map<CharSequence, Long> getLiteralsCounts() {
+	public Map<ByteString, Long> getLiteralsCounts() {
 		return literalsCounts;
 	}
 }

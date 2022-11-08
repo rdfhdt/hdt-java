@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
 
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CompactString;
 
 import java.util.ArrayList;
@@ -13,7 +14,7 @@ import java.util.ListIterator;
  *
  */
 public class CatUnion implements Iterator<CatElement> {
-    ArrayList<IteratorPlusElement> list;
+    List<IteratorPlusElement> list;
 
     private final List<Iterator<CatElement>> listIters;
 
@@ -39,14 +40,13 @@ public class CatUnion implements Iterator<CatElement> {
 
     @Override
     public CatElement next() {
-        ArrayList<CatElement.IteratorPlusPosition> ids = new ArrayList<>();
-        list.sort(new IteratorPlusElementComparator());
-        CharSequence element = list.get(0).element.entity;
-        CompactString elementCompactString = new CompactString(element);
+        List<CatElement.IteratorPlusPosition> ids = new ArrayList<>();
+        list.sort(IteratorPlusElement::compareTo);
+        ByteString element = list.get(0).element.entity;
         ListIterator<IteratorPlusElement> iteratorPlusElementIterator = list.listIterator();
         while (iteratorPlusElementIterator.hasNext()) {
             IteratorPlusElement next = iteratorPlusElementIterator.next();
-            if(elementCompactString.equals(new CompactString(next.element.entity))) {
+            if (element.equals(next.element.entity)) {
                 int iter = next.iter;
                 ids.addAll(next.element.IDs);
                 if (listIters.get(iter).hasNext()) {
@@ -55,10 +55,10 @@ public class CatUnion implements Iterator<CatElement> {
                 } else {
                     iteratorPlusElementIterator.remove();
                 }
-            } else{
+            } else {
                 break;
             }
         }
-        return new CatElement(element,ids);
+        return new CatElement(element, ids);
     }
 }

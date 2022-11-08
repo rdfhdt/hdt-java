@@ -6,7 +6,6 @@ import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -28,13 +27,13 @@ public class HDTOptionsKeys {
 	 * Value for {@link #LOADER_DISK_COMPRESSION_MODE_KEY}, sort all the file before going to the next step, slower
 	 * but decrease the RAM usage. default config.
 	 */
-	@Value(value = LOADER_DISK_COMPRESSION_MODE_KEY, desc = "sort all the file before going to the next step, slower but decrease the RAM usage. default config")
+	@Value(key = LOADER_DISK_COMPRESSION_MODE_KEY, desc = "sort all the file before going to the next step, slower but decrease the RAM usage. default config")
 	public static final String LOADER_DISK_COMPRESSION_MODE_VALUE_COMPLETE = "compressionComplete";
 	/**
 	 * Value for {@link #LOADER_DISK_COMPRESSION_MODE_KEY}, sort while reading all the file before going to the next
 	 * step, faster but increase the RAM usage.
 	 */
-	@Value(value = LOADER_DISK_COMPRESSION_MODE_KEY, desc = "sort while reading all the file before going to the next step, faster but increase the RAM usage.")
+	@Value(key = LOADER_DISK_COMPRESSION_MODE_KEY, desc = "sort while reading all the file before going to the next step, faster but increase the RAM usage.")
 	public static final String LOADER_DISK_COMPRESSION_MODE_VALUE_PARTIAL = "compressionPartial";
 
 	/**
@@ -98,22 +97,22 @@ public class HDTOptionsKeys {
 	/**
 	 * Value for {@link #LOADER_TYPE_KEY}, read using disk generation, reduce the RAM usage and increase disk usage
 	 */
-	@Value(value = LOADER_TYPE_KEY, desc = "Using genDisk")
+	@Value(key = LOADER_TYPE_KEY, desc = "Using genDisk")
 	public static final String LOADER_TYPE_VALUE_DISK = "disk";
 	/**
 	 * Value for {@link #LOADER_TYPE_KEY}, read using HDTCat generation, merge using HDTCat HDT, reduce the RAM usage
 	 */
-	@Value(value = LOADER_TYPE_KEY, desc = "Using HDTCat")
+	@Value(key = LOADER_TYPE_KEY, desc = "Using HDTCat")
 	public static final String LOADER_TYPE_VALUE_CAT = "cat";
 	/**
 	 * Value for {@link #LOADER_TYPE_KEY}, read twice the RDF file, reduce the RAM usage
 	 */
-	@Value(value = LOADER_TYPE_KEY, desc = "Using two pass algorithm")
+	@Value(key = LOADER_TYPE_KEY, desc = "Using two pass algorithm")
 	public static final String LOADER_TYPE_VALUE_TWO_PASS = "two-pass";
 	/**
 	 * Value for {@link #LOADER_TYPE_KEY}, read only once the RDF file, default value
 	 */
-	@Value(value = LOADER_TYPE_KEY, desc = "Using one pass algorithm")
+	@Value(key = LOADER_TYPE_KEY, desc = "Using one pass algorithm")
 	public static final String LOADER_TYPE_VALUE_ONE_PASS = "one-pass";
 
 	/**
@@ -150,12 +149,12 @@ public class HDTOptionsKeys {
 	/**
 	 * Value for {@link #HDT_SUPPLIER_KEY}, use HDTGenDisk to create the HDT
 	 */
-	@Value(value = HDT_SUPPLIER_KEY, desc = "using genDisk")
+	@Value(key = HDT_SUPPLIER_KEY, desc = "using genDisk")
 	public static final String LOADER_CATTREE_HDT_SUPPLIER_VALUE_DISK = "disk";
 	/**
 	 * Value for {@link #HDT_SUPPLIER_KEY}, use the default memory implementation to create the HDT
 	 */
-	@Value(value = HDT_SUPPLIER_KEY, desc = "using gen in memory")
+	@Value(key = HDT_SUPPLIER_KEY, desc = "using gen in memory")
 	public static final String LOADER_CATTREE_HDT_SUPPLIER_VALUE_MEMORY = "memory";
 	/**
 	 * Key for the rdf flux stop type, default to the maximum memory allocated
@@ -217,12 +216,12 @@ public class HDTOptionsKeys {
 	/**
 	 * load the HDT file into memory
 	 */
-	@Value(value = LOAD_HDT_TYPE_KEY, desc = "load the HDTs in memory")
+	@Value(key = LOAD_HDT_TYPE_KEY, desc = "load the HDTs in memory")
 	public static final String LOAD_HDT_TYPE_VALUE_LOAD = "load";
 	/**
 	 * map the HDT file, default value
 	 */
-	@Value(value = LOAD_HDT_TYPE_KEY, desc = "map the HDTs")
+	@Value(key = LOAD_HDT_TYPE_KEY, desc = "map the HDTs")
 	public static final String LOAD_HDT_TYPE_VALUE_MAP = "map";
 
 	/**
@@ -233,17 +232,17 @@ public class HDTOptionsKeys {
 	/**
 	 * use Hash map to create the HDT
 	 */
-	@Value(value = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary")
+	@Value(key = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary")
 	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH = "hash";
 	/**
 	 * use Hash map to create the HDT and store the multisection dictionary, mandatory to create MSC
 	 */
-	@Value(value = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary with literal count")
+	@Value(key = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary with literal count")
 	public static final String TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH = "multHash";
 	/**
 	 * use Hash map with Prefix AND Suffix front-coded (PSFC), mandatory to create PSFC dictionary
 	 */
-	@Value(value = TEMP_DICTIONARY_IMPL_KEY, desc = "Prefix AND Suffix front-coded (PSFC) hash dictionary")
+	@Value(key = TEMP_DICTIONARY_IMPL_KEY, desc = "Prefix AND Suffix front-coded (PSFC) hash dictionary")
 	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC = "hashPsfc";
 
 	/**
@@ -254,22 +253,22 @@ public class HDTOptionsKeys {
 	/**
 	 * 4 Section dictionary
 	 */
-	@Value(value = DICTIONARY_TYPE_KEY, desc = "Four sectiob dictionary")
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Four sectiob dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_FOUR_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION;
 	/**
 	 * Prefix AND Suffix front-coded (PSFC) 4 Section dictionary
 	 */
-	@Value(value = DICTIONARY_TYPE_KEY, desc = "Prefix AND Suffix front-coded (PSFC) four section dictionary")
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Prefix AND Suffix front-coded (PSFC) four section dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_FOUR_PSFC_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION;
 	/**
 	 * big 4 Section dictionary
 	 */
-	@Value(value = DICTIONARY_TYPE_KEY, desc = "Four section dictionary big")
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Four section dictionary big")
 	public static final String DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG = "dictionaryFourBig";
 	/**
 	 * multi section dictionary
 	 */
-	@Value(value = DICTIONARY_TYPE_KEY, desc = "Multi section dictionary")
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Multi section dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_MULTI_OBJECTS = "dictionaryMultiObj";
 
 	// use tree-map to have a better order
@@ -287,7 +286,7 @@ public class HDTOptionsKeys {
 					Value value = f.getAnnotation(Value.class);
 					if (value != null) {
 						String valueValue = (String) f.get(null);
-						Option opt = OPTION_MAP.get(value.value());
+						Option opt = OPTION_MAP.get(value.key());
 						if (opt != null) {
 							opt.values.add(new OptionValue(valueValue, value));
 						}
@@ -310,7 +309,7 @@ public class HDTOptionsKeys {
 		private final String value;
 		private final Value valueInfo;
 
-		public OptionValue(String value, Value valueInfo) {
+		private OptionValue(String value, Value valueInfo) {
 			this.value = value;
 			this.valueInfo = valueInfo;
 		}
@@ -329,7 +328,7 @@ public class HDTOptionsKeys {
 		private final Key keyInfo;
 		private final List<OptionValue> values = new ArrayList<>();
 
-		public Option(String key, Key keyInfo) {
+		private Option(String key, Key keyInfo) {
 			this.key = key;
 			this.keyInfo = keyInfo;
 		}

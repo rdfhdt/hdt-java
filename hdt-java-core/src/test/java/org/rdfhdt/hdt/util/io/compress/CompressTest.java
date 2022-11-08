@@ -6,6 +6,7 @@ import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
+import org.rdfhdt.hdt.util.string.DelayedString;
 
 import java.util.Arrays;
 import java.util.HashSet;

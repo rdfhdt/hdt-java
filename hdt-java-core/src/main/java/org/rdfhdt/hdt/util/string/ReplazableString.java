@@ -68,7 +68,11 @@ public final class ReplazableString implements CharSequence, ByteString {
 	public byte [] getBuffer() {
 		return buffer;
 	}
-	
+
+	public void clear() {
+		used = 0;
+	}
+
 	private void ensureSize(int size) {
 		if(size>buffer.length) {
 			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
@@ -98,14 +102,14 @@ public final class ReplazableString implements CharSequence, ByteString {
 	public void appendNoCompact(CharSequence other) {
 		other = DelayedString.unwrap(other);
 
-		if (other instanceof ReplazableString) {
-			ReplazableString rs = (ReplazableString) other;
-			this.append(rs.getBuffer(), 0, rs.used);
-		} else if (other instanceof CompactString) {
-			this.append(((CompactString) other).getData());
+		if (other instanceof ByteString) {
+			this.appendNoCompact((ByteString) other);
 		} else {
 			this.append(other.toString().getBytes(ByteStringUtil.STRING_ENCODING));
 		}
+	}
+	public void appendNoCompact(ByteString other) {
+		this.append(other.getBuffer(), 0, other.length());
 	}
 
 	public void appendNoCompact(CharSequence other, int offset, int length) {
@@ -332,7 +336,7 @@ public final class ReplazableString implements CharSequence, ByteString {
 	 * @see java.lang.CharSequence#subSequence(int, int)
 	 */
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public ByteString subSequence(int start, int end) {
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());

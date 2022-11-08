@@ -2,9 +2,9 @@ package org.rdfhdt.hdt.triples.impl;
 
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
-import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
+import org.rdfhdt.hdt.dictionary.impl.utilCat.SectionUtil;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -14,7 +14,9 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleIDComparator;
 import org.rdfhdt.hdt.triples.Triples;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 
 public class BitmapTriplesIteratorMapDiff implements IteratorTripleID {
@@ -33,10 +35,10 @@ public class BitmapTriplesIteratorMapDiff implements IteratorTripleID {
     Bitmap bitArrayDisk;
 
     public BitmapTriplesIteratorMapDiff(HDT hdtOriginal, Bitmap deleteBitmap, DictionaryDiff dictionaryDiff) {
-        this.subjMapping = dictionaryDiff.getAllMappings().get("subject");
-        this.objMapping = dictionaryDiff.getAllMappings().get("object");
-        this.predMapping = dictionaryDiff.getAllMappings().get("predicate");
-        this.sharedMapping = dictionaryDiff.getAllMappings().get("shared");
+        this.subjMapping = dictionaryDiff.getAllMappings().get(SectionUtil.SECTION_SUBJECT);
+        this.objMapping = dictionaryDiff.getAllMappings().get(SectionUtil.SECTION_OBJECT);
+        this.predMapping = dictionaryDiff.getAllMappings().get(SectionUtil.SECTION_PREDICATE);
+        this.sharedMapping = dictionaryDiff.getAllMappings().get(SectionUtil.SECTION_SHARED);
         this.dictionaryDiff = dictionaryDiff;
         this.countTriples = Math.max(0, hdtOriginal.getTriples().getNumberOfElements() - deleteBitmap.countOnes());
         this.triples = hdtOriginal.getTriples();

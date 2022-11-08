@@ -411,9 +411,10 @@ public class HDTManagerImpl extends HDTManager {
 			// generate the hdt
 			gen++;
 			profiler.pushSection("generateHDT #" + gen);
-			ProgressListener il = PrefixListener.of("gen#" + gen, listener);
+			PrefixListener il = PrefixListener.of("gen#" + gen, listener);
 			Path hdtLocation = hdtStore.resolve("hdt-" + gen + ".hdt");
 			supplier.doGenerateHDT(it, baseURI, hdtFormat, il, hdtLocation);
+			il.clearThreads();
 
 			nextFile = it.hasNextFlux();
 			HDTFile hdtFile = new HDTFile(hdtLocation, 1);
@@ -424,15 +425,16 @@ public class HDTManagerImpl extends HDTManager {
 				HDTFile lastHDTFile = files.remove(files.size() - 1);
 				cat++;
 				profiler.pushSection("catHDT #" + cat);
-				ProgressListener ilc = PrefixListener.of("cat#" + cat, listener);
+				PrefixListener ilc = PrefixListener.of("cat#" + cat, listener);
 				Path hdtCatFileLocation = hdtStore.resolve("hdtcat-" + cat + ".hdt");
 				try (HDT abcat = HDTManager.catHDT(
 						hdtCatLocation,
 						lastHDTFile.getHdtFile().toAbsolutePath().toString(),
 						hdtFile.getHdtFile().toAbsolutePath().toString(),
 						hdtFormat, ilc)) {
-					abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), il);
+					abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), ilc);
 				}
+				ilc.clearThreads();
 				// delete previous chunks
 				Files.delete(lastHDTFile.getHdtFile());
 				Files.delete(hdtFile.getHdtFile());
@@ -443,6 +445,8 @@ public class HDTManagerImpl extends HDTManager {
 			}
 			files.add(hdtFile);
 		} while (nextFile);
+
+		listener.notifyProgress(100, "done, loading HDT");
 
 		Path hdtFile = files.get(0).hdtFile;
 

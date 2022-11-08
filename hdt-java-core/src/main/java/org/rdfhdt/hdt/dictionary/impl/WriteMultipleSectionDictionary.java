@@ -18,6 +18,7 @@ import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
@@ -53,7 +54,7 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		return objects.values().stream().mapToLong(DictionarySectionPrivate::getNumberOfElements).sum();
 	}
 
-	private ExceptionThread fillSection(Iterator<? extends CharSequence> objects, ProgressListener listener) throws InterruptedException {
+	private ExceptionThread fillSection(Iterator<? extends CharSequence> objects, ProgressListener listener) {
 		PipedCopyIterator<CharSequence> noDatatypeIterator = new PipedCopyIterator<>();
 		PipedCopyIterator<CharSequence> datatypeIterator = new PipedCopyIterator<>();
 		String name = filename.getFileName().toString();
@@ -151,11 +152,11 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 
 		VByte.encode(output, objects.size());
 
-		for (Map.Entry<CharSequence, DictionarySectionPrivate> entry : objects.entrySet()) {
+		for (Map.Entry<ByteString, DictionarySectionPrivate> entry : objects.entrySet()) {
 			IOUtil.writeSizedBuffer(output, entry.getKey().toString().getBytes(ByteStringUtil.STRING_ENCODING), listener);
 		}
 
-		for (Map.Entry<CharSequence, DictionarySectionPrivate> entry : objects.entrySet()) {
+		for (Map.Entry<ByteString, DictionarySectionPrivate> entry : objects.entrySet()) {
 			entry.getValue().save(output, iListener);
 		}
 

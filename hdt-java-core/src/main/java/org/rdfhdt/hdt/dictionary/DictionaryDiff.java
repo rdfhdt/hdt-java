@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.dictionary;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -32,5 +33,5 @@ public interface DictionaryDiff extends Closeable {
     /**
      * @return the cat mapping for each section
      */
-    Map<String, CatMapping> getAllMappings();
+    Map<ByteString, CatMapping> getAllMappings();
 }
