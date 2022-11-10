@@ -34,14 +34,12 @@ public class OneReadDictionarySectionTest {
 
 		OneReadDictionarySection sec1 = new OneReadDictionarySection(
 				removeDupe(aa),
-				aa.size()
-		);
+				aa.size());
 		assertIteratorEquals(removeDupe(aa), sec1.getSortedEntries());
 
 		OneReadDictionarySection sec2 = new OneReadDictionarySection(
 				removeDupe(aa),
-				aa.size()
-		);
+				aa.size());
 
 		PFCDictionarySection section = new PFCDictionarySection(new HDTSpecification());
 		section.load(sec2, null);

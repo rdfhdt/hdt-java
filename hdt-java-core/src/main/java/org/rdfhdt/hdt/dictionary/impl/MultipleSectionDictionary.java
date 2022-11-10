@@ -7,15 +7,18 @@ import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.utils.MapIterator;
+import org.rdfhdt.hdt.iterator.utils.PeekIterator;
+import org.rdfhdt.hdt.iterator.utils.StopIterator;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.CustomIterator;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -33,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.function.Predicate;
 
 public class
 MultipleSectionDictionary extends MultipleBaseDictionary {
@@ -71,6 +75,60 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
 			objects.put(type, section);
 		}
 		shared.load(other.getShared(), iListener);
+	}
+
+	private static class StopPredicate<T extends CharSequence> implements Predicate<T> {
+		private CharSequence type;
+
+		@Override
+		public boolean test(T charSequence) {
+			CharSequence type = LiteralsUtils.getType(charSequence);
+			if (this.type == null) {
+				this.type = type;
+				return true;
+			}
+			return this.type.equals(type);
+		}
+
+		public void reset() {
+			this.type = null;
+		}
+	}
+
+	@Override
+	public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
+		IntermediateListener iListener = new IntermediateListener(null);
+		new ExceptionThread(() -> predicates.load(other.getPredicates(), iListener), "MultiSecSAsyncReaderP")
+				.attach(
+						new ExceptionThread(() -> subjects.load(other.getSubjects(), iListener), "MultiSecSAsyncReaderS"),
+						new ExceptionThread(() -> shared.load(other.getShared(), iListener), "MultiSecSAsyncReaderSh"),
+						new ExceptionThread(() -> {
+							StopPredicate<CharSequence> pred = new StopPredicate<>();
+							PeekIterator<? extends CharSequence> it = new PeekIterator<>(
+									new StopIterator<>(
+											new MapIterator<>(other.getObjects().getSortedEntries(), b -> LiteralsUtils.prefToLit(ByteString.of(b))),
+											pred
+									)
+							);
+
+							while (it.hasNext()) {
+								PFCDictionarySection section = new PFCDictionarySection(spec);
+								ByteString type = (ByteString) (LiteralsUtils.getType(it.peek()));
+								long count;
+								if (LiteralsUtils.isNoDatatype(type)) {
+									count = other.getObjects().getNumberOfElements() - shared.getNumberOfElements();
+								} else {
+									// don't know the count
+									count = 1;
+								}
+								section.load(it.map(LiteralsUtils::removeType), count, listener);
+								pred.reset();
+								objects.put(type, section);
+							}
+						}, "MultiSecSAsyncReaderO")
+				)
+				.startAll()
+				.joinAndCrashIfRequired();
 	}
 
 	/* (non-Javadoc)
@@ -223,10 +281,5 @@ MultipleSectionDictionary extends MultipleBaseDictionary {
 
 		// close all subsections
 		IOUtil.closeAll(objects.values());
-	}
-
-	@Override
-	public void loadAsync(TempDictionary other, ProgressListener listener) {
-		throw new NotImplementedException();
 	}
 }

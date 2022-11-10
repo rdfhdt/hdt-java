@@ -1,8 +1,6 @@
 package org.rdfhdt.hdt.hdt.impl.diskimport;
 
 import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
-import org.rdfhdt.hdt.iterator.utils.IndexNodeDeltaMergeExceptionIterator;
-import org.rdfhdt.hdt.iterator.utils.MergeExceptionIterator;
 import org.rdfhdt.hdt.iterator.utils.SizeFetcher;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.triples.IndexedNode;
@@ -29,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;

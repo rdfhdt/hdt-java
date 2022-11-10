@@ -34,6 +34,8 @@ public class LiteralsUtilsTest {
 		assertEquals(0, CharSequenceComparator.getInstance().compare(excepted, actual));
 	}
 
+	private static final String LIT_TYPE_DEL = new String(new byte[]{LiteralsUtils.DATATYPE_BYTE});
+
 	@Test
 	public void containsLanguageTest() {
 		assertTrue(LiteralsUtils.containsLanguage("\"hello\"@fr"));
@@ -71,12 +73,12 @@ public class LiteralsUtilsTest {
 	@Test
 	public void litToPrefTest() {
 		assertEqualsCompact("\"aaa\"", LiteralsUtils.litToPref("\"aaa\""));
-		assertEqualsCompact("^^<http://p>\"aaa\"", LiteralsUtils.litToPref("\"aaa\"^^<http://p>"));
-		assertEqualsCompact("^^" + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr", LiteralsUtils.litToPref("\"aaa\"@fr-fr"));
+		assertEqualsCompact( LIT_TYPE_DEL+ "<http://p>\"aaa\"", LiteralsUtils.litToPref("\"aaa\"^^<http://p>"));
+		assertEqualsCompact(LIT_TYPE_DEL + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr", LiteralsUtils.litToPref("\"aaa\"@fr-fr"));
 
 		assertEqualsCompact("\"aaa\"", LiteralsUtils.litToPref(LiteralsUtils.prefToLit("\"aaa\"")));
-		assertEqualsCompact("^^<http://p>\"aaa\"", LiteralsUtils.litToPref(LiteralsUtils.prefToLit("^^<http://p>\"aaa\"")));
-		assertEqualsCompact("^^" + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr", LiteralsUtils.litToPref(LiteralsUtils.prefToLit("^^" + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr")));
+		assertEqualsCompact(LIT_TYPE_DEL + "<http://p>\"aaa\"", LiteralsUtils.litToPref(LiteralsUtils.prefToLit(LIT_TYPE_DEL + "<http://p>\"aaa\"")));
+		assertEqualsCompact(LIT_TYPE_DEL + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr", LiteralsUtils.litToPref(LiteralsUtils.prefToLit(LIT_TYPE_DEL + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr")));
 
 		assertEqualsCompact("<http://test@example.org>", LiteralsUtils.litToPref("<http://test@example.org>"));
 	}
@@ -84,11 +86,11 @@ public class LiteralsUtilsTest {
 	@Test
 	public void prefToLitTest() {
 		assertEqualsCompact("\"aaa\"", LiteralsUtils.litToPref("\"aaa\""));
-		assertEqualsCompact("\"aaa\"^^<http://p>", LiteralsUtils.prefToLit("^^<http://p>\"aaa\""));
-		assertEqualsCompact("\"aaa\"@fr-fr", LiteralsUtils.prefToLit("^^" + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr"));
+		assertEqualsCompact("\"aaa\"^^<http://p>", LiteralsUtils.prefToLit(LIT_TYPE_DEL + "<http://p>\"aaa\""));
+		assertEqualsCompact("\"aaa\"@fr-fr", LiteralsUtils.prefToLit(LIT_TYPE_DEL + LiteralsUtils.LITERAL_LANG_TYPE_STR + "\"aaa\"@fr-fr"));
 		assertEqualsCompact("<http://test@example.org>", LiteralsUtils.prefToLit("<http://test@example.org>"));
 
-		assertEqualsCompact("\"aaa\"", LiteralsUtils.litToPref(LiteralsUtils.litToPref("\"aaa\"")));
+		assertEqualsCompact("\"aaa\"", LiteralsUtils.prefToLit(LiteralsUtils.litToPref("\"aaa\"")));
 		assertEqualsCompact("\"aaa\"^^<http://p>", LiteralsUtils.prefToLit(LiteralsUtils.litToPref("\"aaa\"^^<http://p>")));
 		assertEqualsCompact("\"aaa\"@fr-fr", LiteralsUtils.prefToLit(LiteralsUtils.litToPref("\"aaa\"@fr-fr")));
 		assertEqualsCompact("<http://test@example.org>", LiteralsUtils.prefToLit(LiteralsUtils.litToPref("<http://test@example.org>")));

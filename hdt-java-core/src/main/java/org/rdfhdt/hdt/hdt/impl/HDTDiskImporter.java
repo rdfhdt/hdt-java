@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.hdt.impl;
 
+import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.impl.CompressFourSectionDictionary;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
@@ -170,7 +171,8 @@ public class HDTDiskImporter implements Closeable {
 		profiler.pushSection("section compression");
 		CompressionResult compressionResult;
 		try {
-			compressionResult = new SectionCompressor(
+			compressionResult = DictionaryFactory.createSectionCompressor(
+					hdtFormat,
 					basePath.resolve("sectionCompression"),
 					source,
 					listener,

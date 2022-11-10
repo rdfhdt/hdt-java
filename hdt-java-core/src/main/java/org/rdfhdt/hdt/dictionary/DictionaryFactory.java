@@ -27,16 +27,30 @@
 
 package org.rdfhdt.hdt.dictionary;
 
-import org.rdfhdt.hdt.dictionary.impl.*;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
+import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryDiff;
+import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
+import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionaryDiff;
+import org.rdfhdt.hdt.dictionary.impl.PSFCFourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.PSFCTempDictionary;
+import org.rdfhdt.hdt.dictionary.impl.WriteFourSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.WriteMultipleSectionDictionary;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.impl.diskimport.MultiSectionSectionCompressor;
+import org.rdfhdt.hdt.hdt.impl.diskimport.SectionCompressor;
+import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
+import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 
 import java.nio.file.Path;
-import java.util.Objects;
 
 /**
  * Factory that creates Dictionary objects
@@ -89,7 +103,7 @@ public class DictionaryFactory {
 	 * @return TempDictionary
 	 */
 	public static TempDictionary createTempDictionary(HDTOptions spec) {
-		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY), "");
+		String name = spec.get(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, "");
 
 		// Implementations available in the Core
 		switch (name) {
@@ -112,7 +126,7 @@ public class DictionaryFactory {
 	 * @return Dictionary
 	 */
 	public static DictionaryPrivate createDictionary(HDTOptions spec) {
-		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY), "");
+		String name = spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY, "");
 		switch (name) {
 			case "":
 			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
@@ -137,7 +151,7 @@ public class DictionaryFactory {
 	 * @return WriteDictionary
 	 */
 	public static DictionaryPrivate createWriteDictionary(HDTOptions spec, Path location, int bufferSize) {
-		String name = Objects.requireNonNullElse(spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY), "");
+		String name = spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY, "");
 		switch (name) {
 			case "":
 			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
@@ -147,6 +161,24 @@ public class DictionaryFactory {
 				return new WriteMultipleSectionDictionary(spec, location, bufferSize);
 			default:
 				throw new IllegalFormatException("Implementation of write dictionary not found for " + name);
+		}
+	}
+
+	public static SectionCompressor createSectionCompressor(HDTOptions spec, CloseSuppressPath baseFileName,
+															AsyncIteratorFetcher<TripleString> source,
+															MultiThreadListener listener, int bufferSize,
+															long chunkSize, int k, boolean debugSleepKwayDict) {
+		String name = spec.get(HDTOptionsKeys.DICTIONARY_TYPE_KEY, "");
+
+		switch (name) {
+			case "":
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG:
+				return new SectionCompressor(baseFileName, source, listener, bufferSize, chunkSize, k, debugSleepKwayDict);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS:
+				return new MultiSectionSectionCompressor(baseFileName, source, listener, bufferSize, chunkSize, k, debugSleepKwayDict);
+			default:
+				throw new IllegalFormatException("Implementation of section compressor not found for " + name);
 		}
 	}
 

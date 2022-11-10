@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.enums.TripleComponentRole;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
@@ -164,12 +165,12 @@ public class HDTTestUtils implements Closeable {
         Map<? extends CharSequence, DictionarySection> sect1;
         Map<? extends CharSequence, DictionarySection> sect2;
 
-        if (HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS.equals(dict.getType())) {
+        if (HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION.equals(dict.getType())) {
             sect1 = dict.getAllObjects();
-            assertEquals(HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, dict2.getType());
+            assertEquals(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION, dict2.getType());
             sect2 = dict2.getAllObjects();
         } else {
-            assertNotEquals(HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, dict2.getType());
+            assertNotEquals(HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION, dict2.getType());
             Map<String, DictionarySection> sect11 = new TreeMap<>(CharSequenceComparator.getInstance());
             sect11.put("subjects", dict.getSubjects());
             sect11.put("predicates", dict.getPredicates());

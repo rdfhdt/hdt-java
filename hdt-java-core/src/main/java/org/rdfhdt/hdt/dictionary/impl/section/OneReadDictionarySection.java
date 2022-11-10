@@ -2,11 +2,9 @@ package org.rdfhdt.hdt.dictionary.impl.section;
 
 import org.rdfhdt.hdt.dictionary.TempDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
-import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**

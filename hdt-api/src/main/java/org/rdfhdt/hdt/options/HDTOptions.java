@@ -170,11 +170,11 @@ public interface HDTOptions {
 	 * @return long or defaultValue if the value isn't defined
 	 */
 	default long getInt(String key, LongSupplier defaultValue) {
-		long l = getInt(key);
-		if (l == 0) {
+		String l = get(key);
+		if (l == null) {
 			return defaultValue.getAsLong();
 		}
-		return l;
+		return Long.parseLong(l);
 	}
 
 	/**

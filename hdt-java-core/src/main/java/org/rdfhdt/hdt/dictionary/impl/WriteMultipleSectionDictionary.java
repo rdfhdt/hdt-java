@@ -7,6 +7,7 @@ import org.rdfhdt.hdt.dictionary.impl.section.WriteDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
+import org.rdfhdt.hdt.iterator.utils.PeekIterator;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -19,14 +20,14 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdt.util.string.ByteString;
-import org.rdfhdt.hdt.util.string.ByteStringUtil;
-import org.rdfhdt.hdt.util.string.CharSequenceComparator;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -45,7 +46,7 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		String name = filename.getFileName().toString();
 		subjects = new WriteDictionarySection(spec, filename.resolveSibling(name + "SU"), bufferSize);
 		predicates = new WriteDictionarySection(spec, filename.resolveSibling(name + "PR"), bufferSize);
-		objects = new TreeMap<>(CharSequenceComparator.getInstance());
+		objects = new TreeMap<>();
 		shared = new WriteDictionarySection(spec, filename.resolveSibling(name + "SH"), bufferSize);
 	}
 
@@ -54,67 +55,74 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		return objects.values().stream().mapToLong(DictionarySectionPrivate::getNumberOfElements).sum();
 	}
 
-	private ExceptionThread fillSection(Iterator<? extends CharSequence> objects, ProgressListener listener) {
-		PipedCopyIterator<CharSequence> noDatatypeIterator = new PipedCopyIterator<>();
-		PipedCopyIterator<CharSequence> datatypeIterator = new PipedCopyIterator<>();
+	private ExceptionThread fillSection(Iterator<? extends CharSequence> objects, long count, ProgressListener listener) {
+		PipedCopyIterator<TypedByteString> datatypeIterator = new PipedCopyIterator<>();
 		String name = filename.getFileName().toString();
-		WriteDictionarySection noDatatypeSection = new WriteDictionarySection(spec, filename.resolveSibling(name + LiteralsUtils.NO_DATATYPE), bufferSize);
-		this.objects.put(LiteralsUtils.NO_DATATYPE, noDatatypeSection);
+		Map<ByteString, DictionarySectionPrivate> theObjects = Collections.synchronizedMap(this.objects);
 		return new ExceptionThread(() -> {
 			// object reader
 			try {
-				CharSequence oldType = null;
-				boolean noDatatype = false;
-				while (objects.hasNext()) {
-					CharSequence next = objects.next();
+				ByteString oldType = null;
+				long block = count < 10 ? 1 : count / 10;
+				long currentCount = 0;
+				for (;objects.hasNext(); currentCount++) {
+					ByteString next = (ByteString) objects.next();
 
-					CharSequence type = LiteralsUtils.getType(next);
+					ByteString lit = (ByteString) LiteralsUtils.prefToLit(next);
+					ByteString type = (ByteString) LiteralsUtils.getType(lit);
+
+					if (currentCount % block == 0) {
+						listener.notifyProgress((float) (currentCount * 100 / count), "Filling section");
+					}
 
 					if (oldType != null) {
 						if (oldType.equals(type)) {
-							if (noDatatype) {
-								noDatatypeIterator.addElement(next);
-							} else {
-								datatypeIterator.addElement(next);
-							}
+							datatypeIterator.addElement(new TypedByteString(oldType, (ByteString) LiteralsUtils.removeType(lit)));
 							continue;
 						} else {
-							if (!noDatatype) {
-								datatypeIterator.closePipe();
-							}
+							datatypeIterator.closePipe();
 						}
 					}
 					oldType = type;
 
-					if (LiteralsUtils.isNoDatatype(type)) {
-						noDatatypeIterator.addElement(next);
-						noDatatype = true;
-					} else {
-						datatypeIterator.addElement(next);
-						noDatatype = false;
-					}
+					datatypeIterator.addElement(new TypedByteString(oldType, (ByteString) LiteralsUtils.removeType(lit)));
 				}
-				noDatatypeIterator.closePipe();
+				datatypeIterator.closePipe();
 				datatypeIterator.closePipe();
 			} catch (Throwable e) {
 				try {
 					throw e;
 				} finally {
-					try {
-						noDatatypeIterator.closePipe(e);
-					} finally {
-						datatypeIterator.closePipe(e);
-					}
+					datatypeIterator.closePipe(e);
 				}
 			}
 		}, "MultiSecSAsyncObjectReader").attach(new ExceptionThread(() -> {
 			// datatype writer
-			throw new NotImplementedException("MultiSecSAsyncObjectReader");
-		}, "MultiSecSAsyncObjectDatatypeWriter")).attach(new ExceptionThread(() -> {
-			// no datatype writer
-//			noDatatypeSection.load(new OneReadDictionarySection(noDatatypeIterator), );
-			throw new NotImplementedException("MultiSecSAsyncObjectReader");
-		}, "MultiSecSAsyncObjectNoDatatypeWriter"));
+			PeekIterator<TypedByteString> dataTypePeekIt = new PeekIterator<>(datatypeIterator);
+			// section id to not having to write an URI on disk
+			Map<ByteString, Long> sectionIds = new HashMap<>();
+
+			// check that we have at least one element to read
+			while (dataTypePeekIt.hasNext()) {
+				ByteString type = dataTypePeekIt.peek().getType();
+				Long sid = sectionIds.get(type);
+				if (sid != null) {
+					// check that the section wasn't already defined
+					throw new IllegalArgumentException("type " + type + " is already defined");
+				}
+				// create a new id
+				long sidNew = 1L + sectionIds.size();
+				sectionIds.put(type, sidNew);
+
+				// create the new section
+				WriteDictionarySection section = new WriteDictionarySection(spec, filename.resolveSibling(name + "type" + sidNew), bufferSize);
+				theObjects.put(type, section);
+				section.load(dataTypePeekIt.map(TypedByteString::getNode), count, null);
+
+				// reset the pipe to allow reading more elements
+				((PipedCopyIterator<?>) dataTypePeekIt.getWrappedIterator()).reset();
+			}
+		}, "MultiSecSAsyncObjectDatatypeWriter"));
 	}
 
 	@Override
@@ -125,7 +133,7 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 						() -> predicates.load(other.getPredicates(), new IntermediateListener(ml, "Predicate: ")),
 						() -> subjects.load(other.getSubjects(), new IntermediateListener(ml, "Subjects:  ")),
 						() -> shared.load(other.getShared(), new IntermediateListener(ml, "Shared:    "))
-				).attach(fillSection(other.getObjects().getEntries(), new IntermediateListener(ml, "Objects:   ")))
+				).attach(fillSection(other.getObjects().getEntries(), other.getObjects().getNumberOfElements(), new IntermediateListener(ml, "Objects:   ")))
 				.startAll()
 				.joinAndCrashIfRequired();
 		ml.unregisterAllThreads();
@@ -153,7 +161,7 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		VByte.encode(output, objects.size());
 
 		for (Map.Entry<ByteString, DictionarySectionPrivate> entry : objects.entrySet()) {
-			IOUtil.writeSizedBuffer(output, entry.getKey().toString().getBytes(ByteStringUtil.STRING_ENCODING), listener);
+			IOUtil.writeSizedBuffer(output, entry.getKey(), listener);
 		}
 
 		for (Map.Entry<ByteString, DictionarySectionPrivate> entry : objects.entrySet()) {
@@ -198,4 +206,22 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		throw new NotImplementedException();
 	}
 
+
+	private static class TypedByteString {
+		private final ByteString type;
+		private final ByteString node;
+
+		public TypedByteString(ByteString type, ByteString node) {
+			this.type = type;
+			this.node = node;
+		}
+
+		public ByteString getNode() {
+			return node;
+		}
+
+		public ByteString getType() {
+			return type;
+		}
+	}
 }

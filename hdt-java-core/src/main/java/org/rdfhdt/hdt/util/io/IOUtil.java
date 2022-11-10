@@ -32,6 +32,7 @@ import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.Reference;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.visnow.jlargearrays.LargeArrayUtils;
 
@@ -261,6 +262,10 @@ public class IOUtil {
 
 	public static void writeSizedBuffer(OutputStream output, byte[] buffer, ProgressListener listener) throws IOException {
 		writeSizedBuffer(output, buffer, 0, buffer.length, listener);
+	}
+
+	public static void writeSizedBuffer(OutputStream output, ByteString str, ProgressListener listener) throws IOException {
+		writeSizedBuffer(output, str.getBuffer(), 0, str.length(), listener);
 	}
 
 	public static void writeSizedBuffer(OutputStream output, byte[] buffer, int offset, int length, ProgressListener listener) throws IOException {

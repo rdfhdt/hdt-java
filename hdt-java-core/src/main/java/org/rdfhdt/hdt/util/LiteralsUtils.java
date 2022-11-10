@@ -10,7 +10,9 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
 import java.util.ConcurrentModificationException;
 
 public class LiteralsUtils {
+	public static final byte DATATYPE_BYTE = '!';
 	public static final String NO_DATATYPE_STR = "NO_DATATYPE";
+	public static final ByteString TYPE_OPERATOR = ByteString.of("^^");
 	static final String LITERAL_LANG_TYPE_STR = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>";
 	/**
 	 * no datatype type
@@ -141,7 +143,7 @@ public class LiteralsUtils {
 	 * place the type before the literal
 	 *
 	 * <p>example: {@literal "aa"^^<http://type>} -> {@literal ^^<http://type>"aa"}</p>
-	 * <p>example: "aa" -> "aa"</p>
+	 * <p>example: "aa" -> $"aa"</p>
 	 * <p>example: "aa"@fr -> {@literal ^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>"aa"@fr}</p>
 	 *
 	 * @param str the literal
@@ -150,8 +152,8 @@ public class LiteralsUtils {
 	public static CharSequence litToPref(CharSequence str) {
 		// language literal
 		if (containsLanguage(str)) {
-			ReplazableString prefixedValue = new ReplazableString(2 + LITERAL_LANG_TYPE.length() + str.length());
-			prefixedValue.append(new byte[]{'^', '^'}, 0, 2);
+			ReplazableString prefixedValue = new ReplazableString(1 + LITERAL_LANG_TYPE.length() + str.length());
+			prefixedValue.append(new byte[]{DATATYPE_BYTE}, 0, 1);
 			prefixedValue.append(LITERAL_LANG_TYPE.getBuffer(), 0, LITERAL_LANG_TYPE.length());
 			prefixedValue.appendNoCompact(str);
 			return prefixedValue;
@@ -162,8 +164,9 @@ public class LiteralsUtils {
 		// typed literal
 		if (index != -1 && index < str.length()) {
 			// add the literal value
-			ReplazableString prefixedValue = new ReplazableString(str.length());
-			prefixedValue.append(new byte[]{'^', '^'}, 0, 2);
+			// -1 because len("^^") = len(DATATYPE_BYTE) + 1
+			ReplazableString prefixedValue = new ReplazableString(str.length() - 1);
+			prefixedValue.append(new byte[]{DATATYPE_BYTE}, 0, 1);
 			prefixedValue.appendNoCompact(str, index, str.length() - index);
 			prefixedValue.appendNoCompact(str, 0, index - 2);
 			return prefixedValue;
@@ -212,17 +215,15 @@ public class LiteralsUtils {
 	 * @return literal
 	 */
 	public static CharSequence prefToLit(CharSequence str) {
-		if (str.length() < 4 || !(str.charAt(0) == '^' && str.charAt(1) == '^')) {
+		if (str.length() < 1 || !(str.charAt(0) == DATATYPE_BYTE)) {
 			return str;
 		}
 
-		assert str.charAt(2) == '<' : "non typed literal prefix";
+		int index = 2;
 
-		int index = 3;
-
-		if (isLangType(str, 2)) {
+		if (isLangType(str, index - 1)) {
 			// lang type, return without the type
-			return str.subSequence(LITERAL_LANG_TYPE.length() + 2, str.length());
+			return str.subSequence(LITERAL_LANG_TYPE.length() + 1, str.length());
 		}
 
 		while (index < str.length()) {
@@ -234,9 +235,10 @@ public class LiteralsUtils {
 		}
 		assert index < str.length() - 1 && str.charAt(index + 1) == '"' : "badly typed literal prefix";
 
-		ReplazableString bld = new ReplazableString(str.length());
+		ReplazableString bld = new ReplazableString(str.length() + 1);
 		bld.appendNoCompact(str, index + 1, str.length() - index - 1);
-		bld.appendNoCompact(str, 0, index + 1);
+		bld.appendNoCompact(TYPE_OPERATOR);
+		bld.appendNoCompact(str, 1, index);
 		return bld;
 	}
 

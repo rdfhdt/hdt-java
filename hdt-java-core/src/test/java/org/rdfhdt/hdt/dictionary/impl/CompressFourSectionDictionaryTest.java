@@ -4,7 +4,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
-import org.rdfhdt.hdt.iterator.utils.FileTripleIterator;
 import org.rdfhdt.hdt.iterator.utils.MapIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;

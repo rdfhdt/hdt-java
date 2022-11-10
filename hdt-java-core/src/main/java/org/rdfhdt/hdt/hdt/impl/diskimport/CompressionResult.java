@@ -3,7 +3,6 @@ package org.rdfhdt.hdt.hdt.impl.diskimport;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.triples.IndexedNode;
-import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 
 import java.io.Closeable;
 import java.io.IOException;

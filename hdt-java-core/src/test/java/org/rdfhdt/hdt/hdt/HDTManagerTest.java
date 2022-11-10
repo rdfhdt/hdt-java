@@ -18,6 +18,7 @@ import org.rdfhdt.hdt.dictionary.impl.MultipleBaseDictionary;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
@@ -27,7 +28,9 @@ import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
+import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
@@ -74,7 +77,7 @@ public class HDTManagerTest {
 	public static class HDTManagerTestBase extends AbstractMapMemoryTest implements ProgressListener {
 		protected static String[][] diskDict() {
 			return new String[][]{
-//					{HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH},
+					{HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH},
 					{HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH}
 			};
 		}
@@ -145,14 +148,14 @@ public class HDTManagerTest {
 			assertEquals(ed.getType(), ad.getType());
 
 			// test triples
-			IteratorTripleString actualIt = actual.search("", "", "");
-			IteratorTripleString expectedIt = expected.search("", "", "");
+			IteratorTripleID actualIt = actual.getTriples().searchAll();
+			IteratorTripleID expectedIt = expected.getTriples().searchAll();
 
 			while (expectedIt.hasNext()) {
 				assertTrue(actualIt.hasNext());
 
-				TripleString expectedTriple = expectedIt.next();
-				TripleString actualTriple = actualIt.next();
+				TripleID expectedTriple = expectedIt.next();
+				TripleID actualTriple = actualIt.next();
 				assertEquals(expectedIt.getLastTriplePosition(), actualIt.getLastTriplePosition());
 				assertEquals(expectedTriple, actualTriple);
 			}
@@ -409,9 +412,6 @@ public class HDTManagerTest {
 			assertNotNull(actual);
 			try {
 				assertEqualsHDT(expected, actual);
-			} catch (Throwable t) {
-				HDTTestUtils.printCoDictionary(expected, actual);
-				throw t;
 			} finally {
 				IOUtil.closeAll(expected, actual);
 			}

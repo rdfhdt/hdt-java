@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 
 public class MultiThreadListenerConsole implements MultiThreadListener {
+	private static final int BAR_SIZE = 10;
 	private static final String ERASE_LINE = "\r\033[K";
 
 	private static String goBackNLine(int line) {
@@ -54,6 +55,37 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 		return "\033[38;5;" + color + "m";
 	}
 
+	public String backColor(int r, int g, int b) {
+		if (!color) {
+			return "";
+		}
+		int color = 16 + 36 * r + 6 * g + b;
+		return "\033[48;5;" + color + "m";
+	}
+
+	public String progressBar(float level) {
+		String colorBar;
+		String colorText;
+		int iv = Math.min(100, Math.max(0, (int) (level)));
+		if (!color) {
+			colorText = "";
+			colorBar = "";
+		} else {
+			int diff = (iv - 1) % 50 + 1;
+			int delta = diff * 3 / 50;
+			if (iv <= 50) {
+				colorText = color(5 - delta, delta * 2 / 3, 0);
+				colorBar = backColor(5 - delta, delta * 2 / 3, 0) + colorText;
+			} else {
+				colorText = color(2 - delta * 2 / 3, 2 + delta, 0);
+				colorBar = backColor(2 - delta * 2 / 3, 2 + delta, 0) + colorText;
+			}
+		}
+		int bar = iv * BAR_SIZE / 100;
+		return colorReset() + "[" + colorBar + "#".repeat(bar) + colorReset() + " ".repeat(BAR_SIZE - bar) + "] " + colorText + String.format(level >= 100 ? "%-5.1f" : "%-5.2f", level);
+	}
+
+
 	public String colorReset() {
 		return color ? "\033[0m" : "";
 	}
@@ -92,7 +124,7 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 
 	@Override
 	public synchronized void notifyProgress(String thread, float level, String message) {
-		String msg = colorReset() + "[" + colorPercentage() + String.format(level >= 100 ? "%-5.1f" : "%-5.2f", level) + colorReset() + "] " +  message;
+		String msg = colorReset() + progressBar(level) + colorReset() + " " + message;
 		if (threadMessages != null) {
 			threadMessages.put(thread, msg);
 			render();

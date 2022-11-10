@@ -17,8 +17,6 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
-import org.rdfhdt.hdt.util.string.CompactString;
-import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,17 +54,20 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 
 	@Override
 	public void load(TempDictionarySection other, ProgressListener plistener) {
+		load(other.getSortedEntries(), other.getNumberOfElements(), plistener);
+	}
+
+	public void load(Iterator<? extends CharSequence> it, long count, ProgressListener plistener) {
 		MultiThreadListener listener = ListenerUtil.multiThreadListener(plistener);
-		long otherN = other.getNumberOfElements();
-		long block = otherN < 10 ? 1 : otherN / 10;
+		long block = count < 10 ? 1 : count / 10;
 		long currentCount = 0;
-		blocks = new SequenceLog64BigDisk(blockTempFilename.toAbsolutePath().toString(), 64, otherN / blockSize);
+		blocks = new SequenceLog64BigDisk(blockTempFilename.toAbsolutePath().toString(), 64, count / blockSize);
 
 		listener.notifyProgress(0, "Filling section");
 		try (CountOutputStream out = new CountOutputStream(tempFilename.openOutputStream(bufferSize))) {
 			CRCOutputStream crcout = new CRCOutputStream(out, new CRC32());
 			ByteString previousStr = null;
-			for (Iterator<? extends CharSequence> it = other.getSortedEntries(); it.hasNext(); currentCount++) {
+			for (; it.hasNext(); currentCount++) {
 				ByteString str = (ByteString) (it.next());
 				assert str != null;
 				if (numberElements % blockSize == 0) {
@@ -86,7 +87,7 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 				previousStr = str;
 				numberElements++;
 				if (currentCount % block == 0) {
-					listener.notifyProgress((float) (currentCount * 100 / otherN), "Filling section");
+					listener.notifyProgress((float) (currentCount * 100 / count), "Filling section");
 				}
 			}
 

@@ -5,6 +5,7 @@ import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.DictionarySectionFactory;
 import org.rdfhdt.hdt.dictionary.impl.section.HashDictionarySection;
+import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.PFCDictionarySectionBig;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
@@ -15,6 +16,7 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.CustomIterator;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -27,6 +29,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +71,34 @@ MultipleSectionDictionaryBig extends MultipleBaseDictionary {
             objects.put(type,section);
         }
         shared.load(other.getShared(), iListener);
+    }
+    @Override
+    public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
+        IntermediateListener iListener = new IntermediateListener(null);
+        new ExceptionThread(() -> predicates.load(other.getPredicates(), iListener), "MultiSecSAsyncReaderP")
+                .attach(
+                        new ExceptionThread(() -> subjects.load(other.getSubjects(), iListener), "MultiSecSAsyncReaderS"),
+                        new ExceptionThread(() -> shared.load(other.getShared(), iListener), "MultiSecSAsyncReaderSh"),
+                        new ExceptionThread(() -> {
+                            Iterator<? extends CharSequence> iter = other.getObjects().getEntries();
+
+                            // TODO: allow the usage of OneReadDictionarySection
+                            Map<ByteString, Long> literalsCounts = new HashMap<>(other.getObjects().getLiteralsCounts());
+                            literalsCounts.computeIfPresent(LiteralsUtils.NO_DATATYPE, (key, value) -> (value - other.getShared().getNumberOfElements()));
+                            CustomIterator customIterator = new CustomIterator(iter, literalsCounts);
+                            while (customIterator.hasNext()) {
+                                PFCDictionarySection section = new PFCDictionarySection(spec);
+                                ByteString type = ByteString.of(LiteralsUtils.getType(customIterator.prev));
+                                long numEntries = literalsCounts.get(type);
+
+                                section.load(customIterator, numEntries, listener);
+                                section.locate(new CompactString("\"\uD83C\uDDEB\uD83C\uDDF7\"@ro"));
+                                objects.put(type, section);
+                            }
+                        }, "MultiSecSAsyncReaderO")
+                )
+                .startAll()
+                .joinAndCrashIfRequired();
     }
 
     /* (non-Javadoc)

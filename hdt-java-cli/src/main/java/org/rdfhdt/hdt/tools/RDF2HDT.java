@@ -50,6 +50,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
 import org.rdfhdt.hdt.util.StringUtil;
+import org.rdfhdt.hdt.util.listener.ColorTool;
 import org.rdfhdt.hdt.util.listener.MultiThreadListenerConsole;
 
 /**
@@ -67,7 +68,9 @@ public class RDF2HDT implements ProgressListener {
 
 	public String rdfInput;
 	public String hdtOutput;
-	
+
+	private ColorTool colorTool;
+
 	@Parameter(description = "<input RDF> <output HDT>")
 	public List<String> parameters = Lists.newArrayList();
 
@@ -81,7 +84,7 @@ public class RDF2HDT implements ProgressListener {
 	public String rdfType;
 	
 	@Parameter(names = "-version", description = "Prints the HDT version number")
-	public static boolean showVersion;
+	public boolean showVersion;
 	
 	@Parameter(names = "-base", description = "Base URI for the dataset")
 	public String baseURI;
@@ -112,6 +115,7 @@ public class RDF2HDT implements ProgressListener {
 
 	@Parameter(names = "-printoptions", description = "Print options")
 	public boolean printoptions;
+
 	@Parameter(names = "-color", description = "Print using color (if available)")
 	public boolean color;
 
@@ -147,7 +151,7 @@ public class RDF2HDT implements ProgressListener {
 			} else {
 				baseURI = Path.of(rdfInput).toUri().toString();
 			}
-			warn("base uri not specified, using '" + baseURI + "'");
+			colorTool.warn("base uri not specified, using '" + baseURI + "'");
 		}
 
 		RDFNotation notation = null;
@@ -155,7 +159,7 @@ public class RDF2HDT implements ProgressListener {
 			try {
 				notation = RDFNotation.parse(rdfType);
 			} catch (IllegalArgumentException e) {
-				warn("Notation " + rdfType + " not recognised.");
+				colorTool.warn("Notation " + rdfType + " not recognised.");
 			}
 		}
 
@@ -163,12 +167,12 @@ public class RDF2HDT implements ProgressListener {
 			try {
 				notation = RDFNotation.guess(rdfInput);
 			} catch (IllegalArgumentException e) {
-				warn("Could not guess notation for " + rdfInput + " Trying NTriples");
+				colorTool.warn("Could not guess notation for " + rdfInput + " Trying NTriples");
 				notation = RDFNotation.NTRIPLES;
 			}
 		}
 
-		log("Converting " +rdfInput+" to "+hdtOutput+" as "+notation.name());
+		colorTool.log("Converting " +rdfInput+" to "+hdtOutput+" as "+notation.name());
 
 		if (ntSimpleLoading) {
 			spec.set("parser.ntSimpleParser", "true");
@@ -185,12 +189,12 @@ public class RDF2HDT implements ProgressListener {
 
 			long maxTreeCatChunkSize = getMaxTreeCatChunkSize();
 
-			log("Compute HDT with HDTCatTree using chunk of size: " + StringUtil.humanReadableByteCount(maxTreeCatChunkSize, true));
+			colorTool.log("Compute HDT with HDTCatTree using chunk of size: " + StringUtil.humanReadableByteCount(maxTreeCatChunkSize, true));
 
 			if (disk) {
 				if (diskLocation != null) {
 					spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, diskLocation);
-					log("Using temp directory " + diskLocation);
+					colorTool.log("Using temp directory " + diskLocation);
 				}
 				MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 				hdt = HDTManager.catTree(
@@ -218,12 +222,12 @@ public class RDF2HDT implements ProgressListener {
 			}
 		} else if (disk) {
 			if (!quiet) {
-				log("Generating using generateHDTDisk");
+				colorTool.log("Generating using generateHDTDisk");
 			}
 			spec.set(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY, hdtOutput);
 			if (diskLocation != null) {
 				spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, diskLocation);
-				log("Using temp directory " + diskLocation);
+				colorTool.log("Using temp directory " + diskLocation);
 			}
 			MultiThreadListenerConsole listenerConsole = !quiet ? new MultiThreadListenerConsole(color) : null;
 			hdt = HDTManager.generateHDTDisk(rdfInput, baseURI, notation, CompressionType.guess(rdfInput), spec, listenerConsole);
@@ -237,30 +241,30 @@ public class RDF2HDT implements ProgressListener {
 			hdt = HDTManager.generateHDT(rdfInput, baseURI, notation, spec, listenerConsole);
 		}
 
-		logValue("File converted in ..... ", sw.stopAndShow(), true);
+		colorTool.logValue("File converted in ..... ", sw.stopAndShow(), true);
 
 		try {
 			// Show Basic stats
 			if(!quiet){
-				logValue("Total Triples ......... ", "" + hdt.getTriples().getNumberOfElements());
-				logValue("Different subjects .... ", "" + hdt.getDictionary().getNsubjects());
-				logValue("Different predicates .. ", "" + hdt.getDictionary().getNpredicates());
-				logValue("Different objects ..... ", "" + hdt.getDictionary().getNobjects());
-				logValue("Common Subject/Object . ", "" + hdt.getDictionary().getNshared());
+				colorTool.logValue("Total Triples ......... ", "" + hdt.getTriples().getNumberOfElements());
+				colorTool.logValue("Different subjects .... ", "" + hdt.getDictionary().getNsubjects());
+				colorTool.logValue("Different predicates .. ", "" + hdt.getDictionary().getNpredicates());
+				colorTool.logValue("Different objects ..... ", "" + hdt.getDictionary().getNobjects());
+				colorTool.logValue("Common Subject/Object . ", "" + hdt.getDictionary().getNshared());
 			}
 
 			// Dump to HDT file
 			if (!disk && !catTree) {
 				sw = new StopWatch();
 				hdt.saveToHDT(hdtOutput, this);
-				logValue("HDT saved to file in .. ", sw.stopAndShow());
+				colorTool.logValue("HDT saved to file in .. ", sw.stopAndShow());
 			}
 
 			// Generate index and dump it to .hdt.index file
 			sw.reset();
 			if(generateIndex) {
 				hdt = HDTManager.indexedHDT(hdt,this);
-				logValue("Index generated and saved in ", sw.stopAndShow());
+				colorTool.logValue("Index generated and saved in ", sw.stopAndShow());
 			}
 		} finally {
 			if(hdt!=null) hdt.close();
@@ -280,67 +284,33 @@ public class RDF2HDT implements ProgressListener {
 		}
 	}
 
-	private String prefix(String pref, int r, int g, int b) {
-		return colorReset() + "[" + color(r, g, b) + pref + colorReset() + "]";
-	}
-
-	private void log(String msg) {
-		if (!quiet) {
-			System.out.println(prefix("INFO", 3, 1, 5) + " " + colorReset() + msg);
-		}
-	}
-	private void logValue(String msg, String value, boolean ignoreQuiet) {
-		if (!quiet || ignoreQuiet) {
-			System.out.println(color(3, 1, 5) + msg + colorReset() + value);
-		}
-	}
-	private void logValue(String msg, String value) {
-		logValue(msg, value, false);
-	}
-	private void warn(String msg) {
-		if (!quiet) {
-			System.out.println(prefix("WARN", 5, 5, 0) + " " + colorReset() + msg);
-		}
-	}
-
-	private String color(int r, int g, int b) {
-		if (!color) {
-			return "";
-		}
-		int color = 16 + 36*r + 6 * g + b;
-		return "\033[38;5;"+color+"m";
-	}
-
-	private String colorReset() {
-		return color ? "\033[0m" : "";
-	}
-
 	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Throwable {
 		RDF2HDT rdf2hdt = new RDF2HDT();
 		JCommander com = new JCommander(rdf2hdt, args);
 		com.setProgramName("rdf2hdt");
+		rdf2hdt.colorTool = new ColorTool(rdf2hdt.color, rdf2hdt.quiet);
 
 		if (rdf2hdt.printoptions) {
 			Collection<HDTOptionsKeys.Option> values = HDTOptionsKeys.getOptionMap().values();
 
 			for (HDTOptionsKeys.Option opt : values) {
-				System.out.println(rdf2hdt.color(3, 1, 5) + "Key:  " + rdf2hdt.color(5, 1, 0) + opt.getKey());
+				System.out.println(rdf2hdt.colorTool.color(3, 1, 5) + "Key:  " + rdf2hdt.colorTool.color(5, 1, 0) + opt.getKey());
 				if (!opt.getKeyInfo().desc().isEmpty()) {
-					System.out.println(rdf2hdt.color(3, 1, 5) + "Desc: " + rdf2hdt.colorReset() + opt.getKeyInfo().desc());
+					System.out.println(rdf2hdt.colorTool.color(3, 1, 5) + "Desc: " + rdf2hdt.colorTool.colorReset() + opt.getKeyInfo().desc());
 				}
-				System.out.println(rdf2hdt.color(3, 1, 5) + "Type: " + rdf2hdt.colorReset() + opt.getKeyInfo().type().getTitle());
+				System.out.println(rdf2hdt.colorTool.color(3, 1, 5) + "Type: " + rdf2hdt.colorTool.colorReset() + opt.getKeyInfo().type().getTitle());
 				switch (opt.getKeyInfo().type()) {
 					case BOOLEAN:
-						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible values: " + rdf2hdt.colorReset() + "true|false");
+						System.out.println(rdf2hdt.colorTool.color(3, 1, 5) + "Possible values: " + rdf2hdt.colorTool.colorReset() + "true|false");
 						break;
 					case ENUM:
-						System.out.println(rdf2hdt.color(3, 1, 5) + "Possible value(s):");
+						System.out.println(rdf2hdt.colorTool.color(3, 1, 5) + "Possible value(s):");
 						int max = opt.getValues().stream().mapToInt(vle -> vle.getValue().length()).max().orElse(0);
 						for (HDTOptionsKeys.OptionValue vle : opt.getValues()) {
-							System.out.print(rdf2hdt.color(3, 3, 3) + "- " + rdf2hdt.colorReset() + vle.getValue());
+							System.out.print(rdf2hdt.colorTool.color(3, 3, 3) + "- " + rdf2hdt.colorTool.colorReset() + vle.getValue());
 							if (!vle.getValueInfo().desc().isEmpty()) {
-								System.out.println(rdf2hdt.color(3, 3, 3) + " ".repeat(max - vle.getValue().length()) + " : " + vle.getValueInfo().desc());
+								System.out.println(rdf2hdt.colorTool.color(3, 3, 3) + " ".repeat(max - vle.getValue().length()) + " : " + vle.getValueInfo().desc());
 							} else {
 								System.out.println();
 							}
@@ -356,18 +326,16 @@ public class RDF2HDT implements ProgressListener {
 		}
 
 		if(rdf2hdt.parameters.size()==1) {
-			System.err.println("No input file specified, reading from standard input.");
+			rdf2hdt.colorTool.warn("No input file specified, reading from standard input.");
 			rdf2hdt.rdfInput = "-";
 			rdf2hdt.hdtOutput = rdf2hdt.parameters.get(0);
 		} else if(rdf2hdt.parameters.size()==2) {
 			rdf2hdt.rdfInput = rdf2hdt.parameters.get(0);
 			rdf2hdt.hdtOutput = rdf2hdt.parameters.get(1);
-			
-		} else if (showVersion){
-				System.out.println(HDTVersion.get_version_string("."));
-				System.exit(0);
-			}
-		else{
+		} else if (rdf2hdt.showVersion){
+			System.out.println(HDTVersion.get_version_string("."));
+			System.exit(0);
+		} else {
 			com.usage();
 			System.exit(1);
 		}
