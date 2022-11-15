@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.options;
 
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
+import org.rdfhdt.hdt.util.Profiler;
 
 import java.util.Objects;
 import java.util.function.DoubleSupplier;
@@ -217,6 +218,15 @@ public interface HDTOptions {
 	}
 
 	/**
+	 * set a profiler id
+	 * @param key key
+	 * @param profiler profiler
+	 */
+	default void set(String key, Profiler profiler) {
+		set(key, "!" + profiler.getId());
+	}
+
+	/**
 	 * set a long value
 	 *
 	 * @param key   key
@@ -230,5 +240,4 @@ public interface HDTOptions {
 	 * @param options options
 	 */
 	void setOptions(String options);
-
 }

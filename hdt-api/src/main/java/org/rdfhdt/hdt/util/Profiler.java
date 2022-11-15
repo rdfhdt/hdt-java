@@ -1,15 +1,11 @@
 package org.rdfhdt.hdt.util;
 
-import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
-import org.rdfhdt.hdt.util.crc.CRC32;
-import org.rdfhdt.hdt.util.crc.CRCInputStream;
-import org.rdfhdt.hdt.util.crc.CRCOutputStream;
-import org.rdfhdt.hdt.util.io.IOUtil;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,15 +13,31 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * tool to profile time
  *
  * @author Antoine Willerval
  */
-public class Profiler {
+public class Profiler implements AutoCloseable {
+	private static final AtomicLong PROFILER_IDS = new AtomicLong();
+	private static final Map<Long, Profiler> PROFILER = new HashMap<>();
+
+	/**
+	 * get a non-closed profiler
+	 *
+	 * @param id profiler id
+	 * @return profiler or null if closed or non-existing
+	 */
+	public static Profiler getProfilerById(long id) {
+		return PROFILER.get(id);
+	}
+
 	/**
 	 * Read the profiling values from an input path
 	 *
@@ -35,18 +47,89 @@ public class Profiler {
 	 */
 	public static Profiler readFromDisk(Path inputPath) throws IOException {
 		Profiler p = new Profiler("");
-		try (CRCInputStream is = new CRCInputStream(new BufferedInputStream(Files.newInputStream(inputPath)), new CRC32())) {
+		try (InputStream is = new BufferedInputStream(Files.newInputStream(inputPath))) {
 			for (byte b : HEADER) {
 				if (is.read() != b) {
 					throw new IOException("Missing header for the profiling file!");
 				}
 			}
 			p.mainSection = p.new Section(is, 0);
-			if (!is.readCRCAndCheck()) {
-				throw new IllegalArgumentException("CRC doesn't match when reading the CRC!");
+			int checkSum = p.mainSection.computeCheckSum();
+			int checkSumRead = (int) readLong(is);
+			if (checkSumRead != checkSum) {
+				throw new IOException("the Checksum isn't the same");
 			}
 		}
 		return p;
+	}
+
+	private static long readLong(InputStream is) throws IOException {
+		byte[] longBuffer = readBuffer(is, 8);
+		return (longBuffer[0] & 0xFF)
+				| ((longBuffer[1] & 0xFFL) << 8)
+				| ((longBuffer[2] & 0xFFL) << 16)
+				| ((longBuffer[3] & 0xFFL) << 24)
+				| ((longBuffer[4] & 0xFFL) << 32)
+				| ((longBuffer[5] & 0xFFL) << 40)
+				| ((longBuffer[6] & 0xFFL) << 48)
+				| ((longBuffer[7] & 0xFFL) << 56);
+	}
+
+	private static void writeLong(OutputStream os, long value) throws IOException {
+		os.write((byte) (value & 0xFF));
+		os.write((byte) ((value >>> 8) & 0xFF));
+		os.write((byte) ((value >>> 16) & 0xFF));
+		os.write((byte) ((value >>> 24) & 0xFF));
+		os.write((byte) ((value >>> 32) & 0xFF));
+		os.write((byte) ((value >>> 40) & 0xFF));
+		os.write((byte) ((value >>> 48) & 0xFF));
+		os.write((byte) ((value >>> 56) & 0xFF));
+	}
+
+	private static byte[] readBuffer(InputStream input, int length) throws IOException {
+		int nRead;
+		int pos = 0;
+		byte[] data = new byte[length];
+
+		while ((nRead = input.read(data, pos, length - pos)) > 0) {
+			pos += nRead;
+		}
+
+		if (pos != length) {
+			throw new EOFException("EOF while reading array from InputStream");
+		}
+
+		return data;
+	}
+
+	/**
+	 * create or load a profiler from the options into a subsection
+	 *
+	 * @param name    name
+	 * @param options options
+	 * @param setId   set the id after loading (if required)
+	 * @return profiler
+	 */
+	public static Profiler createOrLoadSubSection(String name, HDTOptions options, boolean setId) {
+		// no options, we can't create
+		if (options == null) {
+			return new Profiler(name, null);
+		}
+		String profiler = options.get(HDTOptionsKeys.PROFILER_KEY);
+		if (profiler != null && profiler.length() != 0 && profiler.charAt(0) == '!') {
+			Profiler prof = getProfilerById(Long.parseLong(profiler.substring(1)));
+			if (prof != null) {
+				prof.pushSection(name);
+				prof.deep++;
+				return prof;
+			}
+		}
+		// no id, not an id
+		Profiler prof = new Profiler(name, options);
+		if (setId) {
+			options.set(HDTOptionsKeys.PROFILER_KEY, prof);
+		}
+		return prof;
 	}
 
 	private static final byte[] HEADER = {'H', 'D', 'T', 'P', 'R', 'O', 'F', 'I', 'L', 'E'};
@@ -55,9 +138,11 @@ public class Profiler {
 	private Section mainSection;
 	private boolean disabled;
 	private Path outputPath;
+	private final long id;
+	private int deep = 0;
 
 	/**
-	 * create a profiler
+	 * create a disabled profiler
 	 *
 	 * @param name the profiler name
 	 */
@@ -72,13 +157,19 @@ public class Profiler {
 	 * @param spec spec (nullable)
 	 */
 	public Profiler(String name, HDTOptions spec) {
+		this.id = PROFILER_IDS.incrementAndGet();
+		PROFILER.put(this.id, this);
 		this.name = Objects.requireNonNull(name, "name can't be null!");
 		if (spec != null) {
-			disabled = !spec.getBoolean(HDTOptionsKeys.PROFILER_KEY);
+			String b = spec.get(HDTOptionsKeys.PROFILER_KEY);
+			disabled = b == null || b.length() == 0 || !(b.charAt(0) == '!' || "true".equalsIgnoreCase(b));
 			String profilerOutputLocation = spec.get(HDTOptionsKeys.PROFILER_OUTPUT_KEY);
 			if (profilerOutputLocation != null && !profilerOutputLocation.isEmpty()) {
 				outputPath = Path.of(profilerOutputLocation);
 			}
+		} else {
+			// no profiling by default
+			disabled = true;
 		}
 	}
 
@@ -104,6 +195,17 @@ public class Profiler {
 	}
 
 	/**
+	 * @return profiler id
+	 */
+	public long getId() {
+		return id;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	/**
 	 * complete a section
 	 */
 	public void popSection() {
@@ -120,7 +222,7 @@ public class Profiler {
 	 * stop the profiler without poping sections
 	 */
 	public void stop() {
-		if (disabled) {
+		if (disabled || deep != 0) {
 			return;
 		}
 		getMainSection().stop();
@@ -137,7 +239,7 @@ public class Profiler {
 	 * write the profile into the console
 	 */
 	public void writeProfiling() throws IOException {
-		if (disabled) {
+		if (disabled || deep != 0) {
 			return;
 		}
 		getMainSection().writeProfiling("", true);
@@ -152,12 +254,13 @@ public class Profiler {
 	 * @param outputPath output path
 	 */
 	public void writeToDisk(Path outputPath) throws IOException {
-		try (CRCOutputStream os = new CRCOutputStream(new BufferedOutputStream(Files.newOutputStream(outputPath)), new CRC32())) {
+		try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(outputPath))) {
 			for (byte b : HEADER) {
 				os.write(b);
 			}
-			getMainSection().writeSection(os);
-			os.writeCRC();
+			Section mainSection = getMainSection();
+			mainSection.writeSection(os);
+			writeLong(os, mainSection.computeCheckSum());
 		}
 	}
 
@@ -169,6 +272,16 @@ public class Profiler {
 			this.mainSection = new Section(name);
 		}
 		return this.mainSection;
+	}
+
+	@Override
+	public void close() {
+		if (deep == 0) {
+			PROFILER.remove(getId());
+		} else {
+			deep--;
+			popSection();
+		}
 	}
 
 	/**
@@ -183,7 +296,7 @@ public class Profiler {
 
 		Section(String name) {
 			this.name = name;
-			start = System.nanoTime();
+			start = System.currentTimeMillis();
 			end = start;
 			subSections = new ArrayList<>();
 		}
@@ -195,16 +308,16 @@ public class Profiler {
 		 * @throws IOException io exception
 		 */
 		Section(InputStream is, int deep) throws IOException {
-			start = VByte.decode(is);
-			end = VByte.decode(is);
+			start = readLong(is);
+			end = readLong(is);
 
-			int nameLength = (int) VByte.decode(is);
-			byte[] nameBytes = IOUtil.readBuffer(is, nameLength, null);
+			int nameLength = (int) readLong(is);
+			byte[] nameBytes = readBuffer(is, nameLength);
 			name = new String(nameBytes, StandardCharsets.UTF_8);
 
 			maxSize = Math.max(name.length() + deep * 2, maxSize);
 
-			int subSize = (int) VByte.decode(is);
+			int subSize = (int) readLong(is);
 			subSections = new ArrayList<>(subSize);
 			for (int i = 0; i < subSize; i++) {
 				subSections.add(new Section(is, deep + 1));
@@ -214,14 +327,14 @@ public class Profiler {
 		void writeSection(OutputStream os) throws IOException {
 			byte[] nameBytes = name.getBytes(StandardCharsets.UTF_8);
 
-			VByte.encode(os, start);
-			VByte.encode(os, end);
+			writeLong(os, start);
+			writeLong(os, end);
 
-			VByte.encode(os, nameBytes.length);
+			writeLong(os, nameBytes.length);
 			os.write(nameBytes);
 
 			List<Section> sub = getSubSections();
-			VByte.encode(os, sub.size());
+			writeLong(os, sub.size());
 
 			for (Section s : sub) {
 				s.writeSection(os);
@@ -263,7 +376,7 @@ public class Profiler {
 				}
 				return false;
 			} else {
-				end = System.nanoTime();
+				end = System.currentTimeMillis();
 				return true;
 			}
 		}
@@ -294,15 +407,40 @@ public class Profiler {
 			return result;
 		}
 
+		@Override
+		public String toString() {
+			return "Section{" +
+					"name='" + name + '\'' +
+					", start=" + start +
+					", end=" + end +
+					", subSections=" + subSections +
+					", currentSection=" + currentSection +
+					'}';
+		}
+
 		void stop() {
 			if (isRunning()) {
 				currentSection.stop();
 			}
-			end = System.nanoTime();
+			end = System.currentTimeMillis();
 		}
 
 		public long getMillis() {
-			return (end - start) / 1_000_000L;
+			return end - start;
+		}
+
+		/**
+		 * @return start timestamp
+		 */
+		public long getStartMillis() {
+			return start;
+		}
+
+		/**
+		 * @return end timestamp
+		 */
+		public long getEndMillis() {
+			return end;
 		}
 
 		void writeProfiling(String prefix, boolean isLast) {
@@ -311,6 +449,19 @@ public class Profiler {
 				Section s = subSections.get(i);
 				s.writeProfiling(prefix + (isLast ? "  " : "| "), i == subSections.size() - 1);
 			}
+		}
+
+		/**
+		 * @return checksum for the profiling section
+		 */
+		public int computeCheckSum() {
+			int result = name.length();
+			result = 31 * result + (int) (start ^ (start >>> 32));
+			result = 31 * result + (int) (end ^ (end >>> 32));
+			for (Section subSection : subSections) {
+				result = 31 * result ^ subSection.computeCheckSum();
+			}
+			return result;
 		}
 	}
 }

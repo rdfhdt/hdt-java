@@ -77,6 +77,7 @@ import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorCat;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorDiff;
 import org.rdfhdt.hdt.triples.impl.BitmapTriplesIteratorMapDiff;
 import org.rdfhdt.hdt.util.LiteralsUtils;
+import org.rdfhdt.hdt.util.Profiler;
 import org.rdfhdt.hdt.util.StopWatch;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -477,11 +478,12 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
      * @param hdt2 hdt2
      * @param listener listener
      */
-	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
+	public void cat(String location, HDT hdt1, HDT hdt2, ProgressListener listener, Profiler profiler) throws IOException {
 		if (listener != null) {
 			listener.notifyProgress(0, "Generating dictionary");
 		}
 		try (FourSectionDictionaryCat dictionaryCat = new FourSectionDictionaryCat(location)) {
+			profiler.pushSection("catdict");
 			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
 			ControlInfo ci2 = new ControlInformation();
 			//map the generated dictionary
@@ -497,13 +499,19 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 				this.dictionary.close();
 			}
 			this.dictionary = dictionary;
+
+			profiler.popSection();
+			profiler.pushSection("cattriples");
+
 			if (listener != null) {
 				listener.notifyProgress(0, "Generating triples");
 			}
 			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
 			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
 			bitmapTriplesCat.cat(it, listener);
+			profiler.popSection();
 		}
+		profiler.pushSection("Clean and map");
 		//Delete the mappings since they are not necessary anymore
 		Files.delete( Paths.get(location+"P1"));
 		Files.delete( Paths.get(location+"P1"+"Types"));
@@ -546,6 +554,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		if (rawSize1 != -1 && rawSize2 != -1) {
 			getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, String.valueOf(rawSize1 + rawSize2));
 		}
+		profiler.popSection();
 	}
 
 	public static long getRawSize(Header header) {
@@ -564,12 +573,14 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		}
 	}
 
-	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
+	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener, Profiler profiler) throws IOException {
 		if (listener != null) {
 			listener.notifyProgress(0, "Generating dictionary");
 		}
 		try (DictionaryCat dictionaryCat = new MultipleSectionDictionaryCat(location)) {
+			profiler.pushSection("catdict");
 			dictionaryCat.cat(hdt1.getDictionary(), hdt2.getDictionary(), listener);
+
 			//map the generated dictionary
 			ControlInfo ci2 = new ControlInformation();
 			try (CountInputStream fis = new CountInputStream(new BufferedInputStream(new FileInputStream(location + "dictionary")))) {
@@ -583,6 +594,8 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 				dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
 				this.dictionary = dictionary;
 			}
+			profiler.popSection();
+			profiler.pushSection("cattriples");
 
 			if (listener != null) {
 				listener.notifyProgress(0, "Generating triples");
@@ -590,7 +603,9 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			BitmapTriplesIteratorCat it = new BitmapTriplesIteratorCat(hdt1.getTriples(), hdt2.getTriples(), dictionaryCat);
 			BitmapTriplesCat bitmapTriplesCat = new BitmapTriplesCat(location);
 			bitmapTriplesCat.cat(it,listener);
+			profiler.popSection();
 		}
+		profiler.pushSection("Clean and map");
 		//Delete the mappings since they are not necessary anymore
 		int countSubSections = 0;
 		for (CharSequence datatype : hdt1.getDictionary().getAllObjects().keySet()) {
@@ -653,19 +668,23 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		if (rawSize1 != -1 && rawSize2 != -1) {
 			getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, String.valueOf(rawSize1 + rawSize2));
 		}
+		profiler.popSection();
 	}
 
-	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener) throws IOException {
+	public void diff(HDT hdt1, HDT hdt2, ProgressListener listener, Profiler profiler) throws IOException {
 		ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(hdt1.getTriples().getNumberOfElements());
 		BitmapTriplesIteratorDiff iterator = new BitmapTriplesIteratorDiff(hdt1, hdt2, bitmap);
+		profiler.pushSection("fill bitmap");
 		iterator.fillBitmap();
-		diffBit(getHDTFileName(), hdt1, bitmap, listener);
+		profiler.popSection();
+		diffBit(getHDTFileName(), hdt1, bitmap, listener, profiler);
 	}
 
-	public void diffBit(String location, HDT hdt, Bitmap deleteBitmap, ProgressListener listener) throws IOException {
+	public void diffBit(String location, HDT hdt, Bitmap deleteBitmap, ProgressListener listener, Profiler profiler) throws IOException {
 		IntermediateListener il = new IntermediateListener(listener);
 		log.debug("Generating Dictionary...");
 		il.notifyProgress(0, "Generating Dictionary...");
+		profiler.pushSection("diffdict");
 		IteratorTripleID hdtIterator = hdt.getTriples().searchAll();
 		DictionaryEntriesDiff iter = DictionaryEntriesDiff.createForType(hdt.getDictionary(), hdt, deleteBitmap, hdtIterator);
 
@@ -687,7 +706,12 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 				dictionary.mapFromFile(fis, new File(location + "dictionary"), null);
 				this.dictionary = dictionary;
 			}
+			profiler.popSection();
+
 			log.debug("Generating Triples...");
+
+			profiler.pushSection("difftriples");
+
 			il.notifyProgress(40, "Generating Triples...");
 			// map the triples based on the new dictionary
 			BitmapTriplesIteratorMapDiff mapIter = new BitmapTriplesIteratorMapDiff(hdt, deleteBitmap, diff);
@@ -696,6 +720,8 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			triples.load(mapIter, listener);
 			this.triples = triples;
 		}
+		profiler.popSection();
+		profiler.pushSection("Clean and map");
 
 		log.debug("Clear data...");
 		il.notifyProgress(80, "Clear data...");
@@ -735,5 +761,6 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		this.populateHeaderStructure(hdt.getBaseURI());
 		log.debug("Diff completed.");
 		il.notifyProgress(100, "Diff completed...");
+		profiler.popSection();
 	}
 }

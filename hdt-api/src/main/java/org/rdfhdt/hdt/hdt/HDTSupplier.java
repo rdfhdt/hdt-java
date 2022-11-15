@@ -5,6 +5,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.triples.TripleString;
+import org.rdfhdt.hdt.util.Profiler;
 
 import java.io.IOException;
 import java.nio.file.Path;

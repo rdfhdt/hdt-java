@@ -10,7 +10,6 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressTripleMapper;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
-import org.rdfhdt.hdt.hdt.impl.diskimport.SectionCompressor;
 import org.rdfhdt.hdt.hdt.impl.diskimport.TripleCompressionResult;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
@@ -130,28 +129,36 @@ public class HDTDiskImporter implements Closeable {
 		// location of the future HDT file, do not set to create the HDT in memory while mergin
 		futureHDTLocation = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY);
 
-		profiler = new Profiler("doGenerateHDTDisk", hdtFormat);
-		if (baseNameOpt == null || baseNameOpt.isEmpty()) {
-			basePath = CloseSuppressPath.of(Files.createTempDirectory("hdt-java-generate-disk"));
-		} else {
-			basePath = CloseSuppressPath.of(baseNameOpt);
-		}
-		basePath.closeWithDeleteRecurse();
-		mapHDT = futureHDTLocation != null && !futureHDTLocation.isEmpty();
-		// debug the build strategy
-		debugHDTBuilding = hdtFormat.getBoolean("debug.disk.build");
+		profiler = Profiler.createOrLoadSubSection("doGenerateHDTDisk", hdtFormat, true);
+		try {
+			if (baseNameOpt == null || baseNameOpt.isEmpty()) {
+				basePath = CloseSuppressPath.of(Files.createTempDirectory("hdt-java-generate-disk"));
+			} else {
+				basePath = CloseSuppressPath.of(baseNameOpt);
+			}
+			basePath.closeWithDeleteRecurse();
+			mapHDT = futureHDTLocation != null && !futureHDTLocation.isEmpty();
+			// debug the build strategy
+			debugHDTBuilding = hdtFormat.getBoolean("debug.disk.build");
 
-		// create working directory
-		basePath.mkdirs();
+			// create working directory
+			basePath.mkdirs();
 
-		if (!mapHDT) {
-			// using default implementation
-			hdt = new HDTImpl(hdtFormat);
-		} else {
-			// using map implementation
-			hdt = new WriteHDTImpl(hdtFormat, basePath.resolve("maphdt"), bufferSize);
+			if (!mapHDT) {
+				// using default implementation
+				hdt = new HDTImpl(hdtFormat);
+			} else {
+				// using map implementation
+				hdt = new WriteHDTImpl(hdtFormat, basePath.resolve("maphdt"), bufferSize);
+			}
+			hdt.setBaseUri(baseURI);
+		} catch (Throwable t) {
+			try {
+				throw t;
+			} finally {
+				profiler.close();
+			}
 		}
-		hdt.setBaseUri(baseURI);
 	}
 
 	/**
@@ -360,7 +367,11 @@ public class HDTDiskImporter implements Closeable {
 			profiler.writeProfiling();
 			listener.notifyProgress(100, "Clearing disk");
 		} finally {
-			basePath.close();
+			try {
+				basePath.close();
+			} finally {
+				profiler.close();
+			}
 		}
 	}
 }

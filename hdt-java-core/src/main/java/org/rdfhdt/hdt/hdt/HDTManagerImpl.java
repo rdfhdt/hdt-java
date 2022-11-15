@@ -321,12 +321,18 @@ public class HDTManagerImpl extends HDTManager {
 		try (HDT hdt1 = loadOrMapHDT(hdtFileName1, listener, hdtFormat);
 			 HDT hdt2 = loadOrMapHDT(hdtFileName2, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
-			if (hdt1.getDictionary() instanceof MultipleSectionDictionary
-					&& hdt2.getDictionary() instanceof MultipleSectionDictionary) {
-				hdt.catCustom(location, hdt1, hdt2, listener);
-			}
-			else {
-				hdt.cat(location, hdt1, hdt2, listener);
+			try (Profiler profiler = Profiler.createOrLoadSubSection("hdtCat", hdtFormat, false)) {
+				try {
+					if (hdt1.getDictionary() instanceof MultipleSectionDictionary
+							&& hdt2.getDictionary() instanceof MultipleSectionDictionary) {
+						hdt.catCustom(location, hdt1, hdt2, listener, profiler);
+					} else {
+						hdt.cat(location, hdt1, hdt2, listener, profiler);
+					}
+				} finally {
+					profiler.stop();
+					profiler.writeProfiling();
+				}
 			}
 			return hdt;
 		}
@@ -337,7 +343,9 @@ public class HDTManagerImpl extends HDTManager {
 		try (HDT hdt1 = loadOrMapHDT(hdtFileName1, listener, hdtFormat);
 			 HDT hdt2 = loadOrMapHDT(hdtFileName2, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
-			hdt.diff(hdt1, hdt2, listener);
+			try (Profiler profiler = Profiler.createOrLoadSubSection("hdtDiff", hdtFormat, true)) {
+				hdt.diff(hdt1, hdt2, listener, profiler);
+			}
 			return hdt;
 		}
 	}
@@ -346,8 +354,8 @@ public class HDTManagerImpl extends HDTManager {
 	protected HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		try (HDT hdtOriginal = loadOrMapHDT(hdtFileName, listener, hdtFormat)) {
 			HDTImpl hdt = new HDTImpl(hdtFormat);
-			try {
-				hdt.diffBit(location, hdtOriginal, deleteBitmap, listener);
+			try (Profiler profiler = Profiler.createOrLoadSubSection("hdtDiffBit", hdtFormat, true)) {
+				hdt.diffBit(location, hdtOriginal, deleteBitmap, listener, profiler);
 			} catch (Throwable t) {
 				try {
 					throw t;
@@ -390,84 +398,84 @@ public class HDTManagerImpl extends HDTManager {
 
 		Path futureHDTLocation = Optional.ofNullable(hdtFormat.get(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY)).map(Path::of).orElse(null);
 
-		Profiler profiler = new Profiler("doHDTCatTree", hdtFormat);
+		try (Profiler profiler = Profiler.createOrLoadSubSection("doHDTCatTree", hdtFormat, true)) {
+			FluxStopTripleStringIterator it = new FluxStopTripleStringIterator(iterator, fluxStop);
 
-		FluxStopTripleStringIterator it = new FluxStopTripleStringIterator(iterator, fluxStop);
+			List<HDTFile> files = new ArrayList<>();
 
-		List<HDTFile> files = new ArrayList<>();
+			long gen = 0;
+			long cat = 0;
 
-		long gen = 0;
-		long cat = 0;
+			Path hdtStore = basePath.resolve("hdt-store");
+			Path hdtCatLocationPath = basePath.resolve("cat");
+			String hdtCatLocation = hdtCatLocationPath.toAbsolutePath().toString();
 
-		Path hdtStore = basePath.resolve("hdt-store");
-		Path hdtCatLocationPath = basePath.resolve("cat");
-		String hdtCatLocation = hdtCatLocationPath.toAbsolutePath().toString();
+			Files.createDirectories(hdtStore);
+			Files.createDirectories(hdtCatLocationPath);
 
-		Files.createDirectories(hdtStore);
-		Files.createDirectories(hdtCatLocationPath);
+			boolean nextFile;
+			do {
+				// generate the hdt
+				gen++;
+				profiler.pushSection("generateHDT #" + gen);
+				PrefixListener il = PrefixListener.of("gen#" + gen, listener);
+				Path hdtLocation = hdtStore.resolve("hdt-" + gen + ".hdt");
+				supplier.doGenerateHDT(it, baseURI, hdtFormat, il, hdtLocation);
+				il.clearThreads();
 
-		boolean nextFile;
-		do {
-			// generate the hdt
-			gen++;
-			profiler.pushSection("generateHDT #" + gen);
-			PrefixListener il = PrefixListener.of("gen#" + gen, listener);
-			Path hdtLocation = hdtStore.resolve("hdt-" + gen + ".hdt");
-			supplier.doGenerateHDT(it, baseURI, hdtFormat, il, hdtLocation);
-			il.clearThreads();
-
-			nextFile = it.hasNextFlux();
-			HDTFile hdtFile = new HDTFile(hdtLocation, 1);
-			profiler.popSection();
-
-			// merge the generated hdt with each block with enough size
-			while (!files.isEmpty() && (!nextFile || (files.get(files.size() - 1)).getChunks() <= hdtFile.getChunks())) {
-				HDTFile lastHDTFile = files.remove(files.size() - 1);
-				cat++;
-				profiler.pushSection("catHDT #" + cat);
-				PrefixListener ilc = PrefixListener.of("cat#" + cat, listener);
-				Path hdtCatFileLocation = hdtStore.resolve("hdtcat-" + cat + ".hdt");
-				try (HDT abcat = HDTManager.catHDT(
-						hdtCatLocation,
-						lastHDTFile.getHdtFile().toAbsolutePath().toString(),
-						hdtFile.getHdtFile().toAbsolutePath().toString(),
-						hdtFormat, ilc)) {
-					abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), ilc);
-				}
-				ilc.clearThreads();
-				// delete previous chunks
-				Files.delete(lastHDTFile.getHdtFile());
-				Files.delete(hdtFile.getHdtFile());
-				// note the new hdt file and the number of chunks
-				hdtFile = new HDTFile(hdtCatFileLocation, lastHDTFile.getChunks() + hdtFile.getChunks());
-
+				nextFile = it.hasNextFlux();
+				HDTFile hdtFile = new HDTFile(hdtLocation, 1);
 				profiler.popSection();
+
+				// merge the generated hdt with each block with enough size
+				while (!files.isEmpty() && (!nextFile || (files.get(files.size() - 1)).getChunks() <= hdtFile.getChunks())) {
+					HDTFile lastHDTFile = files.remove(files.size() - 1);
+					cat++;
+					profiler.pushSection("catHDT #" + cat);
+					PrefixListener ilc = PrefixListener.of("cat#" + cat, listener);
+					Path hdtCatFileLocation = hdtStore.resolve("hdtcat-" + cat + ".hdt");
+					try (HDT abcat = HDTManager.catHDT(
+							hdtCatLocation,
+							lastHDTFile.getHdtFile().toAbsolutePath().toString(),
+							hdtFile.getHdtFile().toAbsolutePath().toString(),
+							hdtFormat, ilc)) {
+						abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), ilc);
+					}
+					ilc.clearThreads();
+					// delete previous chunks
+					Files.delete(lastHDTFile.getHdtFile());
+					Files.delete(hdtFile.getHdtFile());
+					// note the new hdt file and the number of chunks
+					hdtFile = new HDTFile(hdtCatFileLocation, lastHDTFile.getChunks() + hdtFile.getChunks());
+
+					profiler.popSection();
+				}
+				files.add(hdtFile);
+			} while (nextFile);
+
+			listener.notifyProgress(100, "done, loading HDT");
+
+			Path hdtFile = files.get(0).hdtFile;
+
+			assert files.get(0).getChunks() == gen;
+			assert cat < gen;
+
+			try {
+				// if a future HDT location has been asked, move to it and map the HDT
+				if (futureHDTLocation != null) {
+					Files.createDirectories(futureHDTLocation.toAbsolutePath().getParent());
+					Files.deleteIfExists(futureHDTLocation);
+					Files.move(hdtFile, futureHDTLocation);
+					return HDTManager.mapHDT(futureHDTLocation.toAbsolutePath().toString());
+				}
+
+				// if no future location has been asked, load the HDT and delete it after
+				return HDTManager.loadHDT(hdtFile.toAbsolutePath().toString());
+			} finally {
+				Files.deleteIfExists(hdtFile);
+				profiler.stop();
+				profiler.writeProfiling();
 			}
-			files.add(hdtFile);
-		} while (nextFile);
-
-		listener.notifyProgress(100, "done, loading HDT");
-
-		Path hdtFile = files.get(0).hdtFile;
-
-		assert files.get(0).getChunks() == gen;
-		assert cat < gen;
-
-		// if a future HDT location has been asked, move to it and map the HDT
-		if (futureHDTLocation != null) {
-			Files.createDirectories(futureHDTLocation.toAbsolutePath().getParent());
-			Files.deleteIfExists(futureHDTLocation);
-			Files.move(hdtFile, futureHDTLocation);
-			return HDTManager.mapHDT(futureHDTLocation.toAbsolutePath().toString());
-		}
-
-		// if no future location has been asked, load the HDT and delete it after
-		try {
-			return HDTManager.loadHDT(hdtFile.toAbsolutePath().toString());
-		} finally {
-			Files.delete(hdtFile);
-			profiler.stop();
-			profiler.writeProfiling();
 		}
 	}
 
