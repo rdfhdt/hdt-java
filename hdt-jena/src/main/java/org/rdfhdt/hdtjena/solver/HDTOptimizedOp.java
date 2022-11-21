@@ -36,9 +36,7 @@ public class HDTOptimizedOp extends Op0 {
 
 	@Override
 	public boolean equalTo(Op other, NodeIsomorphismMap labelMap) {
-		if(other instanceof HDTOptimizedOp)
-			return true;
-		return false;
+		return other instanceof HDTOptimizedOp;
 	}
 
 }

@@ -15,7 +15,7 @@ import org.rdfhdt.hdt.triples.TripleID;
  */
 public class ListTripleIDIterator implements IteratorTripleID {
 
-	private List<TripleID> triplesList;
+	private final List<TripleID> triplesList;
 	private int pos;
 	private long lastPosition;
 
@@ -39,7 +39,7 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	@Override
 	public TripleID next() {
 		lastPosition = pos;
-		return triplesList.get((int)pos++);
+		return triplesList.get(pos++);
 	}
 
 	/* (non-Javadoc)
@@ -55,7 +55,7 @@ public class ListTripleIDIterator implements IteratorTripleID {
 	 */
 	@Override
 	public TripleID previous() {
-		TripleID tripleID = triplesList.get((int)--pos);
+		TripleID tripleID = triplesList.get(--pos);
 		lastPosition = pos;
 		return tripleID;
 	}

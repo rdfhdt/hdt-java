@@ -27,21 +27,6 @@
 
 package org.rdfhdt.hdt.dictionary.impl.section;
 
-import java.io.BufferedInputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
@@ -56,11 +41,26 @@ import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author mario.arias
@@ -139,7 +139,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		}
 	}
 
-	private long locateBlock(CharSequence str) {
+	private long locateBlock(ByteString str) {
 		if(blocks.getNumberOfElements()==0) {
 			return -1;
 		}
@@ -175,11 +175,12 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 	 */
 	@Override
 	public long locate(CharSequence str) {
+		ByteString bstr = ByteString.of(str);
 		if(buffers==null || blocks==null) {
 			return 0;
 		}
 		
-		long blocknum = locateBlock(str);
+		long blocknum = locateBlock(bstr);
 		if(blocknum>=0) {
 			// Located exactly
 			return (blocknum*blocksize)+1;
@@ -188,7 +189,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				long idblock = locateInBlock(blocknum, str);
+				long idblock = locateInBlock(blocknum, bstr);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -199,7 +200,7 @@ public class PFCDictionarySectionMap implements DictionarySectionPrivate,Closeab
 		return 0;
 	}
 	
-	protected long locateInBlock(long block, CharSequence str) {
+	protected long locateInBlock(long block, ByteString str) {
 		if(block>=blocks.getNumberOfElements()) {
 			return 0;
 		}

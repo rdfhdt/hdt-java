@@ -39,7 +39,7 @@ import org.rdfhdt.hdt.triples.impl.TripleIDInt;
 public class TripleIDComparatorInt implements Comparator<TripleIDInt> {
 	
 	/** Determines the order of comparison */
-	private TripleComponentOrder order;
+	private final TripleComponentOrder order;
 	
 	public static Comparator<TripleIDInt> getComparator(TripleComponentOrder order) {
 		return new TripleIDComparatorInt(order);

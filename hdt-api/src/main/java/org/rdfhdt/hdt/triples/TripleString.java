@@ -167,9 +167,7 @@ public class TripleString {
 	public boolean match(TripleString pattern) {
         if (pattern.getSubject().length() == 0 || equalsCharSequence(pattern.getSubject(), this.subject)) {
             if (pattern.getPredicate().length() == 0 || equalsCharSequence(pattern.getPredicate(), this.predicate)) {
-                if (pattern.getObject().length() == 0 || equalsCharSequence(pattern.getObject(), this.object)) {
-                    return true;
-                }
+				return pattern.getObject().length() == 0 || equalsCharSequence(pattern.getObject(), this.object);
             }
         }
         return false;
@@ -336,5 +334,17 @@ public class TripleString {
 		} else {
 			out.append('<').append(object).append("> .\n");
 		}
+	}
+
+	/**
+	 * convert all the elements into {@link String} and create a new TripleString
+	 * @return tripleString
+	 */
+	public TripleString tripleToString() {
+		return new TripleString(
+			subject.toString(),
+			predicate.toString(),
+			object.toString()
+		);
 	}
 }

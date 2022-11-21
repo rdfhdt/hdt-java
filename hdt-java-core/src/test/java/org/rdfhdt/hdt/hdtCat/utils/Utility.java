@@ -4,6 +4,7 @@ import org.junit.Assert;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -60,7 +61,7 @@ public class Utility {
         }
         System.out.println("OBJECTS");
         count = 0;
-        for (Map.Entry<String, DictionarySection> stringDictionarySectionEntry : d.getAllObjects().entrySet()) {
+        for (Map.Entry<? extends CharSequence, DictionarySection> stringDictionarySectionEntry : d.getAllObjects().entrySet()) {
             Iterator<? extends CharSequence> entries = stringDictionarySectionEntry.getValue().getSortedEntries();
             while (entries.hasNext()) {
                 System.out.println(count + "---" + entries.next().toString());
@@ -111,12 +112,12 @@ public class Utility {
                 d1.getSubjects().getSortedEntries(),
                 d2.getSubjects().getSortedEntries()
         );
-        Iterator<Map.Entry<String, DictionarySection>> hmIter1 = d1.getAllObjects().entrySet().iterator();
-        Iterator<Map.Entry<String, DictionarySection>> hmIter2 = d2.getAllObjects().entrySet().iterator();
+        Iterator<? extends Map.Entry<? extends CharSequence, DictionarySection>> hmIter1 = d1.getAllObjects().entrySet().iterator();
+        Iterator<? extends Map.Entry<? extends CharSequence, DictionarySection>> hmIter2 = d2.getAllObjects().entrySet().iterator();
         while (hmIter1.hasNext()) {
             Assert.assertTrue("The dictionaries have a different number of objects subsections", hmIter2.hasNext());
-            Map.Entry<String, DictionarySection> entry1 = hmIter1.next();
-            Map.Entry<String, DictionarySection> entry2 = hmIter2.next();
+            Map.Entry<? extends CharSequence, DictionarySection> entry1 = hmIter1.next();
+            Map.Entry<? extends CharSequence, DictionarySection> entry2 = hmIter2.next();
 
             assertEquals(
                     entry1.getValue().getSortedEntries(),
@@ -130,13 +131,10 @@ public class Utility {
         );
     }
     public static void printTriples(HDT hdt){
-        IteratorTripleID it = hdt.getTriples().searchAll();
-        while (it.hasNext()){
-            TripleID tripleIDOld = it.next();
-            String subject = hdt.getDictionary().idToString(tripleIDOld.getSubject(), TripleComponentRole.SUBJECT).toString();
-            String predicate = hdt.getDictionary().idToString(tripleIDOld.getPredicate(), TripleComponentRole.PREDICATE).toString();
-            String object = hdt.getDictionary().idToString(tripleIDOld.getObject(), TripleComponentRole.OBJECT).toString();
-            System.out.println(subject+"--"+predicate+"--"+object);
+        try {
+            hdt.search("", "", "").forEachRemaining(s -> System.out.println(s.getSubject()+"--"+s.getPredicate()+"--"+s.getObject()));
+        } catch (NotFoundException e) {
+            throw new AssertionError(e);
         }
     }
 

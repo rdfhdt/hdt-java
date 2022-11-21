@@ -22,6 +22,7 @@ package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -31,7 +32,7 @@ public class CatMapping implements Closeable {
     private final LongArrayDisk mappingType;
     private final long size;
 
-    public CatMapping(String location, String section, long size){
+    public CatMapping(String location, ByteString section, long size){
         this.size = size;
         this.mapping = new LongArrayDisk(location+section,size);
         this.mappingType = new LongArrayDisk(location+section+"Types",size);

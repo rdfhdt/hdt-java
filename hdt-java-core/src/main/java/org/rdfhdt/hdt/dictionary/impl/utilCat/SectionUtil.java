@@ -8,31 +8,67 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
+import java.util.Map;
 
 public class SectionUtil {
+
+    public static final ByteString S1 = ByteString.of("S1");
+    public static final ByteString S2 = ByteString.of("S2");
+    public static final ByteString P1 = ByteString.of("P1");
+    public static final ByteString P2 = ByteString.of("P2");
+    public static final ByteString O1 = ByteString.of("O1");
+    public static final ByteString O2 = ByteString.of("O2");
+    public static final ByteString SH1 = ByteString.of("SH1");
+    public static final ByteString SH2 = ByteString.of("SH2");
+
+    public static final ByteString SECTION = ByteString.of("section");
+    public static final ByteString SECTION_SUBJECT = ByteString.of("subject");
+    public static final ByteString SECTION_PREDICATE = ByteString.of("predicate");
+    public static final ByteString SECTION_OBJECT = ByteString.of("object");
+    public static final ByteString SECTION_SHARED = ByteString.of("shared");
+    public static final ByteString BACK = ByteString.of("back");
+    private static final ByteString SUB_PREFIX = ByteString.of("sub");
 
     private static final int DEFAULT_BLOCK_SIZE = 16;
     private static final int BLOCK_PER_BUFFER = 1000000;
 
-    public static void createSection(String location,long numEntries, int type, CatUnion itAdd ,
-                                     CatUnion itSkip , HashMap<String,CatMapping> mappings,long offset, ProgressListener listener)  throws IOException {
-        String name = "";
+    public static ByteString createSub(Object next) {
+        return createSub(String.valueOf(next));
+    }
+
+    public static ByteString createSub(CharSequence next) {
+        return createSub(ByteString.of(next));
+    }
+
+    public static ByteString createSub(ByteString next) {
+        return SUB_PREFIX.copyAppend(next);
+    }
+
+    public static void createSection(String location, long numEntries, int type, CatUnion itAdd ,
+                                     CatUnion itSkip , Map<? extends CharSequence,CatMapping> mappings, long offset, ProgressListener listener)  throws IOException {
+        ByteString name;
         switch (type) {
             case 2:
-                name = "subject";
+                name = SECTION_SUBJECT;
                 break;
             case 3:
-                name = "object";
+                name = SECTION_OBJECT;
                 break;
             case 4:
-                name = "predicate";
+                name = SECTION_PREDICATE;
+                break;
+            default:
+                name = ByteString.empty();
+                break;
         }
         long storedBuffersSize = 0;
         long numBlocks = 0;
@@ -43,7 +79,7 @@ public class SectionUtil {
             blocks = new SequenceLog64BigDisk(location + "SequenceLog64BigDisk" + type, 64, numEntries / 16);
             byteOut = new ByteArrayOutputStream(16 * 1024);
             if (numEntries > 0) {
-                CharSequence previousStr = null;
+                ByteString previousStr = null;
 
                 CatElement skipElement = null;
                 if (itSkip.hasNext()) {
@@ -53,7 +89,7 @@ public class SectionUtil {
                     ListenerUtil.notifyCond(listener, "Analyze section " + name + " ", numberElements, numberElements, numEntries);
                     CatElement nextElement = itAdd.next();
 
-                    if (skipElement != null && nextElement.entity.toString().equals(skipElement.entity.toString())) {
+                    if (skipElement != null && nextElement.entity.equals(skipElement.entity)) {
                         if (itSkip.hasNext()) {
                             skipElement = itSkip.next();
                         } else {
@@ -62,13 +98,13 @@ public class SectionUtil {
                     } else {
                         for (int i = 0; i < nextElement.IDs.size(); i++) {
                             long id = nextElement.IDs.get(i).pos;
-                            String iter = nextElement.IDs.get(i).iter.toString();
-                            if (iter.equals("shared"))
+                            ByteString iter = nextElement.IDs.get(i).iter;
+                            if (iter.equals(SECTION_SHARED))
                                 mappings.get(iter).set(id - 1, offset + numberElements + 1, type);
                             else
                                 mappings.get(iter).set(id - 1, numberElements + 1, type);
                         }
-                        String str = nextElement.entity.toString();
+                        ByteString str = nextElement.entity;
                         if (numberElements % DEFAULT_BLOCK_SIZE == 0) {
                             blocks.append(storedBuffersSize + byteOut.size());
                             numBlocks++;

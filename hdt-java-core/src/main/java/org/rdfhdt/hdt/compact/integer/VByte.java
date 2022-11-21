@@ -71,7 +71,7 @@ public class VByte {
 		
 		while( (readbyte & 0x80)==0) {
 			if(shift>=50) { // We read more bytes than required to load the max long
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Read more bytes than required to load the max long");
 			}
 			
 			out |= (readbyte & 127) << shift;
@@ -92,7 +92,7 @@ public class VByte {
 
 		while( (readbyte & 0x80)==0) {
 			if(shift>=50) { // We read more bytes than required to load the max long
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Read more bytes than required to load the max long");
 			}
 
 			out |= (readbyte & 127L) << shift;
@@ -114,7 +114,7 @@ public class VByte {
 
 		while( (readbyte & 0x80)==0) {
 			if(shift>=50) { // We read more bytes than required to load the max long
-				throw new IllegalArgumentException();
+				throw new IllegalArgumentException("Read more bytes than required to load the max long");
 			}
 
 			out |= (readbyte & 127L) << shift;
@@ -149,6 +149,7 @@ public class VByte {
 		int i=0;
 		int shift=0;
 		while( (0x80 & data[offset+i])==0) {
+			assert shift < 50 : "Read more bytes than required to load the max long";
 			out |= (data[offset+i] & 127L) << shift;
 			i++;
 			shift+=7;
@@ -164,6 +165,7 @@ public class VByte {
 		int i = 0;
 		int shift=0;
 		while( (0x80 & data.get(offset+i))==0) {
+			assert shift < 50 : "Read more bytes than required to load the max long";
 			out |= (data.get(offset+i) & 127L) << shift;
 			i++;
 			shift+=7;

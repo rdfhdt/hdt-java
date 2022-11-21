@@ -46,6 +46,7 @@ import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -86,11 +87,12 @@ public class TriplesListLong implements TempTriples {
 		this.arrayOfTriples = new ArrayList<TripleID>((int)numTriples);
 
 		//choosing starting(or default) component order
-		String orderStr = specification.get("triplesOrder");
-		if(orderStr==null) {
-			orderStr = "SPO";
+		String orderStr = specification.get(HDTOptionsKeys.TRIPLE_ORDER_KEY);
+		if(orderStr == null) {
+			this.order = TripleComponentOrder.SPO;
+		} else {
+			this.order = TripleComponentOrder.valueOf(orderStr);
 		}
-		this.order = TripleComponentOrder.valueOf(orderStr);
 
 		this.numValidTriples = 0;
 	}
@@ -407,7 +409,7 @@ public class TriplesListLong implements TempTriples {
 	 */
 	public class TriplesListIterator implements SuppliableIteratorTripleID {
 		private long lastPosition;
-		private TriplesListLong triplesList;
+		private final TriplesListLong triplesList;
 		private int pos;
 
 		public TriplesListIterator(TriplesListLong triplesList) {
@@ -429,7 +431,7 @@ public class TriplesListLong implements TempTriples {
 		@Override
 		public TripleID next() {
 			lastPosition = pos;
-			return triplesList.arrayOfTriples.get((int)pos++);
+			return triplesList.arrayOfTriples.get(pos++);
 		}
 
 		/* (non-Javadoc)

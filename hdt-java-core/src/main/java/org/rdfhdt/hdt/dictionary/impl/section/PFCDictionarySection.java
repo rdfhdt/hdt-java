@@ -48,6 +48,7 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
@@ -84,7 +85,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	public void load(TempDictionarySection other, ProgressListener listener) {
 		this.blocks = new SequenceLog64(BitUtil.log2(other.size()), other.getNumberOfElements()/blocksize);
 		Iterator<? extends CharSequence> it = other.getSortedEntries();
-		this.load((Iterator<? extends CharSequence>)it, other.getNumberOfElements(), listener);
+		this.load(it, other.getNumberOfElements(), listener);
 	}
 	
 	public void load(PFCDictionarySectionBuilder builder) throws IOException {
@@ -106,7 +107,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		
 		try {
 			while(it.hasNext()) {
-				CharSequence str = it.next();
+				ByteString str = (ByteString) it.next();
 
 				if(numstrings%blocksize==0) {
 					// Add new block pointer
@@ -144,7 +145,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		}
 	}
 		
-	protected int locateBlock(CharSequence str) {
+	protected int locateBlock(ByteString str) {
 		if(blocks.getNumberOfElements()==0) {
 			return -1;
 		}
@@ -185,20 +186,23 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		if(text==null || blocks==null) {
 			return 0;
 		}
+
+		// convert into bytestring to avoid bad comparison
+		ByteString bstr = ByteString.of(str);
 		
-		int blocknum = locateBlock(str);
+		int blocknum = locateBlock(bstr);
 		if(blocknum>=0) {
 			// Located exactly
-			return (blocknum*blocksize)+1;
+			return ((long) blocknum * blocksize) + 1;
 		} else {
 			// Not located exactly.
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				int idblock = locateInBlock(blocknum, str);
+				int idblock = locateInBlock(blocknum, bstr);
 
 				if(idblock != 0) {
-					return (blocknum*blocksize)+idblock+1;
+					return ((long) blocknum * blocksize) + idblock + 1;
 				}
 			}
 		}
@@ -206,7 +210,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 		return 0;
 	}
 	
-	public int locateInBlock(int block, CharSequence str) {
+	public int locateInBlock(int block, ByteString str) {
 		if(block>=blocks.getNumberOfElements()) {
 			return 0;
 		}
@@ -354,7 +358,7 @@ public class PFCDictionarySection implements DictionarySectionPrivate {
 	 */
 	@Override
 	public Iterator<CharSequence> getSortedEntries() {
-		return new Iterator<CharSequence>() {
+		return new Iterator<>() {
 			int id;
 			int pos;
 			final Mutable<Long> delta = new Mutable<>(0L);

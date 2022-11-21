@@ -41,7 +41,9 @@ public final class CharSequenceCustomComparator implements Comparator<CharSequen
 	public static Comparator<CharSequence> getInstance() {
 		return instance;
 	}
-		
+
+	private final Comparator<CharSequence> base = CharSequenceComparator.getInstance();
+
 	/* (non-Javadoc)
 	 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 	 */
@@ -50,36 +52,15 @@ public final class CharSequenceCustomComparator implements Comparator<CharSequen
 		if (s1 == s2) {
 			return 0;
 		}
-		String type1 = LiteralsUtils.getType(s1);
-		String type2 = LiteralsUtils.getType(s2);
-		int x = type1.compareTo(type2);
+		CharSequence type1 = LiteralsUtils.getType(s1);
+		CharSequence type2 = LiteralsUtils.getType(s2);
+
+		int x = base.compare(type1, type2);
+
 		if (x != 0) {
 			return x;
 		} else { // data types are equal
-			s1 = DelayedString.unwrap(s1);
-			s2 = DelayedString.unwrap(s2);
-
-			if (s1 instanceof CompactString && s2 instanceof CompactString) {
-				CompactString cs1 = (CompactString) s1;
-				CompactString cs2 = (CompactString) s2;
-				return cs1.compareTo(cs2);
-			}
-
-			if (s1 instanceof String && s2 instanceof String) {
-				String rs1 = (String) s1;
-				String rs2 = (String) s2;
-				return rs1.compareTo(rs2);
-			}
-
-			if (s1 instanceof ReplazableString && s2 instanceof ReplazableString) {
-				ReplazableString cs1 = (ReplazableString) s1;
-				ReplazableString cs2 = (ReplazableString) s2;
-				return cs1.compareTo(cs2);
-			}
-
-			// Slower but safe
-
-			return s1.toString().compareTo(s2.toString());
+			return base.compare(s1, s2);
 		}
 	}
 

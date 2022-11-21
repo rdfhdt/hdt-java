@@ -45,7 +45,7 @@ import org.rdfhdt.hdt.util.StopWatch;
  */
 public class HashDictionary extends BaseTempDictionary {
 
-	boolean isCustom = false;
+	boolean isCustom;
 	public HashDictionary(HDTOptions spec,boolean isCustom) {
 		super(spec);
 		this.isCustom = isCustom;
@@ -68,7 +68,7 @@ public class HashDictionary extends BaseTempDictionary {
 		StopWatch st = new StopWatch();
 
 		// Generate old subject mapping
-		Iterator<? extends CharSequence> itSubj = ((TempDictionarySection) subjects).getEntries();
+		Iterator<? extends CharSequence> itSubj = subjects.getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 			mapSubj.add(str);
@@ -82,21 +82,21 @@ public class HashDictionary extends BaseTempDictionary {
 
 		// Generate old predicate mapping
 		st.reset();
-		Iterator<? extends CharSequence> itPred = ((TempDictionarySection) predicates).getEntries();
+		Iterator<? extends CharSequence> itPred = predicates.getEntries();
 		while(itPred.hasNext()) {
 			CharSequence str = itPred.next();
 			mapPred.add(str);
 		}
 
 		// Generate old object mapping
-		Iterator<? extends CharSequence> itObj = ((TempDictionarySection) objects).getEntries();
+		Iterator<? extends CharSequence> itObj = objects.getEntries();
 		while(itObj.hasNext()) {
 			CharSequence str = itObj.next();
 			mapObj.add(str);
 		}
 
 		// Remove shared from subjects and objects
-		Iterator<? extends CharSequence> itShared = ((TempDictionarySection) shared).getEntries();
+		Iterator<? extends CharSequence> itShared = shared.getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			subjects.remove(sharedStr);

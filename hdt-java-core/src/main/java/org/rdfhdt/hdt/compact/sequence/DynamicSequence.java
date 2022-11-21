@@ -27,21 +27,17 @@
 
 package org.rdfhdt.hdt.compact.sequence;
 
+import org.rdfhdt.hdt.util.disk.LongArray;
+
 /**
  * @author mario.arias
  *
  */
-public interface DynamicSequence extends Sequence {
-	/**
-	 * Set a new value at the specified position.
-	 * @param index
-	 * @param value
-	 */
-	void set(long index, long value);
-	
+public interface DynamicSequence extends Sequence, LongArray {
+
 	/**
 	 * Append a new value after the last position, increasing the number of elements by one.
-	 * @param value
+	 * @param value the value to append
 	 */
 	void append(long value);
 	
@@ -55,4 +51,9 @@ public interface DynamicSequence extends Sequence {
 	 * Use advanced algorithm to reduce the size to the minimum, even if it is costly.
 	 */
 	void aggressiveTrimToSize();
+
+	@Override
+	default long length() {
+		return getNumberOfElements();
+	}
 }

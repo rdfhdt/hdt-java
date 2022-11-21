@@ -26,27 +26,26 @@ import java.util.ArrayList;
 
 import org.apache.jena.ext.com.google.common.io.Closeables;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 
 /**
  * @author Dennis Diefenbach &amp; Jose Gimenez Garcia
  */
 public class CatMappingBack implements Closeable {
-    private String location;
-    private long size;
-    private LongArrayDisk mapping1;
-    private LongArrayDisk mappingType1;
-    private LongArrayDisk mapping2;
-    private LongArrayDisk mappingType2;
+    private final long size;
+    private final LongArrayDisk mapping1;
+    private final LongArrayDisk mappingType1;
+    private final LongArrayDisk mapping2;
+    private final LongArrayDisk mappingType2;
 
     public CatMappingBack(String location, long size){
-        this.location = location;
         this.size = size+1;
         this.mapping1 = new LongArrayDisk(location+"mapping_back_1",this.size);
-        this.mapping2 = new LongArrayDisk(location+"mapping_back_2",this.size);;
-        this.mappingType1 = new LongArrayDisk(location+"mapping_back_type_1",this.size);;
-        this.mappingType2 = new LongArrayDisk(location+"mapping_back_type_2",this.size);;
-    }
+        this.mapping2 = new LongArrayDisk(location+"mapping_back_2",this.size);
+		this.mappingType1 = new LongArrayDisk(location+"mapping_back_type_1",this.size);
+		this.mappingType2 = new LongArrayDisk(location+"mapping_back_type_2",this.size);
+	}
 
     public long size(){
         return size;
@@ -85,17 +84,11 @@ public class CatMappingBack implements Closeable {
     }
 
     @Override public void close() throws IOException {
-        if (this.mapping1 != null) {
-            this.mapping1.close();
-        }
-        if (this.mapping2 != null){
-            this.mapping2.close();
-        }
-        if (this.mappingType1 != null) {
-            this.mappingType1.close();
-        }
-        if (this.mappingType2 != null) {
-            this.mappingType2.close();
-        }
+        IOUtil.closeAll(
+                mapping1,
+                mapping2,
+                mappingType1,
+                mappingType2
+        );
     }
 }

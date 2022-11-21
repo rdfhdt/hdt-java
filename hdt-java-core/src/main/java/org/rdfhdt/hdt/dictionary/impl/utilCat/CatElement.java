@@ -1,25 +1,24 @@
 package org.rdfhdt.hdt.dictionary.impl.utilCat;
 
+import org.rdfhdt.hdt.util.string.ByteString;
+
 import java.util.ArrayList;
+import java.util.List;
 
 public class CatElement {
-    public CharSequence entity;
-    public ArrayList<IteratorPlusPosition> IDs;
-    public CatElement(CharSequence entity, ArrayList<IteratorPlusPosition> IDs){
+    public ByteString entity;
+    public List<IteratorPlusPosition> IDs;
+    public CatElement(ByteString entity, List<IteratorPlusPosition> IDs) {
         this.entity = entity;
         this.IDs = new ArrayList<>(IDs);
     }
-    public static class IteratorPlusPosition{
-        public CharSequence iter;
+    public static class IteratorPlusPosition {
+        public ByteString iter;
         public long pos;
-        public IteratorPlusPosition(CharSequence iter,long pos){
+        public IteratorPlusPosition(ByteString iter, long pos){
             this.iter = iter;
             this.pos = pos;
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        return entity.toString().equals(((CatElement) o).entity.toString());
-    }
 }

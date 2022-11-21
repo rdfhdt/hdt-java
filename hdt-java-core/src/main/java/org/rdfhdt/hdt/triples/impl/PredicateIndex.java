@@ -9,15 +9,15 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 
 public interface PredicateIndex {
-	public long getNumOcurrences(long pred);
-	public long getBase(long pred);
-	public long getOccurrence(long base, long occ);
+	long getNumOcurrences(long pred);
+	long getBase(long pred);
+	long getOccurrence(long base, long occ);
 	
-	public void load(InputStream in) throws IOException;
+	void load(InputStream in) throws IOException;
 	
-	public void save(OutputStream in) throws IOException;
+	void save(OutputStream in) throws IOException;
 	
-	public void mapIndex(CountInputStream input, File f, ProgressListener listener) throws IOException;
+	void mapIndex(CountInputStream input, File f, ProgressListener listener) throws IOException;
 	
 	void generate(ProgressListener listener);
 	

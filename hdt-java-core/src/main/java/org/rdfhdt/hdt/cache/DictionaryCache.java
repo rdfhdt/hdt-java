@@ -32,8 +32,8 @@ package org.rdfhdt.hdt.cache;
  *
  */
 public interface DictionaryCache<T> {
-	public T get(long id);
-	public void put(long id, T node);
-	public int size();
-	public void clear();
+	T get(long id);
+	void put(long id, T node);
+	int size();
+	void clear();
 }

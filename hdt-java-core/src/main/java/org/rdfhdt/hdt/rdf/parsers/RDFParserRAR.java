@@ -21,9 +21,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * 
  * It uses RDFNotation.guess() to guess the format of each specific file. If not recognised, each file of the tar is ignored.
  *  
- *  
- * @author 
- *
  */
 
 public class RDFParserRAR implements RDFParserCallback {
@@ -32,7 +29,7 @@ public class RDFParserRAR implements RDFParserCallback {
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
 	private static Boolean available;
-	private boolean simple;
+	private final boolean simple;
 
 	public RDFParserRAR(boolean simple) {
 		this.simple = simple;

@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.dictionary;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.impl.utilCat.CatMapping;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public interface DictionaryDiff extends Closeable {
      * @param listener listener to get the progress
      * @throws IOException io error
      */
-    void diff(Dictionary dictionary, Map<String, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException;
+    void diff(Dictionary dictionary, Map<CharSequence, ModifiableBitmap> bitmaps, ProgressListener listener) throws IOException;
 
     /**
      * @return the CatMapping of the diff
@@ -32,5 +33,5 @@ public interface DictionaryDiff extends Closeable {
     /**
      * @return the cat mapping for each section
      */
-    HashMap<String, CatMapping> getAllMappings();
+    Map<ByteString, CatMapping> getAllMappings();
 }

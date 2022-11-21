@@ -65,10 +65,10 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	private static final long LONGS_PER_BUFFER=128*1024*1024; // 128*8 = 1Gb per chunk.
 	private CloseMappedByteBuffer[] buffers;
 	private FileChannel ch;
-	private int numbits;
-	private long numentries;
+	private final int numbits;
+	private final long numentries;
 	private long lastword;
-	private long numwords;
+	private final long numwords;
 	
 	public SequenceLog64Map(File f) throws IOException {
 		// Read from the beginning of the file

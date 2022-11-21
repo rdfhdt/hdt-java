@@ -82,7 +82,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 	public void reorganize() {
 		
 		// Generate shared
-		Iterator<? extends CharSequence> itSubj = ((TempDictionarySection)subjects).getEntries();
+		Iterator<? extends CharSequence> itSubj = subjects.getEntries();
 		while(itSubj.hasNext()) {
 			CharSequence str = itSubj.next();
 
@@ -93,7 +93,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		}
 
 		// Remove shared from subjects and objects
-		Iterator<? extends CharSequence> itShared = ((TempDictionarySection)shared).getEntries();
+		Iterator<? extends CharSequence> itShared = shared.getEntries();
 		while(itShared.hasNext()) {
 			CharSequence sharedStr = itShared.next();
 			subjects.remove(sharedStr);

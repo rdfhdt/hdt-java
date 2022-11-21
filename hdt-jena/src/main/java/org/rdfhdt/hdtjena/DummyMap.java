@@ -8,7 +8,7 @@ import java.util.Set;
 public class DummyMap<T,K> implements Map<T,K> {
 
 	@SuppressWarnings("rawtypes")
-	private static DummyMap instance= new DummyMap();
+	private static final DummyMap instance= new DummyMap();
 	
 	@SuppressWarnings("unchecked")
 	public static <K,V> Map<K,V> getInstance() {

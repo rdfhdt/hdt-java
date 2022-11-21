@@ -17,7 +17,7 @@ import java.util.Iterator;
  */
 public class SeveralIterator<K,T> extends PrefetchIterator<T> {
 	public interface IteratorGetter<K, T> {
-		public Iterator<T> get(K k);
+		Iterator<T> get(K k);
 	}
 	
 	IteratorGetter<K,T> getter;

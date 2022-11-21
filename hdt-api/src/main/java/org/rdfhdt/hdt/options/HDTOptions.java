@@ -27,15 +27,217 @@
 
 package org.rdfhdt.hdt.options;
 
+import org.rdfhdt.hdt.rdf.RDFFluxStop;
+import org.rdfhdt.hdt.util.Profiler;
+
+import java.util.Objects;
+import java.util.function.DoubleSupplier;
+import java.util.function.LongSupplier;
+import java.util.function.Supplier;
+
 /**
+ * Options storage, see {@link org.rdfhdt.hdt.options.HDTOptionsKeys} for more information.
  * @author mario.arias
- *
  */
 public interface HDTOptions {
-	String get(String key);
-	void set(String key, String value);
-	void setOptions(String options);
-	long getInt(String string);
-	void setInt(String key, long value);
+
+
+	/**
+	 * clear all the options
+	 */
 	void clear();
+
+	/**
+	 * get an option value
+	 *
+	 * @param key key
+	 * @return value or null if not defined
+	 */
+	String get(String key);
+
+	/**
+	 * get a value
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return value or defaultValue if the value isn't defined
+	 */
+	default String get(String key, String defaultValue) {
+		return Objects.requireNonNullElse(get(key), defaultValue);
+	}
+
+	/**
+	 * get a value
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return value or defaultValue if the value isn't defined
+	 */
+	default String get(String key, Supplier<String> defaultValue) {
+		return Objects.requireNonNullElseGet(get(key), defaultValue);
+	}
+
+	/**
+	 * get a boolean
+	 *
+	 * @param key key
+	 * @return boolean or false if the value isn't defined
+	 */
+	default boolean getBoolean(String key) {
+		return "true".equalsIgnoreCase(get(key));
+	}
+
+	/**
+	 * get a double
+	 *
+	 * @param key key
+	 * @return double or 0 if the value isn't defined
+	 */
+	default double getDouble(String key) {
+		return getDouble(key, 0);
+	}
+
+	/**
+	 * get a double
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return double or defaultValue if the value isn't defined
+	 */
+	default double getDouble(String key, DoubleSupplier defaultValue) {
+		String l = get(key);
+		if (l == null) {
+			return defaultValue.getAsDouble();
+		}
+		return Double.parseDouble(l);
+	}
+
+	/**
+	 * get a double
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return double or defaultValue if the value isn't defined
+	 */
+	default double getDouble(String key, double defaultValue) {
+		return getDouble(key, () -> defaultValue);
+	}
+
+	/**
+	 * get an {@link org.rdfhdt.hdt.rdf.RDFFluxStop}
+	 *
+	 * @param key key
+	 * @return RDFFluxStop or false if the value isn't defined
+	 */
+	default RDFFluxStop getFluxStop(String key) {
+		return RDFFluxStop.readConfig(get(key));
+	}
+
+	/**
+	 * get an {@link org.rdfhdt.hdt.rdf.RDFFluxStop}
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return RDFFluxStop or defaultValue if the value isn't defined
+	 */
+	default RDFFluxStop getFluxStop(String key, Supplier<RDFFluxStop> defaultValue) {
+		return Objects.requireNonNullElseGet(getFluxStop(key), defaultValue);
+	}
+
+	/**
+	 * get an {@link org.rdfhdt.hdt.rdf.RDFFluxStop}
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return RDFFluxStop or defaultValue if the value isn't defined
+	 */
+	default RDFFluxStop getFluxStop(String key, RDFFluxStop defaultValue) {
+		return getFluxStop(key, () -> defaultValue);
+	}
+
+	/**
+	 * get a long value
+	 *
+	 * @param key key
+	 * @return value or 0 if not defined
+	 */
+	long getInt(String key);
+
+	/**
+	 * get a long
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return long or defaultValue if the value isn't defined
+	 */
+	default long getInt(String key, LongSupplier defaultValue) {
+		String l = get(key);
+		if (l == null) {
+			return defaultValue.getAsLong();
+		}
+		return Long.parseLong(l);
+	}
+
+	/**
+	 * get a long
+	 *
+	 * @param key          key
+	 * @param defaultValue default value
+	 * @return long or defaultValue if the value isn't defined
+	 */
+	default long getInt(String key, long defaultValue) {
+		return getInt(key, () -> defaultValue);
+	}
+
+	/**
+	 * set an option value
+	 *
+	 * @param key   key
+	 * @param value value
+	 */
+	void set(String key, String value);
+
+	/**
+	 * set a value, same as using {@link String#valueOf(Object)} with {@link #set(String, String)}
+	 *
+	 * @param key   key
+	 * @param value value
+	 */
+	default void set(String key, Object value) {
+		set(key, String.valueOf(value));
+	}
+
+	/**
+	 * set a flux stop value, same as using {@link #set(String, String)} with {@link org.rdfhdt.hdt.rdf.RDFFluxStop#asConfig()}
+	 *
+	 * @param key      key
+	 * @param fluxStop value
+	 */
+	default void set(String key, RDFFluxStop fluxStop) {
+		set(key, fluxStop.asConfig());
+	}
+
+	/**
+	 * set a profiler id
+	 * @param key key
+	 * @param profiler profiler
+	 */
+	default void set(String key, Profiler profiler) {
+		set(key, "!" + profiler.getId());
+	}
+
+	/**
+	 * set a long value
+	 *
+	 * @param key   key
+	 * @param value value
+	 */
+	void setInt(String key, long value);
+
+	/**
+	 * read an option config, format: (key=value)?(;key=value)*
+	 *
+	 * @param options options
+	 */
+	void setOptions(String options);
 }

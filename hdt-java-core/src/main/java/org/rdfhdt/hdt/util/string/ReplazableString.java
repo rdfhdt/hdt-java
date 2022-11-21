@@ -29,11 +29,13 @@ package org.rdfhdt.hdt.util.string;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.util.io.BigByteBuffer;
 import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 
 /**
@@ -43,7 +45,7 @@ import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
  * @author mario.arias
  *
  */
-public final class ReplazableString implements CharSequence, Comparable<ReplazableString> {
+public final class ReplazableString implements CharSequence, ByteString {
 	
 	byte [] buffer;
 	int used;
@@ -57,19 +59,28 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		used=0;
 	}
 	
-	private ReplazableString(byte [] buffer) {
+	public ReplazableString(byte [] buffer) {
 		this.buffer = buffer;
 		this.used = buffer.length;
 	}
-	
+
+	@Override
 	public byte [] getBuffer() {
 		return buffer;
 	}
-	
+
+	public void clear() {
+		used = 0;
+	}
+
 	private void ensureSize(int size) {
 		if(size>buffer.length) {
 			buffer = Arrays.copyOf(buffer, Math.max(size, buffer.length * 2));
 		}
+	}
+
+	public void append(byte [] data) {
+		this.append(data, 0, data.length);
 	}
 
 	public void append(byte [] data, int offset, int len) {
@@ -79,13 +90,53 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	public void append(BigByteBuffer data, long offset, int len) {
 		this.replace(used, data, offset, len);
 	}
-	
+
 	public void append(CharSequence other) {
 		ensureSize(this.used+other.length());
 		for(int i=0;i<other.length();i++) {
 			buffer[this.used+i] = (byte) other.charAt(i);
 		}
 		used+=other.length();
+	}
+
+	public void appendNoCompact(CharSequence other) {
+		other = DelayedString.unwrap(other);
+
+		if (other instanceof ByteString) {
+			this.appendNoCompact((ByteString) other);
+		} else {
+			this.append(other.toString().getBytes(ByteStringUtil.STRING_ENCODING));
+		}
+	}
+	public void appendNoCompact(ByteString other) {
+		this.append(other.getBuffer(), 0, other.length());
+	}
+
+	public void appendNoCompact(CharSequence other, int offset, int length) {
+		other = DelayedString.unwrap(other);
+
+		if (other instanceof ByteString) {
+			this.append(((ByteString) other).getBuffer(), offset, length);
+		} else {
+			this.append(other.toString().substring(offset, offset + length)
+					.getBytes(ByteStringUtil.STRING_ENCODING));
+		}
+	}
+
+	public void replace(ByteString other) {
+		ensureSize(other.length());
+		System.arraycopy(other.getBuffer(), 0, buffer, 0, other.length());
+		used = other.length();
+	}
+
+	public void replace(CharSequence other) {
+		if (other instanceof ByteString) {
+			replace((ByteString) other);
+		} else {
+			used = 0;
+			byte[] bytes = other.toString().getBytes(StandardCharsets.UTF_8);
+			replace(0, bytes, 0, bytes.length);
+		}
 	}
 
 
@@ -100,11 +151,10 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		data.get(buffer, offset, pos, len);
 		used = pos+len;
 	}
-	
+
 	public void replace(InputStream in, int pos, int len) throws IOException {
-		ensureSize(pos+len);
-		in.read(buffer, pos, len);
-		used = pos+len;
+		byte[] buffer = IOUtil.readBuffer(in, len, null);
+		replace(pos, buffer, 0, len);
 	}
 
 	public void replace(ByteBuffer in, int pos, int len) throws IOException {
@@ -211,6 +261,9 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 */
 	@Override
 	public char charAt(int index) {
+		if (index >= used) {
+			throw new StringIndexOutOfBoundsException("Invalid index " + index + " length " + length());
+		}
 		return (char)(buffer[index] & 0xFF);
 	}
 
@@ -283,7 +336,7 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 	 * @see java.lang.CharSequence#subSequence(int, int)
 	 */
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public ByteString subSequence(int start, int end) {
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
@@ -298,25 +351,6 @@ public final class ReplazableString implements CharSequence, Comparable<Replazab
 		return new String(buffer, 0, used, ByteStringUtil.STRING_ENCODING);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(ReplazableString other) {
-        int n = Math.min(used, other.used);
-
-        int k = 0;
-        while (k < n) {
-            int c1 = this.buffer[k] & 0xFF;
-            int c2 = other.buffer[k] & 0xFF;
-            if (c1 != c2) {
-                return c1 - c2;
-            }
-            k++;
-        }
-        return used - other.used;
-	}
-	
 	public CharSequence getDelayed() {
 		return new DelayedString(this);
 	}

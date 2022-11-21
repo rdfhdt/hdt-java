@@ -102,8 +102,8 @@ public class HdtCatLiteralsTest implements ProgressListener {
 //                System.out.println(search.next());
 //            }
 //
-//            Iterator<? extends CharSequence> no_datatype1 = hdt1.getDictionary().getAllObjects().get("NO_DATATYPE").getSortedEntries();
-//            Iterator<? extends CharSequence> no_datatype2 = hdt2.getDictionary().getAllObjects().get("NO_DATATYPE").getSortedEntries();
+//            Iterator<? extends CharSequence> no_datatype1 = hdt1.getDictionary().getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
+//            Iterator<? extends CharSequence> no_datatype2 = hdt2.getDictionary().getAllObjects().get(LiteralsUtils.NO_DATATYPE).getSortedEntries();
 //            while (no_datatype1.hasNext()){
 //                CharSequence next1 = no_datatype1.next();
 //                CharSequence next2 = no_datatype2.next();

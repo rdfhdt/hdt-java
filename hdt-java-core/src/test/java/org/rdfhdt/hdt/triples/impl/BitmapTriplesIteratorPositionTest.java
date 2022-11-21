@@ -6,19 +6,16 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
-import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
-import org.rdfhdt.hdt.rdf.RDFParserCallback;
-import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -34,11 +31,11 @@ import java.util.*;
 @RunWith(Parameterized.class)
 public class BitmapTriplesIteratorPositionTest {
 
-    public static final List<String> DICTONARIES = Arrays.asList(
-            HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION,
-            DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG,
-            DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS,
-            HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION
+    public static final List<String> DICTIONARIES = List.of(
+            HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION,
+            HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG,
+            HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS,
+            HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_PSFC_SECTION
     );
 
     private static final Field ITERATOR_SUB;
@@ -62,7 +59,7 @@ public class BitmapTriplesIteratorPositionTest {
     @Parameterized.Parameters(name = "{0}")
     public static Collection<Object[]> genParam() {
         List<Object[]> lst = new ArrayList<>();
-        for (String dict :DICTONARIES){
+        for (String dict : DICTIONARIES){
             lst.add(new Object[] { dict, 25, 50, 37, 12 });
             lst.add(new Object[] { dict, 25, 50, 37, 0 });
             lst.add(new Object[] { dict, 25, 50, 0, 12 });
@@ -93,7 +90,7 @@ public class BitmapTriplesIteratorPositionTest {
 
     public BitmapTriplesIteratorPositionTest(String dictionaryType, int subjects, int predicates, int objects, int shared) {
         spec = new HDTSpecification();
-        spec.set("dictionary.type", dictionaryType);
+        spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
         this.subjects = subjects;
         this.predicates = predicates;
         this.objects = objects;
@@ -129,7 +126,7 @@ public class BitmapTriplesIteratorPositionTest {
 
         IteratorTripleString it = data.searchForSPO(0, 0, 0);
 
-        printIterator(it);
+        // printIterator(it);
 
         long index = 0L;
         while (it.hasNext()) {
@@ -156,7 +153,7 @@ public class BitmapTriplesIteratorPositionTest {
 
         IteratorTripleString it = data.searchForSPO(0, 0, 0);
 
-        printIterator(it);
+        // printIterator(it);
 
         long index = 0L;
         while (it.hasNext()) {
@@ -192,7 +189,7 @@ public class BitmapTriplesIteratorPositionTest {
 
         IteratorTripleString it = data.searchForSPO(s, p, o);
 
-        printIterator(it);
+        // printIterator(it);
 
         while (it.hasNext()) {
             TripleString triple = it.next();

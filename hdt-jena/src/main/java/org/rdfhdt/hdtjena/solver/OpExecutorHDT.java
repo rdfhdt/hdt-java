@@ -57,14 +57,7 @@ import org.apache.jena.sparql.mgt.Explain;
 
 public class OpExecutorHDT extends OpExecutor {
 	
-    public final static OpExecutorFactory opExecFactoryHDT = new OpExecutorFactory()
-    {
-        @Override
-        public OpExecutor create(ExecutionContext execCxt)
-        { 
-        	return new OpExecutorHDT(execCxt) ; 
-        }
-    };
+    public final static OpExecutorFactory opExecFactoryHDT = OpExecutorHDT::new;
 	
 	private final boolean isForHDT;
 
@@ -152,7 +145,7 @@ public class OpExecutorHDT extends OpExecutor {
 	        }
 	        // -- Filter placement
 	            
-	        Op op = null ;
+	        Op op ;
 	        if ( exprs != null )
 	            op = TransformFilterPlacement.transform(exprs, pattern) ;
 	        else
@@ -216,11 +209,10 @@ public class OpExecutorHDT extends OpExecutor {
     {
         final Predicate<Tuple<HDTId>> filter;
         
-        @SuppressWarnings("unchecked")
 		public OpExecutorPlainHDT(ExecutionContext execCxt)
         {
             super(execCxt) ;
-            filter = (Predicate<Tuple<HDTId>>)execCxt.getContext().get(HDTJenaConstants.FILTER_SYMBOL);
+            filter = execCxt.getContext().get(HDTJenaConstants.FILTER_SYMBOL);
         }
         
         @Override

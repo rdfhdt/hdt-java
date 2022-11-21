@@ -37,7 +37,7 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
  * @author mario.arias
  *
  */
-public class CompactString implements CharSequence, Serializable, Comparable<CompactString> {
+public class CompactString implements CharSequence, Serializable, ByteString {
 
 	private static final long serialVersionUID = 6789858615261959413L;
 	
@@ -53,12 +53,13 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		this.data = new byte[0];
 	}
 		
-	public CompactString(ReplazableString str) {
-		data = Arrays.copyOf( str.buffer, str.used );
+	public CompactString(ByteString str) {
+		data = Arrays.copyOf( str.getBuffer(), str.length() );
 	}
 	
 	public CompactString(CompactString other) {
 		data = Arrays.copyOf( other.data, other.data.length);
+		hash = other.hash;
 	}
 	
 	public CompactString(String other) {
@@ -66,14 +67,23 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	}
 	
 	public CompactString(CharSequence other) {
-		data = other.toString().getBytes(ByteStringUtil.STRING_ENCODING);
+		if (other instanceof ByteString) {
+			data = Arrays.copyOf(((ByteString) other).getBuffer(), other.length());
+		} else {
+			data = other.toString().getBytes(ByteStringUtil.STRING_ENCODING);
+		}
 	}
 	
 	public byte [] getData() {
 		return data;
 	}
 
-	private CompactString(byte[] data) {
+	@Override
+	public byte[] getBuffer() {
+		return getData();
+	}
+
+	public CompactString(byte[] data) {
 		this.data = data;
 	}
 
@@ -97,11 +107,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 
 	@Override
 	public char charAt(int index) {
-		int ix = index;
-		if (ix >= data.length) {
-			throw new StringIndexOutOfBoundsException("Invalid index " + index + " length " + length());
-		}
-		return (char) (data[ix] & 0xff);
+		return (char) (data[index] & 0xff);
 	}
 
 	@Override
@@ -110,7 +116,7 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 	}
 
 	@Override
-	public CharSequence subSequence(int start, int end) {
+	public ByteString subSequence(int start, int end) {
 		if (start < 0 || end > (this.length()) || (end-start)<0) {
 			throw new IllegalArgumentException("Illegal range " +
 					start + "-" + end + " for sequence of length " + length());
@@ -168,25 +174,6 @@ public class CompactString implements CharSequence, Serializable, Comparable<Com
 		throw new NotImplementedException();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Comparable#compareTo(java.lang.Object)
-	 */
-	@Override
-	public int compareTo(CompactString other) {
-        int n = Math.min( this.data.length, other.data.length);
-
-        int k = 0;
-        while (k < n) {
-            int c1 = this.data[k]&0xFF;
-            int c2 = other.data[k]&0xFF;
-            if (c1 != c2) {
-                return c1 - c2;
-            }
-            k++;
-        }
-        return  this.data.length - other.data.length;
-	}
-	
 	public CharSequence getDelayed() {
 		return new DelayedString(this);
 	}

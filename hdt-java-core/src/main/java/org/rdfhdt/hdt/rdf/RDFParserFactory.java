@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.rdf;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserDir;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserHDT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserList;
@@ -37,6 +38,12 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserRIOT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserZip;
+import org.rdfhdt.hdt.triples.TripleString;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Iterator;
 
 /**
  * @author mario.arias
@@ -78,4 +85,17 @@ public class RDFParserFactory {
 
 		throw new NotImplementedException("Parser not found for notation: "+notation);		
 	}
+
+	/**
+	 * convert a stream to a triple iterator
+	 * @param parser the parser to convert the stream
+	 * @param stream the stream to parse
+	 * @param baseUri the base uri to parse
+	 * @param notation the rdf notation to parse
+	 * @return iterator
+	 */
+	public static PipedCopyIterator<TripleString> readAsIterator(RDFParserCallback parser, InputStream stream, String baseUri, boolean keepBNode, RDFNotation notation) {
+		return PipedCopyIterator.createOfCallback(pipe -> parser.doParse(stream, baseUri, notation, keepBNode, (triple, pos) -> pipe.addElement(triple.tripleToString())));
+	}
+
 }

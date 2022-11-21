@@ -8,12 +8,12 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.hdtDiff.utils.TripleStringUtility;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -108,8 +108,8 @@ public class BitmapTriplesIteratorDiffTest {
     public static Collection<Object> genParam() {
         return Arrays.asList(
                 HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION,
-                DictionaryFactory.DICTIONARY_TYPE_FOUR_SECTION_BIG,
-                DictionaryFactory.DICTIONARY_TYPE_MULTI_OBJECTS,
+                HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG,
+                HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS,
                 HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION
         );
     }
@@ -120,7 +120,7 @@ public class BitmapTriplesIteratorDiffTest {
 
     public BitmapTriplesIteratorDiffTest(String dictionaryType) {
         spec = new HDTSpecification();
-        spec.set("dictionary.type", dictionaryType);
+        spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
     }
 
     @Test

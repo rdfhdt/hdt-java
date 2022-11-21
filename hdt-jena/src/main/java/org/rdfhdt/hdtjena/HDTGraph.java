@@ -55,11 +55,11 @@ public class HDTGraph extends GraphBase {
 
 	private static final HDTCapabilities capabilities= new HDTCapabilities();
 
-	private HDT hdt;
-	private NodeDictionary nodeDictionary;
-	private ReorderTransformation reorderTransform;
+	private final HDT hdt;
+	private final NodeDictionary nodeDictionary;
+	private final ReorderTransformation reorderTransform;
 	private long numSearches;
-	private boolean closeAfter;
+	private final boolean closeAfter;
 	
 	static {
 		// Register OpExecutor

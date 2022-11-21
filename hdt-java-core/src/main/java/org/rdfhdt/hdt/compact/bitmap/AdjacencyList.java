@@ -39,8 +39,8 @@ public class AdjacencyList {
 	private final Bitmap bitmap;
 	
 	/**
-	 * @param array
-	 * @param bitmap
+	 * @param array array
+	 * @param bitmap bitmap
 	 */
 	public AdjacencyList(Sequence array, Bitmap bitmap) {
 		super();
@@ -232,7 +232,7 @@ public class AdjacencyList {
 				System.out.println(",");
 			}
 		}
-		System.out.println("");
+		System.out.println();
 
 		for (long i = 0; i < countListsX() && i < 100; i++) {
 			System.out.print("List " + i + " [");

@@ -27,6 +27,7 @@
 package org.rdfhdt.hdt.tools;
 
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,11 +59,11 @@ public class HDT2RDF implements ProgressListener {
 
 	public void execute() throws Exception {
 		
-		PrintStream out = null;
+		PrintStream out;
 		if (rdfOutput.equals("stdout")){
 			out = System.out;
 		} else {
-			out = new PrintStream(rdfOutput, "UTF-8");
+			out = new PrintStream(rdfOutput, StandardCharsets.UTF_8);
 		}
 
 		HDT hdt=HDTManager.mapHDT(hdtInput, this);
@@ -91,6 +92,7 @@ public class HDT2RDF implements ProgressListener {
 		//System.out.println(message + "\t"+ Float.toString(level));
 	}
 
+	@SuppressWarnings("deprecation")
 	public static void main(String[] args) throws Throwable {
 		HDT2RDF hdt2rdf = new HDT2RDF();
 		JCommander com = new JCommander(hdt2rdf, args);

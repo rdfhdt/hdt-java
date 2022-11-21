@@ -74,7 +74,7 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 			return ModelFactory.createModelForGraph(graph);
 		} catch (IOException e) {
 			log.error("Error reading HDT file: {}", file, e);
-			throw new AssemblerException(root, "Error reading HDT file: "+file+" / "+e.toString());
+			throw new AssemblerException(root, "Error reading HDT file: "+file+" / "+ e);
 		}
 	}
 

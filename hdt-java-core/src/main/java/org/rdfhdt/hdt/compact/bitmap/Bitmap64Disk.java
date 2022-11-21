@@ -129,7 +129,7 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
         while (true) {
             if (word != 0)
-                return ((long)wordIndex * W) + Long.numberOfTrailingZeros(word);
+                return (wordIndex * W) + Long.numberOfTrailingZeros(word);
             if (++wordIndex == words.length())
                 return -1;
             word = words.get(wordIndex);

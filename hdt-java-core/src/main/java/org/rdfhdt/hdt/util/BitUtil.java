@@ -44,7 +44,7 @@ public class BitUtil {
 	}
 
 	public static long maxVal(int numbits) {
-		return ~(~0L<<numbits);
+		return numbits == Long.SIZE ? Long.MAX_VALUE : ~(~0L<<numbits);
 	}
 
 	public static long readLowerBitsByteAligned(long numbits, InputStream in) throws IOException {

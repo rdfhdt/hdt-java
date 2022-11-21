@@ -52,6 +52,7 @@ import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.BigByteBuffer;
+import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.ReplazableString;
@@ -120,11 +121,11 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		
 		long byteoutsize = 0;
 		ByteArrayOutputStream byteOut = new ByteArrayOutputStream(16*1024);		
-		CharSequence previousStr=null;
+		ByteString previousStr=null;
 		
 		try {
 			while(it.hasNext()) {
-				CharSequence str = it.next();
+				ByteString str = ByteString.of(it.next());
 
 				if(numstrings%blocksize==0) {
 					// Add new block pointer
@@ -227,7 +228,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	/**
 	 * Locate the block of a string doing binary search.
 	 */
-	protected long locateBlock(CharSequence str) {
+	protected long locateBlock(ByteString str) {
 		long low = 0;
 		long high = blocks.getNumberOfElements() - 1;
 		long max = high;
@@ -259,8 +260,8 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 	 */
 	@Override
 	public long locate(CharSequence str) {
-
-		long blocknum = locateBlock(str);
+		ByteString bstr = ByteString.of(str);
+		long blocknum = locateBlock(bstr);
 		if(blocknum>=0) {
 			// Located exactly
 			return (blocknum*blocksize)+1;
@@ -269,7 +270,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 			blocknum = -blocknum-2;
 			
 			if(blocknum>=0) {
-				long idblock = locateInBlock(blocknum, str);
+				long idblock = locateInBlock(blocknum, bstr);
 
 				if(idblock != 0) {
 					return (blocknum*blocksize)+idblock+1;
@@ -281,7 +282,7 @@ public class PFCDictionarySectionBig implements DictionarySectionPrivate {
 		return 0;
 	}
 		
-	protected long locateInBlock(long blocknum, CharSequence str) {
+	protected long locateInBlock(long blocknum, ByteString str) {
 	
 		ReplazableString tempString = new ReplazableString();
 		

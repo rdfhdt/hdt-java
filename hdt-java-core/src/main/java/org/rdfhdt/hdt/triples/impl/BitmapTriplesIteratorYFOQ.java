@@ -42,26 +42,31 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
-		private BitmapTriples triples;
+		private final BitmapTriples triples;
 		private long lastPosition;
-		private TripleID pattern, returnTriple;
-		private long patY;
+	private final TripleID returnTriple;
+		private final long patY;
 		
-		private AdjacencyList adjY, adjZ;
+		private final AdjacencyList adjY;
+	private final AdjacencyList adjZ;
 		private long posY;
 		long posZ;
-		private long prevZ, nextZ, maxZ;
+		private long prevZ;
+	private long nextZ;
+	private final long maxZ;
 		private long x, y, z;
 		
-		private long numOccurrences, numOccurrence, predBase;
+		private final long numOccurrences;
+	private long numOccurrence;
+	private final long predBase;
 		
 		public BitmapTriplesIteratorYFOQ(BitmapTriples triples, TripleID pattern) {
 			this.triples = triples;
-			this.pattern = new TripleID(pattern);
+			TripleID pattern1 = new TripleID(pattern);
 			this.returnTriple = new TripleID();
 			
-			TripleOrderConvert.swapComponentOrder(this.pattern, TripleComponentOrder.SPO, triples.order);
-			patY = this.pattern.getPredicate();
+			TripleOrderConvert.swapComponentOrder(pattern1, TripleComponentOrder.SPO, triples.order);
+			patY = pattern1.getPredicate();
 			if(patY==0) {
 				throw new IllegalArgumentException("This structure is not meant to process this pattern");
 			}

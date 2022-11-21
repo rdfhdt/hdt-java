@@ -23,6 +23,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.internal.Lists;
 
+import org.apache.commons.io.FileUtils;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
@@ -65,7 +66,7 @@ public class HDTCat implements ProgressListener {
     @Parameter(names = "-quiet", description = "Do not show progress of the conversion")
     public boolean quiet;
 
-    public void execute() throws ParserException, IOException {
+    public void execute() throws IOException {
 
         HDTSpecification spec;
         if(configFile!=null) {
@@ -79,12 +80,10 @@ public class HDTCat implements ProgressListener {
 
         File file = new File(hdtOutput);
         File theDir = new File(file.getAbsolutePath()+"_tmp");
-        theDir.mkdirs();
+        Files.createDirectories(theDir.toPath());
         String location = theDir.getAbsolutePath()+"/";
-        HDT hdt = HDTManager.catHDT(location,hdtInput1, hdtInput2 , spec,this);
 
-
-        try {
+        try (HDT hdt = HDTManager.catHDT(location,hdtInput1, hdtInput2 , spec,this)) {
             // Show Basic stats
             if(!quiet){
                 System.out.println("Total Triples: "+hdt.getTriples().getNumberOfElements());
@@ -100,17 +99,15 @@ public class HDTCat implements ProgressListener {
             System.out.println("HDT saved to file in: "+sw.stopAndShow());
             Files.delete(Paths.get(location+"dictionary"));
             Files.delete(Paths.get(location+"triples"));
-            theDir.delete();
+            FileUtils.deleteDirectory(theDir);
 
 
             // Generate index and dump it to .hdt.index file
             sw.reset();
             if(generateIndex) {
-                hdt = HDTManager.indexedHDT(hdt,this);
+                HDTManager.indexedHDT(hdt,this);
                 System.out.println("Index generated and saved in: "+sw.stopAndShow());
             }
-        } finally {
-            if(hdt!=null) hdt.close();
         }
 
         // Debug all inserted triples
@@ -123,10 +120,11 @@ public class HDTCat implements ProgressListener {
     @Override
     public void notifyProgress(float level, String message) {
         if(!quiet) {
-            System.out.print("\r"+message + "\t"+ Float.toString(level)+"                            \r");
+            System.out.print("\r"+message + "\t"+ level +"                            \r");
         }
     }
 
+    @SuppressWarnings("deprecation")
     public static void main(String[] args) throws Throwable {
         HDTCat hdtCat = new HDTCat();
         System.out.println("Welcome to hdtCat!");

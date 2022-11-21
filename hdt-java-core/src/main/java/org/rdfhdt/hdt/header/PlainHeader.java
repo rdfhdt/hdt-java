@@ -75,12 +75,14 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	 */
 	@Override
 	public void insert(CharSequence subject, CharSequence predicate, CharSequence object) {
+		TripleString tripleString;
 		String objStr = object.toString();
 		if(objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
-			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), object));
+			tripleString = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), HeaderUtil.cleanURI(object));
 		} else {
-			triples.add(new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"'));
+			tripleString = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"');
 		}
+		triples.add(tripleString);
 	}
 
 	/* (non-Javadoc)
@@ -152,7 +154,13 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	 */
 	@Override
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) {
-		TripleString pattern = new TripleString(subject.toString(), predicate.toString(), object.toString());
+		TripleString pattern;
+		String objStr = object.toString();
+		if(objStr.isEmpty() || objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
+			pattern = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), HeaderUtil.cleanURI(object));
+		} else {
+			pattern = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"');
+		}
 		return new PlainHeaderIterator(this, pattern);
 	}
 
@@ -164,13 +172,7 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 	@Override
 	public void remove(CharSequence subject, CharSequence predicate, CharSequence object) {
 		TripleString pattern = new TripleString(subject.toString(), predicate.toString(), object.toString());
-		Iterator<TripleString> iter = triples.iterator();
-		while(iter.hasNext()) {
-			TripleString next = iter.next();
-			if(next.match(pattern)) {
-				iter.remove();
-			}
-		}
+		triples.removeIf(next -> next.match(pattern));
 	}
 
 	@Override

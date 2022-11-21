@@ -85,11 +85,6 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	void setOrder(TripleComponentOrder order);
 
 	/**
-	 * Gets the currently set order(TripleComponentOrder)
-	 */
-	TripleComponentOrder getOrder();
-
-	/**
 	 * Clear all triples, resulting in an empty triples section.
 	 */
 	void clear();

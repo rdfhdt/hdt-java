@@ -30,8 +30,11 @@ package org.rdfhdt.hdt.dictionary.impl;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
+import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.enums.DictionarySectionRole;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.string.CompactString;
 import org.rdfhdt.hdt.util.string.DelayedString;
@@ -221,7 +224,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 		return section.extract(localId);
 	}
 	@Override
-	public String dataTypeOfId(long id) {
+	public CharSequence dataTypeOfId(long id) {
 		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
 	@Override
@@ -232,5 +235,9 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	public long getNAllObjects() {
 		throw new IllegalArgumentException("Method is not applicable on this dictionary");
 	}
-	
+
+	@Override
+	public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
+		throw new NotImplementedException();
+	}
 }
