@@ -34,6 +34,8 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 import org.rdfhdt.hdt.triples.impl.TriplesList;
 
+import java.io.IOException;
+
 /**
  * Factory that creates Triples objects
  * 
@@ -65,7 +67,7 @@ public class TriplesFactory {
 	 *            The HDTOptions to read
 	 * @return Triples
 	 */
-	static public TriplesPrivate createTriples(HDTOptions spec) {
+	static public TriplesPrivate createTriples(HDTOptions spec) throws IOException {
 		String type = spec.get("triples.format");
 		
 		if(type==null) {
@@ -86,7 +88,7 @@ public class TriplesFactory {
 	 *            The ControlInfo to read
 	 * @return Triples
 	 */
-	public static TriplesPrivate createTriples(ControlInfo ci) {
+	public static TriplesPrivate createTriples(ControlInfo ci) throws IOException {
 		String format = ci.getFormat();
 		
 		if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(format)) {

@@ -64,6 +64,7 @@ public class CloseMappedByteBuffer implements Closeable {
     }
 
     public MappedByteBuffer force() {
+        assert buffer instanceof MappedByteBuffer;
         return ((MappedByteBuffer) buffer).force();
     }
 

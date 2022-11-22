@@ -134,7 +134,7 @@ public class WriteBitmapTriples implements TriplesPrivate {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener) {
+	public void generateIndex(ProgressListener listener, HDTOptions disk) {
 		throw new NotImplementedException();
 	}
 

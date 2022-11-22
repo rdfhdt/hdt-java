@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 
 public interface PredicateIndex {
@@ -19,7 +20,7 @@ public interface PredicateIndex {
 	
 	void mapIndex(CountInputStream input, File f, ProgressListener listener) throws IOException;
 	
-	void generate(ProgressListener listener);
+	void generate(ProgressListener listener, HDTOptions spec);
 	
 	void close() throws IOException;
 }

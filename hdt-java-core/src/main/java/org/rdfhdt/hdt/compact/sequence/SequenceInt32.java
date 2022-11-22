@@ -61,7 +61,16 @@ public class SequenceInt32 implements DynamicSequence {
 		data = new int[capacity];
 		numelements = 0;
 	}
-	
+
+	@Override
+	public void resize(long numentries) {
+		if (numentries > (long) Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("Can't resize to size bigger than int value");
+		}
+		resizeArray((int) numentries);
+		this.numelements = (int) numentries;
+	}
+
 	private void resizeArray(int size) {
 		int [] newData = new int[size];
 		System.arraycopy(data, 0, newData, 0, Math.min(newData.length, data.length));

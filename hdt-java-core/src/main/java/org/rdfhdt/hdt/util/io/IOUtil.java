@@ -91,6 +91,18 @@ public class IOUtil {
 	}
 
 	/**
+	 * close an object if it implements closeable
+	 *
+	 * @param object the object (nullable)
+	 * @throws IOException close exception
+	 */
+	public static void closeObject(Object object) throws IOException {
+		if (object instanceof Closeable) {
+			((Closeable) object).close();
+		}
+	}
+
+	/**
 	 * map a FileChannel, same as {@link FileChannel#map(FileChannel.MapMode, long, long)}, but used to fix unclean map.
 	 * @param ch channel to map
 	 * @param mode mode of the map
@@ -110,7 +122,7 @@ public class IOUtil {
 	 * @throws IOException if one runnable throw an IOException
 	 */
 	public static void closeAll(Closeable... closeables) throws IOException {
-		if (closeables.length == 0) {
+		if (closeables == null || closeables.length == 0) {
 			return;
 		}
 		if (closeables.length == 1) {

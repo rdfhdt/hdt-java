@@ -281,7 +281,8 @@ public class SequenceLog64 implements DynamicSequence {
     public void trimToSize() {
 		resizeArray((int)numWordsFor(numbits, numentries));
 	}
-	
+
+	@Override
 	public void resize(long numentries) {
 		this.numentries = numentries;
 		resizeArray((int)numWordsFor(numbits, numentries));	

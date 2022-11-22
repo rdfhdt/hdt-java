@@ -67,7 +67,7 @@ public class WriteHDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, Writ
 	}
 
 	@Override
-	public void loadOrCreateIndex(ProgressListener listener) {
+	public void loadOrCreateIndex(ProgressListener listener, HDTOptions disk) {
 		throw new NotImplementedException();
 	}
 

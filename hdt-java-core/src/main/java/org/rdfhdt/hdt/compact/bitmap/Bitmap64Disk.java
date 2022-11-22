@@ -34,6 +34,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * Version of Bitmap64 which is backed up on disk
@@ -54,7 +55,16 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
     public Bitmap64Disk(String location, long nbits) {
         this.numbits = 0;
-        this.words = new LongArrayDisk(location,numWords(nbits));
+        this.words = new LongArrayDisk(location, numWords(nbits));
+    }
+
+    public Bitmap64Disk(Path location) {
+        this(location, W);
+    }
+
+    public Bitmap64Disk(Path location, long nbits) {
+        this.numbits = 0;
+        this.words = new LongArrayDisk(location, numWords(nbits));
     }
 
     /**
@@ -79,8 +89,10 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
         return (int) ((numbits-1) % W)+1;	// +1 To have output in the range 1-64, -1 to compensate.
     }
 
-    protected final void ensureSize(long wordsRequired) {
-        words.resize(Math.max(words.getSize()*2, wordsRequired));
+    protected final void ensureSize(long wordsRequired) throws IOException {
+        if (words.length() < wordsRequired) {
+            words.resize(Math.max(words.getSize() * 2, wordsRequired));
+        }
     }
 
     public void trim(long numbits) {
@@ -90,7 +102,11 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
     public void trimToSize() {
         int wordNum = (int) numWords(numbits);
         if(wordNum!=words.length()) {
-            words.resize(wordNum);
+            try {
+                words.resize(wordNum);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -177,7 +193,11 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
         long wordIndex = wordIndex(bitIndex);
-        ensureSize(wordIndex+1);
+        try {
+            ensureSize(wordIndex+1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         if(value) {
             words.set(wordIndex, words.get(wordIndex) | (1L << bitIndex));

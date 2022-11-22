@@ -8,6 +8,7 @@ import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -104,7 +105,7 @@ public class OneReadTempTriples implements TempTriples {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener) {
+	public void generateIndex(ProgressListener listener, HDTOptions disk) {
 		throw new NotImplementedException();
 	}
 
