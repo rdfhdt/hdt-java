@@ -19,6 +19,11 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 	 */
 	private static final boolean ALLOW_ASCII_SEQUENCE;
 
+	/**
+	 * true if the system allow color sequence, false otherwise
+	 */
+	static final boolean ALLOW_COLOR_SEQUENCE;
+
 	static {
 		String env;
 		try {
@@ -28,6 +33,15 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 		}
 
 		ALLOW_ASCII_SEQUENCE = System.console() != null && !(env == null || env.isEmpty());
+
+		String envC;
+		try {
+			envC = System.getenv("RDFHDT_COLOR");
+		} catch (SecurityException e) {
+			envC = null;
+		}
+
+		ALLOW_COLOR_SEQUENCE = System.console() != null && "true".equalsIgnoreCase(envC);
 	}
 
 	private final Map<String, String> threadMessages;
@@ -39,7 +53,7 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 	}
 
 	public MultiThreadListenerConsole(boolean color, boolean asciiListener) {
-		this.color = color;
+		this.color = color || ALLOW_COLOR_SEQUENCE;
 		if (asciiListener) {
 			threadMessages = new TreeMap<>();
 		} else {
@@ -133,7 +147,25 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 		}
 	}
 
+	public synchronized void printLine(String line) {
+		render(line);
+	}
+
+	public void removeLast() {
+		StringBuilder message = new StringBuilder();
+		if (previous != 0) {
+			for (int i = 0; i < previous; i++) {
+				message.append(goBackNLine(1)).append(ERASE_LINE);
+			}
+		}
+		System.out.print(message);
+	}
+
 	private void render() {
+		render(null);
+	}
+
+	private void render(String ln) {
 		if (threadMessages == null) {
 			return;
 		}
@@ -141,15 +173,22 @@ public class MultiThreadListenerConsole implements MultiThreadListener {
 		int lines = threadMessages.size();
 		message.append("\r");
 		// go back each line of the thread message
+
 		if (previous != 0) {
-			message.append(goBackNLine(previous));
+			for (int i = 0; i < previous; i++) {
+				message.append(goBackNLine(1)).append(ERASE_LINE);
+			}
+		}
+
+		if (ln != null) {
+			message.append(ln).append("\n");
 		}
 
 		int maxThreadNameSize = threadMessages.keySet().stream().mapToInt(String::length).max().orElse(0) + 1;
 
 		// write each thread logs
 		threadMessages.forEach((thread, msg) -> message
-				.append(ERASE_LINE)
+				.append('\r')
 				.append(colorReset()).append("[").append(colorThread()).append(thread).append(colorReset()).append("]")
 				.append(" ").append(".".repeat(maxThreadNameSize - thread.length())).append(" ")
 				.append(msg).append("\n"));

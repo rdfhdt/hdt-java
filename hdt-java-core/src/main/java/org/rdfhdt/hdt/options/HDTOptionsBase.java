@@ -28,6 +28,7 @@
 package org.rdfhdt.hdt.options;
 
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author mario.arias
@@ -80,7 +81,10 @@ public class HDTOptionsBase implements HDTOptions {
 		properties.setProperty(key, Long.toString(value));
 	}
 
-
+	@Override
+	public Set<Object> getKeys() {
+		return properties.keySet();
+	}
 
 	@Override
     public void clear() {

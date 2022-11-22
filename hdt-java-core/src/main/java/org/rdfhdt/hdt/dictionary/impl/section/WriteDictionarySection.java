@@ -74,16 +74,16 @@ public class WriteDictionarySection implements DictionarySectionPrivate {
 					blocks.append(out.getTotalBytes());
 
 					// Copy full string
-					ByteStringUtil.append(out, str, 0);
+					ByteStringUtil.append(crcout, str, 0);
 				} else {
 					// Find common part.
 					int delta = ByteStringUtil.longestCommonPrefix(previousStr, str);
 					// Write Delta in VByte
-					VByte.encode(out, delta);
+					VByte.encode(crcout, delta);
 					// Write remaining
-					ByteStringUtil.append(out, str, delta);
+					ByteStringUtil.append(crcout, str, delta);
 				}
-				out.write(0);
+				crcout.write(0);
 				previousStr = str;
 				numberElements++;
 				if (currentCount % block == 0) {

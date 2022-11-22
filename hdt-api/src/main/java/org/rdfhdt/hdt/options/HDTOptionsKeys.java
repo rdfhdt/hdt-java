@@ -271,6 +271,22 @@ public class HDTOptionsKeys {
 	@Value(key = DICTIONARY_TYPE_KEY, desc = "Multi section dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_MULTI_OBJECTS = "dictionaryMultiObj";
 
+	/**
+	 * Location of the HDTCat temp files
+	 */
+	@Key(type = Key.Type.PATH, desc = "Location of the HDTCat temp files")
+	public static final String HDTCAT_LOCATION = "hdtcat.location";
+	/**
+	 * Location of the HDTCat hdt after the loading
+	 */
+	@Key(type = Key.Type.PATH, desc = "Location of the HDTCat hdt after the loading")
+	public static final String HDTCAT_FUTURE_LOCATION = "hdtcat.location.future";
+	/**
+	 * Delete the HDTCat temp files directory after HDTCat
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Delete the HDTCat temp files directory after HDTCat, default to true")
+	public static final String HDTCAT_DELETE_LOCATION = "hdtcat.deleteLocation";
+
 	// use tree-map to have a better order
 	private static final Map<String, Option> OPTION_MAP = new TreeMap<>();
 

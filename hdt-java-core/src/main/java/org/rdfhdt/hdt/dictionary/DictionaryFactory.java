@@ -37,6 +37,8 @@ import org.rdfhdt.hdt.dictionary.impl.PSFCFourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.PSFCTempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.WriteFourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.WriteMultipleSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.kcat.FourSectionDictionaryKCat;
+import org.rdfhdt.hdt.dictionary.impl.kcat.MultipleSectionDictionaryKCat;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.impl.diskimport.MultiSectionSectionCompressor;
@@ -49,8 +51,10 @@ import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.CloseSuppressPath;
+import org.rdfhdt.hdt.util.string.ByteString;
 
 import java.nio.file.Path;
+import java.util.TreeMap;
 
 /**
  * Factory that creates Dictionary objects
@@ -164,6 +168,27 @@ public class DictionaryFactory {
 		}
 	}
 
+	/**
+	 * Creates a write-dictionary
+	 *
+	 * @param name       name of the HDT Dictionary type
+	 * @param spec       specs to read dictionary
+	 * @param location   write location
+	 * @param bufferSize write buffer sizes
+	 * @return WriteDictionary
+	 */
+	public static DictionaryPrivate createWriteDictionary(String name, HDTOptions spec, Path location, int bufferSize) {
+		switch (name) {
+			case "":
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
+				return new WriteFourSectionDictionary(spec, location, bufferSize);
+			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
+				return new WriteMultipleSectionDictionary(spec, location, bufferSize);
+			default:
+				throw new IllegalFormatException("Implementation of write dictionary not found for " + name);
+		}
+	}
+
 	public static SectionCompressor createSectionCompressor(HDTOptions spec, CloseSuppressPath baseFileName,
 															AsyncIteratorFetcher<TripleString> source,
 															MultiThreadListener listener, int bufferSize,
@@ -219,6 +244,44 @@ public class DictionaryFactory {
 				return new MultipleSectionDictionaryDiff(location);
 			default:
 				throw new IllegalFormatException("Implementation of DictionaryDiff not found for " + type);
+		}
+	}
+
+	/**
+	 * create {@link org.rdfhdt.hdt.dictionary.DictionaryKCat} for HDTCat
+	 *
+	 * @param dictionary dictionary
+	 * @return dictionaryKCat
+	 */
+	public static DictionaryKCat createDictionaryKCat(Dictionary dictionary) {
+		String type = dictionary.getType();
+		switch (type) {
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
+				return new FourSectionDictionaryKCat(dictionary);
+			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
+				return new MultipleSectionDictionaryKCat(dictionary);
+			default:
+				throw new IllegalArgumentException("Implementation of DictionaryKCat not found for " + type);
+		}
+	}
+
+	public static DictionaryPrivate createWriteDictionary(
+			String type,
+			HDTOptions spec,
+			DictionarySectionPrivate subject,
+			DictionarySectionPrivate predicate,
+			DictionarySectionPrivate object,
+			DictionarySectionPrivate shared,
+			TreeMap<ByteString, DictionarySectionPrivate> sub
+	) {
+		switch (type) {
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION:
+				return new WriteFourSectionDictionary(spec, subject, predicate, object, shared);
+			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
+				return new WriteMultipleSectionDictionary(spec, subject, predicate, shared, sub);
+			default:
+				throw new IllegalArgumentException("Unknown dictionary type " + type);
 		}
 	}
 }

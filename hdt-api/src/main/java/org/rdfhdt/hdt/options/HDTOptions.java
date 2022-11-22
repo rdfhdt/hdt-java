@@ -27,10 +27,12 @@
 
 package org.rdfhdt.hdt.options;
 
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.util.Profiler;
 
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -54,6 +56,10 @@ public interface HDTOptions {
 	 * @return value or null if not defined
 	 */
 	String get(String key);
+
+	default Set<Object> getKeys() {
+		throw new NotImplementedException();
+	}
 
 	/**
 	 * get a value
@@ -85,6 +91,20 @@ public interface HDTOptions {
 	 */
 	default boolean getBoolean(String key) {
 		return "true".equalsIgnoreCase(get(key));
+	}
+	/**
+	 * get a boolean
+	 *
+	 * @param key key
+	 * @param defaultValue default value
+	 * @return boolean or false if the value isn't defined
+	 */
+	default boolean getBoolean(String key, boolean defaultValue) {
+		String v = get(key);
+		if (v == null) {
+			return defaultValue;
+		}
+		return "true".equalsIgnoreCase(v);
 	}
 
 	/**

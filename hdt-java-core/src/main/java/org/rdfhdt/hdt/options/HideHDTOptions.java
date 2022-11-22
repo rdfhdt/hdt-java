@@ -1,6 +1,8 @@
 package org.rdfhdt.hdt.options;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -19,6 +21,11 @@ public class HideHDTOptions implements HDTOptions {
     public HideHDTOptions(HDTOptions spec, Function<String, String> mapper) {
         this.spec = spec;
         this.mapper = mapper;
+    }
+
+    @Override
+    public Set<Object> getKeys() {
+        return spec.getKeys();
     }
 
     private String map(String key) {

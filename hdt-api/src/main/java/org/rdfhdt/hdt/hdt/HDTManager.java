@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Iterator;
+import java.util.List;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.enums.CompressionType;
@@ -461,6 +462,18 @@ public abstract class HDTManager {
 	public static HDT catHDT(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		return HDTManager.getInstance().doHDTCat(location, hdtFileName1, hdtFileName2, hdtFormat, listener);
 	}
+
+	/**
+	 * Create an HDT file from HDT files by joining the triples.
+	 * @param hdtFileNames hdt file names
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
+	 */
+	public static HDT catHDT(List<String> hdtFileNames, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doHDTCat(hdtFileNames, hdtFormat, listener);
+	}
 	/**
 	 * Create a new HDT by removing from hdt1 the triples of hdt2.
 	 * @param hdtFileName1 First hdt file name
@@ -561,6 +574,7 @@ public abstract class HDTManager {
 	protected abstract TripleWriter doGetHDTWriter(OutputStream out, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doHDTCat(List<String> hdtFileNames, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, String filename, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;

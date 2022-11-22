@@ -37,7 +37,7 @@ import org.rdfhdt.hdt.util.LongCompare;
  * TripleID holds a triple using Long IDs
  *
  */
-public final class TripleID implements Comparable<TripleID>, Serializable {
+public final class TripleID implements Comparable<TripleID>, Serializable, Cloneable {
 	private static final long serialVersionUID = -4685524566493494912L;
 
 	private long subject;
@@ -253,6 +253,15 @@ public final class TripleID implements Comparable<TripleID>, Serializable {
 		}
 		TripleID other = (TripleID) o;
 		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
+	}
+
+	@Override
+	public TripleID clone() {
+		try {
+			return (TripleID) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError(e);
+		}
 	}
 
 	@Override

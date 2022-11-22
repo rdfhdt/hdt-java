@@ -21,6 +21,11 @@ else
     JAVA="$JAVA_HOME/bin/java -server"
 fi
 
+# Set HDT Color options, set to true to allow color
+if [ "$RDFHDT_COLOR" = "" ] ; then
+    export RDFHDT_COLOR="false"
+fi
+
 # Set Java options
 if [ "$JAVA_OPTIONS" = "" ] ; then
     JAVA_OPTIONS="-Xmx1g"

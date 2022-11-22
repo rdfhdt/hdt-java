@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.hdt;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
+import org.rdfhdt.hdt.dictionary.impl.kcat.KCatImpl;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -56,13 +57,13 @@ public class HDTManagerImpl extends HDTManager {
 		return new HDTSpecification(file);
 	}
 
-	private HDT loadOrMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
+	public static HDT loadOrMapHDT(String hdtFileName, ProgressListener listener, HDTOptions spec) throws IOException {
 		String loadingMethod = spec.get(HDTOptionsKeys.LOAD_HDT_TYPE_KEY);
 		if (loadingMethod == null || loadingMethod.isEmpty() || HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_MAP.equals(loadingMethod)) {
-			return doMapHDT(hdtFileName, listener, spec);
+			return mapHDT(hdtFileName, listener, spec);
 		}
 		if (HDTOptionsKeys.LOAD_HDT_TYPE_VALUE_LOAD.equals(loadingMethod)) {
-			return doLoadHDT(hdtFileName, listener, spec);
+			return loadHDT(hdtFileName, listener, spec);
 		}
 		throw new IllegalArgumentException("Bad loading method: " + loadingMethod);
 	}
@@ -476,6 +477,20 @@ public class HDTManagerImpl extends HDTManager {
 				profiler.stop();
 				profiler.writeProfiling();
 			}
+		}
+	}
+
+	@Override
+	protected HDT doHDTCat(List<String> hdtFileNames, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		if (hdtFileNames.isEmpty()) {
+			return HDTFactory.createHDT(hdtFormat);
+		}
+		if (hdtFileNames.size() == 1) {
+			return loadOrMapHDT(hdtFileNames.get(0), listener, hdtFormat);
+		}
+
+		try (KCatImpl kCat = new KCatImpl(hdtFileNames, hdtFormat, listener)) {
+			return kCat.cat();
 		}
 	}
 

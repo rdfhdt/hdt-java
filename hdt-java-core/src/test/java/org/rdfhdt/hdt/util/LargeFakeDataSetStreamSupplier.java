@@ -116,6 +116,8 @@ public class LargeFakeDataSetStreamSupplier {
 	private long slowStream;
 	private boolean sameTripleString;
 	private boolean unicode;
+	private TripleString buffer;
+	private TripleString next;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
 		this.maxSize = maxSize;
@@ -129,6 +131,8 @@ public class LargeFakeDataSetStreamSupplier {
 	 */
 	public void reset() {
 		random = new Random(seed);
+		next = null;
+		buffer = null;
 	}
 
 	/**
@@ -322,17 +326,21 @@ public class LargeFakeDataSetStreamSupplier {
 	private class FakeStatementIterator implements Iterator<TripleString> {
 		private long size;
 		private long count = 0;
-		private TripleString buffer;
-		private TripleString next;
+		private boolean init;
 
 		FakeStatementIterator() {
-			if (sameTripleString) {
-				buffer = new TripleString();
-			}
 		}
 
 		@Override
 		public boolean hasNext() {
+			if (!init) {
+				init = true;
+				if (next != null) {
+					long estimation = estimateTripleSize(next);
+					size += estimation;
+					count++;
+				}
+			}
 			if (size >= maxSize || count > maxTriples) {
 				return false;
 			}
@@ -379,8 +387,8 @@ public class LargeFakeDataSetStreamSupplier {
 			if (!hasNext()) {
 				return null;
 			}
-			TripleString next = this.next;
-			this.next = null;
+			TripleString next = LargeFakeDataSetStreamSupplier.this.next;
+			LargeFakeDataSetStreamSupplier.this.next = null;
 			return next;
 		}
 	}
@@ -449,6 +457,11 @@ public class LargeFakeDataSetStreamSupplier {
 	 */
 	public LargeFakeDataSetStreamSupplier withSameTripleString(boolean sameTripleString) {
 		this.sameTripleString = sameTripleString;
+		if (sameTripleString) {
+			buffer = new TripleString();
+		} else {
+			buffer = null;
+		}
 		return this;
 	}
 

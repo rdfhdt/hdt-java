@@ -15,6 +15,7 @@ import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.MultipleBaseDictionary;
+import org.rdfhdt.hdt.dictionary.impl.kcat.LocatedIndexedNode;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
@@ -156,8 +157,9 @@ public class HDTManagerTest {
 
 				TripleID expectedTriple = expectedIt.next();
 				TripleID actualTriple = actualIt.next();
-				assertEquals(expectedIt.getLastTriplePosition(), actualIt.getLastTriplePosition());
-				assertEquals(expectedTriple, actualTriple);
+				long location = expectedIt.getLastTriplePosition();
+				assertEquals("The tripleID location doesn't match", location, actualIt.getLastTriplePosition());
+				assertEquals("The tripleID #" + location + " doesn't match", expectedTriple, actualTriple);
 			}
 			assertFalse(actualIt.hasNext());
 
@@ -236,11 +238,10 @@ public class HDTManagerTest {
 			});
 		}
 
-		protected static void assertEqualsHDT(String section, DictionarySection excepted, DictionarySection actual) {
+		public static void assertEqualsHDT(String section, DictionarySection excepted, DictionarySection actual) {
 			assertEquals("sizes of section " + section + " aren't the same!", excepted.getNumberOfElements(), actual.getNumberOfElements());
 			Iterator<? extends CharSequence> itEx = excepted.getSortedEntries();
 			Iterator<? extends CharSequence> itAc = actual.getSortedEntries();
-			assertEquals("dictionary section sizes don't match", excepted.getNumberOfElements(), actual.getNumberOfElements());
 
 			while (itEx.hasNext()) {
 				assertTrue("dictionary section " + section + " is less big than excepted", itAc.hasNext());
