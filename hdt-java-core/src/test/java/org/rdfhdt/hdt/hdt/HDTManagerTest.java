@@ -15,11 +15,9 @@ import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.MultipleBaseDictionary;
-import org.rdfhdt.hdt.dictionary.impl.kcat.LocatedIndexedNode;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
-import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
@@ -30,7 +28,6 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
-import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
@@ -47,7 +44,6 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -572,14 +568,16 @@ public class HDTManagerTest {
 	@RunWith(Parameterized.class)
 	public static class DynamicCatTreeTest extends HDTManagerTestBase {
 
-		@Parameterized.Parameters(name = "{5} - {0}")
+		@Parameterized.Parameters(name = "{5} - {0} kcat: {8}")
 		public static Collection<Object[]> params() {
 			List<Object[]> params = new ArrayList<>();
 			for (String[] dict : diskDict()) {
-				params.add(new Object[]{"base", SIZE_VALUE * 16, 20, 50, false, dict[0], dict[1], SIZE_VALUE});
-				params.add(new Object[]{"duplicates", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE});
-				params.add(new Object[]{"large-literals", SIZE_VALUE * 4, 20, 250, false, dict[0], dict[1], SIZE_VALUE});
-				params.add(new Object[]{"quiet", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE});
+				for (long kcat : new long[]{2, 10, 0}) {
+					params.add(new Object[]{"base", SIZE_VALUE * 16, 20, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
+					params.add(new Object[]{"duplicates", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
+					params.add(new Object[]{"large-literals", SIZE_VALUE * 4, 20, 250, false, dict[0], dict[1], SIZE_VALUE, kcat});
+					params.add(new Object[]{"quiet", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
+				}
 			}
 			return params;
 		}
@@ -600,11 +598,19 @@ public class HDTManagerTest {
 		public String tempDictionaryType;
 		@Parameterized.Parameter(7)
 		public long size;
+		@Parameterized.Parameter(8)
+		public long kCat;
+
 
 		@Before
 		public void setupSpecs() {
 			spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
 			spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, tempDictionaryType);
+			spec.set(HDTOptionsKeys.PROFILER_KEY, true);
+
+			if (kCat != 0) {
+				spec.set(HDTOptionsKeys.LOADER_CATTREE_KCAT, kCat);
+			}
 		}
 
 		@Test
@@ -993,11 +999,6 @@ public class HDTManagerTest {
 				System.out.println(watch.stopAndShow());
 				System.out.println(hdt.getTriples().getNumberOfElements());
 			}
-		}
-
-		@Test
-		public void zqdz() {
-			System.out.println("\255".getBytes(StandardCharsets.UTF_8)[0] & 0xFF);
 		}
 
 		@Test

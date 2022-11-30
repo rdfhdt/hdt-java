@@ -9,6 +9,7 @@ import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTManagerTest;
+import org.rdfhdt.hdt.iterator.utils.CombinedIterator;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
@@ -22,7 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Iterator;
+import java.util.stream.Collectors;
+import java.util.stream.LongStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -59,6 +63,26 @@ public class LargeFakeDataSetStreamSupplierTest {
 	}
 
 	@Test
+	public void sameTest() {
+		long[] sizes = {50, 25, 32, 10, 0, 12};
+		LargeFakeDataSetStreamSupplier s1 = LargeFakeDataSetStreamSupplier.createInfinite(34);
+		LargeFakeDataSetStreamSupplier s2 = LargeFakeDataSetStreamSupplier.createInfinite(34);
+
+		Iterator<TripleString> it1 = CombinedIterator.combine(
+				LongStream.of(sizes)
+						.mapToObj(s -> s1.withMaxTriples(s).createTripleStringStream())
+						.collect(Collectors.toList())
+		);
+
+		Iterator<TripleString> it2 = s2.withMaxTriples(LongStream.of(sizes).sum()).createTripleStringStream();
+
+		while (it2.hasNext()) {
+			assertTrue(it1.hasNext());
+			assertEquals(it2.next(), it1.next());
+		}
+		assertFalse(it1.hasNext());
+	}
+	@Test
 	public void countTest() {
 		long size = 42;
 		Iterator<TripleString> it = LargeFakeDataSetStreamSupplier.createSupplierWithMaxTriples(size, 34)
@@ -69,6 +93,81 @@ public class LargeFakeDataSetStreamSupplierTest {
 			count++;
 		}
 		assertEquals(size, count);
+	}
+	@Test
+	public void countTest2() {
+		long size = 42;
+		LargeFakeDataSetStreamSupplier supplier = LargeFakeDataSetStreamSupplier.createSupplierWithMaxTriples(size, 34);
+		{
+			Iterator<TripleString> it = supplier
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
+		{
+			Iterator<TripleString> it = supplier
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
+		{
+			Iterator<TripleString> it = supplier
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
+	}
+	@Test
+	public void countTest3() {
+		LargeFakeDataSetStreamSupplier supplier = LargeFakeDataSetStreamSupplier.createInfinite(34);
+		{
+			long size = 42;
+			Iterator<TripleString> it = supplier
+					.withMaxTriples(size)
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
+		{
+			long size = 24;
+			Iterator<TripleString> it = supplier
+					.withMaxTriples(size)
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
+		{
+			long size = 35;
+			Iterator<TripleString> it = supplier
+					.withMaxTriples(size)
+					.createTripleStringStream();
+			int count = 0;
+			while (it.hasNext()) {
+				it.next();
+				count++;
+			}
+			assertEquals(size, count);
+		}
 	}
 
 	@Test

@@ -86,6 +86,10 @@ public class GroupBySubjectMapIterator implements Iterator<TripleID> {
 	}
 
 	private static long firstSubjectTripleId(HDT hdt) {
+		if (hdt.getDictionary().getSubjects().getNumberOfElements() == 0) {
+			// no subjects
+			return -1;
+		}
 		IteratorTripleID it = hdt.getTriples().search(new TripleID(
 				hdt.getDictionary().getNshared() + 1,
 				0,
@@ -107,21 +111,31 @@ public class GroupBySubjectMapIterator implements Iterator<TripleID> {
 					// extract hdt elements for this index
 					HDT hdt = hdts[hdtIndex];
 
+					if (hdt.getTriples().getNumberOfElements() == 0) {
+						// no triples
+						return ExceptionIterator.<TripleID, RuntimeException>empty();
+					}
 					// get the first subject triple id
 					long firstSubjectTripleId = firstSubjectTripleId(hdt);
 
-					// create a subject iterator, mapped to the new IDs
-					IteratorTripleID subjectIterator = hdt.getTriples().searchAll();
-					subjectIterator.goTo(firstSubjectTripleId);
-					ExceptionIterator<TripleID, RuntimeException> subjectIteratorMapped = ExceptionIterator.of(
-							new SharedOnlyIterator(
-									new MapIterator<>(subjectIterator, (tid) -> {
-										assert inHDT(tid, hdts[hdtIndex]);
-										return merger.extractMapped(hdtIndex, tid);
-									}),
-									shared
-							)
-					);
+					ExceptionIterator<TripleID, RuntimeException> subjectIteratorMapped;
+					if (firstSubjectTripleId == -1) {
+						// no triples
+						subjectIteratorMapped = ExceptionIterator.empty();
+					} else {
+						// create a subject iterator, mapped to the new IDs
+						IteratorTripleID subjectIterator = hdt.getTriples().searchAll();
+						subjectIterator.goTo(firstSubjectTripleId);
+						subjectIteratorMapped = ExceptionIterator.of(
+								new SharedOnlyIterator(
+										new MapIterator<>(subjectIterator, (tid) -> {
+											assert inHDT(tid, hdts[hdtIndex]);
+											return merger.extractMapped(hdtIndex, tid);
+										}),
+										shared
+								)
+						);
+					}
 
 					if (shared == 0) {
 						return subjectIteratorMapped;
@@ -146,6 +160,10 @@ public class GroupBySubjectMapIterator implements Iterator<TripleID> {
 
 					// get the first subject triple id
 					long firstSubjectTripleId = firstSubjectTripleId(hdt);
+
+					if (firstSubjectTripleId == -1) {
+						return ExceptionIterator.<TripleID, RuntimeException>empty();
+					}
 
 					// create a subject iterator, mapped to the new IDs
 					IteratorTripleID subjectIterator = hdt.getTriples().searchAll();

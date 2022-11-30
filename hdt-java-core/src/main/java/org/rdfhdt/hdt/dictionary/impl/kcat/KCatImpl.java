@@ -9,6 +9,7 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.impl.HDTBase;
 import org.rdfhdt.hdt.hdt.impl.WriteHDTImpl;
 import org.rdfhdt.hdt.header.HeaderFactory;
+import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
@@ -17,6 +18,7 @@ import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 import org.rdfhdt.hdt.triples.impl.OneReadTempTriples;
 import org.rdfhdt.hdt.triples.impl.WriteBitmapTriples;
+import org.rdfhdt.hdt.util.Profiler;
 import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -54,12 +56,13 @@ public class KCatImpl implements Closeable {
 	private final Path futureLocation;
 	private final boolean futureMap;
 	private final boolean clearLocation;
-	private final ProgressListener listener;
+	private final MultiThreadListener listener;
 	private final String dictionaryType;
 	private final int bufferSize;
 	private final HDTOptions hdtFormat;
 	private final TripleComponentOrder order;
 	private final long rawSize;
+	private final Profiler profiler;
 
 	/**
 	 * Create implementation
@@ -81,6 +84,8 @@ public class KCatImpl implements Closeable {
 		} else {
 			bufferSize = (int) bufferSizeLong;
 		}
+
+		profiler = Profiler.createOrLoadSubSection("doHDTCatk", hdtFormat, true);
 
 		try {
 			ListIterator<String> it = hdtFileNames.listIterator();
@@ -147,10 +152,14 @@ public class KCatImpl implements Closeable {
 
 			location.closeWithDeleteRecurse();
 		} catch (Throwable t) {
-			for (HDT hdt : hdts) {
-				IOUtil.closeQuietly(hdt);
+			try {
+				throw t;
+			} finally {
+				for (HDT hdt : hdts) {
+					IOUtil.closeQuietly(hdt);
+				}
+				profiler.close();
 			}
-			throw t;
 		}
 	}
 
@@ -172,9 +181,13 @@ public class KCatImpl implements Closeable {
 		il.setRange(0, 40);
 		il.setPrefix("Merge Dict: ");
 		try (KCatMerger merger = createMerger(il)) {
+			profiler.pushSection("dict");
 			// create the dictionary
 			try (DictionaryPrivate dictionary = merger.buildDictionary()) {
+				profiler.popSection();
 				assert merger.assertReadCorrectly();
+				listener.unregisterAllThreads();
+				profiler.pushSection("triples");
 				// create a GROUP BY subject iterator to get the new ordered stream
 				Iterator<TripleID> tripleIterator = GroupBySubjectMapIterator.fromHDTs(merger, hdts);
 				try (WriteBitmapTriples triples = new WriteBitmapTriples(hdtFormat, location.resolve("triples"), bufferSize)) {
@@ -182,21 +195,28 @@ public class KCatImpl implements Closeable {
 
 					il.setRange(40, 80);
 					il.setPrefix("Merge triples: ");
+					il.notifyProgress(0, "start");
 					triples.load(new OneReadTempTriples(tripleIterator, order, count), il);
+					profiler.popSection();
 
 					WriteHDTImpl writeHDT = new WriteHDTImpl(hdtFormat, location, dictionary, triples, HeaderFactory.createHeader(hdtFormat));
+					profiler.pushSection("header");
 					writeHDT.populateHeaderStructure(baseURI);
 					// add a raw size from the previous values (if available)
 					if (rawSize != -1) {
 						writeHDT.getHeader().insert("_:statistics", HDTVocabulary.ORIGINAL_SIZE, String.valueOf(rawSize));
 					}
+					profiler.popSection();
 
+					profiler.pushSection("save");
 					il.setRange(80, 90);
 					il.setPrefix("Save HDT: ");
+					il.notifyProgress(0, "save to " + futureLocationStr);
 					writeHDT.saveToHDT(futureLocationStr, il);
+					profiler.popSection();
 				}
 			}
-
+			listener.unregisterAllThreads();
 		} catch (InterruptedException e) {
 			throw new IOException("Interruption", e);
 		}
@@ -204,8 +224,10 @@ public class KCatImpl implements Closeable {
 		il.setRange(90, 100);
 		HDT hdt;
 		if (futureMap) {
+			il.notifyProgress(0, "map hdt");
 			hdt = HDTManager.mapHDT(futureLocationStr, il);
 		} else {
+			il.notifyProgress(0, "load hdt");
 			hdt = HDTManager.loadHDT(futureLocationStr, il);
 			Files.deleteIfExists(futureLocation);
 		}
@@ -216,7 +238,16 @@ public class KCatImpl implements Closeable {
 	@Override
 	public void close() throws IOException {
 		try {
-			IOUtil.closeAll(hdts);
+			try {
+				try {
+					profiler.stop();
+					profiler.writeProfiling();
+				} finally {
+					profiler.close();
+				}
+			} finally {
+				IOUtil.closeAll(hdts);
+			}
 		} finally {
 			if (clearLocation) {
 				location.close();

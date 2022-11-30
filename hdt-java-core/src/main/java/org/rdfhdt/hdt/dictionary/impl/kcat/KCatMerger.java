@@ -60,10 +60,10 @@ public class KCatMerger implements AutoCloseable {
 	private final PipedCopyIterator<DuplicateBuffer> subjectPipe = new PipedCopyIterator<>();
 	private final PipedCopyIterator<DuplicateBuffer> objectPipe = new PipedCopyIterator<>();
 	private final PipedCopyIterator<BiDuplicateBuffer> sharedPipe = new PipedCopyIterator<>();
-	private final DuplicateBufferIterator<RuntimeException> sortedSubject;
-	private final DuplicateBufferIterator<RuntimeException> sortedObject;
-	private final DuplicateBufferIterator<RuntimeException> sortedPredicates;
-	private final Map<ByteString, DuplicateBufferIterator<RuntimeException>> sortedSubSections;
+	private final ExceptionIterator<DuplicateBuffer, RuntimeException> sortedSubject;
+	private final ExceptionIterator<DuplicateBuffer, RuntimeException> sortedObject;
+	private final ExceptionIterator<DuplicateBuffer, RuntimeException> sortedPredicates;
+	private final Map<ByteString, ExceptionIterator<DuplicateBuffer, RuntimeException>> sortedSubSections;
 
 	private final long estimatedSizeP;
 	private final AtomicLong countTyped = new AtomicLong();
@@ -107,6 +107,7 @@ public class KCatMerger implements AutoCloseable {
 		long sizeS = 0;
 		long sizeP = 0;
 		long sizeO = 0;
+		long sizeONoTyped = 0;
 		long sizeShared = 0;
 
 		Map<ByteString, PreIndexSection[]> subSections = new TreeMap<>();
@@ -118,6 +119,7 @@ public class KCatMerger implements AutoCloseable {
 			sizeS += cat.countSubjects();
 			sizeP += cat.countPredicates();
 			sizeO += cat.countObjects();
+			sizeONoTyped += cat.getObjectSection().getNumberOfElements();
 			sizeShared += cat.countShared();
 
 			long start = 1L + cat.countShared();
@@ -165,7 +167,8 @@ public class KCatMerger implements AutoCloseable {
 							c.getSharedSection().getSortedEntries(),
 							c.countShared()
 					)
-			);
+			).notif(sizeS, 20, "Merge subjects", listener);
+
 			sortedObject = mergeSection(
 					cats,
 					(hdtIndex, c) -> createMergeIt(
@@ -174,20 +177,20 @@ public class KCatMerger implements AutoCloseable {
 							c.getSharedSection().getSortedEntries(),
 							c.objectShift()
 					)
-			);
+			).notif(sizeONoTyped, 20, "Merge objects", listener);
 
 			// merge the other sections
 			sortedPredicates = mergeSection(cats, (hdtIndex, c) -> {
 				ExceptionIterator<? extends CharSequence, RuntimeException> of = ExceptionIterator.of(c.getPredicateSection().getSortedEntries());
 				return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element))));
-			});
+			}).notif(sizeP, 20, "Merge predicates", listener);
 
 			sortedSubSections = new TreeMap<>();
 			// create a merge section for each section
 			subSections.forEach((key, sections) -> sortedSubSections.put(key, mergeSection(sections, (hdtIndex, pre) -> {
 				ExceptionIterator<? extends CharSequence, RuntimeException> of = ExceptionIterator.of(pre.getSortedEntries());
 				return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, pre.getStart() + index, ByteString.of(element))));
-			})));
+			}).notif(Arrays.stream(sections).mapToLong(s -> s == null || s.section == null ? 0 : s.section.getNumberOfElements()).sum(), 20, "Merge typed objects", listener)));
 
 			// convert the dupe buffer streams to byte string streams
 
@@ -288,7 +291,7 @@ public class KCatMerger implements AutoCloseable {
 									return mapper.apply(hdtIndex, e);
 								},
 								LocatedIndexedNode::compareTo,
-								List.of(sections),
+								Arrays.asList(sections),
 								0,
 								sections.length
 						),
@@ -471,7 +474,7 @@ public class KCatMerger implements AutoCloseable {
 			ByteString key = e.getKey();
 			WriteDictionarySection section = e.getValue();
 
-			DuplicateBufferIterator<RuntimeException> bufferIterator = sortedSubSections.get(key);
+			ExceptionIterator<DuplicateBuffer, RuntimeException> bufferIterator = sortedSubSections.get(key);
 
 			final long currentShift = shift;
 			section.load(new OneReadDictionarySection(bufferIterator.map((db, id) -> {
@@ -505,7 +508,7 @@ public class KCatMerger implements AutoCloseable {
 			throw new RuntimeException(e);
 		} finally {
 			Closer.of(sectionSubject, sectionPredicate, sectionObject, sectionShared)
-					.with(sectionSub.values())
+					.with(sectionSub == null ? List.of() : sectionSub.values())
 					.with(subjectsMaps)
 					.with(predicatesMaps)
 					.with(objectsMaps)
