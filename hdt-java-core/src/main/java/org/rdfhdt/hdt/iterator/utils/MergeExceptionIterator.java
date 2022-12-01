@@ -3,19 +3,21 @@ package org.rdfhdt.hdt.iterator.utils;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class MergeExceptionIterator<T, E extends Exception> implements ExceptionIterator<T, E> {
 
 	/**
 	 * Create a tree of merge iterators from an array of element
+	 *
 	 * @param itFunction a function to create an iterator from an element
-	 * @param comp comparator for the merge iterator
-	 * @param array the elements
-	 * @param length the number of elements
-	 * @param <I> input of the element
-	 * @param <T> type of the element in the iterator
-	 * @param <E> exception returned by the iterator
+	 * @param comp       comparator for the merge iterator
+	 * @param array      the elements
+	 * @param length     the number of elements
+	 * @param <I>        input of the element
+	 * @param <T>        type of the element in the iterator
+	 * @param <E>        exception returned by the iterator
 	 * @return the iterator
 	 */
 	public static <I, T, E extends Exception> ExceptionIterator<T, E> buildOfTree(
@@ -25,13 +27,14 @@ public class MergeExceptionIterator<T, E extends Exception> implements Exception
 
 	/**
 	 * Create a tree of merge iterators from an array of element
+	 *
 	 * @param itFunction a function to create an iterator from an element
-	 * @param comp comparator for the merge iterator
-	 * @param array the elements
-	 * @param start the start of the array (inclusive)
-	 * @param end the end of the array (exclusive)
-	 * @param <T> type of the element
-	 * @param <E> exception returned by the iterator
+	 * @param comp       comparator for the merge iterator
+	 * @param array      the elements
+	 * @param start      the start of the array (inclusive)
+	 * @param end        the end of the array (exclusive)
+	 * @param <T>        type of the element
+	 * @param <E>        exception returned by the iterator
 	 * @return the iterator
 	 */
 	public static <I, T, E extends Exception> ExceptionIterator<T, E> buildOfTree(
@@ -41,23 +44,83 @@ public class MergeExceptionIterator<T, E extends Exception> implements Exception
 
 	/**
 	 * Create a tree of merge iterators from an array of element
+	 *
 	 * @param itFunction a function to create an iterator from an element
-	 * @param comp comparator for the merge iterator
-	 * @param array the elements
-	 * @param start the start of the array (inclusive)
-	 * @param end the end of the array (exclusive)
-	 * @param <T> type of the element
-	 * @param <E> exception returned by the iterator
+	 * @param comp       comparator for the merge iterator
+	 * @param array      the elements
+	 * @param start      the start of the array (inclusive)
+	 * @param end        the end of the array (exclusive)
+	 * @param <T>        type of the element
+	 * @param <E>        exception returned by the iterator
 	 * @return the iterator
 	 */
 	public static <I, T, E extends Exception> ExceptionIterator<T, E> buildOfTree(
 			Function<I, ExceptionIterator<T, E>> itFunction, Comparator<T> comp, List<I> array, int start, int end) {
+		return buildOfTree((index, o) -> itFunction.apply(o), comp, array, start, end);
+	}
+
+	/**
+	 * Create a tree of merge iterators from an array of element
+	 *
+	 * @param itFunction a function to create an iterator from an element
+	 * @param array      the elements
+	 * @param start      the start of the array (inclusive)
+	 * @param end        the end of the array (exclusive)
+	 * @param <T>        type of the element
+	 * @param <E>        exception returned by the iterator
+	 * @return the iterator
+	 */
+	public static <I, T extends Comparable<T>, E extends Exception> ExceptionIterator<T, E> buildOfTree(
+			Function<I, ExceptionIterator<T, E>> itFunction, List<I> array, int start, int end) {
+		return buildOfTree((index, o) -> itFunction.apply(o), Comparable::compareTo, array, start, end);
+	}
+
+	/**
+	 * Create a tree of merge iterators from an array of element
+	 *
+	 * @param array the elements
+	 * @param start the start of the array (inclusive)
+	 * @param end   the end of the array (exclusive)
+	 * @param <T>   type of the element
+	 * @param <E>   exception returned by the iterator
+	 * @return the iterator
+	 */
+	public static <T extends Comparable<T>, E extends Exception> ExceptionIterator<T, E> buildOfTree(List<ExceptionIterator<T, E>> array, int start, int end) {
+		return MergeExceptionIterator.buildOfTree(Function.identity(), Comparable::compareTo, array, start, end);
+	}
+
+	/**
+	 * Create a tree of merge iterators from an array of element
+	 *
+	 * @param array the elements
+	 * @param <T>   type of the element
+	 * @param <E>   exception returned by the iterator
+	 * @return the iterator
+	 */
+	public static <T extends Comparable<? super T>, E extends Exception> ExceptionIterator<T, E> buildOfTree(List<ExceptionIterator<T, E>> array) {
+		return MergeExceptionIterator.buildOfTree(Function.identity(), Comparable::compareTo, array, 0, array.size());
+	}
+
+	/**
+	 * Create a tree of merge iterators from an array of element
+	 *
+	 * @param itFunction a function to create an iterator from an element
+	 * @param comp       comparator for the merge iterator
+	 * @param array      the elements
+	 * @param start      the start of the array (inclusive)
+	 * @param end        the end of the array (exclusive)
+	 * @param <T>        type of the element
+	 * @param <E>        exception returned by the iterator
+	 * @return the iterator
+	 */
+	public static <I, T, E extends Exception> ExceptionIterator<T, E> buildOfTree(
+			BiFunction<Integer, I, ExceptionIterator<T, E>> itFunction, Comparator<T> comp, List<I> array, int start, int end) {
 		int length = end - start;
 		if (length <= 0) {
 			return ExceptionIterator.empty();
 		}
 		if (length == 1) {
-			return itFunction.apply(array.get(start));
+			return itFunction.apply(start, array.get(start));
 		}
 		int mid = (start + end) / 2;
 		return new MergeExceptionIterator<>(

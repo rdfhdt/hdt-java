@@ -1,5 +1,7 @@
 package org.rdfhdt.hdt.dictionary.impl;
 
+import org.rdfhdt.hdt.dictionary.DictionarySection;
+import org.rdfhdt.hdt.dictionary.DictionarySectionPrivate;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.section.WriteDictionarySection;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -23,6 +25,7 @@ import java.nio.file.Path;
 
 /**
  * Version of four section dictionary with {@link org.rdfhdt.hdt.dictionary.impl.section.WriteDictionarySection}
+ *
  * @author Antoine Willerval
  */
 public class WriteFourSectionDictionary extends BaseDictionary {
@@ -33,6 +36,17 @@ public class WriteFourSectionDictionary extends BaseDictionary {
 		predicates = new WriteDictionarySection(spec, filename.resolveSibling(name + "PR"), bufferSize);
 		objects = new WriteDictionarySection(spec, filename.resolveSibling(name + "OB"), bufferSize);
 		shared = new WriteDictionarySection(spec, filename.resolveSibling(name + "SH"), bufferSize);
+	}
+
+	public WriteFourSectionDictionary(HDTOptions spec, DictionarySectionPrivate subjects,
+									  DictionarySectionPrivate predicates,
+									  DictionarySectionPrivate objects,
+									  DictionarySectionPrivate shared) {
+		super(spec);
+		this.subjects = subjects;
+		this.predicates = predicates;
+		this.objects = objects;
+		this.shared = shared;
 	}
 
 	@Override

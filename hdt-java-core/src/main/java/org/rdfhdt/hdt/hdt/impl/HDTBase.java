@@ -1,6 +1,7 @@
 package org.rdfhdt.hdt.hdt.impl;
 
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
+import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.hdt.HDTPrivate;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.Header;
@@ -9,6 +10,7 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.StringUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
@@ -91,6 +93,10 @@ public abstract class HDTBase<H extends Header, D extends DictionaryPrivate, T e
 		return dictionary.size() + triples.size();
 	}
 
+	public HDTOptions getSpec() {
+		return spec;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 *
@@ -117,6 +123,22 @@ public abstract class HDTBase<H extends Header, D extends DictionaryPrivate, T e
 		ci.clear();
 		ci.setType(ControlInfo.Type.TRIPLES);
 		triples.save(output, ci, iListener);
+	}
+
+	public static long getRawSize(Header header) {
+
+		try {
+			IteratorTripleString rawSize1 = header.search("_:statistics", HDTVocabulary.ORIGINAL_SIZE, "");
+			if (!rawSize1.hasNext()) {
+				return -1;
+			}
+
+			CharSequence obj = rawSize1.next().getObject();
+			// remove "s in "<long>"
+			return Long.parseLong(obj, 1, obj.length() - 1, 10);
+		} catch (NotFoundException e) {
+			return -1;
+		}
 	}
 
 	@Override

@@ -49,6 +49,22 @@ public class WriteMultipleSectionDictionary extends MultipleBaseDictionary {
 		objects = new TreeMap<>();
 		shared = new WriteDictionarySection(spec, filename.resolveSibling(name + "SH"), bufferSize);
 	}
+	public WriteMultipleSectionDictionary(HDTOptions spec,
+										  DictionarySectionPrivate subjects,
+										  DictionarySectionPrivate predicates,
+										  DictionarySectionPrivate shared,
+										  TreeMap<ByteString, DictionarySectionPrivate> objects) {
+		super(spec);
+		// useless
+		this.filename = null;
+		this.bufferSize = 0;
+
+		// write sections
+		this.subjects = subjects;
+		this.predicates = predicates;
+		this.objects = objects;
+		this.shared = shared;
+	}
 
 	@Override
 	public long getNAllObjects() {

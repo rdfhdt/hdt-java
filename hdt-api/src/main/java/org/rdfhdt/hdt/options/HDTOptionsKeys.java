@@ -140,6 +140,12 @@ public class HDTOptionsKeys {
 	 */
 	@Key(type = Key.Type.DOUBLE, desc = "Memory fault factor for HDTCat tree method split")
 	public static final String LOADER_CATTREE_MEMORY_FAULT_FACTOR = "loader.cattree.memoryFaultFactor";
+	/**
+	 * Key for the k-merge HDTCat for the {@link org.rdfhdt.hdt.hdt.HDTManager} catTree default to 2 using default
+	 * implementation of HDTCat, not K-HDTCat
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Number of HDT to merge at the same time with K-HDTCat, by default it use the default HDTCat implementation")
+	public static final String LOADER_CATTREE_KCAT = "loader.cattree.kcat";
 
 	/**
 	 * Key for the hdt supplier type, default to memory
@@ -270,6 +276,22 @@ public class HDTOptionsKeys {
 	 */
 	@Value(key = DICTIONARY_TYPE_KEY, desc = "Multi section dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_MULTI_OBJECTS = "dictionaryMultiObj";
+
+	/**
+	 * Location of the HDTCat temp files
+	 */
+	@Key(type = Key.Type.PATH, desc = "Location of the HDTCat temp files")
+	public static final String HDTCAT_LOCATION = "hdtcat.location";
+	/**
+	 * Location of the HDTCat hdt after the loading
+	 */
+	@Key(type = Key.Type.PATH, desc = "Location of the HDTCat hdt after the loading")
+	public static final String HDTCAT_FUTURE_LOCATION = "hdtcat.location.future";
+	/**
+	 * Delete the HDTCat temp files directory after HDTCat
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Delete the HDTCat temp files directory after HDTCat, default to true")
+	public static final String HDTCAT_DELETE_LOCATION = "hdtcat.deleteLocation";
 
 	// use tree-map to have a better order
 	private static final Map<String, Option> OPTION_MAP = new TreeMap<>();

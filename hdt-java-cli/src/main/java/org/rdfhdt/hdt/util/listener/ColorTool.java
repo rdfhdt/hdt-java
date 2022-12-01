@@ -3,9 +3,10 @@ package org.rdfhdt.hdt.util.listener;
 public class ColorTool {
 	private final boolean color;
 	private final boolean quiet;
+	private MultiThreadListenerConsole console;
 
 	public ColorTool(boolean color, boolean quiet) {
-		this.color = color;
+		this.color = color || MultiThreadListenerConsole.ALLOW_COLOR_SEQUENCE;
 		this.quiet = quiet;
 	}
 
@@ -13,6 +14,17 @@ public class ColorTool {
 		this(color, false);
 	}
 
+	public void setConsole(MultiThreadListenerConsole console) {
+		this.console = console;
+	}
+
+	private void print(String str) {
+		if (console != null) {
+			console.printLine(str);
+		} else {
+			System.out.println(str);
+		}
+	}
 
 	public String prefix(String pref, int r, int g, int b) {
 		return colorReset() + "[" + color(r, g, b) + pref + colorReset() + "]";
@@ -23,13 +35,13 @@ public class ColorTool {
 	}
 	public void log(String msg, boolean ignoreQuiet) {
 		if (!quiet || ignoreQuiet) {
-			System.out.println(prefix("INFO", 3, 1, 5) + " " + colorReset() + msg);
+			print(prefix("INFO", 3, 1, 5) + " " + colorReset() + msg);
 		}
 	}
 
 	public void logValue(String msg, String value, boolean ignoreQuiet) {
 		if (!quiet || ignoreQuiet) {
-			System.out.println(color(3, 1, 5) + msg + colorReset() + value);
+			print(color(3, 1, 5) + msg + colorReset() + value);
 		}
 	}
 
@@ -43,7 +55,7 @@ public class ColorTool {
 
 	public void warn(String msg, boolean ignoreQuiet) {
 		if (!quiet || ignoreQuiet) {
-			System.out.println(prefix("WARN", 5, 5, 0) + " " + colorReset() + msg);
+			print(prefix("WARN", 5, 5, 0) + " " + colorReset() + msg);
 		}
 	}
 	public void error(String text) {
@@ -62,9 +74,9 @@ public class ColorTool {
 	public void error(String title, String text, boolean ignoreQuiet) {
 		if (!quiet || ignoreQuiet) {
 			if (title != null) {
-				System.out.println(prefix("ERRR", 5, 0, 0) + " " + prefix(title, 5, 3, 0) + " " + colorReset() + text);
+				print(prefix("ERRR", 5, 0, 0) + " " + prefix(title, 5, 3, 0) + " " + colorReset() + text);
 			} else {
-				System.out.println(prefix("ERRR", 5, 0, 0) + " " + colorReset() + text);
+				print(prefix("ERRR", 5, 0, 0) + " " + colorReset() + text);
 			}
 		}
 	}

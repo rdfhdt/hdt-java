@@ -557,22 +557,6 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 		profiler.popSection();
 	}
 
-	public static long getRawSize(Header header) {
-
-		try {
-			IteratorTripleString rawSize1 = header.search("_:statistics", HDTVocabulary.ORIGINAL_SIZE, "");
-			if (!rawSize1.hasNext()) {
-				return -1;
-			}
-
-			CharSequence obj = rawSize1.next().getObject();
-			// remove "s in "<long>"
-			return Long.parseLong(obj, 1, obj.length() - 1, 10);
-		} catch (NotFoundException e) {
-			return -1;
-		}
-	}
-
 	public void catCustom(String location, HDT hdt1, HDT hdt2, ProgressListener listener, Profiler profiler) throws IOException {
 		if (listener != null) {
 			listener.notifyProgress(0, "Generating dictionary");

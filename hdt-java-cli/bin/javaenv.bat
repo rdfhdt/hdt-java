@@ -1,5 +1,6 @@
 set JAVAOPTIONS=-Xmx1G
 set JAVACMD=java
+set RDFHDT_COLOR=false
 
 set JAVACP="%~dp0\..\target;%~dp0\..\target\classes;%~dp0\..\target\dependency\*.jar;.
 

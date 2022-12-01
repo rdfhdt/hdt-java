@@ -2,11 +2,12 @@ package org.rdfhdt.hdt.triples;
 
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
+import org.rdfhdt.hdt.util.string.CompactString;
 
 import java.util.Comparator;
 
 
-public final class IndexedNode implements Comparable<IndexedNode> {
+public class IndexedNode implements Comparable<IndexedNode>, Cloneable {
 	private ByteString node;
 	private long index;
 
@@ -40,5 +41,17 @@ public final class IndexedNode implements Comparable<IndexedNode> {
 	@Override
 	public int compareTo(IndexedNode o) {
 		return node.compareTo(o.node);
+	}
+
+
+	@Override
+	public IndexedNode clone() {
+		try {
+			IndexedNode clone = (IndexedNode) super.clone();
+			clone.node = new CompactString(node);
+			return clone;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError(e);
+		}
 	}
 }

@@ -173,7 +173,7 @@ public class HdtDiffTest extends AbstractMapMemoryTest {
 
         try {
             its1 = hdt1.search("", "", "");
-            its2 = hdt1.search("", "", "");
+            its2 = hdt2.search("", "", "");
         } catch (NotFoundException e) {
             throw new AssertionError(e);
         }

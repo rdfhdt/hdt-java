@@ -79,7 +79,6 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		this(in, f, false);
 	}
 	
-	@SuppressWarnings("resource")
 	private SequenceLog64Map(CountInputStream in, File f, boolean closeInput) throws IOException {
 		CRCInputStream crcin = new CRCInputStream(in, new CRC8());
 		
@@ -189,7 +188,7 @@ public class SequenceLog64Map implements Sequence,Closeable {
 	@Override
 	public long get(long index) {
 		if(index<0 || index>=numentries) {
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException(index + " < 0 || " + index + ">= " + numentries);
 		}
 		if(numbits==0) return 0;
 		

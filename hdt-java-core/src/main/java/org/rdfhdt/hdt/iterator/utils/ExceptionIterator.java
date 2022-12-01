@@ -1,5 +1,7 @@
 package org.rdfhdt.hdt.iterator.utils;
 
+import org.rdfhdt.hdt.listener.ProgressListener;
+
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -108,6 +110,25 @@ public interface ExceptionIterator<T, E extends Exception> {
 	 */
 	default <M> ExceptionIterator<M, E> map(MapExceptionIterator.MapWithIdFunction<T, M, E> mappingFunc) {
 		return new MapExceptionIterator<>(this, mappingFunc);
+	}
+
+	/**
+	 * Convert to notification iterator
+	 *
+	 * @param estimatedSize the estimated size
+	 * @param maxSplit the maximum split
+	 * @param message message of the notification
+	 * @param listener listener
+	 * @return notification iterator
+	 */
+	default ExceptionIterator<T, E> notif(long estimatedSize, long maxSplit, String message, ProgressListener listener) {
+		return new NotificationExceptionIterator<>(
+				this,
+				estimatedSize,
+				Math.max(maxSplit, estimatedSize / 10_000),
+				message,
+				listener
+		);
 	}
 
 	/**

@@ -270,6 +270,7 @@ public class Profiler implements AutoCloseable {
 	public Section getMainSection() {
 		if (this.mainSection == null) {
 			this.mainSection = new Section(name);
+			maxSize = Math.max(name.length() + deep * 2, maxSize);
 		}
 		return this.mainSection;
 	}

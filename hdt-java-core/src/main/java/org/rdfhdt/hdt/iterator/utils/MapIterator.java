@@ -5,11 +5,20 @@ import java.util.function.Function;
 
 /**
  * Iterator to map a value to another
+ *
  * @param <M> origin type
  * @param <N> return type
  * @author Antoine Willerval
  */
 public class MapIterator<M, N> implements Iterator<N> {
+	public static <M, N> MapIterator<M, N> of(Iterator<M> base, Function<M, N> mappingFunction) {
+		return new MapIterator<>(base, mappingFunction);
+	}
+
+	public static <M, N> MapIterator<M, N> of(Iterator<M> base, MapWithIdFunction<M, N> mappingFunction) {
+		return new MapIterator<>(base, mappingFunction);
+	}
+
 	private final MapWithIdFunction<M, N> mappingFunction;
 	private final Iterator<M> base;
 	private long index;
@@ -17,6 +26,7 @@ public class MapIterator<M, N> implements Iterator<N> {
 	public MapIterator(Iterator<M> base, Function<M, N> mappingFunction) {
 		this(base, (m, i) -> mappingFunction.apply(m));
 	}
+
 	public MapIterator(Iterator<M> base, MapWithIdFunction<M, N> mappingFunction) {
 		this.base = base;
 		this.mappingFunction = mappingFunction;
@@ -35,6 +45,13 @@ public class MapIterator<M, N> implements Iterator<N> {
 	@Override
 	public void remove() {
 		base.remove();
+	}
+
+	/**
+	 * @return this iterator, but as an exception iterator
+	 */
+	public ExceptionIterator<N, RuntimeException> asExceptionIterator() {
+		return ExceptionIterator.of(this);
 	}
 
 	@FunctionalInterface

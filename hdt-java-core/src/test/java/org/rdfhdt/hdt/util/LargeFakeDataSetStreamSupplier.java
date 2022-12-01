@@ -106,16 +106,27 @@ public class LargeFakeDataSetStreamSupplier {
 		return new LargeFakeDataSetStreamSupplier(Long.MAX_VALUE, maxTriples, seed);
 	}
 
+	/**
+	 * create a supplier without a max count
+	 *
+	 * @param seed       the seed of the supplier, the same seed will create the same supplier
+	 * @return supplier
+	 */
+	public static LargeFakeDataSetStreamSupplier createInfinite(long seed) {
+		return new LargeFakeDataSetStreamSupplier(Long.MAX_VALUE, Long.MAX_VALUE, seed);
+	}
+
 	private final long seed;
 	private Random random;
-	private final long maxSize;
-	private final long maxTriples;
+	private long maxSize;
+	private long maxTriples;
 	public int maxFakeType = 10;
 	public int maxLiteralSize = 2;
 	public int maxElementSplit = Integer.MAX_VALUE;
 	private long slowStream;
-	private boolean sameTripleString;
 	private boolean unicode;
+	private TripleString buffer;
+	private TripleString next;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
 		this.maxSize = maxSize;
@@ -129,6 +140,8 @@ public class LargeFakeDataSetStreamSupplier {
 	 */
 	public void reset() {
 		random = new Random(seed);
+		next = null;
+		buffer = null;
 	}
 
 	/**
@@ -208,9 +221,10 @@ public class LargeFakeDataSetStreamSupplier {
 			out = pout;
 		}
 
+		Iterator<TripleString> it = createTripleStringStream();
+
 		ExceptionThread run = new ExceptionThread(() -> {
 			try (PrintStream ps = new PrintStream(out, true)) {
-				Iterator<TripleString> it = createTripleStringStream();
 				while (it.hasNext()) {
 					it.next().dumpNtriple(ps);
 				}
@@ -322,17 +336,26 @@ public class LargeFakeDataSetStreamSupplier {
 	private class FakeStatementIterator implements Iterator<TripleString> {
 		private long size;
 		private long count = 0;
-		private TripleString buffer;
-		private TripleString next;
+		private boolean init;
+
+		private final long maxTriples;
+		private final long maxSize;
 
 		FakeStatementIterator() {
-			if (sameTripleString) {
-				buffer = new TripleString();
-			}
+			this.maxSize = LargeFakeDataSetStreamSupplier.this.maxSize;
+			this.maxTriples = LargeFakeDataSetStreamSupplier.this.maxTriples;
 		}
 
 		@Override
 		public boolean hasNext() {
+			if (!init) {
+				init = true;
+				if (next != null) {
+					long estimation = estimateTripleSize(next);
+					size += estimation;
+					count++;
+				}
+			}
 			if (size >= maxSize || count > maxTriples) {
 				return false;
 			}
@@ -379,10 +402,30 @@ public class LargeFakeDataSetStreamSupplier {
 			if (!hasNext()) {
 				return null;
 			}
-			TripleString next = this.next;
-			this.next = null;
+			TripleString next = LargeFakeDataSetStreamSupplier.this.next;
+			LargeFakeDataSetStreamSupplier.this.next = null;
 			return next;
 		}
+	}
+
+	/**
+	 * set the max size
+	 * @param maxSize max size
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withMaxSize(long maxSize) {
+		this.maxSize = maxSize;
+		return this;
+	}
+
+	/**
+	 * set the max triples count
+	 * @param maxTriples max triples count
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withMaxTriples(long maxTriples) {
+		this.maxTriples = maxTriples;
+		return this;
 	}
 
 	/**
@@ -448,7 +491,11 @@ public class LargeFakeDataSetStreamSupplier {
 	 * @return this
 	 */
 	public LargeFakeDataSetStreamSupplier withSameTripleString(boolean sameTripleString) {
-		this.sameTripleString = sameTripleString;
+		if (sameTripleString) {
+			buffer = new TripleString();
+		} else {
+			buffer = null;
+		}
 		return this;
 	}
 
