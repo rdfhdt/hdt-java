@@ -9,15 +9,33 @@ import org.rdfhdt.hdt.util.string.ReplazableString;
 
 import java.util.ConcurrentModificationException;
 
+/**
+ * The type Literals utils.
+ */
 public class LiteralsUtils {
+	/**
+	 * The constant DATATYPE_BYTE.
+	 */
 	public static final byte DATATYPE_BYTE = '!';
+	/**
+	 * The constant NO_DATATYPE_STR.
+	 */
 	public static final String NO_DATATYPE_STR = "NO_DATATYPE";
+	/**
+	 * The constant TYPE_OPERATOR.
+	 */
 	public static final ByteString TYPE_OPERATOR = ByteString.of("^^");
+	/**
+	 * The Literal lang type str.
+	 */
 	static final String LITERAL_LANG_TYPE_STR = "<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>";
 	/**
 	 * no datatype type
 	 */
 	public static final ByteString NO_DATATYPE = new CompactString(NO_DATATYPE_STR);
+	/**
+	 * The constant LITERAL_LANG_TYPE.
+	 */
 	public static final ByteString LITERAL_LANG_TYPE = new CompactString(LITERAL_LANG_TYPE_STR);
 
 	/**
@@ -126,6 +144,13 @@ public class LiteralsUtils {
 		}
 	}
 
+	/**
+	 * Is lang type boolean.
+	 *
+	 * @param s     the s
+	 * @param start the start
+	 * @return the boolean
+	 */
 	static boolean isLangType(CharSequence s, int start) {
 		if (start + LITERAL_LANG_TYPE_STR.length() > s.length()) {
 			return false;
@@ -142,9 +167,9 @@ public class LiteralsUtils {
 	/**
 	 * place the type before the literal
 	 *
-	 * <p>example: {@literal "aa"^^<http://type>} -> {@literal ^^<http://type>"aa"}</p>
-	 * <p>example: "aa" -> $"aa"</p>
-	 * <p>example: "aa"@fr -> {@literal ^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>"aa"@fr}</p>
+	 * <p>example: {@literal "aa"^^<http://type>} {@literal ->} {@literal ^^<http://type>"aa"}</p>
+	 * <p>example: "aa" {@literal ->} $"aa"</p>
+	 * <p>example: "aa"@fr {@literal ->} {@literal ^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>"aa"@fr}</p>
 	 *
 	 * @param str the literal
 	 * @return prefixed literal
@@ -179,8 +204,8 @@ public class LiteralsUtils {
 	 * remove the type of a prefixed literal
 	 *
 	 * @param str the prefixed literal
-	 * @return literal
-	 * @see #removeType(CharSequence)
+	 * @return literal char sequence
+	 * @see #removeType(CharSequence) #removeType(CharSequence)
 	 */
 	public static CharSequence removePrefType(CharSequence str) {
 		if (str.length() < 4 || !(str.charAt(0) == '^' && str.charAt(1) == '^')) {
@@ -207,12 +232,12 @@ public class LiteralsUtils {
 	/**
 	 * replace the literal before the type
 	 *
-	 * <p>example: {@literal ^^<http://type>"aa"} -> {@literal "aa"^^<http://type>}</p>
-	 * <p>example: "aa" -> "aa"</p>
-	 * <p>example: {@literal ^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>"aa"@fr} -> "aa"@fr</p>
+	 * <p>example: {@literal ^^<http://type>"aa"} {@literal ->} {@literal "aa"^^<http://type>}</p>
+	 * <p>example: "aa" {@literal ->} "aa"</p>
+	 * <p>example: {@literal ^^<http://www.w3.org/1999/02/22-rdf-syntax-ns#langString>"aa"@fr} {@literal ->} "aa"@fr</p>
 	 *
 	 * @param str the prefixed literal
-	 * @return literal
+	 * @return literal char sequence
 	 */
 	public static CharSequence prefToLit(CharSequence str) {
 		if (str.length() < 1 || !(str.charAt(0) == DATATYPE_BYTE)) {
@@ -265,6 +290,11 @@ public class LiteralsUtils {
 		private int hash;
 		private final ByteString parent;
 
+		/**
+		 * Instantiates a new Embedded uri.
+		 *
+		 * @param parent the parent
+		 */
 		public EmbeddedURI(ByteString parent) {
 			this.parent = parent;
 		}
