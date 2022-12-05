@@ -26,21 +26,18 @@
  */
 package org.rdfhdt.hdt.tools;
 
-import java.io.BufferedInputStream;
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.Parameter;
+import org.rdfhdt.hdt.enums.CompressionType;
+import org.rdfhdt.hdt.hdt.HDTVersion;
+import org.rdfhdt.hdt.options.ControlInformation;
+import org.rdfhdt.hdt.util.io.IOUtil;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.zip.GZIPInputStream;
-
-import org.rdfhdt.hdt.exceptions.ParserException;
-import org.rdfhdt.hdt.hdt.HDTVersion;
-import org.rdfhdt.hdt.options.ControlInformation;
-import org.rdfhdt.hdt.util.io.IOUtil;
-
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 
 /**
  * @author mario.arias
@@ -55,33 +52,28 @@ public class HDTInfo {
 
 	public String hdtInput;
 
-	public void execute() throws ParserException, IOException {
-		InputStream input;
-		if (hdtInput.endsWith(".gz")) {
-			input = new GZIPInputStream(new FileInputStream(hdtInput));
-		} else {
-			input = new BufferedInputStream(new FileInputStream(hdtInput));
+	public void execute() throws IOException {
+		byte[] headerData;
+		try (InputStream input = IOUtil.asUncompressed(new FileInputStream(hdtInput), CompressionType.guess(hdtInput))) {
+			ControlInformation ci = new ControlInformation();
+
+			// Load Global ControlInformation
+			ci.load(input);
+
+			// Load header
+			ci.load(input);
+			int headerSize = (int) ci.getInt("length");
+
+			headerData = IOUtil.readBuffer(input, headerSize, null);
 		}
-		ControlInformation ci = new ControlInformation();
 
-		// Load Global ControlInformation
-		ci.load(input);
-
-		// Load header
-		ci.load(input);
-		int headerSize = (int) ci.getInt("length");
-
-		byte[] headerData = IOUtil.readBuffer(input, headerSize, null);
-		input.close();
-
-		System.out.write(headerData);
-
-		input.close();
+		System.out.write(headerData, 0, headerData.length);
 	}
 
 	public static void main(String[] args) throws Throwable {
 		HDTInfo hdtInfo = new HDTInfo();
-		JCommander com = new JCommander(hdtInfo, args);
+		JCommander com = new JCommander(hdtInfo);
+		com.parse(args);
 		com.setProgramName("hdtInfo");
 		if (showVersion) {
 			System.out.println(HDTVersion.get_version_string("."));

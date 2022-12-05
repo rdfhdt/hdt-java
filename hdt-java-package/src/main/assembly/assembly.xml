@@ -50,7 +50,7 @@
         <fileSet>
             <directory>examples</directory>
             <outputDirectory>examples</outputDirectory>
-        </fileSet>   
+        </fileSet>
 
         <fileSet>
             <directory>bin</directory>
@@ -59,7 +59,17 @@
                 <include>*.bat</include>
             </includes>
             <lineEnding>dos</lineEnding>
-      		<fileMode>0755</fileMode>
+            <fileMode>0755</fileMode>
+        </fileSet>
+
+        <fileSet>
+            <directory>bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.ps1</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+            <fileMode>0755</fileMode>
         </fileSet>
        
     </fileSets>
