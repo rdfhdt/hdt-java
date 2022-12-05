@@ -138,8 +138,7 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 
 	private void loadDiskSequence(HDTOptions spec) throws IOException {
-		String optDisk = spec == null ? null : spec.get("bitmaptriples.sequence.disk");
-		diskSequence = optDisk != null && optDisk.equalsIgnoreCase("true");
+		diskSequence = spec != null && spec.getBoolean(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK, false);
 
 
 		if (diskSequenceLocation != null) {
@@ -148,7 +147,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 		if (diskSequence) {
 			assert spec != null; // happy compiler
-			String optDiskLocation = spec.get("bitmaptriples.sequence.disk.location");
+			String optDiskLocation = spec.get(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_LOCATION);
 			if (optDiskLocation != null && !optDiskLocation.isEmpty()) {
 				diskSequenceLocation = new CreateOnUsePath(Path.of(optDiskLocation));
 			} else {
@@ -157,6 +156,14 @@ public class BitmapTriples implements TriplesPrivate {
 		} else {
 			diskSequenceLocation = null;
 		}
+	}
+
+	public CreateOnUsePath getDiskSequenceLocation() {
+		return diskSequenceLocation;
+	}
+
+	public boolean isUsingDiskSequence() {
+		return diskSequence;
 	}
 
 	public PredicateIndex getPredicateIndex() {
@@ -434,7 +441,7 @@ public class BitmapTriples implements TriplesPrivate {
 		isClosed=false;
 	}
 
-	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity, boolean forceDisk) throws IOException {
+	public DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity, boolean forceDisk) throws IOException {
 		if (forceDisk && !diskSequence) {
 			Path path = Files.createTempFile(name, ".bin");
 			return new SequenceLog64BigDisk(path, size, capacity, true) {
@@ -452,7 +459,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity) {
+	public DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity) {
 		if (diskSequence) {
 			Path path = baseDir.resolve(name);
 			return new SequenceLog64BigDisk(path, size, capacity, true) {
@@ -470,7 +477,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	private ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
+	public ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
 		if (diskSequence) {
 			Path path = baseDir.resolve(name);
 			return new Bitmap375Disk(path, size) {
@@ -489,8 +496,6 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 
 	private void createIndexObjectMemoryEfficient(HDTOptions specIndex) throws IOException {
-		loadDiskSequence(specIndex);
-
 		Path diskLocation;
 		if (diskSequence) {
 			diskLocation = diskSequenceLocation.createOrGetPath();
@@ -779,6 +784,7 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	@Override
 	public void generateIndex(ProgressListener listener, HDTOptions specIndex) throws IOException{
+		loadDiskSequence(specIndex);
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.generate(listener, specIndex);
 		
@@ -1095,15 +1101,15 @@ public class BitmapTriples implements TriplesPrivate {
 		return bitmapIndexZ;
 	}
 
-	private static class CreateOnUsePath implements Closeable {
+	public static class CreateOnUsePath implements Closeable {
 		boolean mkdir;
 		Path path;
 
-		public CreateOnUsePath() {
+		private CreateOnUsePath() {
 			this(null);
 		}
 
-		public CreateOnUsePath(Path path) {
+		private CreateOnUsePath(Path path) {
 			this.path = path;
 		}
 

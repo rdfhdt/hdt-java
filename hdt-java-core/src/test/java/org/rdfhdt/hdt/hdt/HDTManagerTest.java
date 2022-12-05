@@ -33,7 +33,6 @@ import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
 import org.rdfhdt.hdt.util.StopWatch;
-import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.compress.CompressTest;
@@ -124,7 +123,7 @@ public class HDTManagerTest {
 			assertEqualsHDT("Subjects", ed.getSubjects(), ad.getSubjects());
 			assertEqualsHDT("Predicates", ed.getPredicates(), ad.getPredicates());
 			if (ed instanceof MultipleBaseDictionary) {
-				assertTrue(ad instanceof MultipleBaseDictionary);
+				assertTrue("ad not a MSD" + ad.getClass(), ad instanceof MultipleBaseDictionary);
 				MultipleBaseDictionary edm = (MultipleBaseDictionary) ed;
 				MultipleBaseDictionary adm = (MultipleBaseDictionary) ad;
 				Map<? extends CharSequence, DictionarySection> keysE = edm.getAllObjects();
@@ -566,15 +565,17 @@ public class HDTManagerTest {
 	@RunWith(Parameterized.class)
 	public static class DynamicCatTreeTest extends HDTManagerTestBase {
 
-		@Parameterized.Parameters(name = "{5} - {0} kcat: {8}")
+		@Parameterized.Parameters(name = "{5} - {0} kcat: {8}(async:{9})")
 		public static Collection<Object[]> params() {
 			List<Object[]> params = new ArrayList<>();
 			for (String[] dict : diskDict()) {
-				for (long kcat : new long[]{2, 10, 0}) {
-					params.add(new Object[]{"base", SIZE_VALUE * 16, 20, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
-					params.add(new Object[]{"duplicates", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
-					params.add(new Object[]{"large-literals", SIZE_VALUE * 4, 20, 250, false, dict[0], dict[1], SIZE_VALUE, kcat});
-					params.add(new Object[]{"quiet", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat});
+				for (boolean async : new boolean[]{false, true}) {
+					for (long kcat : new long[]{2, 10, 0}) {
+						params.add(new Object[]{"base", SIZE_VALUE * 16, 20, 50, false, dict[0], dict[1], SIZE_VALUE, kcat, async});
+						params.add(new Object[]{"duplicates", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat, async});
+						params.add(new Object[]{"large-literals", SIZE_VALUE * 4, 20, 250, false, dict[0], dict[1], SIZE_VALUE, kcat, async});
+						params.add(new Object[]{"quiet", SIZE_VALUE * 16, 10, 50, false, dict[0], dict[1], SIZE_VALUE, kcat, async});
+					}
 				}
 			}
 			return params;
@@ -598,16 +599,20 @@ public class HDTManagerTest {
 		public long size;
 		@Parameterized.Parameter(8)
 		public long kCat;
+		@Parameterized.Parameter(9)
+		public boolean async;
 
 
 		@Before
 		public void setupSpecs() {
 			spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, dictionaryType);
 			spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, tempDictionaryType);
-			spec.set(HDTOptionsKeys.PROFILER_KEY, true);
 
 			if (kCat != 0) {
 				spec.set(HDTOptionsKeys.LOADER_CATTREE_KCAT, kCat);
+			}
+			if (async) {
+				spec.set(HDTOptionsKeys.LOADER_CATTREE_ASYNC_KEY, true);
 			}
 		}
 

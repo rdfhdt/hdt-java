@@ -111,11 +111,24 @@ public class Profiler implements AutoCloseable {
 	 * @return profiler
 	 */
 	public static Profiler createOrLoadSubSection(String name, HDTOptions options, boolean setId) {
+		return createOrLoadSubSection(name, options, setId, false);
+	}
+
+	/**
+	 * create or load a profiler from the options into a subsection
+	 *
+	 * @param name    name
+	 * @param options options
+	 * @param setId   set the id after loading (if required)
+	 * @param async   use async profiler
+	 * @return profiler
+	 */
+	public static Profiler createOrLoadSubSection(String name, HDTOptions options, boolean setId, boolean async) {
 		// no options, we can't create
 		if (options == null) {
-			return new Profiler(name, null);
+			return new Profiler(name, null, async);
 		}
-		String profiler = options.get(HDTOptionsKeys.PROFILER_KEY);
+		String profiler = options.get(async ? HDTOptionsKeys.PROFILER_ASYNC_KEY : HDTOptionsKeys.PROFILER_KEY);
 		if (profiler != null && profiler.length() != 0 && profiler.charAt(0) == '!') {
 			Profiler prof = getProfilerById(Long.parseLong(profiler.substring(1)));
 			if (prof != null) {
@@ -125,9 +138,9 @@ public class Profiler implements AutoCloseable {
 			}
 		}
 		// no id, not an id
-		Profiler prof = new Profiler(name, options);
+		Profiler prof = new Profiler(name, options, async);
 		if (setId) {
-			options.set(HDTOptionsKeys.PROFILER_KEY, prof);
+			options.set(async ? HDTOptionsKeys.PROFILER_ASYNC_KEY : HDTOptionsKeys.PROFILER_KEY, prof);
 		}
 		return prof;
 	}
@@ -147,7 +160,17 @@ public class Profiler implements AutoCloseable {
 	 * @param name the profiler name
 	 */
 	public Profiler(String name) {
-		this(name, null);
+		this(name, false);
+	}
+
+	/**
+	 * create a disabled profiler
+	 *
+	 * @param name  the profiler name
+	 * @param async async profiler
+	 */
+	public Profiler(String name, boolean async) {
+		this(name, null, async);
 	}
 
 	/**
@@ -157,13 +180,24 @@ public class Profiler implements AutoCloseable {
 	 * @param spec spec (nullable)
 	 */
 	public Profiler(String name, HDTOptions spec) {
+		this(name, spec, false);
+	}
+
+	/**
+	 * create a profiler from specifications
+	 *
+	 * @param name  profiler name
+	 * @param spec  spec (nullable)
+	 * @param async async profiler
+	 */
+	public Profiler(String name, HDTOptions spec, boolean async) {
 		this.id = PROFILER_IDS.incrementAndGet();
 		PROFILER.put(this.id, this);
 		this.name = Objects.requireNonNull(name, "name can't be null!");
 		if (spec != null) {
-			String b = spec.get(HDTOptionsKeys.PROFILER_KEY);
+			String b = spec.get(async ? HDTOptionsKeys.PROFILER_ASYNC_KEY : HDTOptionsKeys.PROFILER_KEY);
 			disabled = b == null || b.length() == 0 || !(b.charAt(0) == '!' || "true".equalsIgnoreCase(b));
-			String profilerOutputLocation = spec.get(HDTOptionsKeys.PROFILER_OUTPUT_KEY);
+			String profilerOutputLocation = spec.get(async ? HDTOptionsKeys.PROFILER_ASYNC_OUTPUT_KEY : HDTOptionsKeys.PROFILER_OUTPUT_KEY);
 			if (profilerOutputLocation != null && !profilerOutputLocation.isEmpty()) {
 				outputPath = Path.of(profilerOutputLocation);
 			}

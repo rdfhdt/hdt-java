@@ -11,6 +11,7 @@ import org.rdfhdt.hdt.hdt.impl.HDTDiskImporter;
 import org.rdfhdt.hdt.hdt.impl.HDTImpl;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterOnePass;
 import org.rdfhdt.hdt.hdt.impl.TempHDTImporterTwoPass;
+import org.rdfhdt.hdt.hdt.impl.diskimport.CatTreeImpl;
 import org.rdfhdt.hdt.hdt.writer.TripleWriterHDT;
 import org.rdfhdt.hdt.header.HeaderUtil;
 import org.rdfhdt.hdt.iterator.utils.FluxStopTripleStringIterator;
@@ -131,7 +132,8 @@ public class HDTManagerImpl extends HDTManager {
 
 				if (!HDTOptionsKeys.LOADER_TYPE_VALUE_DISK.equals(loaderType)) {
 					// memory based implementation, we can only store the NT file
-					return RDFFluxStop.sizeLimit(getMaxChunkSize());
+					// divide because the memory implementation is using a lot of memory
+					return RDFFluxStop.sizeLimit(getMaxChunkSize() / 4);
 				}
 
 				// disk based implementation, we only have to reduce the fault-factor of the map files
@@ -384,189 +386,10 @@ public class HDTManagerImpl extends HDTManager {
 		}
 	}
 
-	/**
-	 * get the previous HDTs to merge with current
-	 *
-	 * @param nextFile if we can create a new HDT after this one
-	 * @param files hdt files to merge
-	 * @param current current created HDT
-	 * @param maxFiles max file to merge
-	 * @return list of HDT to merge with current, mi
-	 */
-	private List<HDTFile> getNextHDTs(boolean nextFile, List<HDTFile> files, HDTFile current, int maxFiles) {
-		if (files.isEmpty()) {
-			return List.of();
-		}
-		List<HDTFile> next = new ArrayList<>();
-		if (nextFile || files.size() > maxFiles) {
-			for (int i = 1; i < maxFiles && i <= files.size(); i++) {
-				HDTFile old = files.get(files.size() - i);
-
-				// check if the chunks are matching
-				if (nextFile && old.getChunks() > current.getChunks()) {
-					break;
-				}
-
-				next.add(old);
-			}
-			if (!nextFile || next.size() == maxFiles - 1) {
-				// we have all the elements, or we have enough file
-				// we remove the elements from the files
-				for (int i = 0; i < next.size(); i++) {
-					files.remove(files.size() - 1);
-				}
-			} else {
-				return List.of();
-			}
-		} else {
-			next.addAll(files);
-			files.clear();
-		}
-		next.add(current);
-		return next;
-	}
-
 	@Override
 	protected HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, Iterator<TripleString> iterator, String baseURI, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
-		Path basePath;
-
-		long khdtCatOpt = hdtFormat.getInt(HDTOptionsKeys.LOADER_CATTREE_KCAT, 1);
-
-		int kHDTCat;
-
-		if (khdtCatOpt > 0 && khdtCatOpt < Integer.MAX_VALUE - 6) {
-			kHDTCat = (int) khdtCatOpt;
-		} else {
-			throw new IllegalArgumentException("Invalid kcat value: " + khdtCatOpt);
-		}
-
-		String baseNameOpt = hdtFormat.get(HDTOptionsKeys.LOADER_CATTREE_LOCATION_KEY);
-
-		if (baseNameOpt == null || baseNameOpt.isEmpty()) {
-			basePath = Files.createTempDirectory("hdt-java-cat-tree");
-		} else {
-			basePath = Path.of(baseNameOpt);
-		}
-
-		// hide the loader type to avoid infinite recursion
-		hdtFormat = new HideHDTOptions(hdtFormat, key -> HDTOptionsKeys.LOADER_TYPE_KEY.equals(key) ? HDTOptionsKeys.LOADER_CATTREE_LOADERTYPE_KEY : key);
-
-		Path futureHDTLocation = Optional.ofNullable(hdtFormat.get(HDTOptionsKeys.LOADER_CATTREE_FUTURE_HDT_LOCATION_KEY)).map(Path::of).orElse(null);
-
-		try (Profiler profiler = Profiler.createOrLoadSubSection("doHDTCatTree", hdtFormat, true)) {
-			FluxStopTripleStringIterator it = new FluxStopTripleStringIterator(iterator, fluxStop);
-
-			List<HDTFile> files = new ArrayList<>();
-
-			long gen = 0;
-			long cat = 0;
-
-			Path hdtStore = basePath.resolve("hdt-store");
-			Path hdtCatLocationPath = basePath.resolve("cat");
-			String hdtCatLocation = hdtCatLocationPath.toAbsolutePath().toString();
-
-			Files.createDirectories(hdtStore);
-			Files.createDirectories(hdtCatLocationPath);
-
-			boolean nextFile;
-			do {
-				// generate the hdt
-				gen++;
-				profiler.pushSection("generateHDT #" + gen);
-				PrefixListener il = PrefixListener.of("gen#" + gen, listener);
-				Path hdtLocation = hdtStore.resolve("hdt-" + gen + ".hdt");
-				// help memory flooding algorithm
-				System.gc();
-				supplier.doGenerateHDT(it, baseURI, hdtFormat, il, hdtLocation);
-				il.clearThreads();
-
-				nextFile = it.hasNextFlux();
-				HDTFile hdtFile = new HDTFile(hdtLocation, 1);
-				profiler.popSection();
-
-				// merge the generated hdt with each block with enough size
-				if (kHDTCat == 1) { // default impl
-					while (!files.isEmpty() && (!nextFile || (files.get(files.size() - 1)).getChunks() <= hdtFile.getChunks())) {
-						HDTFile lastHDTFile = files.remove(files.size() - 1);
-						cat++;
-						profiler.pushSection("catHDT #" + cat);
-						PrefixListener ilc = PrefixListener.of("cat#" + cat, listener);
-						Path hdtCatFileLocation = hdtStore.resolve("hdtcat-" + cat + ".hdt");
-						try (HDT abcat = HDTManager.catHDT(
-								hdtCatLocation,
-								lastHDTFile.getHdtFile().toAbsolutePath().toString(),
-								hdtFile.getHdtFile().toAbsolutePath().toString(),
-								hdtFormat, ilc)) {
-							abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), ilc);
-						}
-						ilc.clearThreads();
-						// delete previous chunks
-						Files.delete(lastHDTFile.getHdtFile());
-						Files.delete(hdtFile.getHdtFile());
-						// note the new hdt file and the number of chunks
-						hdtFile = new HDTFile(hdtCatFileLocation, lastHDTFile.getChunks() + hdtFile.getChunks());
-
-						profiler.popSection();
-					}
-				} else { // kcat
-					List<HDTFile> nextHDTs;
-
-					while (!(nextHDTs = getNextHDTs(nextFile, files, hdtFile, kHDTCat)).isEmpty()) {
-						// merge all the files
-						cat++;
-						profiler.pushSection("catHDT #" + cat);
-						PrefixListener ilc = PrefixListener.of("cat#" + cat, listener);
-						Path hdtCatFileLocation = hdtStore.resolve("hdtcat-" + cat + ".hdt");
-
-						assert nextHDTs.size() > 1;
-
-						try (HDT abcat = HDTManager.catHDT(
-								nextHDTs.stream().map(f -> f.getHdtFile().toAbsolutePath().toString()).collect(Collectors.toList()),
-								hdtFormat,
-								ilc)) {
-							abcat.saveToHDT(hdtCatFileLocation.toAbsolutePath().toString(), ilc);
-						}
-						ilc.clearThreads();
-
-						// delete previous chunks
-						for (HDTFile nextHDT : nextHDTs) {
-							Files.delete(nextHDT.getHdtFile());
-						}
-						// note the new hdt file and the number of chunks
-						long chunks = nextHDTs.stream().mapToLong(HDTFile::getChunks).sum();
-						hdtFile = new HDTFile(hdtCatFileLocation, chunks);
-
-						profiler.popSection();
-					}
-				}
-				assert nextFile || files.isEmpty() : "no data remaining, but contains files";
-				files.add(hdtFile);
-			} while (nextFile);
-
-			listener.notifyProgress(100, "done, loading HDT");
-
-			Path hdtFile = files.get(0).hdtFile;
-
-			assert files.size() == 1 : "more than 1 file: " + files;
-			assert cat < gen : "more cat than gen";
-			assert files.get(0).getChunks() == gen : "gen size isn't the same as excepted: " + files.get(0).getChunks() + " != " + gen;
-
-			try {
-				// if a future HDT location has been asked, move to it and map the HDT
-				if (futureHDTLocation != null) {
-					Files.createDirectories(futureHDTLocation.toAbsolutePath().getParent());
-					Files.deleteIfExists(futureHDTLocation);
-					Files.move(hdtFile, futureHDTLocation);
-					return HDTManager.mapHDT(futureHDTLocation.toAbsolutePath().toString());
-				}
-
-				// if no future location has been asked, load the HDT and delete it after
-				return HDTManager.loadHDT(hdtFile.toAbsolutePath().toString());
-			} finally {
-				Files.deleteIfExists(hdtFile);
-				profiler.stop();
-				profiler.writeProfiling();
-			}
+		try (CatTreeImpl tree = new CatTreeImpl(hdtFormat)) {
+			return tree.doGeneration(fluxStop, supplier, iterator, baseURI, listener);
 		}
 	}
 
