@@ -16,7 +16,7 @@ public class HideHDTOptions implements HDTOptions {
 
     /**
      * @param spec   wrapped options
-     * @param mapper mapping function (key) -> newKey?
+     * @param mapper mapping function (key) {@literal ->} newKey?
      */
     public HideHDTOptions(HDTOptions spec, Function<String, String> mapper) {
         this.spec = spec;
