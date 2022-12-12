@@ -6,6 +6,9 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.dictionary.DictionarySection;
@@ -26,16 +29,28 @@ import org.rdfhdt.hdt.util.io.AbstractMapMemoryTest;
 import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.string.ByteString;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(Parameterized.class)
 public class KCatMergerTest extends AbstractMapMemoryTest {
@@ -301,6 +316,227 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
                     // assert equals between the dictionaries
                     assertNotEquals(0, actualHDT.getDictionary().getShared().getNumberOfElements());
                     HDTManagerTest.HDTManagerTestBase.assertEqualsHDT(exceptedHDT, actualHDT);
+                }
+            }
+        } finally {
+            PathUtils.deleteDirectory(root);
+        }
+    }
+
+    @Test
+    public void catDiffTest() throws ParserException, IOException, NotFoundException {
+        Path root = tempDir.getRoot().toPath();
+        try {
+            // number of HDTs
+            int countPerHDT = 1000;
+            Random rnd = new Random(58);
+
+            // create the config
+            HDTOptions spec = new HDTOptionsBase();
+            if (multi) {
+                spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
+                spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
+            }
+
+            if (map) {
+                spec.set(HDTOptionsKeys.HDTCAT_FUTURE_LOCATION, root.resolve("futurehc.hdt").toAbsolutePath());
+            }
+
+            // create "kcat" fake HDTs
+            LargeFakeDataSetStreamSupplier s = LargeFakeDataSetStreamSupplier
+                    .createInfinite(42)
+                    .withMaxElementSplit(50)
+                    .withUnicode(unicode);
+
+            Random rndDelete = new Random(45678);
+            List<String> hdts = new ArrayList<>();
+            List<String> hdtsDiff = new ArrayList<>();
+            List<Bitmap> deleteBitmaps = new ArrayList<>();
+            String diffwork = root.resolve("diffwork").toAbsolutePath().toString();
+            for (int i = 0; i < kcat; i++) {
+                String location = root.resolve("hdt" + i + ".hdt").toAbsolutePath().toString();
+                String locationPreDiff = root.resolve("hdt" + i + "pre.hdt").toAbsolutePath().toString();
+                hdtsDiff.add(location);
+                hdts.add(locationPreDiff);
+                int hdtSize = countPerHDT / 2 + rnd.nextInt(countPerHDT);
+                s.withMaxTriples(hdtSize)
+                        .createAndSaveFakeHDT(spec, locationPreDiff);
+
+                ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(hdtSize + 1);
+                deleteBitmaps.add(bitmap);
+
+                int toDelete = rndDelete.nextInt(hdtSize);
+                for (int j = 0; j < toDelete; j++) {
+                    int index = rndDelete.nextInt(hdtSize) + 1;
+                    bitmap.set(index, true);
+                }
+
+                try (HDT diffHDTBit = HDTManager.diffHDTBit(
+                        diffwork,
+                        locationPreDiff,
+                        bitmap,
+                        spec,
+                        null
+                )) {
+                    diffHDTBit.saveToHDT(location, null);
+                }
+            }
+
+
+            // create the excepted HDT from previous algorithm
+            Path fatcathdt = root.resolve("fatcat.hdt");
+            try (HDT hdt = HDTManager.catHDT(hdtsDiff, spec, null)) {
+                hdt.saveToHDT(fatcathdt.toAbsolutePath().toString(), null);
+            }
+
+            // create dictionary and write sections
+            // map the excepted hdt
+            try (HDT actualHDT = HDTManager.diffBitCatHDT(hdts, deleteBitmaps, spec, null)) {
+                try (HDT exceptedHDT = HDTManager.mapHDT(fatcathdt.toAbsolutePath().toString())) {
+                    // assert equals between the dictionaries
+                    assertNotEquals(0, actualHDT.getDictionary().getShared().getNumberOfElements());
+                    HDTManagerTest.HDTManagerTestBase.assertEqualsHDT(exceptedHDT, actualHDT);
+                }
+            }
+        } finally {
+            PathUtils.deleteDirectory(root);
+        }
+    }
+
+    @Test
+    public void diffMergerTest() throws ParserException, IOException, InterruptedException {
+        Path root = tempDir.getRoot().toPath();
+        try {
+            // number of HDTs
+            int countPerHDT = 1000;
+            Random rnd = new Random(58);
+
+            // create the config
+            HDTOptions spec = new HDTOptionsBase();
+            if (multi) {
+                spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
+                spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
+            }
+
+            if (map) {
+                spec.set(HDTOptionsKeys.HDTCAT_FUTURE_LOCATION, root.resolve("futurehc.hdt").toAbsolutePath());
+            }
+
+            // create "kcat" fake HDTs
+            LargeFakeDataSetStreamSupplier s = LargeFakeDataSetStreamSupplier
+                    .createInfinite(42)
+                    .withMaxElementSplit(50)
+                    .withUnicode(unicode);
+
+            Random rndDelete = new Random(45678);
+            List<String> hdts = new ArrayList<>();
+            List<String> hdtsDiff = new ArrayList<>();
+            List<Bitmap> deleteBitmaps = new ArrayList<>();
+            String diffwork = root.resolve("diffwork").toAbsolutePath().toString();
+            for (int i = 0; i < kcat; i++) {
+                String location = root.resolve("hdt" + i + ".hdt").toAbsolutePath().toString();
+                String locationPreDiff = root.resolve("hdt" + i + "pre.hdt").toAbsolutePath().toString();
+                hdtsDiff.add(location);
+                hdts.add(locationPreDiff);
+                int hdtSize = countPerHDT / 2 + rnd.nextInt(countPerHDT);
+                s.withMaxTriples(hdtSize)
+                        .createAndSaveFakeHDT(spec, locationPreDiff);
+
+                ModifiableBitmap bitmap = BitmapFactory.createRWBitmap(hdtSize + 1);
+                deleteBitmaps.add(bitmap);
+
+                int toDelete = rndDelete.nextInt(hdtSize);
+                for (int j = 0; j < toDelete; j++) {
+                    int index = rndDelete.nextInt(hdtSize) + 1;
+                    bitmap.set(index, true);
+                }
+
+                try (HDT diffHDTBit = HDTManager.diffHDTBit(
+                        diffwork,
+                        locationPreDiff,
+                        bitmap,
+                        spec,
+                        null
+                )) {
+                    diffHDTBit.saveToHDT(location, null);
+                }
+            }
+
+
+            // create the excepted HDT from previous algorithm
+            Path fatcathdt = root.resolve("fatcat.hdt");
+            try (HDT hdt = HDTManager.catHDT(hdtsDiff, spec, null)) {
+                hdt.saveToHDT(fatcathdt.toAbsolutePath().toString(), null);
+            }
+
+
+            // create dictionary and write sections
+            Path dictFile = root.resolve("dict");
+            List<CharSequence> sub = new ArrayList<>();
+            try (KCatImpl impl = new KCatImpl(hdts, deleteBitmaps, spec, null)) {
+                try (KCatMerger merger = impl.createMerger(null)) {
+                    assertEquals(multi, merger.typedHDT);
+                    merger.startMerger();
+                    // create
+                    DictionaryPrivate dict = merger.buildDictionary();
+                    try (OutputStream stream = new BufferedOutputStream(Files.newOutputStream(dictFile))) {
+                        writeSection(dict.getShared(), stream);
+                        writeSection(dict.getSubjects(), stream);
+                        writeSection(dict.getPredicates(), stream);
+                        if (multi) {
+                            for (Map.Entry<? extends CharSequence, DictionarySection> e : dict.getAllObjects().entrySet()) {
+                                CharSequence key = e.getKey();
+                                sub.add(key);
+                                DictionarySection sec = e.getValue();
+                                writeSection(sec, stream);
+                            }
+                        } else {
+                            writeSection(dict.getObjects(), stream);
+                        }
+                    }
+                }
+            }
+            try (InputStream stream = new BufferedInputStream(Files.newInputStream(dictFile))) {
+                // read the sections
+                try (DictionarySection sh = loadSection(stream);
+                     DictionarySection su = loadSection(stream);
+                     DictionarySection pr = loadSection(stream)) {
+                    Map<? extends CharSequence, DictionarySection> dictionarySectionMap;
+                    DictionarySection ob;
+                    if (multi) {
+                        ob = null;
+                        dictionarySectionMap = loadMultiSection(sub, stream);
+                    } else {
+                        dictionarySectionMap = Map.of();
+                        ob = loadSection(stream);
+                    }
+                    try {
+                        // map the excepted hdt
+                        try (HDT exceptedHDT = HDTManager.mapHDT(fatcathdt.toAbsolutePath().toString())) {
+                            Dictionary exceptedDict = exceptedHDT.getDictionary();
+                            assertNotEquals("Invalid test, shared section empty", 0, exceptedHDT.getDictionary().getShared().getNumberOfElements());
+                            // assert equals between the dictionaries
+                            HDTManagerTest.HDTManagerTestBase.assertEqualsHDT("Shared", exceptedDict.getShared(), sh);
+                            HDTManagerTest.HDTManagerTestBase.assertEqualsHDT("Subjects", exceptedDict.getSubjects(), su);
+                            HDTManagerTest.HDTManagerTestBase.assertEqualsHDT("Predicates", exceptedDict.getPredicates(), pr);
+                            if (multi) {
+                                Map<? extends CharSequence, DictionarySection> exceptedDictSub = exceptedDict.getAllObjects();
+                                dictionarySectionMap.forEach((key, sec) -> {
+                                    DictionarySection subSec = exceptedDictSub.get(key);
+                                    assertNotNull("sub#" + key + " wasn't found", subSec);
+                                    HDTManagerTest.HDTManagerTestBase.assertEqualsHDT("Section#" + key, subSec, sec);
+                                });
+                            } else {
+                                assert ob != null;
+                                HDTManagerTest.HDTManagerTestBase.assertEqualsHDT("Objects", exceptedDict.getObjects(), ob);
+                            }
+                        }
+                    } finally {
+                        Closer
+                                .of(ob)
+                                .with(dictionarySectionMap.values())
+                                .close();
+                    }
                 }
             }
         } finally {

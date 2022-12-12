@@ -199,13 +199,20 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
             throw new RuntimeException(e);
         }
 
-        if(value) {
-            words.set(wordIndex, words.get(wordIndex) | (1L << bitIndex));
+        long wordText = words.get(wordIndex);
+        long wordReplaced;
+        if (value) {
+            wordReplaced = wordText | (1L << bitIndex);
         } else {
-            words.set(wordIndex,words.get(wordIndex) & ~(1L << bitIndex));
+            wordReplaced = wordText & ~(1L << bitIndex);
         }
 
-        this.numbits = Math.max(this.numbits, bitIndex+1);
+        if (wordText != wordReplaced) {
+            // we need to write something
+            words.set(wordIndex, wordReplaced);
+        }
+
+        this.numbits = Math.max(this.numbits, bitIndex + 1);
     }
 
     @Override

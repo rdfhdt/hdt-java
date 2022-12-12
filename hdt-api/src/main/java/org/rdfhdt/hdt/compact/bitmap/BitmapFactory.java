@@ -71,8 +71,16 @@ public abstract class BitmapFactory {
         return getInstance().doCreateBitmap(input);
     }
 
+    /**
+     * @return an empty bitmap
+     */
+    public static Bitmap empty() {
+        return getInstance().doEmpty();
+    }
+
     // Abstract methods for the current implementation
     protected abstract ModifiableBitmap doCreateModifiableBitmap(String type);
     protected abstract ModifiableBitmap doCreateRWModifiableBitmap(long size);
     protected abstract Bitmap doCreateBitmap(InputStream input) throws IOException;
+    protected abstract Bitmap doEmpty();
 }

@@ -584,6 +584,21 @@ public class HDTManagerImpl extends HDTManager {
 		}
 	}
 
+	@Override
+	protected HDT doHDTDiffBitCat(List<String> hdtFileNames, List<? extends Bitmap> deleteBitmaps, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		if (hdtFileNames.isEmpty()) {
+			return HDTFactory.createHDT(hdtFormat);
+		}
+
+		if (hdtFileNames.size() != deleteBitmaps.size()) {
+			throw new IllegalArgumentException("hdtFileNames.size() != deleteBitmaps.size()");
+		}
+
+		try (KCatImpl kCat = new KCatImpl(hdtFileNames, deleteBitmaps, hdtFormat, listener)) {
+			return kCat.cat();
+		}
+	}
+
 	private static class HDTFile {
 		private final Path hdtFile;
 		private final long chunks;

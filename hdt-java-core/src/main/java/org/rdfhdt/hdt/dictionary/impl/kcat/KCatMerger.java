@@ -1,5 +1,7 @@
 package org.rdfhdt.hdt.dictionary.impl.kcat;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryKCat;
@@ -10,6 +12,7 @@ import org.rdfhdt.hdt.dictionary.impl.section.OneReadDictionarySection;
 import org.rdfhdt.hdt.dictionary.impl.section.WriteDictionarySection;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
+import org.rdfhdt.hdt.iterator.utils.MapFilterIterator;
 import org.rdfhdt.hdt.iterator.utils.MapIterator;
 import org.rdfhdt.hdt.iterator.utils.MergeExceptionIterator;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
@@ -90,7 +93,7 @@ public class KCatMerger implements AutoCloseable {
 	 * @param spec           spec to config the HDT
 	 * @throws java.io.IOException io exception
 	 */
-	public KCatMerger(HDT[] hdts, CloseSuppressPath location, ProgressListener listener, int bufferSize, String dictionaryType, HDTOptions spec) throws IOException {
+	public KCatMerger(HDT[] hdts, BitmapTriple[] deletedTriple, CloseSuppressPath location, ProgressListener listener, int bufferSize, String dictionaryType, HDTOptions spec) throws IOException {
 		this.hdts = hdts;
 		this.listener = listener;
 		this.dictionaryType = dictionaryType;
@@ -119,7 +122,8 @@ public class KCatMerger implements AutoCloseable {
 			sizeS += cat.countSubjects();
 			sizeP += cat.countPredicates();
 			sizeO += cat.countObjects();
-			sizeONoTyped += cat.getObjectSection().getNumberOfElements();
+			DictionarySection objectSection = cat.getObjectSection();
+			sizeONoTyped += objectSection == null ? 0 : objectSection.getNumberOfElements();
 			sizeShared += cat.countShared();
 
 			long start = 1L + cat.countShared();
@@ -165,32 +169,80 @@ public class KCatMerger implements AutoCloseable {
 							hdtIndex,
 							c.getSubjectSection().getSortedEntries(),
 							c.getSharedSection().getSortedEntries(),
+							deletedTriple == null ? null : deletedTriple[hdtIndex].getSubjects(),
 							c.countShared()
 					)
 			).notif(sizeS, 20, "Merge subjects", listener);
 
 			sortedObject = mergeSection(
 					cats,
-					(hdtIndex, c) -> createMergeIt(
-							hdtIndex,
-							c.getObjectSection().getSortedEntries(),
-							c.getSharedSection().getSortedEntries(),
-							c.objectShift()
-					)
+					(hdtIndex, c) -> {
+						DictionarySection section = c.getObjectSection();
+						return createMergeIt(
+								hdtIndex,
+								section == null ? new Iterator<>() {
+									@Override
+									public boolean hasNext() {
+										return false;
+									}
+
+									@Override
+									public CharSequence next() {
+										return null;
+									}
+								} : section.getSortedEntries(),
+								c.getSharedSection().getSortedEntries(),
+								deletedTriple == null ? null : deletedTriple[hdtIndex].getObjects(),
+								c.objectShift()
+						);
+					}
 			).notif(sizeONoTyped, 20, "Merge objects", listener);
 
 			// merge the other sections
 			sortedPredicates = mergeSection(cats, (hdtIndex, c) -> {
 				ExceptionIterator<? extends CharSequence, RuntimeException> of = ExceptionIterator.of(c.getPredicateSection().getSortedEntries());
-				return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element))));
+				if (deletedTriple != null) {
+					ModifiableBitmap deleteBitmap = deletedTriple[hdtIndex].getPredicates();
+					return of.mapFiltered(((element, index) -> {
+						if (deleteBitmap.access(index + 1)) {
+							return null;
+						}
+						return new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element));
+					}));
+				} else {
+					return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element))));
+				}
 			}).notif(sizeP, 20, "Merge predicates", listener);
 
 			sortedSubSections = new TreeMap<>();
 			// create a merge section for each section
-			subSections.forEach((key, sections) -> sortedSubSections.put(key, mergeSection(sections, (hdtIndex, pre) -> {
-				ExceptionIterator<? extends CharSequence, RuntimeException> of = ExceptionIterator.of(pre.getSortedEntries());
-				return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, pre.getStart() + index, ByteString.of(element))));
-			}).notif(Arrays.stream(sections).mapToLong(s -> s == null || s.section == null ? 0 : s.section.getNumberOfElements()).sum(), 20, "Merge typed objects", listener)));
+			subSections.forEach((key, sections) ->
+					sortedSubSections.put(key,
+							mergeSection(sections,
+									(hdtIndex, pre) -> {
+										ExceptionIterator<? extends CharSequence, RuntimeException> of = ExceptionIterator.of(pre.getSortedEntries());
+
+										if (deletedTriple != null) {
+											ModifiableBitmap deleteBitmap = deletedTriple[hdtIndex].getObjects();
+											return of.mapFiltered(((element, index) -> {
+												if (deleteBitmap.access(pre.getStart() + index)) {
+													return null;
+												}
+												return new LocatedIndexedNode(hdtIndex, pre.getStart() + index, ByteString.of(element));
+											}));
+										} else {
+											return of.map(((element, index) -> new LocatedIndexedNode(hdtIndex, pre.getStart() + index, ByteString.of(element))));
+										}
+									})
+									.notif(Arrays.stream(sections)
+													.mapToLong(s -> s == null || s.section == null ? 0 : s.section.getNumberOfElements())
+													.sum(),
+											20,
+											"Merge typed objects",
+											listener
+									)
+					)
+			);
 
 			// convert the dupe buffer streams to byte string streams
 
@@ -261,15 +313,34 @@ public class KCatMerger implements AutoCloseable {
 		}
 	}
 
-	private static ExceptionIterator<LocatedIndexedNode, RuntimeException> createMergeIt(int hdtIndex, Iterator<? extends CharSequence> subjectObject, Iterator<? extends CharSequence> shared, long sharedCount) {
-		return MergeExceptionIterator.buildOfTree(List.of(
-				MapIterator.of(subjectObject, (element, index) ->
-								new LocatedIndexedNode(hdtIndex, sharedCount + index + 1, ByteString.of(element)))
-						.asExceptionIterator(),
-				MapIterator.of(shared, (element, index) ->
-								new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element)))
-						.asExceptionIterator()
-		));
+	private static ExceptionIterator<LocatedIndexedNode, RuntimeException> createMergeIt(int hdtIndex, Iterator<? extends CharSequence> subjectObject, Iterator<? extends CharSequence> shared, Bitmap deleteBitmap, long sharedCount) {
+		if (deleteBitmap != null) {
+			return MergeExceptionIterator.buildOfTree(List.of(
+					MapFilterIterator.of(subjectObject, (element, index) -> {
+								if (deleteBitmap.access(sharedCount + index + 1)) {
+									return null;
+								}
+								return new LocatedIndexedNode(hdtIndex, sharedCount + index + 1, ByteString.of(element));
+							})
+							.asExceptionIterator(),
+					MapFilterIterator.of(shared, (element, index) -> {
+								if (deleteBitmap.access(index + 1)) {
+									return null;
+								}
+								return new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element));
+							})
+							.asExceptionIterator()
+			));
+		} else {
+			return MergeExceptionIterator.buildOfTree(List.of(
+					MapIterator.of(subjectObject, (element, index) ->
+									new LocatedIndexedNode(hdtIndex, sharedCount + index + 1, ByteString.of(element)))
+							.asExceptionIterator(),
+					MapIterator.of(shared, (element, index) ->
+									new LocatedIndexedNode(hdtIndex, index + 1, ByteString.of(element)))
+							.asExceptionIterator()
+			));
+		}
 	}
 
 	/**
@@ -507,13 +578,11 @@ public class KCatMerger implements AutoCloseable {
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		} finally {
-			Closer.of(sectionSubject, sectionPredicate, sectionObject, sectionShared)
-					.with(sectionSub == null ? List.of() : sectionSub.values())
-					.with(subjectsMaps)
-					.with(predicatesMaps)
-					.with(objectsMaps)
-					.with(locations)
-					.close();
+			Closer.closeAll(
+					sectionSubject, sectionPredicate, sectionObject, sectionShared,
+					sectionSub, subjectsMaps, predicatesMaps, objectsMaps,
+					locations
+			);
 		}
 	}
 

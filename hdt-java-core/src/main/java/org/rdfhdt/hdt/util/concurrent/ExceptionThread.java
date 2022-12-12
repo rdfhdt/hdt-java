@@ -1,11 +1,6 @@
 package org.rdfhdt.hdt.util.concurrent;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Stack;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Thread allowing exception and returning it when joining it with {@link #joinAndCrashIfRequired()} or by using
@@ -15,59 +10,6 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Antoine Willerval
  */
 public class ExceptionThread extends Thread {
-	private static final AtomicLong ID_COUNT = new AtomicLong();
-	static boolean debug;
-	static final Stack<Map<Long, Throwable>> DEBUG_STACK = new Stack<>();
-
-	/**
-	 * start the debug of the thread
-	 */
-	public static void startDebug() {
-		debug = true;
-		if (!DEBUG_STACK.isEmpty()) {
-			throw new IllegalArgumentException("non empty debug stack, bad config?");
-		}
-		pushDebugPoint();
-	}
-
-	/**
-	 * push a new sub-set of debug thread
-	 */
-	public static void pushDebugPoint() {
-		DEBUG_STACK.push(Collections.synchronizedMap(new HashMap<>()));
-	}
-
-	/**
-	 * push a new sub-set of debug thread
-	 *
-	 * @param name name to id the pop
-	 */
-	public static void popDebugPoint(String name) {
-		if (DEBUG_STACK.isEmpty()) {
-			throw new IllegalArgumentException("empty debug stack, bad config?");
-		}
-
-		Map<Long, Throwable> map = DEBUG_STACK.pop();
-		if (map.isEmpty()) {
-			return;
-		}
-
-		AssertionError error = new AssertionError("Non empty stack at point " + name);
-
-		map.values().forEach(error::addSuppressed);
-
-		throw error;
-	}
-
-	/**
-	 * end the debug of the thread
-	 */
-	public static void endDebug() {
-		debug = false;
-		popDebugPoint("end debug");
-		DEBUG_STACK.clear();
-	}
-
 	/**
 	 * create exception threads of multiple runnables
 	 *
@@ -115,8 +57,6 @@ public class ExceptionThread extends Thread {
 	private final ExceptionRunnable target;
 	private ExceptionThread next;
 	private ExceptionThread prev;
-	private final Map<Long, Throwable> debugMap;
-	private final long debugId;
 
 	public ExceptionThread(String name) {
 		this(null, name);
@@ -124,18 +64,6 @@ public class ExceptionThread extends Thread {
 
 	public ExceptionThread(ExceptionRunnable target, String name) {
 		super(name);
-		debugId = ID_COUNT.getAndIncrement();
-
-		if (debug) {
-			debugMap = DEBUG_STACK.peek();
-			if (debugMap != null) {
-				// debug
-				debugMap.put(debugId, new Throwable("ExceptionThread #" + name));
-			}
-		} else {
-			debugMap = null;
-		}
-
 		this.target = Objects.requireNonNullElse(target, this::runException);
 	}
 
@@ -204,10 +132,6 @@ public class ExceptionThread extends Thread {
 			}
 			if (this.prev != null) {
 				this.prev.interruptBackward(t);
-			}
-		} finally {
-			if (debugMap != null) {
-				debugMap.remove(debugId);
 			}
 		}
 	}

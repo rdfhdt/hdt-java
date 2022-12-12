@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.iterator.utils;
 
 import java.util.Iterator;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Iterator to map a value to another

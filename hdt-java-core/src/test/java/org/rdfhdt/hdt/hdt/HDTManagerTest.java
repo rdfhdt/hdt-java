@@ -99,12 +99,10 @@ public class HDTManagerTest {
 			spec = new HDTSpecification();
 			rootFolder = tempDir.newFolder().toPath();
 			spec.set(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY, rootFolder.toAbsolutePath().toString());
-			ExceptionThread.startDebug();
 		}
 
 		@After
 		public void closeManager() throws IOException {
-			ExceptionThread.endDebug();
 			if (Files.exists(rootFolder)) {
 				try (Stream<Path> s = Files.list(rootFolder)) {
 					// might be wrong with some OS hidden files?

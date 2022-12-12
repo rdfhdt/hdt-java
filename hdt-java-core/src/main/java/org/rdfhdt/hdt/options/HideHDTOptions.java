@@ -1,8 +1,6 @@
 package org.rdfhdt.hdt.options;
 
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -13,6 +11,7 @@ import java.util.function.Function;
 public class HideHDTOptions implements HDTOptions {
     private final HDTOptions spec;
     private final Function<String, String> mapper;
+    private final Map<String, String> customOptions = new HashMap<>();
 
     /**
      * @param spec   wrapped options
@@ -21,6 +20,20 @@ public class HideHDTOptions implements HDTOptions {
     public HideHDTOptions(HDTOptions spec, Function<String, String> mapper) {
         this.spec = spec;
         this.mapper = mapper;
+    }
+
+    /**
+     * override a value from the wrapped, set to null to cancel the override
+     *
+     * @param key key
+     * @param value value, null to disable the override
+     */
+    public void overrideValue(String key, Object value) {
+        if (value != null) {
+            customOptions.put(key, String.valueOf(value));
+        } else {
+            customOptions.remove(key);
+        }
     }
 
     @Override
@@ -34,27 +47,14 @@ public class HideHDTOptions implements HDTOptions {
 
     @Override
     public String get(String key) {
-        return spec.get(map(key));
+        String newKey = map(key);
+        String overrideValue = customOptions.get(newKey);
+        return overrideValue != null ? overrideValue : spec.get(newKey);
     }
 
     @Override
     public void set(String key, String value) {
         spec.set(map(key), value);
-    }
-
-    @Override
-    public void setOptions(String options) {
-        spec.setOptions(options);
-    }
-
-    @Override
-    public long getInt(String key) {
-        return spec.getInt(map(key));
-    }
-
-    @Override
-    public void setInt(String key, long value) {
-        spec.setInt(map(key), value);
     }
 
     @Override

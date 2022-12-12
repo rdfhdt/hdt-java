@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 
 /**
  * alternative iterator with exception throwing
+ *
  * @param <T> the iterator type
  * @param <E> the allowed exception
  * @author Antoine Willerval
@@ -17,9 +18,11 @@ public interface ExceptionIterator<T, E extends Exception> {
 	interface ExceptionConsumer<T, E extends Exception> {
 		void consume(T element) throws E;
 	}
+
 	/**
 	 * create an exception iterator from a basic iterator
-	 * @param it the iterator the wrap
+	 *
+	 * @param it  the iterator the wrap
 	 * @param <T> the iterator type
 	 * @param <E> the exception to allow
 	 * @return exception iterator
@@ -41,8 +44,11 @@ public interface ExceptionIterator<T, E extends Exception> {
 				it.remove();
 			}
 		};
-	}	/**
+	}
+
+	/**
 	 * create an empty iterator
+	 *
 	 * @param <T> the iterator type
 	 * @param <E> the exception to allow
 	 * @return exception iterator
@@ -76,6 +82,7 @@ public interface ExceptionIterator<T, E extends Exception> {
 
 	/**
 	 * remove the last element returned by the iterator
+	 *
 	 * @throws E exception triggered by the implementation
 	 */
 	default void remove() throws E {
@@ -84,6 +91,7 @@ public interface ExceptionIterator<T, E extends Exception> {
 
 	/**
 	 * loop over all the elements
+	 *
 	 * @param action the action to handle the element
 	 * @throws E exception triggered by the implementation
 	 */
@@ -95,17 +103,20 @@ public interface ExceptionIterator<T, E extends Exception> {
 
 	/**
 	 * map this iterator with a function
+	 *
 	 * @param mappingFunc the mapping function
-	 * @param <M> the new iterator type
+	 * @param <M>         the new iterator type
 	 * @return iterator
 	 */
 	default <M> ExceptionIterator<M, E> map(MapExceptionIterator.ExceptionFunction<T, M, E> mappingFunc) {
 		return new MapExceptionIterator<>(this, mappingFunc);
 	}
+
 	/**
 	 * map this iterator with a function
+	 *
 	 * @param mappingFunc the mapping function
-	 * @param <M> the new iterator type
+	 * @param <M>         the new iterator type
 	 * @return iterator
 	 */
 	default <M> ExceptionIterator<M, E> map(MapExceptionIterator.MapWithIdFunction<T, M, E> mappingFunc) {
@@ -113,12 +124,34 @@ public interface ExceptionIterator<T, E extends Exception> {
 	}
 
 	/**
+	 * map this iterator with a function
+	 *
+	 * @param mappingFunc the mapping function
+	 * @param <M>         the new iterator type
+	 * @return iterator
+	 */
+	default <M> ExceptionIterator<M, E> mapFiltered(FilterMapExceptionIterator.ExceptionFunction<T, M, E> mappingFunc) {
+		return new FilterMapExceptionIterator<>(this, mappingFunc);
+	}
+
+	/**
+	 * map this iterator with a function
+	 *
+	 * @param mappingFunc the mapping function
+	 * @param <M>         the new iterator type
+	 * @return iterator
+	 */
+	default <M> ExceptionIterator<M, E> mapFiltered(FilterMapExceptionIterator.MapWithIdFunction<T, M, E> mappingFunc) {
+		return new FilterMapExceptionIterator<>(this, mappingFunc);
+	}
+
+	/**
 	 * Convert to notification iterator
 	 *
 	 * @param estimatedSize the estimated size
-	 * @param maxSplit the maximum split
-	 * @param message message of the notification
-	 * @param listener listener
+	 * @param maxSplit      the maximum split
+	 * @param message       message of the notification
+	 * @param listener      listener
 	 * @return notification iterator
 	 */
 	default ExceptionIterator<T, E> notif(long estimatedSize, long maxSplit, String message, ProgressListener listener) {
@@ -133,6 +166,7 @@ public interface ExceptionIterator<T, E extends Exception> {
 
 	/**
 	 * convert this exception iterator to a base iterator and convert the exception to RuntimeException
+	 *
 	 * @return iterator
 	 */
 	default Iterator<T> asIterator() {
