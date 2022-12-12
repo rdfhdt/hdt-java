@@ -75,6 +75,10 @@ public class MultipleSectionDictionaryKCat implements DictionaryKCat {
 
 	@Override
 	public long objectShift() {
-		return countObjects() - getObjectSection().getNumberOfElements();
+		DictionarySection section = getObjectSection();
+		if (section == null) {
+			return countObjects();
+		}
+		return countObjects() - section.getNumberOfElements();
 	}
 }

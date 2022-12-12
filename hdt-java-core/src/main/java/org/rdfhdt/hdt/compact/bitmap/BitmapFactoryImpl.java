@@ -38,6 +38,7 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
  *
  */
 public class BitmapFactoryImpl extends BitmapFactory {
+	private final Bitmap EMPTY = new Bitmap64(0);
 
 	@Override
 	protected ModifiableBitmap doCreateModifiableBitmap(String type) {
@@ -62,5 +63,10 @@ public class BitmapFactoryImpl extends BitmapFactory {
 	@Override
 	protected ModifiableBitmap doCreateRWModifiableBitmap(long size) {
 		return new Bitmap64(size);
+	}
+
+	@Override
+	protected Bitmap doEmpty() {
+		return EMPTY;
 	}
 }

@@ -67,6 +67,10 @@ public class CloseSuppressPath implements Path, Closeable {
 		};
 	}
 
+	public static Path unpack(Path other) {
+		return other instanceof CloseSuppressPath ? unpack(((CloseSuppressPath) other).getJavaPath()) : other;
+	}
+
 	@Override
 	public FileSystem getFileSystem() {
 		return new CloseSuppressFileSystem(wrapper.getFileSystem());

@@ -1,5 +1,9 @@
 package org.rdfhdt.hdt.dictionary.impl.kcat;
 
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap64Disk;
+import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
+import org.rdfhdt.hdt.compact.bitmap.NegBitmap;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -8,11 +12,13 @@ import org.rdfhdt.hdt.hdt.HDTManagerImpl;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.impl.HDTBase;
 import org.rdfhdt.hdt.hdt.impl.WriteHDTImpl;
+import org.rdfhdt.hdt.hdt.impl.diskimport.MapOnCallHDT;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
+import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
@@ -20,6 +26,7 @@ import org.rdfhdt.hdt.triples.impl.OneReadTempTriples;
 import org.rdfhdt.hdt.triples.impl.WriteBitmapTriples;
 import org.rdfhdt.hdt.util.Profiler;
 import org.rdfhdt.hdt.util.io.CloseSuppressPath;
+import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
@@ -51,7 +58,10 @@ public class KCatImpl implements Closeable {
 	}
 
 	private final String baseURI;
+	private final List<? extends Bitmap> deleteBitmaps;
 	final HDT[] hdts;
+	final BitmapTriple[] deleteBitmapTriples;
+	final CloseSuppressPath diffLocation;
 	private final CloseSuppressPath location;
 	private final Path futureLocation;
 	private final boolean futureMap;
@@ -73,10 +83,28 @@ public class KCatImpl implements Closeable {
 	 * @throws IOException io exception during loading
 	 */
 	public KCatImpl(List<String> hdtFileNames, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		this(hdtFileNames, null, hdtFormat, listener);
+	}
+
+	/**
+	 * Create implementation
+	 *
+	 * @param hdtFileNames  the hdt files to cat
+	 * @param deleteBitmaps delete bitmaps, null for basic cat
+	 * @param hdtFormat     the format to config the cat
+	 * @param listener      listener to get information from the cat
+	 * @throws IOException io exception during loading
+	 */
+	public KCatImpl(List<String> hdtFileNames, List<? extends Bitmap> deleteBitmaps, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
 		this.listener = ListenerUtil.multiThreadListener(listener);
 
 		hdts = new HDT[hdtFileNames.size()];
 		this.hdtFormat = hdtFormat;
+		this.deleteBitmaps = deleteBitmaps;
+
+		if (deleteBitmaps != null && deleteBitmaps.size() != hdtFileNames.size()) {
+			throw new IllegalArgumentException("deleteBitmaps.size() != hdtFileNames.size()");
+		}
 
 		long bufferSizeLong = hdtFormat.getInt(HDTOptionsKeys.LOADER_DISK_BUFFER_SIZE_KEY, CloseSuppressPath.BUFFER_SIZE);
 		if (bufferSizeLong > Integer.MAX_VALUE - 5L || bufferSizeLong <= 0) {
@@ -104,17 +132,19 @@ public class KCatImpl implements Closeable {
 
 
 			IntermediateListener iListener = new IntermediateListener(listener);
-			iListener.setRange(0, 10);
+			iListener.setRange(0, deleteBitmaps == null ? 10 : 5);
 			// map all the HDTs
 			while (it.hasNext()) {
 				int index = it.nextIndex();
 				String hdtFile = it.next();
+				boolean hasBitmap = deleteBitmaps != null && deleteBitmaps.get(index) != null;
 
 				iListener.notifyProgress(index * 100f / hdtFileNames.size(), "map hdt (" + (index + 1) + "/" + hdtFileNames.size() + ")");
 
 				HDT hdt = HDTManagerImpl.loadOrMapHDT(hdtFile, listener, hdtFormat);
 
-				rawSize = rawSize == -1 ? -1 : HDTBase.getRawSize(hdt.getHeader());
+				// it doesn't make sense to add the raw sizes because we're removing triples
+				rawSize = rawSize == -1 || hasBitmap ? -1 : (rawSize + HDTBase.getRawSize(hdt.getHeader()));
 
 				hdts[index] = hdt;
 
@@ -139,6 +169,52 @@ public class KCatImpl implements Closeable {
 				location = CloseSuppressPath.of(hdtcatLocationOpt);
 				Files.createDirectories(location);
 				clearLocation = hdtFormat.getBoolean(HDTOptionsKeys.HDTCAT_DELETE_LOCATION, true);
+			}
+
+			if (deleteBitmaps != null) {
+				iListener.setRange(5, 10);
+				diffLocation = location.resolve("diff");
+				diffLocation.closeWithDeleteRecurse();
+				diffLocation.mkdirs();
+				ListIterator<? extends Bitmap> dit = deleteBitmaps.listIterator();
+				deleteBitmapTriples = new BitmapTriple[hdts.length];
+
+				profiler.pushSection("diffbitmaps");
+				while (dit.hasNext()) {
+					int index = dit.nextIndex();
+					Bitmap deleteBitmap = dit.next();
+					HDT hdt = hdts[index];
+
+					// create a neg bitmap t have by default all the triples deleted, so we can write twice the
+					// non-deleted nodes
+					ModifiableBitmap bs = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "s"), hdt.getDictionary().getNsubjects() + 1));
+					ModifiableBitmap bp = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "p"), hdt.getDictionary().getNpredicates() + 1));
+					ModifiableBitmap bo = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "o"), hdt.getDictionary().getNobjects() + 1));
+
+					deleteBitmapTriples[index] = new BitmapTriple(bs, bp, bo);
+
+					IteratorTripleID searchAll = hdt.getTriples().searchAll();
+					long numberOfElements = hdt.getTriples().getNumberOfElements();
+
+					// fill the maps based on the deleted triples
+					long c = 0;
+					while (searchAll.hasNext()) {
+						TripleID tripleID = searchAll.next();
+
+						iListener.notifyProgress((float) (c++ * 10000 / numberOfElements) / 100f, "building diff bitmaps " + c + "/" + numberOfElements + " (hdt " + index + "/" + hdts.length + ")");
+
+						if (!deleteBitmap.access(searchAll.getLastTriplePosition())) {
+							// not deleted
+							bs.set(tripleID.getSubject(), false);
+							bp.set(tripleID.getPredicate(), false);
+							bo.set(tripleID.getObject(), false);
+						}
+					}
+				}
+				profiler.popSection();
+			} else {
+				deleteBitmapTriples = null;
+				diffLocation = null;
 			}
 
 			String hdtcatFutureLocationOpt = hdtFormat.get(HDTOptionsKeys.HDTCAT_FUTURE_LOCATION);
@@ -168,7 +244,7 @@ public class KCatImpl implements Closeable {
 	 * @throws IOException io exception
 	 */
 	KCatMerger createMerger(ProgressListener listener) throws IOException {
-		return new KCatMerger(hdts, location, listener, bufferSize, dictionaryType, hdtFormat);
+		return new KCatMerger(hdts, deleteBitmapTriples, location, listener, bufferSize, dictionaryType, hdtFormat);
 	}
 
 	/**
@@ -185,11 +261,11 @@ public class KCatImpl implements Closeable {
 			// create the dictionary
 			try (DictionaryPrivate dictionary = merger.buildDictionary()) {
 				profiler.popSection();
-				assert merger.assertReadCorrectly();
+				assert deleteBitmaps != null || merger.assertReadCorrectly();
 				listener.unregisterAllThreads();
 				profiler.pushSection("triples");
 				// create a GROUP BY subject iterator to get the new ordered stream
-				Iterator<TripleID> tripleIterator = GroupBySubjectMapIterator.fromHDTs(merger, hdts);
+				Iterator<TripleID> tripleIterator = GroupBySubjectMapIterator.fromHDTs(merger, hdts, deleteBitmaps);
 				try (WriteBitmapTriples triples = new WriteBitmapTriples(hdtFormat, location.resolve("triples"), bufferSize)) {
 					long count = Arrays.stream(hdts).mapToLong(h -> h.getTriples().getNumberOfElements()).sum();
 
@@ -225,7 +301,7 @@ public class KCatImpl implements Closeable {
 		HDT hdt;
 		if (futureMap) {
 			il.notifyProgress(0, "map hdt");
-			hdt = HDTManager.mapHDT(futureLocationStr, il);
+			hdt = new MapOnCallHDT(futureLocation);
 		} else {
 			il.notifyProgress(0, "load hdt");
 			hdt = HDTManager.loadHDT(futureLocationStr, il);
@@ -246,7 +322,7 @@ public class KCatImpl implements Closeable {
 					profiler.close();
 				}
 			} finally {
-				IOUtil.closeAll(hdts);
+				Closer.closeAll(hdts, deleteBitmapTriples, diffLocation);
 			}
 		} finally {
 			if (clearLocation) {

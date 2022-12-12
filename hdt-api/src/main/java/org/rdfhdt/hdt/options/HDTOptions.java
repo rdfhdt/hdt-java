@@ -181,7 +181,9 @@ public interface HDTOptions {
 	 * @param key key
 	 * @return value or 0 if not defined
 	 */
-	long getInt(String key);
+	default long getInt(String key) {
+		return getInt(key, 0);
+	}
 
 	/**
 	 * get a long
@@ -252,12 +254,23 @@ public interface HDTOptions {
 	 * @param key   key
 	 * @param value value
 	 */
-	void setInt(String key, long value);
+	default void setInt(String key, long value) {
+		set(key, String.valueOf(value));
+	}
 
 	/**
 	 * read an option config, format: (key=value)?(;key=value)*
 	 *
 	 * @param options options
 	 */
-	void setOptions(String options);
+	default void setOptions(String options) {
+		for (String item : options.split(";")) {
+			int pos = item.indexOf('=');
+			if (pos != -1) {
+				String property = item.substring(0, pos);
+				String value = item.substring(pos+1);
+				set(property, value);
+			}
+		}
+	}
 }

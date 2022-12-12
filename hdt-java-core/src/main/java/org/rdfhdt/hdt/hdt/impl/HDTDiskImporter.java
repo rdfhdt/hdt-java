@@ -10,6 +10,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressTripleMapper;
 import org.rdfhdt.hdt.hdt.impl.diskimport.CompressionResult;
+import org.rdfhdt.hdt.hdt.impl.diskimport.MapOnCallHDT;
 import org.rdfhdt.hdt.hdt.impl.diskimport.TripleCompressionResult;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
@@ -34,6 +35,7 @@ import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Iterator;
 
 /**
@@ -55,6 +57,7 @@ public class HDTDiskImporter implements Closeable {
 	private final MultiThreadListener listener;
 	private final String compressMode;
 	private final String futureHDTLocation;
+	private final Path futureHDTLocationPath;
 	private final CloseSuppressPath basePath;
 	private final long chunkSize;
 	private final int ways;
@@ -128,6 +131,7 @@ public class HDTDiskImporter implements Closeable {
 		String baseNameOpt = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_LOCATION_KEY);
 		// location of the future HDT file, do not set to create the HDT in memory while mergin
 		futureHDTLocation = hdtFormat.get(HDTOptionsKeys.LOADER_DISK_FUTURE_HDT_LOCATION_KEY);
+		futureHDTLocationPath = futureHDTLocation == null ? null : Path.of(futureHDTLocation);
 
 		profiler = Profiler.createOrLoadSubSection("doGenerateHDTDisk", hdtFormat, true);
 		try {
@@ -320,7 +324,7 @@ public class HDTDiskImporter implements Closeable {
 			il.setRange(95, 100);
 			il.notifyProgress(0, "start");
 			try {
-				return HDTManager.mapHDT(futureHDTLocation, il, hdtFormat);
+				return new MapOnCallHDT(futureHDTLocationPath);
 			} finally {
 				profiler.popSection();
 			}
@@ -341,20 +345,8 @@ public class HDTDiskImporter implements Closeable {
 	 */
 	public HDT runAllSteps(Iterator<TripleString> iterator) throws IOException, ParserException {
 		// compress the triples into sections and compressed triples
-		ExceptionThread.pushDebugPoint();
-
 		CompressTripleMapper mapper = compressDictionary(iterator);
-
-		ExceptionThread.popDebugPoint("end compress dict");
-
-
-		ExceptionThread.pushDebugPoint();
-
 		compressTriples(mapper);
-
-		ExceptionThread.popDebugPoint("end compress triple");
-
-
 		createHeader();
 
 		return convertToHDT();

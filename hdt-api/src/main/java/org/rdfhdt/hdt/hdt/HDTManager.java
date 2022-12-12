@@ -501,6 +501,19 @@ public abstract class HDTManager {
 		return HDTManager.getInstance().doHDTDiffBit(location, hdtFileName, deleteBitmap, hdtFormat, listener);
 	}
 
+	/**
+	 * Create an HDT file from HDT files by joining the triples and removing some triples with delete bitmaps
+	 * @param hdtFileNames hdt file names
+	 * @param deleteBitmaps the bitmaps for each HDT in hdtFileNames, should be the same size as hdtFileNames, see {@link org.rdfhdt.hdt.compact.bitmap.BitmapFactory#empty()}
+	 * @param hdtFormat Parameters to tune the generated HDT.
+	 * @param listener Listener to get notified of loading progress. Can be null if no notifications needed.
+	 * @throws IOException when the file cannot be found
+	 * @return HDT
+	 */
+	public static HDT diffBitCatHDT(List<String> hdtFileNames, List<? extends Bitmap> deleteBitmaps, HDTOptions hdtFormat, ProgressListener listener) throws IOException {
+		return HDTManager.getInstance().doHDTDiffBitCat(hdtFileNames, deleteBitmaps, hdtFormat, listener);
+	}
+
 
 	/**
 	 * Create an HDT file from an RDF file in a tree, stop the chunk creation with the fluxStop
@@ -575,6 +588,7 @@ public abstract class HDTManager {
 	protected abstract TripleWriter doGetHDTWriter(String outFile, String baseURI, HDTOptions hdtFormat) throws IOException;
 	protected abstract HDT doHDTCat(String location, String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTCat(List<String> hdtFileNames, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
+	protected abstract HDT doHDTDiffBitCat(List<String> hdtFileNames, List<? extends Bitmap> deleteBitmaps, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiff(String hdtFileName1, String hdtFileName2, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTDiffBit(String location, String hdtFileName, Bitmap deleteBitmap, HDTOptions hdtFormat, ProgressListener listener) throws IOException;
 	protected abstract HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, String filename, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException;
