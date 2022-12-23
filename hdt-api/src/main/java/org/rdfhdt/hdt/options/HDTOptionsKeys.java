@@ -311,6 +311,8 @@ public class HDTOptionsKeys {
 
 	@Key(type = Key.Type.BOOLEAN, desc = "Use disk implementation to generate the hdt sub-index")
 	public static final String BITMAPTRIPLES_SEQUENCE_DISK = "bitmaptriples.sequence.disk";
+	@Key(type = Key.Type.BOOLEAN, desc = "Use disk 375 subindex implementation to generate the hdt sub-index")
+	public static final String BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX = "bitmaptriples.sequence.disk.subindex";
 
 	@Key(type = Key.Type.BOOLEAN, desc = "Disk location for the " + BITMAPTRIPLES_SEQUENCE_DISK + " option")
 	public static final String BITMAPTRIPLES_SEQUENCE_DISK_LOCATION = "bitmaptriples.sequence.disk.location";

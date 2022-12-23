@@ -110,7 +110,12 @@ public class SequenceInt32 implements DynamicSequence {
 		data[(int)position] = (int)value;
 		numelements = (int) Math.max(numelements, position+1);
 	}
-	
+
+	@Override
+	public int sizeOf() {
+		return 32;
+	}
+
 	@Override
     public void append(long value) {
 		assert value>=0 && value<=Integer.MAX_VALUE;

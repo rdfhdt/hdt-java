@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.*;
@@ -150,6 +149,10 @@ class PredicateIndexArray implements PredicateIndex {
 			} finally {
 				IOUtil.closeQuietly(array);
 			}
+		}
+		try {
+			Closer.closeAll(this.array, this.bitmap);
+		} catch (IOException ignore) {
 		}
 	    this.array = array;
 	    this.bitmap = bitmap;

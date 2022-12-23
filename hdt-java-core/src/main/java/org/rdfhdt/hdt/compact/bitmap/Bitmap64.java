@@ -49,8 +49,9 @@ import org.rdfhdt.hdt.util.io.IOUtil;
  * The first bit is the lowest significative bit of word zero, and so on.
  * 
  * @author mario.arias
- *
+ * @deprecated use {@link Bitmap64Big#memory(long)} instead
  */
+@Deprecated
 public class Bitmap64 implements ModifiableBitmap{
 	
 	// Constants

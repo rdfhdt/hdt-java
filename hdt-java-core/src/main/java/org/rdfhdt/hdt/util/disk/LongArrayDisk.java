@@ -77,6 +77,7 @@ public class LongArrayDisk implements Closeable, LongArray {
                 } else {
                     sizeMapping = MAPPING_SIZE;
                 }
+                assert mappings[block] == null;
                 mappings[block] = IOUtil.mapChannel(location.toAbsolutePath().toString(), channel, FileChannel.MapMode.READ_WRITE, block * MAPPING_SIZE, sizeMapping);
             }
             if (overwrite) {
@@ -138,6 +139,11 @@ public class LongArrayDisk implements Closeable, LongArray {
     @Override
     public long length() {
         return size;
+    }
+
+    @Override
+    public int sizeOf() {
+        return Long.SIZE;
     }
 
     public void set0(long startIndex, long endIndex) {
@@ -204,6 +210,7 @@ public class LongArrayDisk implements Closeable, LongArray {
         }
     }
 
+    @Override
     public void resize(long newSize) throws IOException {
         if (this.size == newSize) {
             return;
@@ -247,6 +254,13 @@ public class LongArrayDisk implements Closeable, LongArray {
                 IOUtil.closeAll(mappings);
             }
         }
+    }
+
+    /**
+     * @return the location of the array disk
+     */
+    public Path getLocation() {
+        return location;
     }
 
     public long getSize() {

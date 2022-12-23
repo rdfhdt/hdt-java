@@ -73,11 +73,14 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
     }
 
     public SequenceLog64BigDisk(Path location, int numbits, long capacity, boolean initialize) {
+        this(location, numbits, capacity, initialize, true);
+    }
+    public SequenceLog64BigDisk(Path location, int numbits, long capacity, boolean initialize, boolean overwrite) {
         this.numentries = 0;
         this.numbits = numbits;
         this.maxvalue = BitUtil.maxVal(numbits);
         long size = numWordsFor(numbits, capacity);
-        data = new LongArrayDisk(location, Math.max(size,1));
+        data = new LongArrayDisk(location, Math.max(size,1), overwrite);
         if (initialize) {
             numentries = capacity;
         }
@@ -182,6 +185,11 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
         }
         //System.out.println("numbits "+this.numbits);
         setField(data, numbits, position, value);
+    }
+
+    @Override
+    public int sizeOf() {
+        return numbits;
     }
 
     @Override

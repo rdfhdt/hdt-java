@@ -38,12 +38,12 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
  *
  */
 public class BitmapFactoryImpl extends BitmapFactory {
-	private final Bitmap EMPTY = new Bitmap64(0);
+	private final Bitmap EMPTY = Bitmap64Big.memory(0);
 
 	@Override
 	protected ModifiableBitmap doCreateModifiableBitmap(String type) {
 		if (type == null || type.equals(HDTVocabulary.BITMAP_TYPE_PLAIN)) {
-			return new Bitmap375();
+			return Bitmap375Big.memory(0);
 		} else {
 			throw new IllegalArgumentException("Implementation not found for Bitmap with type " + type);
 		}
@@ -55,14 +55,14 @@ public class BitmapFactoryImpl extends BitmapFactory {
 		int value = input.read();
 		input.reset();
 		if (value == TYPE_BITMAP_PLAIN) {
-			return new Bitmap375();
+			return Bitmap375Big.memory(0);
 		}
 		throw new IllegalFormatException("Implementation not found for Bitmap with code " + value);
 	}
 
 	@Override
 	protected ModifiableBitmap doCreateRWModifiableBitmap(long size) {
-		return new Bitmap64(size);
+		return Bitmap64Big.memory(size);
 	}
 
 	@Override

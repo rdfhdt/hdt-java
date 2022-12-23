@@ -233,7 +233,12 @@ public class SequenceLog64 implements DynamicSequence {
 		}
 		setField(data, numbits, position, value);
 	}
-	
+
+	@Override
+	public int sizeOf() {
+		return numbits;
+	}
+
 	@Override
     public void append(long value) {
 		if(value<0 || value>maxvalue) {

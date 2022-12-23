@@ -147,6 +147,16 @@ public class WriteLongArrayBuffer implements LongArray, Closeable {
 		return array.length();
 	}
 
+	@Override
+	public int sizeOf() {
+		return array.sizeOf();
+	}
+
+	@Override
+	public void resize(long newSize) throws IOException {
+		array.resize(newSize);
+	}
+
 	/**
 	 * @return the used size of the buffer
 	 */
