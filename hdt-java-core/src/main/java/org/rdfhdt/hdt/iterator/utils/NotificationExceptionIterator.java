@@ -29,8 +29,8 @@ public class NotificationExceptionIterator<T, E extends Exception> implements Ex
 		}
 		// set size to be at least 1 to allow empty next() error
 		this.size = Math.max(1, size);
-		// minimize split by size to avoid dividing by 0
-		this.split = Math.min(split, size);
+		// minimize split by size to avoid dividing by 0, and avoid that it is zero
+		this.split = Math.max(1,Math.min(split, size));
 		this.message = Objects.requireNonNull(message, "message can't be null!");
 		this.listener = Objects.requireNonNullElseGet(listener, () -> (perc, msg) -> {
 		});
