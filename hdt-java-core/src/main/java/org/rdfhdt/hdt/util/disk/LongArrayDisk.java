@@ -20,6 +20,7 @@
 
 package org.rdfhdt.hdt.util.disk;
 
+import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.io.CloseMappedByteBuffer;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -139,9 +140,11 @@ public class LongArrayDisk implements Closeable, LongArray {
         return size;
     }
 
-    public void set0(long start, long end) {
+    public void set0(long startIndex, long endIndex) {
+        long start = startIndex * 8L;
+        long end = endIndex * 8L;
+
         if (start >= end) {
-            // TODO: trim the file after end
             return;
         }
         int startBlock = (int) (start / MAPPING_SIZE);
@@ -166,15 +169,21 @@ public class LongArrayDisk implements Closeable, LongArray {
                 startBuffer = 0;
             }
             if (i == endBlock) {
-                endBuffer = (int) (end % MAPPING_SIZE);
+                if (end % MAPPING_SIZE == 0) {
+                    endBuffer = (int) MAPPING_SIZE;
+                } else {
+                    endBuffer = (int) (end % MAPPING_SIZE);
+                }
             } else {
                 endBuffer = capacity;
             }
 
-            int toWrite = (endBuffer - startBuffer) * 8;
+            assert endBuffer > startBuffer : "start after end " + startBuffer + " -> " + endBuffer;
+
+            int toWrite = endBuffer - startBuffer;
 
             while (toWrite > 0) {
-                mapping.position(startBuffer * 8);
+                mapping.position(startBuffer);
                 int w = Math.min(toWrite, zeros.length);
 
                 mapping.put(zeros, 0, w);
@@ -214,6 +223,9 @@ public class LongArrayDisk implements Closeable, LongArray {
             IOUtil.closeAll(this.mappings);
             this.mappings = null;
 
+            // resize the file to the new size
+            channel.truncate(sizeBit);
+
             for (int block = 0; block < blocks; block++) {
                 long sizeMapping;
                 if (block + 1 == blocks && sizeBit % MAPPING_SIZE != 0) {
@@ -223,6 +235,7 @@ public class LongArrayDisk implements Closeable, LongArray {
                 }
                 mappings[block] = IOUtil.mapChannel(location.toAbsolutePath().toString(), channel, FileChannel.MapMode.READ_WRITE, block * MAPPING_SIZE, sizeMapping);
             }
+
             // close previous mapping
             this.mappings = mappings;
 
