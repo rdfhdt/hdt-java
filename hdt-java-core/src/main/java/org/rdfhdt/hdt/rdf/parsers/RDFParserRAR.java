@@ -9,6 +9,7 @@ import java.util.Arrays;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.slf4j.Logger;
@@ -29,13 +30,13 @@ public class RDFParserRAR implements RDFParserCallback {
 	private final static String [] cmdList = { "unrar", "vb" , "<RAR>"};
 	private final static String [] cmdExtractFile = { "unrar", "p", "-inul", "<RAR>", "<FILE>" };
 	private static Boolean available;
-	private final boolean simple;
+	private final HDTOptions spec;
 
-	public RDFParserRAR(boolean simple) {
-		this.simple = simple;
+	public RDFParserRAR(HDTOptions spec) {
+		this.spec = spec;
 	}
 	public RDFParserRAR() {
-		this(false);
+		this(HDTOptions.EMPTY);
 	}
 
 	// List files in rar
@@ -88,7 +89,7 @@ public class RDFParserRAR implements RDFParserCallback {
 				if(guessnot!=null) {
 					// Create 
 					log.info("Parse from rar: {} as {}", fileName, guessnot);
-					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
+					RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, spec);
 
 					cmdExtract[4]=fileName;
 					ProcessBuilder extractProcessBuilder = new ProcessBuilder(cmdExtract);

@@ -49,11 +49,6 @@ import java.util.stream.Collectors;
 public class HDTManagerImpl extends HDTManager {
 	private static final Logger logger = LoggerFactory.getLogger(HDTManagerImpl.class);
 
-	private boolean useSimple(HDTOptions spec) {
-		String value = spec.get(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY);
-		return value != null && !value.isEmpty() && !value.equals("false");
-	}
-
 	@Override
 	public HDTOptions doReadOptions(String file) throws IOException {
 		return new HDTSpecification(file);
@@ -161,13 +156,13 @@ public class HDTManagerImpl extends HDTManager {
 		} else if (HDTOptionsKeys.LOADER_TYPE_VALUE_CAT.equals(loaderType)) {
 			return doHDTCatTree(readFluxStopOrSizeLimit(spec), HDTSupplier.fromSpec(spec), rdfFileName, baseURI, rdfNotation, spec, listener);
 		} else if (HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS.equals(loaderType)) {
-			loader = new TempHDTImporterTwoPass(useSimple(spec));
+			loader = new TempHDTImporterTwoPass(spec);
 		} else {
 			if (loaderType != null && !HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS.equals(loaderType)) {
 				logger.warn("Used the option {} with value {}, which isn't recognize, using default value {}",
 						HDTOptionsKeys.LOADER_TYPE_KEY, loaderType, HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS);
 			}
-			loader = new TempHDTImporterOnePass(useSimple(spec));
+			loader = new TempHDTImporterOnePass(spec);
 		}
 
 		// Create TempHDT
@@ -229,7 +224,7 @@ public class HDTManagerImpl extends HDTManager {
 							HDTOptionsKeys.LOADER_TYPE_KEY, loaderType, HDTOptionsKeys.LOADER_TYPE_VALUE_ONE_PASS);
 				}
 			}
-			loader = new TempHDTImporterOnePass(useSimple(spec));
+			loader = new TempHDTImporterOnePass(spec);
 		}
 
 		// Create TempHDT
@@ -264,7 +259,7 @@ public class HDTManagerImpl extends HDTManager {
 		// uncompress the stream if required
 		fileStream = IOUtil.asUncompressed(fileStream, compressionType);
 		// create a parser for this rdf stream
-		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, useSimple(hdtFormat));
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, hdtFormat);
 		// read the stream as triples
 		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, fileStream, baseURI, true, rdfNotation)) {
 			return doGenerateHDTDisk0(iterator, true, baseURI, hdtFormat, listener);
@@ -380,7 +375,7 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	protected HDT doHDTCatTree(RDFFluxStop fluxStop, HDTSupplier supplier, InputStream stream, String baseURI, RDFNotation rdfNotation, HDTOptions hdtFormat, ProgressListener listener) throws IOException, ParserException {
-		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, useSimple(hdtFormat));
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(rdfNotation, hdtFormat);
 		try (PipedCopyIterator<TripleString> iterator = RDFParserFactory.readAsIterator(parser, stream, baseURI, true, rdfNotation)) {
 			return doHDTCatTree(fluxStop, supplier, iterator, baseURI, hdtFormat, listener);
 		}

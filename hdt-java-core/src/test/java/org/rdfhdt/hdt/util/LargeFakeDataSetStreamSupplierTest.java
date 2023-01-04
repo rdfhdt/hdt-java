@@ -11,6 +11,8 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTManagerTest;
 import org.rdfhdt.hdt.iterator.utils.CombinedIterator;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
+import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
@@ -25,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
@@ -191,7 +194,9 @@ public class LargeFakeDataSetStreamSupplierTest {
 
 		supplier2.createNTFile(p3);
 
-		RDFParserCallback parser = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, true);
+		RDFParserCallback parser = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, HDTOptions.of(
+				Map.of(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true")
+		));
 		try {
 			try (
 					InputStream stream = new BufferedInputStream(Files.newInputStream(p12));

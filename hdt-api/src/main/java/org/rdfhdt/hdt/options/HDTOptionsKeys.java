@@ -224,6 +224,12 @@ public class HDTOptionsKeys {
 	@Key(type = Key.Type.BOOLEAN, desc = "Use the canonical NT file parser, removing checks")
 	public static final String NT_SIMPLE_PARSER_KEY = "parser.ntSimpleParser";
 	/**
+	 * Key for setting the maximum amount of file loaded with the directory parser, 1 for no async parsing, 0
+	 * for the number of processors, default 1. Number value
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Use async dir parser")
+	public static final String ASYNC_DIR_PARSER_KEY = "parser.dir.async";
+	/**
 	 * Key for setting the triple order. see {@link org.rdfhdt.hdt.enums.TripleComponentOrder}'s names to have the values
 	 * default to {@link org.rdfhdt.hdt.enums.TripleComponentOrder#SPO}
 	 */

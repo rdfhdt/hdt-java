@@ -5,6 +5,7 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -26,14 +27,14 @@ import java.io.InputStream;
 
 public class RDFParserTar implements RDFParserCallback {
 	private static final Logger log = LoggerFactory.getLogger(RDFParserTar.class);
-	private final boolean simple;
+	private final HDTOptions spec;
 
-	public RDFParserTar(boolean simple) {
-		this.simple = simple;
+	public RDFParserTar(HDTOptions spec) {
+		this.spec = spec;
 	}
 
 	public RDFParserTar() {
-		this(false);
+		this(HDTOptions.EMPTY);
 	}
 
 	/* (non-Javadoc)
@@ -67,7 +68,7 @@ public class RDFParserTar implements RDFParserCallback {
 					try {
 						RDFNotation guessnot = RDFNotation.guess(entry.getName());
 						log.info("Parse from tar: {} as {}", entry.getName(), guessnot);
-						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
+						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, spec);
 
 						parser.doParse(nonCloseIn, baseUri, guessnot, keepBNode, callback);
 					}catch (IllegalArgumentException | ParserException e1) {

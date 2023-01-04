@@ -30,6 +30,8 @@ package org.rdfhdt.hdt.rdf;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.iterator.utils.PipedCopyIterator;
+import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserDir;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserHDT;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserList;
@@ -40,23 +42,23 @@ import org.rdfhdt.hdt.rdf.parsers.RDFParserTar;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserZip;
 import org.rdfhdt.hdt.triples.TripleString;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Iterator;
 
 /**
  * @author mario.arias
  *
  */
 public class RDFParserFactory {
-	public static RDFParserCallback getParserCallback(RDFNotation notation) {
-		return getParserCallback(notation, false);
+	public static boolean useSimple(HDTOptions options) {
+		return options != null && options.getBoolean(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, false);
 	}
-	public static RDFParserCallback getParserCallback(RDFNotation notation, boolean useSimple) {
+	public static RDFParserCallback getParserCallback(RDFNotation notation) {
+		return getParserCallback(notation, HDTOptions.EMPTY);
+	}
+	public static RDFParserCallback getParserCallback(RDFNotation notation, HDTOptions spec) {
 		switch(notation) {
 			case NTRIPLES:
-				if (useSimple) {
+				if (useSimple(spec)) {
 					return new RDFParserSimple();
 				}
 			case NQUAD:
@@ -65,15 +67,15 @@ public class RDFParserFactory {
 			case RDFXML:
 				return new RDFParserRIOT();
 			case DIR:
-				return new RDFParserDir(useSimple);
+				return new RDFParserDir(spec);
 			case LIST:
-				return new RDFParserList();
+				return new RDFParserList(spec);
 			case ZIP:
-				return new RDFParserZip(useSimple);
+				return new RDFParserZip(spec);
 			case TAR:
-				return new RDFParserTar(useSimple);
+				return new RDFParserTar(spec);
 			case RAR:
-				return new RDFParserRAR(useSimple);
+				return new RDFParserRAR(spec);
 			case HDT:
 				return new RDFParserHDT();
 			case JSONLD:

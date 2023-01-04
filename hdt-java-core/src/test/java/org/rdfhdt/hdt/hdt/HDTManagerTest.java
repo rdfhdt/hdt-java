@@ -806,7 +806,9 @@ public class HDTManagerTest {
 			// create DISK HDT
 			try (InputStream in = IOUtil.getFileInputStream(ntFile)) {
 				try (PipedCopyIterator<TripleString> it = RDFParserFactory.readAsIterator(
-						RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, true),
+						RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, HDTOptions.of(
+								Map.of(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true")
+						)),
 						in, HDTTestUtils.BASE_URI, true, RDFNotation.NTRIPLES
 				)) {
 					try (HDT expected = HDTManager.generateHDT(
