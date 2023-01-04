@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class LongArrayDiskTest  extends AbstractMapMemoryTest {
 
@@ -103,5 +104,55 @@ public class LongArrayDiskTest  extends AbstractMapMemoryTest {
             assertEquals(array.get(3), 4);
         }
     }
+    @Test
+    public void largeResizeTest() throws IOException {
+        Path root = tempDir.getRoot().toPath();
 
+        long[] tests = {7, 5, 9, 2};
+
+        Path arrFile = root.resolve("arr");
+        try {
+            long endSize;
+            try (LongArrayDisk array = new LongArrayDisk(arrFile, 100)) {
+                // add check value after the resizes/loading
+                for (int i = 0; i < tests.length; i++) {
+                    array.set(i, tests[i]);
+                }
+
+                // resize from 10^3 to 10^9 to see the usage of multiple mappings in set0
+                for (int i = 10; i < 30; i++) {
+                    array.resize(1L << i);
+                }
+
+                // store the size
+                endSize = array.length();
+            }
+
+            assertEquals("array size and file size aren't matching!", endSize * 8L, Files.size(arrFile));
+
+            long endSize2;
+
+            try (LongArrayDisk array = new LongArrayDisk(arrFile, endSize, false)) {
+                // resize to a lower size to test the file truncating
+                array.resize(1L << 10);
+
+                // store the new size
+                endSize2 = array.length();
+            }
+
+            assertEquals("new array size and file size aren't matching!", endSize2 * 8L, Files.size(arrFile));
+
+            assertTrue("old array size isn't bigger than the new size, bad test?", endSize2 < endSize);
+
+            try (LongArrayDisk array = new LongArrayDisk(arrFile, endSize2, false)) {
+                // assert that the reloading/resizing didn't cancelled some values
+                for (int i = 0; i < tests.length; i++) {
+                    assertEquals(tests[i], array.get(i));
+                }
+            }
+        } finally {
+            Files.deleteIfExists(arrFile);
+        }
+
+    }
 }
