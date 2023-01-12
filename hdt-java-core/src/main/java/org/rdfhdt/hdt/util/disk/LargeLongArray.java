@@ -1,6 +1,6 @@
 package org.rdfhdt.hdt.util.disk;
 
-import org.visnow.jlargearrays.LargeArray;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.visnow.jlargearrays.LargeArrayUtils;
 import org.visnow.jlargearrays.LongLargeArray;
 
@@ -12,12 +12,12 @@ import java.io.IOException;
  * @author Antoine Willerval
  */
 public class LargeLongArray implements LongArray {
-    private LargeArray array;
+    private LongLargeArray array;
 
     /**
      * @param array large array
      */
-    public LargeLongArray(LargeArray array) {
+    public LargeLongArray(LongLargeArray array) {
         this.array = array;
     }
 
@@ -45,10 +45,15 @@ public class LargeLongArray implements LongArray {
     public void resize(long newSize) throws IOException {
         if (newSize > 0) {
             if (array.length() != newSize) {
-                LongLargeArray a = new LongLargeArray(newSize);
+                LongLargeArray a = IOUtil.createLargeArray(newSize, false);
                 LargeArrayUtils.arraycopy(array, 0, a, 0, Math.min(newSize, array.length()));
                 array = a;
             }
         }
+    }
+
+    @Override
+    public void clear() {
+        IOUtil.fillLargeArray(array, 0);
     }
 }

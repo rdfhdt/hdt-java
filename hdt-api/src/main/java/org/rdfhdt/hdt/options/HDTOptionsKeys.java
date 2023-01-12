@@ -4,6 +4,7 @@ import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -315,37 +316,147 @@ public class HDTOptionsKeys {
 	@Key(type = Key.Type.BOOLEAN, desc = "Delete the HDTCat temp files directory after HDTCat, default to true")
 	public static final String HDTCAT_DELETE_LOCATION = "hdtcat.deleteLocation";
 
-	@Key(type = Key.Type.BOOLEAN, desc = "Use disk implementation to generate the hdt sub-index")
+	/**
+	 * Use disk implementation to generate the hdt sub-index, default false
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Use disk implementation to generate the hdt sub-index, default false")
 	public static final String BITMAPTRIPLES_SEQUENCE_DISK = "bitmaptriples.sequence.disk";
-	@Key(type = Key.Type.BOOLEAN, desc = "Use disk 375 subindex implementation to generate the hdt sub-index")
+
+	/**
+	 * Use disk 375 bitmap subindex implementation to generate the HDT sub index, default false
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Use disk 375 subindex implementation to generate the hdt sub-index, default false")
 	public static final String BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX = "bitmaptriples.sequence.disk.subindex";
 
-	@Key(type = Key.Type.BOOLEAN, desc = "Disk location for the " + BITMAPTRIPLES_SEQUENCE_DISK + " option")
+	/**
+	 * disk location for the {@link #BITMAPTRIPLES_SEQUENCE_DISK} option
+	 */
+	@Key(type = Key.Type.PATH, desc = "Disk location for the " + BITMAPTRIPLES_SEQUENCE_DISK + " option")
 	public static final String BITMAPTRIPLES_SEQUENCE_DISK_LOCATION = "bitmaptriples.sequence.disk.location";
+
+	/**
+	 * Bitmap type for the Y bitmap, default {@link HDTVocabulary#BITMAP_TYPE_PLAIN}
+	 */
+	@Key(type = Key.Type.STRING, desc = "Bitmap type for the Y bitmap, default " + HDTVocabulary.BITMAP_TYPE_PLAIN)
+	public static final String BITMAPTRIPLES_BITMAP_Y = "bitmap.y";
+
+
+	/**
+	 * Bitmap type for the Z bitmap, default {@link HDTVocabulary#BITMAP_TYPE_PLAIN}
+	 */
+	@Key(type = Key.Type.STRING, desc = "Bitmap type for the Z bitmap, default " + HDTVocabulary.BITMAP_TYPE_PLAIN)
+	public static final String BITMAPTRIPLES_BITMAP_Z = "bitmap.z";
+
+	/**
+	 * Sequence type for the Y sequence, default {@link HDTVocabulary#SEQ_TYPE_LOG}
+	 */
+	@Key(type = Key.Type.STRING, desc = "Sequence type for the Y sequence, default " + HDTVocabulary.SEQ_TYPE_LOG)
+	public static final String BITMAPTRIPLES_SEQ_Y = "seq.y";
+
+	/**
+	 * Sequence type for the Z sequence, default {@link HDTVocabulary#SEQ_TYPE_LOG}
+	 */
+	@Key(type = Key.Type.STRING, desc = "Sequence type for the Z sequence, default " + HDTVocabulary.SEQ_TYPE_LOG)
+	public static final String BITMAPTRIPLES_SEQ_Z = "seq.z";
+
+	/**
+	 * Indexing method for the bitmap triples, default {@link #BITMAPTRIPLES_INDEX_METHOD_VALUE_RECOMMENDED}
+	 */
+	@Key(type = Key.Type.ENUM, desc = "Indexing method for the bitmap triples")
+	public static final String BITMAPTRIPLES_INDEX_METHOD_KEY = "bitmaptriples.indexmethod";
+
+	/**
+	 * value for {@link #BITMAPTRIPLES_INDEX_METHOD_KEY}. Recommended implementation, default value
+	 */
+	@Value(key = BITMAPTRIPLES_INDEX_METHOD_KEY, desc = "Recommended implementation, default value")
+	public static final String BITMAPTRIPLES_INDEX_METHOD_VALUE_RECOMMENDED = "recommended";
+
+	/**
+	 * value for {@link #BITMAPTRIPLES_INDEX_METHOD_KEY}. Legacy implementation, fast, but memory inefficient
+	 */
+	@Value(key = BITMAPTRIPLES_INDEX_METHOD_KEY, desc = "Legacy implementation, fast, but memory inefficient")
+	public static final String BITMAPTRIPLES_INDEX_METHOD_VALUE_LEGACY = "legacy";
+
+	/**
+	 * value for {@link #BITMAPTRIPLES_INDEX_METHOD_KEY}. Disk option, handle the indexing on disk to reduce usage
+	 */
+	@Value(key = BITMAPTRIPLES_INDEX_METHOD_KEY, desc = "Disk option, handle the indexing on disk to reduce usage")
+	public static final String BITMAPTRIPLES_INDEX_METHOD_VALUE_DISK = "disk";
+	/**
+	 * value for {@link #BITMAPTRIPLES_INDEX_METHOD_KEY}. Memory optimized option
+	 */
+	@Value(key = BITMAPTRIPLES_INDEX_METHOD_KEY, desc = "Memory optimized option")
+	public static final String BITMAPTRIPLES_INDEX_METHOD_VALUE_OPTIMIZED = "optimized";
+
+	/**
+	 * Key for the {@link org.rdfhdt.hdt.hdt.HDTManager} loadIndexed methods,
+	 * say the number of workers to merge the data. default to the number of processor. long value.
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Number of core used to index the HDT with " + BITMAPTRIPLES_INDEX_METHOD_VALUE_DISK + " index method.")
+	public static final String BITMAPTRIPLES_DISK_WORKER_KEY = "bitmaptriples.indexmethod.disk.compressWorker";
+	/**
+	 * Key for the maximum size of a chunk on disk for the {@link org.rdfhdt.hdt.hdt.HDTManager} generateHDTDisk
+	 * methods, the chunk should be in RAM before writing it on disk and should be sorted. long value.
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Maximum size of a chunk")
+	public static final String BITMAPTRIPLES_DISK_CHUNK_SIZE_KEY = "bitmaptriples.indexmethod.disk.chunkSize";
+	/**
+	 * Key for the size of the buffers when opening a file
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Size of the file buffers")
+	public static final String BITMAPTRIPLES_DISK_BUFFER_SIZE_KEY = "bitmaptriples.indexmethod.disk.fileBufferSize";
+	/**
+	 * Key for the maximum number of file opened at the same time, should be greater than {@link #BITMAPTRIPLES_DISK_KWAY_KEY},
+	 * 1024 by default
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Maximum number of file " + BITMAPTRIPLES_INDEX_METHOD_VALUE_DISK + " index method can open at the same time")
+	public static final String BITMAPTRIPLES_DISK_MAX_FILE_OPEN_KEY = "bitmaptriples.indexmethod.disk.maxFileOpen";
+	/**
+	 * Key for the number of chunk layers opened at the same time, by default
+	 * <p>min(log2(maxFileOpen), chunkSize / (fileBufferSize * compressWorker))</p>
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "log of the number of way the system can merge in " + BITMAPTRIPLES_INDEX_METHOD_VALUE_DISK + " index method")
+	public static final String BITMAPTRIPLES_DISK_KWAY_KEY = "bitmaptriples.indexmethod.disk.kway";
+
 	// use tree-map to have a better order
 	private static final Map<String, Option> OPTION_MAP = new TreeMap<>();
 
 	static {
 		try {
-			for (Field f : HDTOptionsKeys.class.getDeclaredFields()) {
-				Key key = f.getAnnotation(Key.class);
-				if (key != null) {
-					String keyValue = (String) f.get(null);
+			registerOptionsClass(HDTOptionsKeys.class);
+		} catch (Exception e) {
+			throw new Error("Can't load option keys", e);
+		}
+	}
 
-					OPTION_MAP.put(keyValue, new Option(keyValue, key));
-				} else {
-					Value value = f.getAnnotation(Value.class);
-					if (value != null) {
-						String valueValue = (String) f.get(null);
-						Option opt = OPTION_MAP.get(value.key());
-						if (opt != null) {
-							opt.values.add(new OptionValue(valueValue, value));
-						}
+	/**
+	 * register an options class for the {@link #getOptionMap()} method,
+	 * will read all the public static fields with {@link Key} and {@link Value}
+	 *
+	 * @param cls class
+	 * @throws Exception register exception
+	 */
+	public static void registerOptionsClass(Class<?> cls) throws Exception {
+		for (Field f : cls.getDeclaredFields()) {
+			if ((f.getModifiers() & Modifier.STATIC) == 0
+					|| (f.getModifiers() & Modifier.PUBLIC) == 0) {
+				continue; // no static modifier
+			}
+			Key key = f.getAnnotation(Key.class);
+			if (key != null) {
+				String keyValue = String.valueOf(f.get(null));
+
+				OPTION_MAP.put(keyValue, new Option(keyValue, key));
+			} else {
+				Value value = f.getAnnotation(Value.class);
+				if (value != null) {
+					String valueValue = String.valueOf(f.get(null));
+					Option opt = OPTION_MAP.get(value.key());
+					if (opt != null) {
+						opt.values.add(new OptionValue(valueValue, value));
 					}
 				}
 			}
-		} catch (Exception e) {
-			throw new Error("Can't load option keys", e);
 		}
 	}
 

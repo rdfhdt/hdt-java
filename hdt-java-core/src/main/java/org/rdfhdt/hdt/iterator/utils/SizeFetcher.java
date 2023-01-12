@@ -13,11 +13,15 @@ import java.util.function.ToLongFunction;
  */
 public class SizeFetcher<E> implements Supplier<E> {
     public static SizeFetcher<TripleString> ofTripleString(Supplier<TripleString> supplier, long maxSize) {
-        return new SizeFetcher<>(supplier, FileTripleIterator::estimateSize, maxSize);
+        return of(supplier, FileTripleIterator::estimateSize, maxSize);
     }
 
     public static SizeFetcher<TripleID> ofTripleLong(Supplier<TripleID> supplier, long maxSize) {
-        return new SizeFetcher<>(supplier, tripleID -> 4L * Long.BYTES, maxSize);
+        return of(supplier, tripleID -> 4L * Long.BYTES, maxSize);
+    }
+
+    public static <E> SizeFetcher<E> of(Supplier<E> supplier, ToLongFunction<E> sizeGetter, long maxSize) {
+        return new SizeFetcher<>(supplier, sizeGetter, maxSize);
     }
 
     private final Supplier<E> supplier;

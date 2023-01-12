@@ -38,6 +38,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -45,6 +46,7 @@ import org.rdfhdt.hdt.util.UnicodeEscape;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
+import org.rdfhdt.hdt.util.listener.MultiThreadListenerConsole;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -53,9 +55,21 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @author mario.arias
  *
  */
-public class HdtSearch implements ProgressListener {
+public class HdtSearch {
 	@Parameter(description = "<HDT File>")
 	public List<String> parameters = new ArrayList<>();
+
+	@Parameter(names = "-options", description = "HDT Conversion options (override those of config file)")
+	public String options;
+
+	@Parameter(names = "-config", description = "Conversion config file")
+	public String configFile;
+
+	@Parameter(names = "-color", description = "Print using color (if available)")
+	public boolean color;
+
+	@Parameter(names = "-quiet", description = "Do not show progress of the conversion")
+	public boolean quiet;
 
 	@Parameter(names = "-version", description = "Prints the HDT version number")
 	public static boolean showVersion;
@@ -67,7 +81,7 @@ public class HdtSearch implements ProgressListener {
 	
 	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();
-		int count = 0;
+		int count;
 
 		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
 		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
@@ -102,7 +116,7 @@ public class HdtSearch implements ProgressListener {
 	
 	/**
 	 * Read from a line, where each component is separated by space.
-	 * @param line
+	 * @param line line to parse
 	 */
 	private static void parseTriplePattern(TripleString dest, String line) throws ParserException {
 		int split, posa, posb;
@@ -135,11 +149,25 @@ public class HdtSearch implements ProgressListener {
 	}
 	
 	public void execute() throws IOException {
+		HDTOptions spec;
+		if(configFile != null) {
+			spec = HDTOptions.readFromFile(configFile);
+		} else {
+			spec = HDTOptions.of();
+		}
+		if (options != null) {
+			spec.setOptions(options);
+		}
+
+		ProgressListener listenerConsole =
+				!quiet ? new MultiThreadListenerConsole(color)
+						: ProgressListener.ignore();
+
 		HDT hdt;
 		if(loadInMemory) {
-			hdt = HDTManager.loadIndexedHDT(hdtInput, this);
+			hdt = HDTManager.loadIndexedHDT(hdtInput, listenerConsole, spec);
 		} else {
-			hdt= HDTManager.mapIndexedHDT(hdtInput, this);
+			hdt= HDTManager.mapIndexedHDT(hdtInput, spec, listenerConsole);
 		}
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in, UTF_8));
@@ -176,18 +204,11 @@ public class HdtSearch implements ProgressListener {
 			in.close();
 		}
 	}
-	
-	/* (non-Javadoc)
-	 * @see hdt.ProgressListener#notifyProgress(float, java.lang.String)
-	 */
-	@Override
-	public void notifyProgress(float level, String message) {
-		//System.out.println(message + "\t"+ Float.toString(level));
-	}
-	
+
 	public static void main(String[] args) throws Throwable {
 		HdtSearch hdtSearch = new HdtSearch();
-		JCommander com = new JCommander(hdtSearch, args);
+		JCommander com = new JCommander(hdtSearch);
+		com.parse(args);
 		com.setProgramName("hdtSearch");
 
 		if (showVersion) {

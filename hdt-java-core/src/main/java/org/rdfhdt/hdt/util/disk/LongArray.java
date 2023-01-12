@@ -5,7 +5,7 @@ import java.io.IOException;
 /**
  * Describe a large array of longs
  */
-public interface LongArray{
+public interface LongArray {
     /**
      * get an element at a particular index
      *
@@ -39,4 +39,16 @@ public interface LongArray{
      * @throws IOException io exception
      */
     void resize(long newSize) throws IOException;
+
+    /**
+     * clear the long array, ie: set 0s
+     */
+    void clear();
+
+    /**
+     * @return sync version of this long array, might return this if this LongArray is already a sync array
+     */
+    default LongArray asSync() {
+        return SyncLongArray.of(this);
+    }
 }

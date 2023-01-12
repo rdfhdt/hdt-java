@@ -30,6 +30,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
@@ -350,7 +351,7 @@ public class TriplesList implements TempTriples {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener, HDTOptions specIndex) {
+	public void generateIndex(ProgressListener listener, HDTOptions specIndex, Dictionary dictionary) {
 		// TODO Auto-generated method stub
 
 	}

@@ -43,6 +43,7 @@ public class CompressNodeReader implements ExceptionIterator<IndexedNode, IOExce
 		consumer = DebugOrderNodeIterator.of("stream", true);
 	}
 
+	@Override
 	public long getSize() {
 		return size;
 	}

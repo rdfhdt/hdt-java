@@ -35,12 +35,19 @@ import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64Big;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.hdt.impl.HDTDiskImporter;
+import org.rdfhdt.hdt.hdt.impl.diskindex.DiskIndexSort;
+import org.rdfhdt.hdt.hdt.impl.diskindex.ObjectAdjReader;
 import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
+import org.rdfhdt.hdt.iterator.utils.AsyncIteratorFetcher;
+import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
+import org.rdfhdt.hdt.listener.MultiThreadListener;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.*;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -49,23 +56,21 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.concurrent.KWayMerger;
 import org.rdfhdt.hdt.util.io.CloseSuppressPath;
+import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.rdfhdt.hdt.util.io.compress.Pair;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -106,11 +111,11 @@ public class BitmapTriples implements TriplesPrivate {
 
 		loadDiskSequence(spec);
 
-		bitmapY = BitmapFactory.createBitmap(spec.get("bitmap.y"));
-		bitmapZ = BitmapFactory.createBitmap(spec.get("bitmap.z"));
+		bitmapY = BitmapFactory.createBitmap(spec.get(HDTOptionsKeys.BITMAPTRIPLES_BITMAP_Y));
+		bitmapZ = BitmapFactory.createBitmap(spec.get(HDTOptionsKeys.BITMAPTRIPLES_BITMAP_Z));
 
-		seqY = SequenceFactory.createStream(spec.get("seq.y"));
-		seqZ = SequenceFactory.createStream(spec.get("seq.z"));
+		seqY = SequenceFactory.createStream(spec.get(HDTOptionsKeys.BITMAPTRIPLES_SEQ_Y));
+		seqZ = SequenceFactory.createStream(spec.get(HDTOptionsKeys.BITMAPTRIPLES_SEQ_Z));
 
 		adjY = new AdjacencyList(seqY, bitmapY);
 		adjZ = new AdjacencyList(seqZ, bitmapZ);
@@ -174,8 +179,8 @@ public class BitmapTriples implements TriplesPrivate {
 
 		long number = it.estimatedNumResults();
 		
-		DynamicSequence vectorY = new SequenceLog64Big(BitUtil.log2(number), number);
-		DynamicSequence vectorZ = new SequenceLog64Big(BitUtil.log2(number), number);
+		DynamicSequence vectorY = new SequenceLog64Big(BitUtil.log2(number), number + 1);
+		DynamicSequence vectorZ = new SequenceLog64Big(BitUtil.log2(number), number + 1);
 		
 		ModifiableBitmap bitY = Bitmap375Big.memory(number);
 		ModifiableBitmap bitZ = Bitmap375Big.memory(number);
@@ -473,7 +478,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	public ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
+	public Bitmap375Big createBitmap375(Path baseDir, String name, long size) {
 		if (diskSequence) {
 			Path path = baseDir.resolve(name);
 			Bitmap375Big bm = Bitmap375Big.disk(path, size, diskSubIndex);
@@ -484,7 +489,174 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	private void createIndexObjectMemoryEfficient(HDTOptions specIndex) throws IOException {
+	static long getMaxChunkSizeDiskIndex(int workers) {
+		return (long) (HDTDiskImporter.getAvailableMemory() * 0.85 / (3L * workers));
+	}
+
+	private void createIndexObjectDisk(HDTOptions spec, Dictionary dictionary, ProgressListener plistener) throws IOException {
+		MultiThreadListener listener = ListenerUtil.multiThreadListener(plistener);
+		StopWatch global = new StopWatch();
+		// load the config
+		Path diskLocation;
+		if (diskSequence) {
+			diskLocation = diskSequenceLocation.createOrGetPath();
+		} else {
+			diskLocation = Files.createTempDirectory("bitmapTriples");
+		}
+		int workers = (int) spec.getInt(
+				HDTOptionsKeys.BITMAPTRIPLES_DISK_WORKER_KEY,
+				Runtime.getRuntime()::availableProcessors
+		);
+		// check and set default values if required
+		if (workers <= 0) {
+			throw new IllegalArgumentException("Number of workers should be positive!");
+		}
+		long chunkSize = spec.getInt(
+				HDTOptionsKeys.BITMAPTRIPLES_DISK_CHUNK_SIZE_KEY,
+				() -> getMaxChunkSizeDiskIndex(workers)
+		);
+		if (chunkSize < 0) {
+			throw new IllegalArgumentException("Negative chunk size!");
+		}
+		long maxFileOpenedLong = spec.getInt(
+				HDTOptionsKeys.BITMAPTRIPLES_DISK_MAX_FILE_OPEN_KEY,
+				1024
+		);
+		int maxFileOpened;
+		if (maxFileOpenedLong < 0 || maxFileOpenedLong > Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("maxFileOpened should be positive!");
+		} else {
+			maxFileOpened = (int) maxFileOpenedLong;
+		}
+		long kwayLong = spec.getInt(
+				HDTOptionsKeys.BITMAPTRIPLES_DISK_KWAY_KEY,
+				() -> Math.max(1, BitUtil.log2(maxFileOpened / workers))
+		);
+		int k;
+		if (kwayLong <= 0 || kwayLong > Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("kway can't be negative!");
+		} else {
+			k = 1 << ((int) kwayLong);
+		}
+		long bufferSizeLong = spec.getInt(HDTOptionsKeys.BITMAPTRIPLES_DISK_BUFFER_SIZE_KEY, CloseSuppressPath.BUFFER_SIZE);
+		int bufferSize;
+		if (bufferSizeLong > Integer.MAX_VALUE - 5L || bufferSizeLong <= 0) {
+			throw new IllegalArgumentException("Buffer size can't be negative or bigger than the size of an array!");
+		} else {
+			bufferSize = (int) bufferSizeLong;
+		}
+
+		// start the indexing
+		DiskIndexSort sort = new DiskIndexSort(
+				CloseSuppressPath.of(diskLocation).resolve("chunks"),
+				new AsyncIteratorFetcher<>(new ObjectAdjReader(seqZ, seqY, bitmapZ)),
+				listener,
+				bufferSize,
+				chunkSize,
+				k,
+				Comparator.<Pair>comparingLong(p -> p.object).thenComparingLong(p -> p.predicate)
+		);
+
+		// Serialize
+		DynamicSequence indexZ = null;
+		ModifiableBitmap bitmapIndexZ = null;
+		DynamicSequence predCount = null;
+
+		global.reset();
+
+		try {
+			try {
+				ExceptionIterator<Pair, IOException> sortedPairs = sort.sort(workers);
+
+				log.info("Pair sorted in {}", global.stopAndShow());
+
+				global.reset();
+				indexZ = createSequence64(diskLocation, "indexZ", BitUtil.log2(seqY.getNumberOfElements()), seqZ.getNumberOfElements());
+				bitmapIndexZ = createBitmap375(diskLocation, "bitmapIndexZ", seqZ.getNumberOfElements());
+				try {
+					long lastObj = -2;
+					long index = 0;
+
+					long size = Math.max(seqZ.getNumberOfElements(), 1);
+					long block = size < 10 ? 1 : size / 10;
+
+					while (sortedPairs.hasNext()) {
+						Pair pair = sortedPairs.next();
+
+						long object = pair.object;
+						long y = pair.predicatePosition;
+
+						if (lastObj == object - 1) {
+							// fill the bitmap index to denote the new object
+							bitmapIndexZ.set(index - 1, true);
+						} else if (!(lastObj == object)) {
+							// non increasing Z?
+							if (lastObj == -2) {
+								if (object != 1) {
+									throw new IllegalArgumentException("Pair object start after 1! " + object);
+								}
+								// start, ignore
+							} else {
+								throw new IllegalArgumentException("Non 1 increasing object! lastObj: " + lastObj + ", object: " + object);
+							}
+						}
+						lastObj = object;
+
+						// fill the sequence with the predicate id
+						if (index % block == 0) {
+							listener.notifyProgress(index / (block / 10f), "writing bitmapIndexZ/indexZ " + index + "/" + size);
+						}
+						indexZ.set(index, y);
+						index++;
+					}
+					listener.notifyProgress(100, "indexZ completed " + index);
+					bitmapIndexZ.set(index - 1, true);
+				} finally {
+					IOUtil.closeObject(sortedPairs);
+				}
+
+				log.info("indexZ/bitmapIndexZ completed in {}", global.stopAndShow());
+			} catch (KWayMerger.KWayMergerException | InterruptedException e) {
+				if (e.getCause() != null) {
+					IOUtil.throwIOOrRuntime(e.getCause());
+				}
+				throw new RuntimeException("Can't sort pairs", e);
+			}
+
+			global.reset();
+			predCount = createSequence64(diskLocation, "predCount", BitUtil.log2(seqY.getNumberOfElements()), dictionary.getNpredicates());
+
+			long size = Math.max(seqY.getNumberOfElements(), 1);
+			long block = size < 10 ? 1 : size / 10;
+
+			for (long i = 0; i < seqY.getNumberOfElements(); i++) {
+				// Read value
+				long val = seqY.get(i);
+
+				if (i % block == 0) {
+					listener.notifyProgress(i / (block / 10f), "writing predCount " + i + "/" + size);
+				}
+				// Increment
+				predCount.set(val - 1, predCount.get(val - 1) + 1);
+			}
+			predCount.trimToSize();
+			listener.notifyProgress(100, "predCount completed " + seqY.getNumberOfElements());
+			log.info("Predicate count completed in {}", global.stopAndShow());
+		} catch (Throwable t) {
+			try {
+				throw t;
+			} finally {
+				Closer.closeAll(indexZ, bitmapIndexZ, predCount);
+			}
+		}
+		this.predicateCount = predCount;
+		this.indexZ = indexZ;
+		this.bitmapIndexZ = bitmapIndexZ;
+		this.adjIndex = new AdjacencyList(this.indexZ, this.bitmapIndexZ);
+		log.info("Index generated in {}", global.stopAndShow());
+	}
+
+	private void createIndexObjectMemoryEfficient() throws IOException {
 		Path diskLocation;
 		if (diskSequence) {
 			diskLocation = diskSequenceLocation.createOrGetPath();
@@ -645,9 +817,7 @@ public class BitmapTriples implements TriplesPrivate {
 				throw t;
 			} finally {
 				try {
-					if (bitmapIndex instanceof Closeable) {
-						((Closeable) bitmapIndex).close();
-					}
+					IOUtil.closeObject(bitmapIndex);
 				} finally {
 					try {
 						if (objectArray != null) {
@@ -673,15 +843,13 @@ public class BitmapTriples implements TriplesPrivate {
 		log.info("Index generated in {}", global.stopAndShow());
 	}
 	
-	@SuppressWarnings("unused")
 	private void createIndexObjects() {
-		// FIXME: Fast but very memory inefficient.
 		class Pair {
 			int valueY;
 			int positionY;
 		}
 
-		ArrayList<List<Pair>> list=new ArrayList<List<Pair>>();
+		ArrayList<List<Pair>> list=new ArrayList<>();
 		
 		System.out.println("Generating HDT Index for ?PO, and ??O queries.");
 		// Generate lists
@@ -696,7 +864,7 @@ public class BitmapTriples implements TriplesPrivate {
 			if(list.size()<=(int)valueZ) {
 				list.ensureCapacity((int)valueZ);
 				while(list.size()<valueZ) {
-					list.add(new ArrayList<Pair>(1));	
+					list.add(new ArrayList<>(1));
 				}
 			}
 			
@@ -724,12 +892,7 @@ public class BitmapTriples implements TriplesPrivate {
 			List<Pair> inner = list.get(i);
 			
 			// Sort by Y
-			Collections.sort(inner, new Comparator<Pair>() {
-				@Override
-				public int compare(Pair o1, Pair o2) {
-					return o1.valueY-o2.valueY;
-				}
-			});
+			inner.sort(Comparator.comparingInt(o -> o.valueY));
 			
 			// Serialize
 			for(int j=0;j<inner.size();j++){
@@ -772,13 +935,31 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	
 	@Override
-	public void generateIndex(ProgressListener listener, HDTOptions specIndex) throws IOException{
+	public void generateIndex(ProgressListener listener, HDTOptions specIndex, Dictionary dictionary) throws IOException{
 		loadDiskSequence(specIndex);
-		predicateIndex = new PredicateIndexArray(this);
-		predicateIndex.generate(listener, specIndex);
 		
-		//createIndexObjects();
-		createIndexObjectMemoryEfficient(specIndex);
+		String indexMethod = specIndex.get(HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_KEY, HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_VALUE_RECOMMENDED);
+		switch (indexMethod) {
+			case HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_VALUE_RECOMMENDED:
+			case HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_VALUE_OPTIMIZED:
+				createIndexObjectMemoryEfficient();
+				break;
+			case HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_VALUE_DISK:
+				createIndexObjectDisk(specIndex, dictionary, listener);
+				break;
+			case HDTOptionsKeys.BITMAPTRIPLES_INDEX_METHOD_VALUE_LEGACY:
+				createIndexObjects();
+				break;
+			default:
+				throw new IllegalArgumentException("Unknown INDEXING METHOD: " + indexMethod);
+		}
+
+		predicateIndex = new PredicateIndexArray(this);
+		if (!specIndex.getBoolean("debug.bitmaptriples.ignorePredicateIndex", false)) {
+			predicateIndex.generate(listener, specIndex, dictionary);
+		} else {
+			System.err.println("WARNING!!! PREDICATE INDEX IGNORED, THE INDEX WON'T BE COMPLETED!");
+		}
 	}
 
 	/* (non-Javadoc)

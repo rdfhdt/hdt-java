@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
@@ -46,7 +47,7 @@ public interface TriplesPrivate extends Triples {
 	 * Generates the associated Index
 	 * @param listener
 	 */
-	void generateIndex(ProgressListener listener, HDTOptions spec) throws IOException;
+	void generateIndex(ProgressListener listener, HDTOptions spec, Dictionary dictionary) throws IOException;
 	
 	/**
 	 * Loads the associated Index from an InputStream

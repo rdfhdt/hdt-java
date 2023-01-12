@@ -3,6 +3,7 @@ package org.rdfhdt.hdt.util.disk;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
+import org.rdfhdt.hdt.util.io.IOUtil;
 import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ public class SimpleSplitLongArrayTest {
 
     @Test
     public void setTest() throws IOException {
-        LargeLongArray arrayExcepted = new LargeLongArray(new LongLargeArray(128L));
+        LargeLongArray arrayExcepted = new LargeLongArray(IOUtil.createLargeArray(128L));
         try (SimpleSplitLongArray array = SimpleSplitLongArray.intXArray(128, bits)) {
 
             long max = (~0L) >>> (64 - bits);
@@ -47,7 +48,7 @@ public class SimpleSplitLongArrayTest {
 
     @Test
     public void resizeTest() throws IOException {
-        LargeLongArray arrayExcepted = new LargeLongArray(new LongLargeArray(128L));
+        LargeLongArray arrayExcepted = new LargeLongArray(IOUtil.createLargeArray(128L));
         try (SimpleSplitLongArray array = SimpleSplitLongArray.intXArray(128, bits)) {
 
             assertEquals("non matching size", arrayExcepted.length(), array.length());

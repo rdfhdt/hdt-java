@@ -47,7 +47,7 @@ public class AdjacencyList {
 		this.array = array;
 		this.bitmap = bitmap;
 		if (array.getNumberOfElements() != bitmap.getNumBits()) {
-			throw new IllegalArgumentException("Adjacency list bitmap and array should have the same size");
+			throw new IllegalArgumentException("Adjacency list bitmap and array should have the same size " + array.getNumberOfElements() + "!=" + bitmap.getNumBits());
 		}
 	}
 

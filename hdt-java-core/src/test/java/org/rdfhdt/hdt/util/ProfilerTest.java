@@ -3,7 +3,7 @@ package org.rdfhdt.hdt.util;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.rdfhdt.hdt.options.HDTOptionsBase;
+import org.rdfhdt.hdt.options.HDTOptions;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -151,7 +151,7 @@ public class ProfilerTest {
 
 	@Test
 	public void loadBackOpt() {
-		HDTOptionsBase opt = new HDTOptionsBase();
+		HDTOptions opt = HDTOptions.of();
 		long id;
 		try (Profiler prof = Profiler.createOrLoadSubSection("test", opt, true)) {
 			id = prof.getId();

@@ -26,7 +26,6 @@ import org.rdfhdt.hdt.util.disk.SimpleSplitLongArray;
 import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -86,7 +85,7 @@ public class Bitmap375Big extends Bitmap64Big {
      * @return bitmap
      */
     public static Bitmap375Big memory(long nbits, Path location) {
-        return new Bitmap375Big(new LargeLongArray(new LongLargeArray(numWords(nbits))), location, location != null);
+        return new Bitmap375Big(new LargeLongArray(IOUtil.createLargeArray(numWords(nbits))), location, location != null);
     }
 
     // Constants

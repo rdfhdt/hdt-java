@@ -28,24 +28,28 @@
 package org.rdfhdt.hdt.options;
 
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
+import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.util.Profiler;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.function.DoubleSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 /**
  * Options storage, see {@link org.rdfhdt.hdt.options.HDTOptionsKeys} for more information.
+ *
  * @author mario.arias
  */
 public interface HDTOptions {
 	/**
-	 * empty option, can be used to set values
+	 * empty option, can't be used to set values
 	 */
 	HDTOptions EMPTY = new HDTOptions() {
 		@Override
@@ -63,22 +67,20 @@ public interface HDTOptions {
 		public void set(String key, String value) {
 			throw new NotImplementedException("set");
 		}
+
+		@Override
+		public Set<?> getKeys() {
+			return Collections.emptySet();
+		}
 	};
 
 	/**
-	 * @return create empty, modifiable options
-	 */
-	static HDTOptions of() {
-		return of(Map.of());
-	}
-
-	/**
-	 * create modifiable options starting from the copy of the data map
-	 * @param data data map
+	 * create modifiable options
+	 *
 	 * @return options
 	 */
-	static HDTOptions of(Map<String, String> data) {
-		Map<String, String> map = new HashMap<>(data);
+	static HDTOptions of() {
+		Map<String, String> map = new TreeMap<>();
 		return new HDTOptions() {
 			@Override
 			public void clear() {
@@ -94,7 +96,75 @@ public interface HDTOptions {
 			public void set(String key, String value) {
 				map.put(key, value);
 			}
+
+			@Override
+			public Set<String> getKeys() {
+				return Collections.unmodifiableSet(map.keySet());
+			}
 		};
+	}
+
+
+	/**
+	 * create modifiable options starting from the copy of the data map
+	 *
+	 * @param data data map
+	 * @return options
+	 */
+	static HDTOptions of(Map<?, ?> data) {
+		Objects.requireNonNull(data, "data map can't be null!");
+		HDTOptions opt = of();
+		opt.setOptions(data);
+		return opt;
+	}
+
+
+	/**
+	 * create modifiable options starting from initial config, each param should be in the format (key, value)*
+	 *
+	 * @param data data map
+	 * @return options
+	 * @throws IllegalArgumentException if the number of param isn't even
+	 */
+	static HDTOptions of(Object... data) {
+		Objects.requireNonNull(data, "data can't be null!");
+		HDTOptions opt = of();
+		opt.setOptions(data);
+		return opt;
+	}
+
+	/**
+	 * get options or {@link #EMPTY}
+	 * @param options options
+	 * @return options or {@link #EMPTY}, this result has no guaranty or mutability
+	 */
+	static HDTOptions ofNullable(HDTOptions options) {
+		return Objects.requireNonNullElse(options, EMPTY);
+	}
+
+	/**
+	 * create modifiable options from a file configuration
+	 *
+	 * @param filename file containing the options, see {@link #load(Path)}
+	 * @return options
+	 */
+	static HDTOptions readFromFile(Path filename) throws IOException {
+		return HDTManager.readOptions(
+				Objects.requireNonNull(filename, "filename can't be null!")
+		);
+	}
+
+	/**
+	 * create modifiable options from a file configuration
+	 *
+	 * @param filename file containing the options, see {@link #load(String)}
+	 * @return options
+	 */
+	static HDTOptions readFromFile(String filename) throws IOException {
+		// use readOptions to have access to HTTP(s) files
+		return HDTManager.readOptions(
+				Objects.requireNonNull(filename, "filename can't be null!")
+		);
 	}
 
 
@@ -111,8 +181,12 @@ public interface HDTOptions {
 	 */
 	String get(String key);
 
-	default Set<Object> getKeys() {
-		throw new NotImplementedException();
+	/**
+	 * @return the keys of the options
+	 * @throws NotImplementedException if the implemented class do not implement this method (backward compatibility)
+	 */
+	default Set<?> getKeys() {
+		throw new NotImplementedException("getKeys");
 	}
 
 	/**
@@ -146,10 +220,11 @@ public interface HDTOptions {
 	default boolean getBoolean(String key) {
 		return "true".equalsIgnoreCase(get(key));
 	}
+
 	/**
 	 * get a boolean
 	 *
-	 * @param key key
+	 * @param key          key
 	 * @param defaultValue default value
 	 * @return boolean or false if the value isn't defined
 	 */
@@ -265,6 +340,34 @@ public interface HDTOptions {
 		return getInt(key, () -> defaultValue);
 	}
 
+
+	/**
+	 * load properties from a path, see {@link Properties#load(InputStream)} for the format
+	 *
+	 * @param filename file
+	 * @throws IOException load io exception
+	 */
+	default void load(Path filename) throws IOException {
+		Objects.requireNonNull(filename, "filename can't be null");
+		Properties properties = new Properties();
+
+		try (InputStream is = Files.newInputStream(filename)) {
+			properties.load(is);
+		}
+
+		properties.forEach((k, v) -> set(String.valueOf(k), v));
+	}
+
+	/**
+	 * load properties from a file, see {@link Properties#load(InputStream)} for the format
+	 *
+	 * @param filename file
+	 * @throws IOException load io exception
+	 */
+	default void load(String filename) throws IOException {
+		load(Path.of(Objects.requireNonNull(filename, "filename can't be null")));
+	}
+
 	/**
 	 * set an option value
 	 *
@@ -280,7 +383,11 @@ public interface HDTOptions {
 	 * @param value value
 	 */
 	default void set(String key, Object value) {
-		set(key, String.valueOf(value));
+		if (value instanceof RDFFluxStop) {
+			set(key, (RDFFluxStop) value);
+		} else {
+			set(key, String.valueOf(value));
+		}
 	}
 
 	/**
@@ -295,7 +402,8 @@ public interface HDTOptions {
 
 	/**
 	 * set a profiler id
-	 * @param key key
+	 *
+	 * @param key      key
 	 * @param profiler profiler
 	 */
 	default void set(String key, Profiler profiler) {
@@ -322,9 +430,79 @@ public interface HDTOptions {
 			int pos = item.indexOf('=');
 			if (pos != -1) {
 				String property = item.substring(0, pos);
-				String value = item.substring(pos+1);
+				String value = item.substring(pos + 1);
 				set(property, value);
 			}
+		}
+	}
+
+	/**
+	 * add options
+	 *
+	 * @param options options
+	 */
+	default void setOptions(Map<?, ?> options) {
+		options.forEach((k, v) -> set(String.valueOf(k), v));
+	}
+
+	/**
+	 * add options, each param should be in the format (key, value)*
+	 *
+	 * @param options options
+	 */
+	default void setOptions(Object... options) {
+		if ((options.length & 1) != 0) {
+			throw new IllegalArgumentException("options.length should be even!");
+		}
+
+		int len = options.length >> 1;
+		for (int i = 0; i < len; i++) {
+			String key = String.valueOf(options[(i << 1)]);
+			Object value = options[(i << 1) | 1];
+			set(key, value);
+		}
+	}
+
+	/**
+	 * Write this options into a config file
+	 *
+	 * @param file file
+	 * @throws IOException io exception
+	 */
+	default void write(Path file) throws IOException {
+		write(file, true);
+	}
+	/**
+	 * Write this options into a config file
+	 * @param file        file
+	 * @param withComment write comments
+	 * @throws IOException io exception
+	 */
+	default void write(Path file, boolean withComment) throws IOException {
+		try (Writer w = Files.newBufferedWriter(file)){
+			write(w, withComment);
+		}
+	}
+	/**
+	 * Write this options into a config file
+	 * @param w           writer
+	 * @param withComment write comments
+	 * @throws IOException io exception
+	 */
+	default void write(Writer w, boolean withComment) throws IOException {
+		Map<String, HDTOptionsKeys.Option> optionMap = HDTOptionsKeys.getOptionMap();
+
+		for (Object okey : getKeys()) {
+			String key = String.valueOf(okey);
+			String value = get(key);
+
+			if (withComment) {
+				HDTOptionsKeys.Option opt = optionMap.get(key);
+				if (opt != null) {
+					w.write("# " + opt.getKeyInfo().desc() + "\n# Type: " + opt.getKeyInfo().type().getTitle() + "\n");
+				}
+			}
+			w.write(key + "=" + value + "\n");
 		}
 	}
 }

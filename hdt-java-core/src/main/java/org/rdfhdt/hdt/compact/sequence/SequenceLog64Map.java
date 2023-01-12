@@ -123,7 +123,12 @@ public class SequenceLog64Map implements Sequence,Closeable {
 		
 		mapFiles(f, 0);
 	}
-	
+
+	@Override
+	public int sizeOf() {
+		return numbits;
+	}
+
 	private void mapFiles(File f, long base) throws IOException {
 		// Read packed data
 		ch = FileChannel.open(Paths.get(f.toString()));

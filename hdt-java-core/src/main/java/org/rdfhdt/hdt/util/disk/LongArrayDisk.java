@@ -20,21 +20,16 @@
 
 package org.rdfhdt.hdt.util.disk;
 
-import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.io.CloseMappedByteBuffer;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 //Implementing an array of longs that is backed up on disk. Following this: http://vanillajava.blogspot.fr/2011/12/using-memory-mapped-file-for-huge.html
 
@@ -46,7 +41,7 @@ public class LongArrayDisk implements Closeable, LongArray {
     private final Path location;
 
     public LongArrayDisk(String location, long size) {
-        this(Path.of(location), size);
+        this(location, size, true);
     }
 
     public LongArrayDisk(String location, long size, boolean overwrite) {
@@ -81,7 +76,7 @@ public class LongArrayDisk implements Closeable, LongArray {
                 mappings[block] = IOUtil.mapChannel(location.toAbsolutePath().toString(), channel, FileChannel.MapMode.READ_WRITE, block * MAPPING_SIZE, sizeMapping);
             }
             if (overwrite) {
-                set0(0, this.size);
+                clear();
             }
         } catch (IOException e) {
             try {
@@ -121,10 +116,6 @@ public class LongArrayDisk implements Closeable, LongArray {
         return mappings[block].getLong(offset);
     }
 
-    public long getLong(long x) {
-        return this.get(x);
-    }
-
     @Override
     public void set(long index, long value) {
         if (index >= size || index < 0) {
@@ -147,8 +138,8 @@ public class LongArrayDisk implements Closeable, LongArray {
     }
 
     public void set0(long startIndex, long endIndex) {
-        long start = startIndex * 8L;
-        long end = endIndex * 8L;
+        long start = startIndex * 8;
+        long end = endIndex * 8;
 
         if (start >= end) {
             return;
@@ -188,12 +179,14 @@ public class LongArrayDisk implements Closeable, LongArray {
 
             int toWrite = endBuffer - startBuffer;
 
+            int shift = 0;
             while (toWrite > 0) {
-                mapping.position(startBuffer);
+                mapping.position(startBuffer + shift);
                 int w = Math.min(toWrite, zeros.length);
 
                 mapping.put(zeros, 0, w);
 
+                shift += w;
                 toWrite -= w;
                 c += w;
                 if (c > 10000000) {
@@ -254,6 +247,11 @@ public class LongArrayDisk implements Closeable, LongArray {
                 IOUtil.closeAll(mappings);
             }
         }
+    }
+
+    @Override
+    public void clear() {
+        set0(0, length());
     }
 
     /**

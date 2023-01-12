@@ -40,6 +40,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTSupplier;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
@@ -135,11 +136,11 @@ public class RDF2HDT implements ProgressListener {
 	}
 
 	public void execute() throws ParserException, IOException {
-		HDTSpecification spec;
-		if (configFile != null) {
-			spec = new HDTSpecification(configFile);
+		HDTOptions spec;
+		if(configFile != null) {
+			spec = HDTOptions.readFromFile(configFile);
 		} else {
-			spec = new HDTSpecification();
+			spec = HDTOptions.of();
 		}
 		if (options != null) {
 			spec.setOptions(options);

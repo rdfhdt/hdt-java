@@ -27,8 +27,12 @@
 
 package org.rdfhdt.hdt.options;
 
-import java.io.FileInputStream;
+import org.rdfhdt.hdt.util.io.IOUtil;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 /**
  * Holds the properties of HDT from a configuration file
@@ -38,8 +42,6 @@ public class HDTSpecification extends HDTOptionsBase {
 
 	/**
 	 * Default constructor, reads the file config.properties
-	 * 
-	 *
 	 */
 	public HDTSpecification() {
 		super();
@@ -47,23 +49,38 @@ public class HDTSpecification extends HDTOptionsBase {
 
 	/**
 	 * Constructor that reads a specific filename
-	 * 
-	 * @param filename
-	 * @throws IOException 
+	 *
+	 * @param filename file
+	 * @throws IOException load io exception
 	 */
 	public HDTSpecification(String filename) throws IOException {
 		super();
 		load(filename);
 	}
 
-	public void load(String filename) throws IOException {
-		FileInputStream	fin = new FileInputStream(filename);
-		try {
-			properties.load(fin);
-		} finally {
-			fin.close();
-		}
+	/**
+	 * Constructor that reads a specific filename
+	 *
+	 * @param filename file
+	 * @throws IOException load io exception
+	 */
+	public HDTSpecification(Path filename) throws IOException {
+		super();
+		load(filename);
+	}
 
+	@Override
+	public void load(String filename) throws IOException {
+		try (InputStream is = IOUtil.getFileInputStream(filename)) {
+			properties.load(is);
+		}
+	}
+
+	@Override
+	public void load(Path filename) throws IOException {
+		try (InputStream is = Files.newInputStream(filename)) {
+			properties.load(is);
+		}
 	}
 
 }

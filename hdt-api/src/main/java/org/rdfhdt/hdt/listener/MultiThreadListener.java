@@ -5,6 +5,32 @@ package org.rdfhdt.hdt.listener;
  */
 @FunctionalInterface
 public interface MultiThreadListener extends ProgressListener {
+	/**
+	 * empty progress listener
+	 *
+	 * @return progress listener
+	 */
+	static MultiThreadListener ignore() {
+		return ((thread, level, message) -> {
+		});
+	}
+
+	/**
+	 * @return progress listener returning to sdtout
+	 */
+	static MultiThreadListener sout() {
+		return ((thread, level, message) -> System.out.println(level + " - " + message));
+	}
+
+	/**
+	 * progress listener of a nullable listener
+	 *
+	 * @param listener listener
+	 * @return listener or ignore listener
+	 */
+	static MultiThreadListener ofNullable(MultiThreadListener listener) {
+		return listener == null ? ignore() : listener;
+	}
 
 	/**
 	 * Send progress notification

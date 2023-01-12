@@ -48,7 +48,7 @@ public class HDTSparql {
 
 	public void execute() throws IOException {
 		// Create HDT
-		HDT hdt = HDTManager.mapIndexedHDT(fileHDT, null);
+		HDT hdt = HDTManager.mapIndexedHDT(fileHDT);
 
 		try {
 			// Create Jena wrapper on top of HDT.

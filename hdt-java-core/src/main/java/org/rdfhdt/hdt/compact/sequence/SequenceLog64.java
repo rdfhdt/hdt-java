@@ -293,6 +293,11 @@ public class SequenceLog64 implements DynamicSequence {
 		resizeArray((int)numWordsFor(numbits, numentries));	
 	}
 
+	@Override
+	public void clear() {
+		Arrays.fill(data, 0);
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#getNumberOfElements()
 	 */

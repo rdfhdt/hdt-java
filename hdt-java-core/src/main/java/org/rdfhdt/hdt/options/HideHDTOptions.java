@@ -15,6 +15,12 @@ public class HideHDTOptions implements HDTOptions {
 
     /**
      * @param spec   wrapped options
+     */
+    public HideHDTOptions(HDTOptions spec) {
+        this(spec, Function.identity());
+    }
+    /**
+     * @param spec   wrapped options
      * @param mapper mapping function (key) {@literal ->} newKey?
      */
     public HideHDTOptions(HDTOptions spec, Function<String, String> mapper) {
@@ -37,7 +43,7 @@ public class HideHDTOptions implements HDTOptions {
     }
 
     @Override
-    public Set<Object> getKeys() {
+    public Set<?> getKeys() {
         return spec.getKeys();
     }
 

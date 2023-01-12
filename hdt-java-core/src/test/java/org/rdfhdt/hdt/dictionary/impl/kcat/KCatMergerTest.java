@@ -21,7 +21,6 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTManagerTest;
 import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.options.HDTOptionsBase;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
 import org.rdfhdt.hdt.util.concurrent.SyncSeq;
@@ -84,7 +83,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
     }
 
     private DictionarySection loadSection(InputStream stream) throws IOException {
-        PFCDictionarySection section = new PFCDictionarySection(new HDTOptionsBase());
+        PFCDictionarySection section = new PFCDictionarySection(HDTOptions.EMPTY);
         section.load(stream, null);
         return section;
     }
@@ -92,7 +91,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
     private Map<? extends CharSequence, DictionarySection> loadMultiSection(List<CharSequence> seq, InputStream stream) throws IOException {
         Map<ByteString, DictionarySection> sectionMap = new TreeMap<>();
         for (CharSequence key : seq) {
-            PFCDictionarySection section = new PFCDictionarySection(new HDTOptionsBase());
+            PFCDictionarySection section = new PFCDictionarySection(HDTOptions.EMPTY);
             section.load(stream, null);
             sectionMap.put(ByteString.of(key), section);
         }
@@ -103,7 +102,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
     public void mergerTest() throws ParserException, IOException, InterruptedException {
         Path root = tempDir.getRoot().toPath();
         try {
-            HDTOptions spec = new HDTOptionsBase();
+            HDTOptions spec = HDTOptions.of();
 
             if (multi) {
                 spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
@@ -276,7 +275,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
             Random rnd = new Random(58);
 
             // create the config
-            HDTOptions spec = new HDTOptionsBase();
+            HDTOptions spec = HDTOptions.of();
             if (multi) {
                 spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
                 spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
@@ -332,7 +331,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
             Random rnd = new Random(58);
 
             // create the config
-            HDTOptions spec = new HDTOptionsBase();
+            HDTOptions spec = HDTOptions.of();
             if (multi) {
                 spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
                 spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);
@@ -412,7 +411,7 @@ public class KCatMergerTest extends AbstractMapMemoryTest {
             Random rnd = new Random(58);
 
             // create the config
-            HDTOptions spec = new HDTOptionsBase();
+            HDTOptions spec = HDTOptions.of();
             if (multi) {
                 spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_MULTI_OBJECTS);
                 spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH);

@@ -33,11 +33,7 @@ public abstract class HDTBase<H extends Header, D extends DictionaryPrivate, T e
 	protected T triples;
 
 	protected HDTBase(HDTOptions spec) {
-		if (spec == null) {
-			this.spec = new HDTSpecification();
-		} else {
-			this.spec = spec;
-		}
+		this.spec = HDTOptions.ofNullable(spec);
 	}
 
 	/**

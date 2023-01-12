@@ -1,4 +1,10 @@
 param(
+    [String]
+    $options,
+    [String]
+    $config,
+    [Switch]
+    $color,
     [Parameter()]
     [Switch]
     $version,

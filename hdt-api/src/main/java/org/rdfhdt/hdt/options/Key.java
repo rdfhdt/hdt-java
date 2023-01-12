@@ -1,7 +1,9 @@
 package org.rdfhdt.hdt.options;
 
+import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * define a key in the HDTOptionsKey class
@@ -9,6 +11,7 @@ import java.lang.annotation.RetentionPolicy;
  * @author Antoine Willerval
  */
 @Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
 public @interface Key {
     /**
      * Type enum for a key

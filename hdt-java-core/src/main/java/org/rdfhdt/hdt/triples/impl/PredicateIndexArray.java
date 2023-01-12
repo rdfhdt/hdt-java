@@ -11,6 +11,7 @@ import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.*;
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.util.BitUtil;
@@ -68,7 +69,7 @@ class PredicateIndexArray implements PredicateIndex {
 	}
 
 	@Override
-	public void generate(ProgressListener listener, HDTOptions specIndex) {
+	public void generate(ProgressListener listener, HDTOptions specIndex, Dictionary dictionary) {
 		IntermediateListener iListener = new IntermediateListener(listener);
 		StopWatch st = new StopWatch();
 
@@ -84,7 +85,7 @@ class PredicateIndexArray implements PredicateIndex {
 		}
 		ModifiableBitmap bitmap;
 
-		DynamicSequence predCount = triples.createSequence64(diskLocation, "predCount", BitUtil.log2(triples.getSeqY().getNumberOfElements()), 0);
+		DynamicSequence predCount = triples.createSequence64(diskLocation, "predicateIndexPredCount", BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
 		try {
 			long maxCount = 0;
 			for (long i = 0; i < triples.getSeqY().getNumberOfElements(); i++) {
@@ -101,20 +102,27 @@ class PredicateIndexArray implements PredicateIndex {
 				maxCount = Math.max(count, maxCount);
 				predCount.set(val - 1, count);
 
-				ListenerUtil.notifyCond(iListener, "Counting appearances of predicates", i, triples.getSeqY().getNumberOfElements(), 20000);
+				if (listener != null && i % 1_000_000 == 0) {
+					listener.notifyProgress((float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Counting appearances of predicates " + i + " / "+ triples.getSeqY().getNumberOfElements());
+				}
 			}
 			predCount.aggressiveTrimToSize();
 
 			// Convert predicate count to bitmap
-			bitmap = triples.createBitmap375(diskLocation, "bitmap", triples.getSeqY().getNumberOfElements());
+			bitmap = triples.createBitmap375(diskLocation, "predicateIndexBitmap", triples.getSeqY().getNumberOfElements());
 			long tempCountPred = 0;
 			for (long i = 0; i < predCount.getNumberOfElements(); i++) {
 				tempCountPred += predCount.get(i);
 				bitmap.set(tempCountPred - 1, true);
-				ListenerUtil.notifyCond(iListener, "Creating Predicate bitmap", i, predCount.getNumberOfElements(), 100000);
+				if (listener != null && i % 1_000_000 == 0) {
+					listener.notifyProgress((float) (i * 100 / predCount.getNumberOfElements()), "Creating Predicate bitmap " + i + " / "+ triples.getSeqY().getNumberOfElements());
+				}
 			}
 			bitmap.set(triples.getSeqY().getNumberOfElements() - 1, true);
 			log.info("Predicate Bitmap in {}", st.stopAndShow());
+			if (listener != null) {
+				listener.notifyProgress(100, "Predicate Bitmap in " + st);
+			}
 			st.reset();
 		} finally {
 			IOUtil.closeQuietly(predCount);
@@ -122,11 +130,11 @@ class PredicateIndexArray implements PredicateIndex {
 
 
 	    // Create predicate index
-		DynamicSequence array = triples.createSequence64(diskLocation, "array", BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
+		DynamicSequence array = triples.createSequence64(diskLocation, "predicateIndexArray", BitUtil.log2(triples.getSeqY().getNumberOfElements()), triples.getSeqY().getNumberOfElements());
 		try {
 			array.resize(triples.getSeqY().getNumberOfElements());
 
-			DynamicSequence insertArray = triples.createSequence64(diskLocation, "insertArray", BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
+			DynamicSequence insertArray = triples.createSequence64(diskLocation, "predicateIndexInsertArray", BitUtil.log2(triples.getSeqY().getNumberOfElements()), bitmap.countOnes());
 			try {
 				insertArray.resize(bitmap.countOnes());
 				for (long i = 0; i < triples.getSeqY().getNumberOfElements(); i++) {
@@ -138,7 +146,9 @@ class PredicateIndexArray implements PredicateIndex {
 
 					array.set(insertBase + insertOffset, i);
 
-					ListenerUtil.notifyCond(iListener, "Generating predicate references", i, triples.getSeqY().getNumberOfElements(), 100000);
+					if (listener != null && i % 1_000_000 == 0) {
+						listener.notifyProgress( (float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Generating predicate references");
+					}
 				}
 			} finally {
 				IOUtil.closeQuietly(insertArray);

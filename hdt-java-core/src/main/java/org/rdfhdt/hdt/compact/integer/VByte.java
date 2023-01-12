@@ -39,20 +39,52 @@ import org.rdfhdt.hdt.util.io.BigMappedByteBuffer;
 
 /**
  * Typical implementation of Variable-Byte encoding for integers.
- * http://nlp.stanford.edu/IR-book/html/htmledition/variable-byte-codes-1.html
- * 
+ * <a href="http://nlp.stanford.edu/IR-book/html/htmledition/variable-byte-codes-1.html">variable-byte-codes</a>
+ *
  * The first bit of each byte specifies whether there are more bytes available.
  * Numbers from 0 to 126 are encoded using just one byte.
  * Numbers from 127 to 16383 are encoded using two bytes.
  * Numbers from 16384 to 2097151 are encoded using three bytes.
- * 
+ *
  * @author mario.arias
  *
  */
 public class VByte {
 	
 	private VByte() {}
-	
+
+	/**
+	 * encode a Variable-Byte adding a bit for the sign, should be decoded with {@link #decodeSigned(InputStream)}
+	 * @param out   out stream
+	 * @param value value to encode
+	 * @throws IOException write exception
+	 */
+	public static void encodeSigned(OutputStream out, long value) throws IOException {
+		if (value < 0) {
+			// set the 1st bit to 1
+			encode(out, ~(value << 1));
+		} else {
+			encode(out, value << 1);
+		}
+	}
+
+	/**
+	 * decode a signed Variable-Byte, should be encoded with {@link #encodeSigned(OutputStream, long)}
+	 * @param in in stream
+	 * @return decoded value
+	 * @throws IOException write exception
+	 */
+	public static long decodeSigned(InputStream in) throws IOException {
+		long decode = decode(in);
+		if ((decode & 1) == 0) {
+			// +
+			return decode >>> 1;
+		} else {
+			// -
+			return ~(decode >>> 1);
+		}
+	}
+
 	public static void encode(OutputStream out, long value) throws IOException {
 		if(value<0) {
 			throw new IllegalArgumentException("Only can encode VByte of positive values");

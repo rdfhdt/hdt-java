@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
@@ -70,6 +71,11 @@ public class SequenceInt64 implements DynamicSequence {
 		}
 		resizeArray((int) numentries);
 		this.numelements = numentries;
+	}
+
+	@Override
+	public void clear() {
+		Arrays.fill(data, 0);
 	}
 
 	private void resizeArray(int size) {
