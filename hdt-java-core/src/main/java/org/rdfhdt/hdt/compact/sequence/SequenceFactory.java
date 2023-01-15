@@ -49,15 +49,15 @@ public class SequenceFactory {
 	
 	public static Sequence createStream(String name) {
 		if(name==null) {
-			return new SequenceLog64();
+			return new SequenceLog64Big();
 		} else if(name.equals(HDTVocabulary.SEQ_TYPE_INT32)) {
 			return new SequenceInt32();
 		} else if(name.equals(HDTVocabulary.SEQ_TYPE_INT64)) {
 			return new SequenceInt64();
 		} else if(name.equals(HDTVocabulary.SEQ_TYPE_LOG)) {
-			return new SequenceLog64();
+			return new SequenceLog64Big();
 		}
-		return new SequenceLog64();
+		return new SequenceLog64Big();
 	}
 	
 	public static Sequence createStream(InputStream input) throws IOException {
@@ -66,11 +66,11 @@ public class SequenceFactory {
 		input.reset();
 		switch (type) {
 		case TYPE_SEQLOG:
-			return new SequenceLog64();
+			return new SequenceLog64Big();
 		case TYPE_SEQ32:
 			return new SequenceInt32();
 		case TYPE_SEQ64:
-			return new SequenceLog64();
+			return new SequenceLog64Big();
 		default :
 			throw new IllegalFormatException("Implementation not found for Sequence with code "+type);
 		}		
