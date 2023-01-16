@@ -2,6 +2,7 @@ package org.rdfhdt.hdt.triples.impl;
 
 import org.rdfhdt.hdt.compact.bitmap.AppendableWriteBitmap;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
@@ -134,7 +135,7 @@ public class WriteBitmapTriples implements TriplesPrivate {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener, HDTOptions disk) {
+	public void generateIndex(ProgressListener listener, HDTOptions disk, Dictionary dictionary) {
 		throw new NotImplementedException();
 	}
 

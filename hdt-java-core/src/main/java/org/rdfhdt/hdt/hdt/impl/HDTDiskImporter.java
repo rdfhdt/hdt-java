@@ -45,11 +45,17 @@ import java.util.Iterator;
  */
 public class HDTDiskImporter implements Closeable {
 	/**
+	 * @return ram on the system
+	 */
+	public static long getAvailableMemory() {
+		Runtime runtime = Runtime.getRuntime();
+		return (runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory()));
+	}
+	/**
 	 * @return a theoretical maximum amount of memory the JVM will attempt to use
 	 */
 	static long getMaxChunkSize(int workers) {
-		Runtime runtime = Runtime.getRuntime();
-		return (long) ((runtime.maxMemory() - (runtime.totalMemory() - runtime.freeMemory())) * 0.85 / (1.5 * 3 * workers));
+		return (long) (getAvailableMemory() * 0.85 / (1.5 * 3 * workers));
 	}
 
 	// configs

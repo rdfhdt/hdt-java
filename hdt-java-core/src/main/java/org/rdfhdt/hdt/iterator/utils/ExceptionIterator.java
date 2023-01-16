@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.iterator.utils;
 
+import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.listener.ProgressListener;
 
 import java.util.Iterator;
@@ -219,5 +220,12 @@ public interface ExceptionIterator<T, E extends Exception> {
 				}
 			}
 		};
+	}
+
+	/**
+	 * @return -1 if undefined, the size of the iterator otherwise
+	 */
+	default long getSize() {
+		return -1;
 	}
 }

@@ -402,7 +402,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 
 			// GENERATE
 			StopWatch st = new StopWatch();
-			triples.generateIndex(listener, spec);
+			triples.generateIndex(listener, spec, dictionary);
 
 			// SAVE
 			if(this.hdtFileName!=null) {

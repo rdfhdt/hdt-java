@@ -2,12 +2,15 @@ package org.rdfhdt.hdt.util.io.compress;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.iterator.utils.ExceptionIterator;
 import org.rdfhdt.hdt.triples.IndexedNode;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.CharSequenceComparator;
-import org.rdfhdt.hdt.util.string.DelayedString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -77,5 +80,36 @@ public class CompressTest {
 
 		Assert.assertEquals(index1, CompressUtil.computeSharedNode(sharedIndex1, sharedCount));
 		Assert.assertEquals(sharedCount + index1, CompressUtil.computeSharedNode(CompressUtil.getHeaderId(index1), sharedCount));
+	}
+
+	@Test
+	public void decodeSignedTest() throws IOException {
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+		VByte.encodeSigned(out, 0xFFL);
+		VByte.encodeSigned(out, -0xFFL);
+
+		VByte.encodeSigned(out, 0x18L);
+		VByte.encodeSigned(out, 0x91L);
+		VByte.encodeSigned(out, 0x75L);
+
+		VByte.encodeSigned(out, 0x186878L);
+		VByte.encodeSigned(out, 0x9167L);
+		VByte.encodeSigned(out, 0x75L);
+		VByte.encodeSigned(out, -0x186878L);
+
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+
+		Assert.assertEquals(0xFFL, VByte.decodeSigned(in));
+		Assert.assertEquals(-0xFFL, VByte.decodeSigned(in));
+
+		Assert.assertEquals(0x18L, VByte.decodeSigned(in));
+		Assert.assertEquals(0x91L, VByte.decodeSigned(in));
+		Assert.assertEquals(0x75L, VByte.decodeSigned(in));
+
+		Assert.assertEquals(0x186878L, VByte.decodeSigned(in));
+		Assert.assertEquals(0x9167L, VByte.decodeSigned(in));
+		Assert.assertEquals(0x75L, VByte.decodeSigned(in));
+		Assert.assertEquals(-0x186878L, VByte.decodeSigned(in));
 	}
 }

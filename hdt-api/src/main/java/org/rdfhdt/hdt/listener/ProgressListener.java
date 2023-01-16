@@ -29,14 +29,41 @@ package org.rdfhdt.hdt.listener;
 
 /**
  * Interface for notifying the progress of an operation.
- * 
- * @author mario.arias
  *
+ * @author mario.arias
  */
 public interface ProgressListener {
 	/**
+	 * empty progress listener
+	 *
+	 * @return progress listener
+	 */
+	static ProgressListener ignore() {
+		return ((level, message) -> {
+		});
+	}
+
+	/**
+	 * @return progress listener returning to sdtout
+	 */
+	static ProgressListener sout() {
+		return ((level, message) -> System.out.println(level + " - " + message));
+	}
+
+	/**
+	 * progress listener of a nullable listener
+	 *
+	 * @param listener listener
+	 * @return listener or ignore listener
+	 */
+	static ProgressListener ofNullable(ProgressListener listener) {
+		return listener == null ? ignore() : listener;
+	}
+
+	/**
 	 * Send progress notification
-	 * @param level percent of the task accomplished
+	 *
+	 * @param level   percent of the task accomplished
 	 * @param message Description of the operation
 	 */
 	void notifyProgress(float level, String message);

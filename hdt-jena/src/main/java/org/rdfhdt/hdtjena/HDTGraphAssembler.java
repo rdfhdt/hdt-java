@@ -66,9 +66,9 @@ public class HDTGraphAssembler extends AssemblerBase implements Assembler {
 			// FIXME: Read more properties. Cache config?
 			HDT hdt;
 			if(loadInMemory) {
-				hdt = HDTManager.loadIndexedHDT(file, null);				
+				hdt = HDTManager.loadIndexedHDT(file);
 			} else {
-				hdt = HDTManager.mapIndexedHDT(file, null);
+				hdt = HDTManager.mapIndexedHDT(file);
 			}
 			HDTGraph graph = new HDTGraph(hdt);
 			return ModelFactory.createModelForGraph(graph);

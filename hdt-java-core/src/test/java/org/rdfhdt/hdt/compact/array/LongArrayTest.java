@@ -9,11 +9,14 @@ import java.io.IOException;
 import java.util.Random;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.rdfhdt.hdt.compact.sequence.SequenceInt64;
+import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 
 public class LongArrayTest {
-	
+
 	private static final int numentries = 10000;
 	SequenceInt64 array;
 	long [] plain;

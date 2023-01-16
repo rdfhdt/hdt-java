@@ -14,6 +14,7 @@ import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -102,6 +103,32 @@ public class LongArrayDiskTest  extends AbstractMapMemoryTest {
             assertEquals(array.get(1), 2);
             assertEquals(array.get(2), 3);
             assertEquals(array.get(3), 4);
+        }
+    }
+
+    @Test
+    public void clearTest() throws IOException {
+        Path root = tempDir.getRoot().toPath();
+
+        long size = 12543;
+        try (LongArrayDisk array = new LongArrayDisk(root.resolve("file"), size)) {
+
+            assertEquals(array.length(), size);
+
+            Random r1 = new Random(25);
+            for (long i = 0; i < array.length(); i++) {
+                array.set(i, r1.nextLong());
+            }
+            Random r2 = new Random(25);
+            for (long i = 0; i < array.length(); i++) {
+                assertEquals("#" + i, r2.nextLong(), array.get(i));
+            }
+
+            array.clear();
+
+            for (long i = 0; i < array.length(); i++) {
+                assertEquals("#" + i, 0, array.get(i));
+            }
         }
     }
     @Test

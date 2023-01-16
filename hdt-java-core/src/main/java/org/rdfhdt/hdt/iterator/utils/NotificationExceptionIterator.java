@@ -54,4 +54,9 @@ public class NotificationExceptionIterator<T, E extends Exception> implements Ex
 	public void remove() throws E {
 		it.remove();
 	}
+
+	@Override
+	public long getSize() {
+		return it.getSize();
+	}
 }

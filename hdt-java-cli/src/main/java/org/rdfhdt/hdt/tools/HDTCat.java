@@ -85,13 +85,13 @@ public class HDTCat implements ProgressListener {
 
 
     public void execute() throws IOException {
-        HDTSpecification spec;
-        if(configFile!=null) {
-            spec = new HDTSpecification(configFile);
+        HDTOptions spec;
+        if(configFile != null) {
+            spec = HDTOptions.readFromFile(configFile);
         } else {
-            spec = new HDTSpecification();
+            spec = HDTOptions.of();
         }
-        if(options!=null) {
+        if (options != null) {
             spec.setOptions(options);
         }
 

@@ -28,15 +28,17 @@ package org.rdfhdt.hdt.util.io;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
+import org.apache.commons.math3.util.FastMath;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
+import org.visnow.jlargearrays.ConcurrencyUtils;
 import org.visnow.jlargearrays.LargeArrayUtils;
+import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -59,6 +61,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 
 import java.nio.ByteBuffer;
@@ -108,6 +112,86 @@ public class IOUtil {
 		return new CloseMappedByteBuffer(filename, ch.map(mode, position, size), false);
 	}
 
+	/**
+	 * create a large array filled with 0
+	 * @param size size
+	 * @return array
+	 */
+	public static LongLargeArray createLargeArray(long size) {
+		return createLargeArray(size, true);
+	}
+	/**
+	 * create a large array
+	 * @param size size
+	 * @param init is the array filled with 0 or not
+	 * @return array
+	 */
+	public static LongLargeArray createLargeArray(long size, boolean init) {
+		if (init) {
+			return createLargeArray(size, 0);
+		}
+		return new LongLargeArray(size, false);
+	}
+
+	/**
+	 * create a large array with an initial value
+	 * @param size size
+	 * @param initialValue initial value to fill the array
+	 * @return array
+	 */
+	public static LongLargeArray createLargeArray(long size, long initialValue) {
+		LongLargeArray array = new LongLargeArray(size, false);
+		fillLargeArray(array, initialValue);
+		return array;
+	}
+
+	/**
+	 * Set long large array all values, faster than default implementation because there is <a href="https://gitlab.com/visnow.org/JLargeArrays/-/issues/7">a bug</a>.
+	 *
+	 * @param array array
+	 * @param initValue initialization value
+	 */
+	public static void fillLargeArray(LongLargeArray array, long initValue) {
+		fillLargeArray(array, 0, array.length(), initValue);
+	}
+
+	/**
+	 * Set long large array all values, faster than default implementation because there is <a href="https://gitlab.com/visnow.org/JLargeArrays/-/issues/7">a bug</a>.
+	 *
+	 * @param array array
+	 * @param start start (inclusive)
+	 * @param end end index (exclusive)
+	 * @param initValue initialization value
+	 */
+	public static void fillLargeArray(LongLargeArray array, long start, long end, long initValue) {
+		if (start >= end) {
+			return;
+		}
+		long length = end - start;
+		final int nthreads = (int) FastMath.min(length, ConcurrencyUtils.getNumberOfThreads());
+		if (nthreads <= 2 || length < ConcurrencyUtils.getConcurrentThreshold() || !array.isLarge()) {
+			for (long k = 0; k < length; k++) {
+				array.setLong(k, initValue);
+			}
+		} else {
+			final long perThreadElem = length / nthreads;
+			final Future<?>[] threads = new Future[nthreads];
+			for (int thread = 0; thread < nthreads; thread++) {
+				final long firstIdx = start + thread * perThreadElem;
+				final long lastIdx = (thread == nthreads - 1) ? end : (firstIdx + perThreadElem);
+				threads[thread] = ConcurrencyUtils.submit(() -> {
+						for (long k1 = firstIdx; k1 < lastIdx; k1++) {
+							array.setLong(k1, initValue);
+						}
+				});
+			}
+			try {
+				ConcurrencyUtils.waitForCompletion(threads);
+			} catch (InterruptedException | ExecutionException ex) {
+				throw new IllegalStateException(ex);
+			}
+		}
+	}
 	/**
 	 * call all the close method and merge the exceptions by suppressing them (if multiple)
 	 *
@@ -186,7 +270,12 @@ public class IOUtil {
 		throwIOOrRuntime(main);
 	}
 
-	private static void throwIOOrRuntime(Throwable t) throws IOException {
+	/**
+	 * throw this throwable as a {@link IOException} or as a {@link RuntimeException}
+	 * @param t throwable
+	 * @throws IOException t
+	 */
+	public static void throwIOOrRuntime(Throwable t) throws IOException {
 		if (t instanceof IOException) {
 			throw (IOException) t;
 		}
@@ -410,7 +499,7 @@ public class IOUtil {
 	 *
 	 * @param in input
 	 * @return integer
-	 * @throws IOException
+	 * @throws IOException io exception
 	 */
 	public static int readInt(InputStream in) throws IOException {
 		int ch1 = in.read();
@@ -419,16 +508,16 @@ public class IOUtil {
 		int ch4 = in.read();
 		if ((ch1 | ch2 | ch3 | ch4) < 0)
 			throw new EOFException();
-		return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1 << 0);
+		return (ch4 << 24) + (ch3 << 16) + (ch2 << 8) + (ch1);
 	}
 
 	/**
 	 * Convert byte array to int, little endian
 	 *
-	 * @param value
+	 * @param value io exception
 	 */
 	public static int byteArrayToInt(byte[] value) {
-		return (value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0] << 0);
+		return (value[3] << 24) + (value[2] << 16) + (value[1] << 8) + (value[0]);
 	}
 
 	public static byte[] readSizedBuffer(InputStream input, ProgressListener listener) throws IOException {
@@ -441,7 +530,7 @@ public class IOUtil {
 	/**
 	 * @param input    din
 	 * @param length   bytes
-	 * @param listener
+	 * @param listener listener
 	 */
 	public static byte[] readBuffer(InputStream input, int length, ProgressListener listener) throws IOException {
 		int nRead;

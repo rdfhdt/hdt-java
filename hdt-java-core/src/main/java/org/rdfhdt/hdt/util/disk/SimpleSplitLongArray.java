@@ -49,7 +49,7 @@ public class SimpleSplitLongArray implements LongArray, Closeable {
     }
 
     public static SimpleSplitLongArray intXArray(long size, int x) {
-        return new SimpleSplitLongArray(new LargeLongArray(new LongLargeArray(1 + size / (64 / x))), x, size);
+        return new SimpleSplitLongArray(new LargeLongArray(IOUtil.createLargeArray(1 + size / (64 / x))), x, size);
     }
 
     public static SimpleSplitLongArray int8ArrayDisk(Path location, long size) {
@@ -106,6 +106,11 @@ public class SimpleSplitLongArray implements LongArray, Closeable {
     public void resize(long newSize) throws IOException {
         size = newSize;
         array.resize(newSize / (64 / numbits));
+    }
+
+    @Override
+    public void clear() {
+        array.clear();
     }
 
     @Override

@@ -25,6 +25,7 @@ import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
+import org.rdfhdt.hdt.util.disk.LongArray;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 import org.rdfhdt.hdt.util.io.IOUtil;
 
@@ -40,9 +41,9 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
     private static final byte W = 64;
     private static final int INDEX = 1073741824;
 
-    LongArrayDisk data;
+    LongArray data;
     private int numbits;
-    private long numentries=0;
+    private long numentries;
     private long maxvalue;
 
     public SequenceLog64BigDisk(String location) {
@@ -115,7 +116,7 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
      * @param bitsField Length in bits of each field
      * @param index Position to be retrieved
      */
-    private static long getField(LongArrayDisk data, int bitsField, long index) {
+    private static long getField(LongArray data, int bitsField, long index) {
         if(bitsField==0) return 0;
 
         long bitPos = index*bitsField;
@@ -137,13 +138,13 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
      * @param index Position to store in
      * @param value Value to be stored
      */
-    private static void setField(LongArrayDisk data, int bitsField, long index, long value) {
+    private static void setField(LongArray data, int bitsField, long index, long value) {
         if(bitsField==0) return;
         long bitPos = index*bitsField;
         long i= bitPos/W;
         long j= bitPos%W;
         long mask = ~(~0L << bitsField) << j;
-        data.set(i, (data.getLong(i) & ~mask) | (value << j));
+        data.set(i, (data.get(i) & ~mask) | (value << j));
 
         if((j+bitsField>W)) {
             mask = ~0L << (bitsField+j-W);
@@ -175,14 +176,19 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
         //throw new IndexOutOfBoundsException();
 //		}
 
+        if (position < 0 || numWordsFor(numbits, position) > data.length()) {
+            throw new IndexOutOfBoundsException(position + " < 0 || " + position + " > " + data.length() * 64 / numbits);
+        }
+
         return getField(data, numbits, position);
     }
 
     @Override
     public void set(long position, long value) {
-        if (value<0 || value>maxvalue) {
-            throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
+        if (value < 0 || value > maxvalue) {
+            throw new IllegalArgumentException("Value exceeds the maximum for this data structure " + value + " > " + maxvalue);
         }
+
         //System.out.println("numbits "+this.numbits);
         setField(data, numbits, position, value);
     }
@@ -219,7 +225,9 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
         // Count and calculate number of bits needed per element.
         for(long i=0; i<numentries; i++) {
             long value = this.get(i);
-            max = value>max ? value : max;
+            if (value > max) {
+                max = value;
+            }
         }
         int newbits = BitUtil.log2(max);
 
@@ -264,6 +272,11 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
         }
     }
 
+    @Override
+    public void clear() {
+        data.clear();
+    }
+
     /* (non-Javadoc)
      * @see hdt.triples.array.Stream#getNumberOfElements()
      */
@@ -290,7 +303,7 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
 
         long numwords = numWordsFor(numbits, numentries);
         for(long i=0;i<numwords-1;i++) {
-            IOUtil.writeLong(out, data.getLong(i));
+            IOUtil.writeLong(out, data.get(i));
         }
 
         if(numwords>0) {
@@ -331,9 +344,7 @@ public class SequenceLog64BigDisk implements DynamicSequence, Closeable {
 
     @Override
     public void close() throws IOException {
-        if (data != null) {
-            data.close();
-        }
+        IOUtil.closeObject(data);
         data=null;
     }
 }

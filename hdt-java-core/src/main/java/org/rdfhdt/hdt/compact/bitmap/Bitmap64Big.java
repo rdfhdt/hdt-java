@@ -68,7 +68,7 @@ public class Bitmap64Big implements Closeable, ModifiableBitmap {
      * @return bitmap
      */
     public static Bitmap64Big memory(long nbits) {
-        return new Bitmap64Big(new LargeLongArray(new LongLargeArray(numWords(nbits))));
+        return new Bitmap64Big(new LargeLongArray(IOUtil.createLargeArray(numWords(nbits))));
     }
 
     // Constants
@@ -221,8 +221,9 @@ public class Bitmap64Big implements Closeable, ModifiableBitmap {
     }
 
     public void set(long bitIndex, boolean value) {
-        if (bitIndex < 0)
+        if (bitIndex < 0) {
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
+        }
 
         long wordIndex = wordIndex(bitIndex);
         try {
@@ -353,5 +354,12 @@ public class Bitmap64Big implements Closeable, ModifiableBitmap {
     @Override
     public void close() throws IOException {
         closer.close();
+    }
+
+    /**
+     * @return sync version of this bitmap
+     */
+    public ModifiableBitmap asSync() {
+        return SyncBitmap.of(this);
     }
 }

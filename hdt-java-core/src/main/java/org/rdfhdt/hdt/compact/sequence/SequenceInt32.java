@@ -30,6 +30,7 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Iterator;
 
@@ -69,6 +70,11 @@ public class SequenceInt32 implements DynamicSequence {
 		}
 		resizeArray((int) numentries);
 		this.numelements = (int) numentries;
+	}
+
+	@Override
+	public void clear() {
+		Arrays.fill(data, 0);
 	}
 
 	private void resizeArray(int size) {
@@ -214,7 +220,7 @@ public class SequenceInt32 implements DynamicSequence {
 	 */
 	@Override
 	public long size() {
-		return 4*numelements;
+		return 4L*numelements;
 	}
 
 	/* (non-Javadoc)

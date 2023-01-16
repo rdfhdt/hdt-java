@@ -57,7 +57,7 @@ public class SequenceLog64Big implements DynamicSequence {
 
 	LongLargeArray data;
 	private int numbits;
-	private long numentries=0;
+	private long numentries;
 	private long maxvalue;
 	
 	public SequenceLog64Big() {
@@ -76,7 +76,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		long size = numWordsFor(numbits, capacity);
 		LongLargeArray.setMaxSizeOf32bitArray(SequenceLog64Big.INDEX);
 		
-		data = new LongLargeArray(Math.max(size,1));
+		data = IOUtil.createLargeArray(Math.max(size,1));
 	}
 	
 	public SequenceLog64Big(int numbits, long capacity, boolean initialize) {
@@ -157,7 +157,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		//data = Arrays.copyOf(data, size);
 		if(size > 0) {
 			if (data.length() != size) {
-				LongLargeArray a = new LongLargeArray(size);
+				LongLargeArray a = IOUtil.createLargeArray(size, false);
 				LargeArrayUtils.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
 				data = a;
 			}
@@ -186,38 +186,12 @@ public class SequenceLog64Big implements DynamicSequence {
         // Prepare array
         numbits = BitUtil.log2(max);
         long size = numWordsFor(numbits, numentries);
-        data = new LongLargeArray(size);
+        data = IOUtil.createLargeArray(size);
 
         // Save
         int count = 0;
         while(elements.hasNext()) {
             long element = elements.next();
-            assert element<=maxvalue;
-            setField(data, numbits, count, element);
-            count++;
-        }
-	}
-
-	public void addIntegers(ArrayList<Integer> elements) {
-		long max = 0;
-		numentries = 0;
-		
-		// Count and calculate number of bits needed per element.
-		for (int i=0;i<elements.size();i++){
-			long val = elements.get(i).longValue();
-			max = Math.max(val, max);
-			numentries++;
-		}
-		
-        // Prepare array
-        numbits = BitUtil.log2(max);
-        long size = numWordsFor(numbits, numentries);
-        data = new LongLargeArray(size);
-
-        // Save
-        int count = 0;
-        for (int i=0;i<elements.size();i++){
-            long element = elements.get(i).longValue();
             assert element<=maxvalue;
             setField(data, numbits, count, element);
             count++;
@@ -239,9 +213,9 @@ public class SequenceLog64Big implements DynamicSequence {
 	
 	@Override
     public void set(long position, long value) {
-		//if(value<0 || value>maxvalue) {
-			//throw new IllegalArgumentException("Value exceeds the maximum for this data structure");
-		//}
+		if (value < 0 || value > maxvalue) {
+			throw new IllegalArgumentException("Value exceeds the maximum for this data structure " + value + " > " + maxvalue);
+		}
 		setField(data, numbits, position, value);
 	}
 
@@ -275,7 +249,9 @@ public class SequenceLog64Big implements DynamicSequence {
 		// Count and calculate number of bits needed per element.
 		for(long i=0; i<numentries; i++) {
 			long value = this.get(i);
-			max = value>max ? value : max;
+			if (value > max) {
+				max = value;
+			}
 		}
 		int newbits = BitUtil.log2(max);
 		
@@ -307,6 +283,11 @@ public class SequenceLog64Big implements DynamicSequence {
 	public void resize(long numentries) {
 		this.numentries = numentries;
 		resizeArray(numWordsFor(numbits, numentries));
+	}
+
+	@Override
+	public void clear() {
+		IOUtil.fillLargeArray(data, 0);
 	}
 
 	/* (non-Javadoc)
@@ -350,7 +331,6 @@ public class SequenceLog64Big implements DynamicSequence {
 	/* (non-Javadoc)
 	 * @see hdt.triples.array.Stream#load(java.io.InputStream, hdt.ProgressListener)
 	 */
-	@SuppressWarnings("resource")
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		CRCInputStream in = new CRCInputStream(input, new CRC8());
@@ -373,7 +353,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		in.setCRC(new CRC32());
 		
 		long numwords = numWordsFor(numbits, numentries);
-		data = new LongLargeArray(numwords);
+		data = IOUtil.createLargeArray(numwords);
 		for(long i=0;i<numwords-1;i++) {
 			data.set(i , IOUtil.readLong(in));
 		}

@@ -71,6 +71,10 @@ public interface Sequence extends Closeable {
 	long size();
 
 	/**
+	 * @return size of the components (in bits)
+	 */
+	int sizeOf();
+	/**
 	 * Saves the array to an OutputStream
 	 *
 	 * @param output

@@ -1,5 +1,6 @@
 package org.rdfhdt.hdt.triples.impl;
 
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.dictionary.impl.DictionaryIDMapping;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
@@ -105,7 +106,7 @@ public class OneReadTempTriples implements TempTriples {
 	}
 
 	@Override
-	public void generateIndex(ProgressListener listener, HDTOptions disk) {
+	public void generateIndex(ProgressListener listener, HDTOptions disk, Dictionary dictionary) {
 		throw new NotImplementedException();
 	}
 

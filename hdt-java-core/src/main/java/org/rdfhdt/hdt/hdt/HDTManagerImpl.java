@@ -114,7 +114,7 @@ public class HDTManagerImpl extends HDTManager {
 
 	@Override
 	public HDT doIndexedHDT(HDT hdt, ProgressListener listener) throws IOException {
-		((HDTPrivate)hdt).loadOrCreateIndex(listener, new HDTSpecification());
+		((HDTPrivate)hdt).loadOrCreateIndex(listener, HDTOptions.of());
 		return hdt;
 	}
 

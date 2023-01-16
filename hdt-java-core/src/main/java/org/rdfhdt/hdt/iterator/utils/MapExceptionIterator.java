@@ -35,6 +35,11 @@ public class MapExceptionIterator<M, N, E extends Exception> implements Exceptio
 		base.remove();
 	}
 
+	@Override
+	public long getSize() {
+		return base.getSize();
+	}
+
 	@FunctionalInterface
 	public interface MapWithIdFunction<M, N, E extends Exception> {
 		N apply(M element, long index) throws E;

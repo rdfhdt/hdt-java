@@ -43,6 +43,7 @@ public class WriteLongArrayBuffer implements LongArray, Closeable {
 	/**
 	 * clear all the elements
 	 */
+	@Override
 	public void clear() {
 		index = 0;
 	}

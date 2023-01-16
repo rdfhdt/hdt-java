@@ -118,7 +118,7 @@ public class AsyncCatTreeWorker implements Closeable {
 	private void runMergeThread() throws IOException, InterruptedException {
 		long cat = 0;
 
-		HideHDTOptions spec = new HideHDTOptions(impl.getHdtFormat(), Function.identity());
+		HideHDTOptions spec = new HideHDTOptions(impl.getHdtFormat());
 
 		spec.set(HDTOptionsKeys.HDTCAT_LOCATION, hdtCatLocationPath);
 

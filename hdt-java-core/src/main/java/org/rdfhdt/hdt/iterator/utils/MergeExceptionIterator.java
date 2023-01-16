@@ -188,6 +188,16 @@ public class MergeExceptionIterator<T, E extends Exception> implements Exception
 	}
 
 	@Override
+	public long getSize() {
+		long s1 = in1.getSize();
+		long s2 = in2.getSize();
+		if (s1 == -1 || s2 == -1) {
+			return -1;
+		}
+		return s2 + s1;
+	}
+
+	@Override
 	public T next() throws E {
 		if (!hasNext()) {
 			return null;
