@@ -28,12 +28,7 @@
 package org.rdfhdt.hdt.triples.impl;
 
 import org.apache.commons.io.file.PathUtils;
-import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap375Disk;
-import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
-import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
+import org.rdfhdt.hdt.compact.bitmap.*;
 import org.rdfhdt.hdt.compact.sequence.DynamicSequence;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
 import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
@@ -54,8 +49,8 @@ import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TriplesPrivate;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.StopWatch;
+import org.rdfhdt.hdt.util.io.CloseSuppressPath;
 import org.rdfhdt.hdt.util.io.CountInputStream;
-import org.rdfhdt.hdt.util.io.CountOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
@@ -92,6 +87,7 @@ public class BitmapTriples implements TriplesPrivate {
 	public PredicateIndex predicateIndex;
 
 	boolean diskSequence;
+	boolean diskSubIndex;
 	CreateOnUsePath diskSequenceLocation;
 
 	private boolean isClosed;
@@ -138,9 +134,8 @@ public class BitmapTriples implements TriplesPrivate {
 	}
 
 	private void loadDiskSequence(HDTOptions spec) throws IOException {
-		String optDisk = spec == null ? null : spec.get("bitmaptriples.sequence.disk");
-		diskSequence = optDisk != null && optDisk.equalsIgnoreCase("true");
-
+		diskSequence = spec != null && spec.getBoolean(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK, false);
+		diskSubIndex = spec != null && spec.getBoolean(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX, false);
 
 		if (diskSequenceLocation != null) {
 			diskSequenceLocation.close();
@@ -148,7 +143,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 		if (diskSequence) {
 			assert spec != null; // happy compiler
-			String optDiskLocation = spec.get("bitmaptriples.sequence.disk.location");
+			String optDiskLocation = spec.get(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_LOCATION);
 			if (optDiskLocation != null && !optDiskLocation.isEmpty()) {
 				diskSequenceLocation = new CreateOnUsePath(Path.of(optDiskLocation));
 			} else {
@@ -157,6 +152,14 @@ public class BitmapTriples implements TriplesPrivate {
 		} else {
 			diskSequenceLocation = null;
 		}
+	}
+
+	public CreateOnUsePath getDiskSequenceLocation() {
+		return diskSequenceLocation;
+	}
+
+	public boolean isUsingDiskSequence() {
+		return diskSequence;
 	}
 
 	public PredicateIndex getPredicateIndex() {
@@ -174,8 +177,8 @@ public class BitmapTriples implements TriplesPrivate {
 		DynamicSequence vectorY = new SequenceLog64Big(BitUtil.log2(number), number);
 		DynamicSequence vectorZ = new SequenceLog64Big(BitUtil.log2(number), number);
 		
-		ModifiableBitmap bitY = new Bitmap375(number);
-		ModifiableBitmap bitZ = new Bitmap375(number);
+		ModifiableBitmap bitY = Bitmap375Big.memory(number);
+		ModifiableBitmap bitZ = Bitmap375Big.memory(number);
 		
 		long lastX=0, lastY=0, lastZ=0;
 		long x, y, z;
@@ -434,7 +437,7 @@ public class BitmapTriples implements TriplesPrivate {
 		isClosed=false;
 	}
 
-	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity, boolean forceDisk) throws IOException {
+	public DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity, boolean forceDisk) throws IOException {
 		if (forceDisk && !diskSequence) {
 			Path path = Files.createTempFile(name, ".bin");
 			return new SequenceLog64BigDisk(path, size, capacity, true) {
@@ -452,7 +455,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	private DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity) {
+	public DynamicSequence createSequence64(Path baseDir, String name, int size, long capacity) {
 		if (diskSequence) {
 			Path path = baseDir.resolve(name);
 			return new SequenceLog64BigDisk(path, size, capacity, true) {
@@ -470,27 +473,18 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 	}
 
-	private ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
+	public ModifiableBitmap createBitmap375(Path baseDir, String name, long size) {
 		if (diskSequence) {
 			Path path = baseDir.resolve(name);
-			return new Bitmap375Disk(path, size) {
-				@Override
-				public void close() throws IOException {
-					try {
-						super.close();
-					} finally {
-						Files.deleteIfExists(path);
-					}
-				}
-			};
+			Bitmap375Big bm = Bitmap375Big.disk(path, size, diskSubIndex);
+			bm.getCloser().with(CloseSuppressPath.of(path));
+			return bm;
 		} else {
-			return new Bitmap375(size);
+			return Bitmap375Big.memory(size);
 		}
 	}
 
 	private void createIndexObjectMemoryEfficient(HDTOptions specIndex) throws IOException {
-		loadDiskSequence(specIndex);
-
 		Path diskLocation;
 		if (diskSequence) {
 			diskLocation = diskSequenceLocation.createOrGetPath();
@@ -722,7 +716,7 @@ public class BitmapTriples implements TriplesPrivate {
 		System.out.println("Serialize object lists");
 		// Serialize
 		DynamicSequence indexZ = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), list.size());
-		Bitmap375 bitmapIndexZ = new Bitmap375(seqY.getNumberOfElements());
+		Bitmap375Big bitmapIndexZ = Bitmap375Big.memory(seqY.getNumberOfElements());
 		long pos = 0;
 		
 		total = list.size();
@@ -779,6 +773,7 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	@Override
 	public void generateIndex(ProgressListener listener, HDTOptions specIndex) throws IOException{
+		loadDiskSequence(specIndex);
 		predicateIndex = new PredicateIndexArray(this);
 		predicateIndex.generate(listener, specIndex);
 		
@@ -1095,15 +1090,15 @@ public class BitmapTriples implements TriplesPrivate {
 		return bitmapIndexZ;
 	}
 
-	private static class CreateOnUsePath implements Closeable {
+	public static class CreateOnUsePath implements Closeable {
 		boolean mkdir;
 		Path path;
 
-		public CreateOnUsePath() {
+		private CreateOnUsePath() {
 			this(null);
 		}
 
-		public CreateOnUsePath(Path path) {
+		private CreateOnUsePath(Path path) {
 			this.path = path;
 		}
 

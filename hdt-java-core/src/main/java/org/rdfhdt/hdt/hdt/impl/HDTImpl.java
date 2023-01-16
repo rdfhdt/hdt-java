@@ -440,8 +440,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			return;
 		}
 		isClosed=true;
-		dictionary.close();
-		triples.close();
+		IOUtil.closeAll(dictionary, triples);
 	}
 	
 	// For debugging

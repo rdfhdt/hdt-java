@@ -31,6 +31,8 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.rdf.RDFFluxStop;
 import org.rdfhdt.hdt.util.Profiler;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.DoubleSupplier;
@@ -42,6 +44,58 @@ import java.util.function.Supplier;
  * @author mario.arias
  */
 public interface HDTOptions {
+	/**
+	 * empty option, can be used to set values
+	 */
+	HDTOptions EMPTY = new HDTOptions() {
+		@Override
+		public void clear() {
+			// already empty
+		}
+
+		@Override
+		public String get(String key) {
+			// no value for key
+			return null;
+		}
+
+		@Override
+		public void set(String key, String value) {
+			throw new NotImplementedException("set");
+		}
+	};
+
+	/**
+	 * @return create empty, modifiable options
+	 */
+	static HDTOptions of() {
+		return of(Map.of());
+	}
+
+	/**
+	 * create modifiable options starting from the copy of the data map
+	 * @param data data map
+	 * @return options
+	 */
+	static HDTOptions of(Map<String, String> data) {
+		Map<String, String> map = new HashMap<>(data);
+		return new HDTOptions() {
+			@Override
+			public void clear() {
+				map.clear();
+			}
+
+			@Override
+			public String get(String key) {
+				return map.get(key);
+			}
+
+			@Override
+			public void set(String key, String value) {
+				map.put(key, value);
+			}
+		};
+	}
 
 
 	/**

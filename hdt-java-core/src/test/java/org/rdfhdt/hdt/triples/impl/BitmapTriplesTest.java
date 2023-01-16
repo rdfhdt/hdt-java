@@ -11,6 +11,7 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.Triples;
 import org.rdfhdt.hdt.util.LargeFakeDataSetStreamSupplier;
@@ -97,8 +98,9 @@ public class BitmapTriplesTest extends AbstractMapMemoryTest {
 
 			// set config
 			if (disk) {
-				optDisk.set("bitmaptriples.sequence.disk", "true");
-				optDisk.set("bitmaptriples.sequence.disk.location", root.resolve("indexdir").toAbsolutePath().toString());
+				optDisk.set(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK, true);
+				optDisk.set(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX, true);
+				optDisk.set(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_LOCATION, root.resolve("indexdir").toAbsolutePath());
 			}
 
 			try (

@@ -3,33 +3,38 @@
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation;
  * version 3.0 of the License.
- *
+ * <p>
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
- *
+ * <p>
  * Contacting the authors:
- *   Dennis Diefenbach:         dennis.diefenbach@univ-st-etienne.fr
+ * Dennis Diefenbach:         dennis.diefenbach@univ-st-etienne.fr
  */
 
 package org.rdfhdt.hdt.compact.bitmap;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
+import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
+import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
+import org.rdfhdt.hdt.util.disk.LargeLongArray;
 import org.rdfhdt.hdt.util.disk.LongArray;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
+import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.io.IOUtil;
+import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -38,11 +43,33 @@ import java.io.OutputStream;
 import java.nio.file.Path;
 
 /**
- * Version of Bitmap64 which is backed up on disk
- * @deprecated use {@link Bitmap64Big#disk(Path, long)} instead
+ * Keeps a bitmap as an array of long values (64 bit per word).
+ * The first bit is the lowest significant bit of word zero, and so on.
+ * Can be stored on disk or in memory without any limitation in size.
+ *
+ * @author mario.arias
  */
-@Deprecated
-public class Bitmap64Disk implements Closeable, ModifiableBitmap {
+public class Bitmap64Big implements Closeable, ModifiableBitmap {
+    /**
+     * create disk version bitmap
+     *
+     * @param location location
+     * @param nbits    number of bits
+     * @return bitmap
+     */
+    public static Bitmap64Big disk(Path location, long nbits) {
+        return new Bitmap64Big(new LongArrayDisk(location, numWords(nbits)));
+    }
+
+    /**
+     * create memory version bitmap
+     *
+     * @param nbits number of bits
+     * @return bitmap
+     */
+    public static Bitmap64Big memory(long nbits) {
+        return new Bitmap64Big(new LargeLongArray(new LongLargeArray(numWords(nbits))));
+    }
 
     // Constants
     protected final static int LOGW = 6;
@@ -51,46 +78,44 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
     // Variables
     protected long numbits;
     protected LongArray words;
-    protected Path location;
 
-    public Bitmap64Disk(String location) {
-        this(location, W);
-    }
+    private final Closer closer;
 
-    public Bitmap64Disk(String location, long nbits) {
-        this(Path.of(location), nbits);
-    }
-
-    public Bitmap64Disk(Path location) {
-        this(location, W);
-    }
-
-    public Bitmap64Disk(Path location, long nbits) {
+    protected Bitmap64Big(LongArray words) {
         this.numbits = 0;
-        this.words = new LongArrayDisk(location, numWords(nbits));
-        this.location = location;
+        this.words = words;
+        closer = Closer.of();
+        getCloser().with((Closeable) this::closeObject);
     }
+
+    private void closeObject() throws IOException {
+        Closer.closeAll(words);
+    }
+
 
     /**
      * Given a bit index, return word index containing it.
      */
     protected static long wordIndex(long bitIndex) {
-        return (int) (bitIndex >>> LOGW);
+        return bitIndex >>> LOGW;
     }
 
     public static long numWords(long numbits) {
-        return ((numbits-1)>>>LOGW) + 1;
+        if (numbits == 0) {
+            return 0;
+        }
+        return ((numbits - 1) >>> LOGW) + 1;
     }
 
     public static long numBytes(long numbits) {
-        return ((numbits-1)>>>3) + 1;
+        return ((numbits - 1) >>> 3) + 1;
     }
 
     protected static int lastWordNumBits(long numbits) {
-        if(numbits==0) {
+        if (numbits == 0) {
             return 0;
         }
-        return (int) ((numbits-1) % W)+1;	// +1 To have output in the range 1-64, -1 to compensate.
+        return (int) ((numbits - 1) % W) + 1;    // +1 To have output in the range 1-64, -1 to compensate.
     }
 
     protected final void ensureSize(long wordsRequired) throws IOException {
@@ -104,8 +129,8 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
     }
 
     public void trimToSize() {
-        int wordNum = (int) numWords(numbits);
-        if(wordNum!=words.length()) {
+        long wordNum = numWords(numbits);
+        if (wordNum != words.length()) {
             try {
                 words.resize(wordNum);
             } catch (IOException e) {
@@ -119,7 +144,7 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
             throw new IndexOutOfBoundsException("bitIndex < 0: " + bitIndex);
 
         long wordIndex = wordIndex(bitIndex);
-        if(wordIndex>=words.length()) {
+        if (wordIndex >= words.length()) {
             return false;
         }
 
@@ -168,15 +193,18 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
     @Override
     public long countOnes() {
-        if (words.length() == 0)
+        // basic implementation
+        if (words.length() == 0) {
             return 0;
+        }
         long acc = 0;
         long end = wordIndex(numbits);
         if (end >= words.length()) {
             end = words.length() - 1;
         }
-        for (int i = 0; i <= end; i++)
+        for (long i = 0; i <= end; i++) {
             acc += Long.bitCount(words.get(i));
+        }
         return acc;
     }
 
@@ -189,7 +217,7 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
      * @see hdt.compact.bitmap.ModifiableBitmap#append(boolean)
      */
     public void append(boolean value) {
-        this.set(numbits++, value );
+        this.set(numbits++, value);
     }
 
     public void set(long bitIndex, boolean value) {
@@ -198,7 +226,7 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
         long wordIndex = wordIndex(bitIndex);
         try {
-            ensureSize(wordIndex+1);
+            ensureSize(wordIndex + 1);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -228,16 +256,12 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
         throw new NotImplementedException();
     }
 
-    public long getWord(int word) {
-        return words.get(word);
-    }
-
     public long getNumBits() {
         return numbits;
     }
 
     public long getSizeBytes() {
-        return numWords(numbits)*8;
+        return numWords(numbits) * 8;
     }
 
     public void save(OutputStream output, ProgressListener listener) throws IOException {
@@ -252,44 +276,82 @@ public class Bitmap64Disk implements Closeable, ModifiableBitmap {
 
         // Setup new CRC
         out.setCRC(new CRC32());
-        int numwords = (int) numWords(numbits);
-        for(int i=0;i<numwords-1;i++) {
+        long numwords = numWords(numbits);
+        for (long i = 0; i < numwords - 1; i++) {
             IOUtil.writeLong(out, words.get(i));
         }
 
-        if(numwords>0) {
+        if (numwords > 0) {
             // Write only used bits from last entry (byte aligned, little endian)
-            int lastWordUsed = lastWordNumBits(numbits);
-            BitUtil.writeLowerBitsByteAligned(words.get(numwords-1), lastWordUsed, out);
+            long lastWordUsed = lastWordNumBits(numbits);
+            BitUtil.writeLowerBitsByteAligned(words.get(numwords - 1), lastWordUsed, out);
         }
 
         out.writeCRC();
     }
 
-    @SuppressWarnings("resource")
-    public void load(InputStream input, ProgressListener listener) throws IOException { }
+    @Override
+    public void load(InputStream input, ProgressListener listener) throws IOException {
+        CRCInputStream in = new CRCInputStream(input, new CRC8());
+
+        // Read type and numbits
+        int type = in.read();
+        if (type != BitmapFactoryImpl.TYPE_BITMAP_PLAIN) {
+            throw new IllegalArgumentException("Trying to read BitmapPlain on a section that is not BitmapPlain");
+        }
+        numbits = VByte.decode(in);
+
+        // Validate CRC
+        if (!in.readCRCAndCheck()) {
+            throw new CRCException("CRC Error while reading Bitmap64 header.");
+        }
+
+        // Setup Data CRC
+        in.setCRC(new CRC32());
+
+        // Read Words
+        long numwords = numWords(numbits);
+        ensureSize(numwords);
+        for (long i = 0; i < numwords - 1; i++) {
+            words.set(i, IOUtil.readLong(in));
+        }
+
+        if (numwords > 0) {
+            // Read only used bits from last entry (byte aligned, little endian)
+            long lastWordUsedBits = lastWordNumBits(numbits);
+            words.set(numwords - 1, BitUtil.readLowerBitsByteAligned(lastWordUsedBits, in));
+        }
+
+        if (!in.readCRCAndCheck()) {
+            throw new CRCException("CRC Error while reading Bitmap64 data.");
+        }
+    }
+
     /* (non-Javadoc)
      * @see java.lang.Object#toString()
      */
     @Override
     public String toString() {
         StringBuilder str = new StringBuilder();
-        for(long i=0;i<numbits;i++) {
+        for (long i = 0; i < numbits; i++) {
             str.append(access(i) ? '1' : '0');
         }
         return str.toString();
     }
 
     public long getRealSizeBytes() {
-        return words.length()*8;
+        return words.length() * 8;
     }
 
-    public Path getLocation() {
-        return location;
+    /**
+     * @return bitmap closer object
+     */
+    public Closer getCloser() {
+        return closer;
     }
 
     @Override
     public void close() throws IOException {
-        IOUtil.closeObject(words);
+        closer.close();
     }
 }

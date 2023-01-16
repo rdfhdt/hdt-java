@@ -108,7 +108,12 @@ public class SequenceInt64 implements DynamicSequence {
 		data[(int)position] = value;
 		numelements = (int) Math.max(numelements, position+1);
 	}
-	
+
+	@Override
+	public int sizeOf() {
+		return 64;
+	}
+
 	@Override
     public void append(long value) {
 		assert value>=0;

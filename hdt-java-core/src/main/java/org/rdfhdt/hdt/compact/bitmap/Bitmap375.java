@@ -34,6 +34,7 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Path;
 
 /**
  * Implements an index on top of the Bitmap64 to solve select and rank queries more efficiently.
@@ -43,7 +44,9 @@ import java.io.OutputStream;
  * select1 -&gt; O(log log n)
  *
  * @author mario.arias
+ * @deprecated Use {@link Bitmap375Big#memory(long, Path)}} instead
  */
+@Deprecated
 public class Bitmap375 extends Bitmap64 implements ModifiableBitmap {
     // Constants
     private static final int BLOCKS_PER_SUPER = 4;

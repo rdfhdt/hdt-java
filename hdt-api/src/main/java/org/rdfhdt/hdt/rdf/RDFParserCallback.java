@@ -43,6 +43,17 @@ public interface RDFParserCallback {
 	@FunctionalInterface
 	interface RDFCallback {
 		void processTriple(TripleString triple, long pos);
+
+		/**
+		 * @return an async version of this callback
+		 */
+		default RDFCallback async() {
+			return ((triple, pos) -> {
+				synchronized (this) {
+					this.processTriple(triple, pos);
+				}
+			});
+		}
 	}
 	
 	void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException;

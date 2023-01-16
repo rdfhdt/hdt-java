@@ -3,17 +3,15 @@ package org.rdfhdt.hdt.util;
 import org.junit.Test;
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.triples.impl.utils.HDTTestUtils;
 
 import java.io.IOException;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static org.junit.Assert.assertEquals;
 
@@ -22,8 +20,12 @@ public class UnicodeEscapeTest {
 	public void encodeTest() throws ParserException {
 		String file = Objects.requireNonNull(UnicodeEscapeTest.class.getClassLoader().getResource("unicodeTest.nt"), "can't find file").getFile();
 
-		RDFParserCallback factory = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, true);
-		RDFParserCallback factory2 = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, false);
+		RDFParserCallback factory = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, HDTOptions.of(
+				Map.of(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "true")
+		));
+		RDFParserCallback factory2 = RDFParserFactory.getParserCallback(RDFNotation.NTRIPLES, HDTOptions.of(
+				Map.of(HDTOptionsKeys.NT_SIMPLE_PARSER_KEY, "false")
+		));
 
 
 		Set<TripleString> ts1 = new TreeSet<>(Comparator.comparing(t -> {

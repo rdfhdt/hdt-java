@@ -31,7 +31,6 @@ import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.listener.ProgressListener;
-import org.rdfhdt.hdt.util.Reference;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 import org.visnow.jlargearrays.LargeArrayUtils;
@@ -60,21 +59,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.GZIPInputStream;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.*;
 
 /**
  * @author mario.arias
  */
 public class IOUtil {
-	private static int mappedBuffer;
-
 	private IOUtil() {
 	}
 
@@ -331,17 +324,8 @@ public class IOUtil {
 	}
 
 	public static void decompressGzip(File src, File trgt) throws IOException {
-		InputStream in = new GZIPInputStream(new BufferedInputStream(new FileInputStream(src)));
-		try {
-			OutputStream out = new BufferedOutputStream(new FileOutputStream(trgt));
-
-			try {
-				copyStream(in, out);
-			} finally {
-				out.close();
-			}
-		} finally {
-			in.close();
+		try (InputStream in = new GZIPInputStream(new BufferedInputStream(new FileInputStream(src)))) {
+			Files.copy(in, trgt.toPath());
 		}
 	}
 

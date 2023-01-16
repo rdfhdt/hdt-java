@@ -20,13 +20,12 @@
 package org.rdfhdt.hdt.triples.impl;
 
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.rdfhdt.hdt.compact.bitmap.Bitmap375;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap375Big;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64BigDisk;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
@@ -54,8 +53,8 @@ public class BitmapTriplesCat {
         long number = it.estimatedNumResults();
         SequenceLog64BigDisk vectorY = new SequenceLog64BigDisk(location + "vectorY", BitUtil.log2(number), number);
         SequenceLog64BigDisk vectorZ = new SequenceLog64BigDisk(location + "vectorZ",BitUtil.log2(number), number);
-        ModifiableBitmap bitY = new Bitmap375();//Disk(location + "bitY",number);
-        ModifiableBitmap bitZ = new Bitmap375();//Disk(location + "bitZ",number);
+        ModifiableBitmap bitY = Bitmap375Big.memory(0);//Disk(location + "bitY",number);
+        ModifiableBitmap bitZ = Bitmap375Big.memory(0);//Disk(location + "bitZ",number);
 
         long lastX=0, lastY=0, lastZ=0;
         long x, y, z;

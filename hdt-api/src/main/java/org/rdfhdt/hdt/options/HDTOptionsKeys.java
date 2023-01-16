@@ -123,6 +123,12 @@ public class HDTOptionsKeys {
 	@Key(type = Key.Type.PATH, desc = "Path of the CatTree generation")
 	public static final String LOADER_CATTREE_LOCATION_KEY = "loader.cattree.location";
 	/**
+	 * Key to use async version of the {@link org.rdfhdt.hdt.hdt.HDTManager} catTree methods, will run the k-HDTCAT
+	 * algorithm, by default the value is false, boolean value
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Use async version")
+	public static final String LOADER_CATTREE_ASYNC_KEY = "loader.cattree.async";
+	/**
 	 * Same as {@link #LOADER_TYPE_KEY} for loader in the CATTREE method
 	 */
 	@Key(desc = "Loader of the hdt generation")
@@ -203,10 +209,26 @@ public class HDTOptionsKeys {
 	@Key(type = Key.Type.PATH, desc = "Profiler output file")
 	public static final String PROFILER_OUTPUT_KEY = "profiler.output";
 	/**
+	 * Key for enabling the profiler (if implemented) for async bi tasks, default to false. Boolean value
+	 */
+	@Key(type = Key.Type.BOOLEAN, desc = "Run a second profiler for async bi tasks")
+	public static final String PROFILER_ASYNC_KEY = "profiler.async";
+	/**
+	 * Key for the profiler output (if implemented). File value
+	 */
+	@Key(type = Key.Type.PATH, desc = "Profiler output file")
+	public static final String PROFILER_ASYNC_OUTPUT_KEY = "profiler.async.output";
+	/**
 	 * Key for enabling the canonical NTriple file simple parser, default to false. Boolean value
 	 */
 	@Key(type = Key.Type.BOOLEAN, desc = "Use the canonical NT file parser, removing checks")
 	public static final String NT_SIMPLE_PARSER_KEY = "parser.ntSimpleParser";
+	/**
+	 * Key for setting the maximum amount of file loaded with the directory parser, 1 for no async parsing, 0
+	 * for the number of processors, default 1. Number value
+	 */
+	@Key(type = Key.Type.NUMBER, desc = "Use async dir parser")
+	public static final String ASYNC_DIR_PARSER_KEY = "parser.dir.async";
 	/**
 	 * Key for setting the triple order. see {@link org.rdfhdt.hdt.enums.TripleComponentOrder}'s names to have the values
 	 * default to {@link org.rdfhdt.hdt.enums.TripleComponentOrder#SPO}
@@ -293,6 +315,13 @@ public class HDTOptionsKeys {
 	@Key(type = Key.Type.BOOLEAN, desc = "Delete the HDTCat temp files directory after HDTCat, default to true")
 	public static final String HDTCAT_DELETE_LOCATION = "hdtcat.deleteLocation";
 
+	@Key(type = Key.Type.BOOLEAN, desc = "Use disk implementation to generate the hdt sub-index")
+	public static final String BITMAPTRIPLES_SEQUENCE_DISK = "bitmaptriples.sequence.disk";
+	@Key(type = Key.Type.BOOLEAN, desc = "Use disk 375 subindex implementation to generate the hdt sub-index")
+	public static final String BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX = "bitmaptriples.sequence.disk.subindex";
+
+	@Key(type = Key.Type.BOOLEAN, desc = "Disk location for the " + BITMAPTRIPLES_SEQUENCE_DISK + " option")
+	public static final String BITMAPTRIPLES_SEQUENCE_DISK_LOCATION = "bitmaptriples.sequence.disk.location";
 	// use tree-map to have a better order
 	private static final Map<String, Option> OPTION_MAP = new TreeMap<>();
 

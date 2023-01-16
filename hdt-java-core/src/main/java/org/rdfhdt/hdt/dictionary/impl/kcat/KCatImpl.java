@@ -1,9 +1,6 @@
 package org.rdfhdt.hdt.dictionary.impl.kcat;
 
-import org.rdfhdt.hdt.compact.bitmap.Bitmap;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap64Disk;
-import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
-import org.rdfhdt.hdt.compact.bitmap.NegBitmap;
+import org.rdfhdt.hdt.compact.bitmap.*;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -101,6 +98,7 @@ public class KCatImpl implements Closeable {
 		hdts = new HDT[hdtFileNames.size()];
 		this.hdtFormat = hdtFormat;
 		this.deleteBitmaps = deleteBitmaps;
+		deleteBitmapTriples = deleteBitmaps != null ? new BitmapTriple[hdts.length] : null;
 
 		if (deleteBitmaps != null && deleteBitmaps.size() != hdtFileNames.size()) {
 			throw new IllegalArgumentException("deleteBitmaps.size() != hdtFileNames.size()");
@@ -177,7 +175,6 @@ public class KCatImpl implements Closeable {
 				diffLocation.closeWithDeleteRecurse();
 				diffLocation.mkdirs();
 				ListIterator<? extends Bitmap> dit = deleteBitmaps.listIterator();
-				deleteBitmapTriples = new BitmapTriple[hdts.length];
 
 				profiler.pushSection("diffbitmaps");
 				while (dit.hasNext()) {
@@ -187,10 +184,11 @@ public class KCatImpl implements Closeable {
 
 					// create a neg bitmap t have by default all the triples deleted, so we can write twice the
 					// non-deleted nodes
-					ModifiableBitmap bs = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "s"), hdt.getDictionary().getNsubjects() + 1));
-					ModifiableBitmap bp = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "p"), hdt.getDictionary().getNpredicates() + 1));
-					ModifiableBitmap bo = NegBitmap.of(new Bitmap64Disk(diffLocation.resolve("d" + index + "o"), hdt.getDictionary().getNobjects() + 1));
+					ModifiableBitmap bs = NegBitmap.of(Bitmap64Big.disk(diffLocation.resolve("d" + index + "s"), hdt.getDictionary().getNsubjects() + 1));
+					ModifiableBitmap bp = NegBitmap.of(Bitmap64Big.disk(diffLocation.resolve("d" + index + "p"), hdt.getDictionary().getNpredicates() + 1));
+					ModifiableBitmap bo = NegBitmap.of(Bitmap64Big.disk(diffLocation.resolve("d" + index + "o"), hdt.getDictionary().getNobjects() + 1));
 
+					//noinspection resource
 					deleteBitmapTriples[index] = new BitmapTriple(bs, bp, bo);
 
 					IteratorTripleID searchAll = hdt.getTriples().searchAll();
@@ -213,7 +211,6 @@ public class KCatImpl implements Closeable {
 				}
 				profiler.popSection();
 			} else {
-				deleteBitmapTriples = null;
 				diffLocation = null;
 			}
 
@@ -231,10 +228,14 @@ public class KCatImpl implements Closeable {
 			try {
 				throw t;
 			} finally {
-				for (HDT hdt : hdts) {
-					IOUtil.closeQuietly(hdt);
+				try {
+					Closer.closeAll((Object[]) deleteBitmapTriples);
+				} finally {
+					for (HDT hdt : hdts) {
+						IOUtil.closeQuietly(hdt);
+					}
+					profiler.close();
 				}
-				profiler.close();
 			}
 		}
 	}

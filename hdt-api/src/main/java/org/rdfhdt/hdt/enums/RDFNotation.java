@@ -185,8 +185,12 @@ public enum RDFNotation {
 
 		throw new IllegalArgumentException("Could not guess the format for "+fileName);
 	}
-	
+
 	public static RDFNotation guess(File fileName) throws IllegalArgumentException {
-		return guess(fileName.getName());
+		return guess(fileName.getAbsolutePath());
+	}
+
+	public static RDFNotation guess(Path fileName) throws IllegalArgumentException {
+		return guess(fileName.toAbsolutePath().toString());
 	}
 }

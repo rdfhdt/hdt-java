@@ -7,6 +7,7 @@ import java.util.zip.ZipInputStream;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.rdf.RDFParserFactory;
 import org.rdfhdt.hdt.util.io.IOUtil;
@@ -24,14 +25,14 @@ import org.rdfhdt.hdt.util.io.NonCloseInputStream;
 
 public class RDFParserZip implements RDFParserCallback {
 
-	private final boolean simple;
+	private final HDTOptions spec;
 
-	public RDFParserZip(boolean simple) {
-		this.simple = simple;
+	public RDFParserZip(HDTOptions spec) {
+		this.spec = spec;
 	}
 
 	public RDFParserZip() {
-		this(false);
+		this(HDTOptions.EMPTY);
 	}
 
 	/* (non-Javadoc)
@@ -63,7 +64,7 @@ public class RDFParserZip implements RDFParserCallback {
 					try {
 						RDFNotation guessnot = RDFNotation.guess(zipEntry.getName());
 						System.out.println("Parse from zip: "+zipEntry.getName()+" as "+guessnot);
-						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, simple);
+						RDFParserCallback parser = RDFParserFactory.getParserCallback(guessnot, spec);
 
 						parser.doParse(nonCloseIn, baseUri, guessnot, keepBNode, callback);
 					} catch (IllegalArgumentException | ParserException e1) {
