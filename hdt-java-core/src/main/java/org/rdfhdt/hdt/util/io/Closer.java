@@ -4,7 +4,6 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,11 @@ public class Closer implements Iterable<Closeable>, Closeable {
 	private final List<Closeable> list;
 
 	private Closer(Object... other) {
-		list = new ArrayList<>(other.length);
+		if (other != null) {
+			list = new ArrayList<>(other.length);
+		} else {
+			list = new ArrayList<>();
+		}
 		with(other);
 	}
 

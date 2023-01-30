@@ -229,7 +229,7 @@ public class KCatImpl implements Closeable {
 				throw t;
 			} finally {
 				try {
-					Closer.closeAll((Object[]) deleteBitmapTriples);
+					Closer.closeAll((Object) deleteBitmapTriples);
 				} finally {
 					for (HDT hdt : hdts) {
 						IOUtil.closeQuietly(hdt);
