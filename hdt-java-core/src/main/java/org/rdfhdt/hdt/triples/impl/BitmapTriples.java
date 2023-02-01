@@ -850,8 +850,8 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 
 		ArrayList<List<Pair>> list=new ArrayList<>();
-		
-		System.out.println("Generating HDT Index for ?PO, and ??O queries.");
+
+		log.info("Generating HDT Index for ?PO, and ??O queries.");
 		// Generate lists
 		long total=seqZ.getNumberOfElements();
 		for(long i=0;i<total;i++) {
@@ -876,12 +876,12 @@ public class BitmapTriples implements TriplesPrivate {
 			
 			inner.add(pair);
 
-			if((i%100000)==0) {
-				System.out.println("Processed: "+i+" objects out of "+total);
+			if((i % 100000)==0) {
+				log.info("Processed {}/{} objects", i, total);
 			}
 		}
-		
-		System.out.println("Serialize object lists");
+
+		log.info("Serialize object lists");
 		// Serialize
 		DynamicSequence indexZ = new SequenceLog64(BitUtil.log2(seqY.getNumberOfElements()), list.size());
 		Bitmap375Big bitmapIndexZ = Bitmap375Big.memory(seqY.getNumberOfElements());
@@ -903,7 +903,7 @@ public class BitmapTriples implements TriplesPrivate {
 			}
 			
 			if((i%100000)==0) {
-				System.out.println("Serialized: "+i+" lists out of "+total);
+				log.info("Serialized {}/{} lists", i, total);
 			}
 			
 			// Dereference processed list to let GC release the memory.
@@ -955,11 +955,7 @@ public class BitmapTriples implements TriplesPrivate {
 		}
 
 		predicateIndex = new PredicateIndexArray(this);
-		if (!specIndex.getBoolean("debug.bitmaptriples.ignorePredicateIndex", false)) {
-			predicateIndex.generate(listener, specIndex, dictionary);
-		} else {
-			System.err.println("WARNING!!! PREDICATE INDEX IGNORED, THE INDEX WON'T BE COMPLETED!");
-		}
+		predicateIndex.generate(listener, specIndex, dictionary);
 	}
 
 	/* (non-Javadoc)

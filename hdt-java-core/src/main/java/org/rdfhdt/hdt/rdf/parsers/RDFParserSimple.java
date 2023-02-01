@@ -72,10 +72,7 @@ public class RDFParserSimple implements RDFParserCallback {
 		try {
 			doParse(reader, baseUri, notation, keepBNode, callback);
 		} finally {
-			try {
-				reader.close();
-			} catch (IOException e) {
-			}
+			IOUtil.closeQuietly(reader);
 		}
 	}
 
@@ -110,7 +107,7 @@ public class RDFParserSimple implements RDFParserCallback {
 						//System.out.println(triple);
 						callback.processTriple(triple, 0);
 					} else {
-						System.err.println("Warning: Could not parse triple at line "+numLine+", ignored and not processed.\n"+line);
+						log.warn("Could not parse triple at line {}, ignored and not processed.\n{}", numLine, line);
 					}
 				}
 				numLine++;

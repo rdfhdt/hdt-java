@@ -196,7 +196,7 @@ public class Profiler implements AutoCloseable {
 		this.name = Objects.requireNonNull(name, "name can't be null!");
 		if (spec != null) {
 			String b = spec.get(async ? HDTOptionsKeys.PROFILER_ASYNC_KEY : HDTOptionsKeys.PROFILER_KEY);
-			disabled = b == null || b.length() == 0 || !(b.charAt(0) == '!' || "true".equalsIgnoreCase(b));
+			disabled = b == null || b.length() == 0 || !("true".equalsIgnoreCase(b));
 			String profilerOutputLocation = spec.get(async ? HDTOptionsKeys.PROFILER_ASYNC_OUTPUT_KEY : HDTOptionsKeys.PROFILER_OUTPUT_KEY);
 			if (profilerOutputLocation != null && !profilerOutputLocation.isEmpty()) {
 				outputPath = Path.of(profilerOutputLocation);
