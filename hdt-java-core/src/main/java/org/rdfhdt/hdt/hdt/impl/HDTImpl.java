@@ -187,11 +187,11 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			f = new File(hdtFileName);
 
 			if(!f.exists()) {
-				System.err.println("We cannot map a gzipped HDT, decompressing into "+hdtFileName+" first.");
+				log.warn("We cannot map a gzipped HDT, decompressing into {} first.", hdtFileName);
 				IOUtil.decompressGzip(old, f);
-				System.err.println("Gzipped HDT successfully decompressed. You might want to delete "+old.getAbsolutePath()+" to save disk space.");
+				log.warn("Gzipped HDT successfully decompressed. You might want to delete {} to save disk space.", old.getAbsolutePath());
 			} else {
-				System.err.println("We cannot map a gzipped HDT, using "+hdtFileName+" instead.");
+				log.warn("We cannot map a gzipped HDT, using {} instead.", hdtFileName);
 			}
 		}
 
@@ -345,20 +345,16 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 
         // Convert triples to final format
         if(triples.getClass().equals(modifiableTriples.getClass())) {
-                triples = modifiableTriples;
+			triples = modifiableTriples;
         } else {
-        		//StopWatch tripleConvTime = new StopWatch();
-                triples.load(modifiableTriples, listener);
-                //System.out.println("Triples conversion time: "+tripleConvTime.stopAndShow());
+			triples.load(modifiableTriples, listener);
         }
 
         // Convert dictionary to final format
         if(dictionary.getClass().equals(modifiableDictionary.getClass())) {
-                dictionary = (DictionaryPrivate)modifiableDictionary;
+			dictionary = (DictionaryPrivate)modifiableDictionary;
         } else {
-                //StopWatch dictConvTime = new StopWatch();
-                dictionary.load(modifiableDictionary, listener);
-                //System.out.println("Dictionary conversion time: "+dictConvTime.stopAndShow());
+			dictionary.load(modifiableDictionary, listener);
         }
 
         this.baseUri = modHdt.getBaseURI();
@@ -396,8 +392,7 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			}
 		} catch (Exception e) {
 			if (!(e instanceof FileNotFoundException)) {
-				System.out.println("Error reading .hdt.index, generating a new one. The error was: "+e.getMessage());
-				e.printStackTrace();
+				log.error("Error reading .hdt.index, generating a new one.", e);
 			}
 
 			// GENERATE
@@ -411,11 +406,9 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 					out = new BufferedOutputStream(new FileOutputStream(versionName));
 					ci.clear();
 					triples.saveIndex(out, ci, listener);
-					out.close();
-					System.out.println("Index generated and saved in "+st.stopAndShow());
+					log.info("Index generated and saved in {}", st.stopAndShow());
 				} catch (IOException e2) {
-					System.err.println("Error writing index file.");
-					e2.printStackTrace();
+					log.error("Error writing index file.", e2);
 				} finally {
 					IOUtil.closeQuietly(out);
 				}

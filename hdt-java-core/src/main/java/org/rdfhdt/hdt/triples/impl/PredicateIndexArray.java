@@ -102,8 +102,8 @@ class PredicateIndexArray implements PredicateIndex {
 				maxCount = Math.max(count, maxCount);
 				predCount.set(val - 1, count);
 
-				if (listener != null && i % 1_000_000 == 0) {
-					listener.notifyProgress((float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Counting appearances of predicates " + i + " / "+ triples.getSeqY().getNumberOfElements());
+				if (i % 1_000_000 == 0) {
+					iListener.notifyProgress((float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Counting appearances of predicates " + i + " / "+ triples.getSeqY().getNumberOfElements());
 				}
 			}
 			predCount.aggressiveTrimToSize();
@@ -114,15 +114,13 @@ class PredicateIndexArray implements PredicateIndex {
 			for (long i = 0; i < predCount.getNumberOfElements(); i++) {
 				tempCountPred += predCount.get(i);
 				bitmap.set(tempCountPred - 1, true);
-				if (listener != null && i % 1_000_000 == 0) {
-					listener.notifyProgress((float) (i * 100 / predCount.getNumberOfElements()), "Creating Predicate bitmap " + i + " / "+ triples.getSeqY().getNumberOfElements());
+				if (i % 1_000_000 == 0) {
+					iListener.notifyProgress((float) (i * 100 / predCount.getNumberOfElements()), "Creating Predicate bitmap " + i + " / "+ triples.getSeqY().getNumberOfElements());
 				}
 			}
 			bitmap.set(triples.getSeqY().getNumberOfElements() - 1, true);
 			log.info("Predicate Bitmap in {}", st.stopAndShow());
-			if (listener != null) {
-				listener.notifyProgress(100, "Predicate Bitmap in " + st);
-			}
+			iListener.notifyProgress(100, "Predicate Bitmap in " + st);
 			st.reset();
 		} finally {
 			IOUtil.closeQuietly(predCount);
@@ -146,8 +144,8 @@ class PredicateIndexArray implements PredicateIndex {
 
 					array.set(insertBase + insertOffset, i);
 
-					if (listener != null && i % 1_000_000 == 0) {
-						listener.notifyProgress( (float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Generating predicate references");
+					if (i % 1_000_000 == 0) {
+						iListener.notifyProgress( (float) (i * 100 / triples.getSeqY().getNumberOfElements()), "Generating predicate references");
 					}
 				}
 			} finally {
