@@ -19,26 +19,27 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  *
  * Contacting the authors:
- *   Mario Arias:               mario.arias@deri.org
- *   Javier D. Fernandez:       jfergar@infor.uva.es
- *   Miguel A. Martinez-Prieto: migumar2@infor.uva.es
- *   Alejandro Andres:          fuzzy.alej@gmail.com
+ * Mario Arias:               mario.arias@deri.org
+ * Javier D. Fernandez:       jfergar@infor.uva.es
+ * Miguel A. Martinez-Prieto: migumar2@infor.uva.es
+ * Alejandro Andres:          fuzzy.alej@gmail.com
  */
 
 package org.rdfhdt.hdt.rdf.parsers;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-
 import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.ParserException;
+import org.rdfhdt.hdt.quad.QuadString;
 import org.rdfhdt.hdt.rdf.RDFParserCallback;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 /**
  * @author mario.arias
@@ -47,11 +48,15 @@ import org.slf4j.LoggerFactory;
 public class RDFParserSimple implements RDFParserCallback {
 	private static final Logger log = LoggerFactory.getLogger(RDFParserSimple.class);
 
-	/* (non-Javadoc)
-	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String, java.lang.String, hdt.enums.RDFNotation, hdt.rdf.RDFParserCallback.RDFCallback)
+	/*
+	 * (non-Javadoc)
+	 * @see hdt.rdf.RDFParserCallback#doParse(java.lang.String,
+	 * java.lang.String, hdt.enums.RDFNotation,
+	 * hdt.rdf.RDFParserCallback.RDFCallback)
 	 */
 	@Override
-	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
+	public void doParse(String fileName, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback)
+			throws ParserException {
 		BufferedReader reader;
 		try {
 			reader = IOUtil.getFileReader(fileName);
@@ -67,7 +72,8 @@ public class RDFParserSimple implements RDFParserCallback {
 	}
 
 	@Override
-    public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
+	public void doParse(InputStream input, String baseUri, RDFNotation notation, boolean keepBNode,
+	                    RDFCallback callback) throws ParserException {
 		BufferedReader reader = new BufferedReader(new InputStreamReader(input));
 		try {
 			doParse(reader, baseUri, notation, keepBNode, callback);
@@ -76,12 +82,19 @@ public class RDFParserSimple implements RDFParserCallback {
 		}
 	}
 
-	private void doParse(BufferedReader reader, String baseUri, RDFNotation notation, boolean keepBNode, RDFCallback callback) throws ParserException {
-		try {
+	private void doParse(BufferedReader reader, String baseUri, RDFNotation notation, boolean keepBNode,
+	                     RDFCallback callback) throws ParserException {
+		boolean readQuad = notation == RDFNotation.NQUAD;
+		try (reader) {
 			String line;
 			long numLine = 1;
-			TripleString triple = new TripleString();
-			while((line=reader.readLine())!=null) {
+			TripleString triple;
+			if (readQuad) {
+				triple = new QuadString();
+			} else {
+				triple = new TripleString();
+			}
+			while ((line = reader.readLine()) != null) {
 				// trim, find start
 				int start = 0;
 				while (start < line.length()) {
@@ -93,18 +106,19 @@ public class RDFParserSimple implements RDFParserCallback {
 				}
 				// trim, find end
 				int end = line.length() - 1;
-				while (end >= 0 ) {
+				while (end >= 0) {
 					char c = line.charAt(end);
 					if (c != ' ' && c != '\t') {
 						break;
 					}
 					end--;
 				}
-				// check that we have at least one element and this line isn't a comment
+				// check that we have at least one element and this line isn't a
+				// comment
 				if (start + 1 < end && line.charAt(start) != '#') {
-					triple.read(line, start, end);
+					triple.read(line, start, end, readQuad);
 					if (!triple.hasEmpty()) {
-						//System.out.println(triple);
+						// System.out.println(triple);
 						callback.processTriple(triple, 0);
 					} else {
 						log.warn("Could not parse triple at line {}, ignored and not processed.\n{}", numLine, line);
@@ -112,8 +126,7 @@ public class RDFParserSimple implements RDFParserCallback {
 				}
 				numLine++;
 			}
-			reader.close();
-		}catch(Exception e) {
+		} catch (Exception e) {
 			log.error("Unexpected exception.", e);
 			throw new ParserException(e);
 		}

@@ -3,19 +3,18 @@ package org.rdfhdt.hdt.util;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorOutputStream;
 import org.rdfhdt.hdt.enums.CompressionType;
-import org.rdfhdt.hdt.enums.RDFNotation;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTManager;
+import org.rdfhdt.hdt.iterator.utils.MapIterator;
 import org.rdfhdt.hdt.options.HDTOptions;
-import org.rdfhdt.hdt.options.HDTOptionsKeys;
+import org.rdfhdt.hdt.quad.QuadString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.concurrent.ExceptionThread;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -40,7 +39,8 @@ public class LargeFakeDataSetStreamSupplier {
 	private static final Charset DEFAULT_CHARSET = ByteStringUtil.STRING_ENCODING;
 
 	/**
-	 * create a lowercase name from a number, to create string without any number in it
+	 * create a lowercase name from a number, to create string without any
+	 * number in it
 	 *
 	 * @param i id
 	 * @return string
@@ -61,7 +61,8 @@ public class LargeFakeDataSetStreamSupplier {
 	}
 
 	/**
-	 * create a lowercase name from a number, to create string without any number in it
+	 * create a lowercase name from a number, to create string without any
+	 * number in it
 	 *
 	 * @param i id
 	 * @return string
@@ -88,7 +89,8 @@ public class LargeFakeDataSetStreamSupplier {
 	 * create a supplier with a max size
 	 *
 	 * @param maxSize the max size
-	 * @param seed    the seed of the supplier, the same seed will create the same supplier
+	 * @param seed    the seed of the supplier, the same seed will create the
+	 *                same supplier
 	 * @return supplier
 	 */
 	public static LargeFakeDataSetStreamSupplier createSupplierWithMaxSize(long maxSize, long seed) {
@@ -99,7 +101,8 @@ public class LargeFakeDataSetStreamSupplier {
 	 * create a supplier with a max count
 	 *
 	 * @param maxTriples the max number of triples
-	 * @param seed       the seed of the supplier, the same seed will create the same supplier
+	 * @param seed       the seed of the supplier, the same seed will create the
+	 *                   same supplier
 	 * @return supplier
 	 */
 	public static LargeFakeDataSetStreamSupplier createSupplierWithMaxTriples(long maxTriples, long seed) {
@@ -109,7 +112,8 @@ public class LargeFakeDataSetStreamSupplier {
 	/**
 	 * create a supplier without a max count
 	 *
-	 * @param seed       the seed of the supplier, the same seed will create the same supplier
+	 * @param seed the seed of the supplier, the same seed will create the same
+	 *             supplier
 	 * @return supplier
 	 */
 	public static LargeFakeDataSetStreamSupplier createInfinite(long seed) {
@@ -122,11 +126,13 @@ public class LargeFakeDataSetStreamSupplier {
 	private long maxTriples;
 	public int maxFakeType = 10;
 	public int maxLiteralSize = 2;
+	public int maxGraph = 10;
 	public int maxElementSplit = Integer.MAX_VALUE;
 	private long slowStream;
 	private boolean unicode;
 	private TripleString buffer;
 	private TripleString next;
+	private boolean nquad;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
 		this.maxSize = maxSize;
@@ -229,30 +235,10 @@ public class LargeFakeDataSetStreamSupplier {
 					it.next().dumpNtriple(ps);
 				}
 			}
-		},
-				"ThreadedFakedStream");
+		}, "ThreadedFakedStream");
 		run.start();
 
 		return new ThreadedStream(run, is);
-	}
-
-	/**
-	 * create an HDT from the stream using two-pass algorithm
-	 *
-	 * @param spec hdt options
-	 * @return hdt
-	 * @throws ParserException parsing exception
-	 * @throws IOException     io exception
-	 */
-	public HDT createFakeHDTTwoPass(HDTOptions spec) throws ParserException, IOException {
-		Path f = Path.of("tempNtFile.nt").toAbsolutePath();
-		try {
-			createNTFile(f);
-			spec.set(HDTOptionsKeys.LOADER_TYPE_KEY, HDTOptionsKeys.LOADER_TYPE_VALUE_TWO_PASS);
-			return HDTManager.generateHDT(f.toString(), "http://w", RDFNotation.NTRIPLES, spec, null);
-		} finally {
-			Files.deleteIfExists(f);
-		}
 	}
 
 	/**
@@ -275,24 +261,36 @@ public class LargeFakeDataSetStreamSupplier {
 	 * @throws ParserException parsing exception
 	 * @throws IOException     io exception
 	 */
-	public void createAndSaveFakeHDT(HDTOptions spec, String location) throws ParserException, IOException {
-		try (HDT hdt = createFakeHDT(spec)) {
-			hdt.saveToHDT(location, null);
-		}
+	public void createAndSaveFakeHDT(HDTOptions spec, Path location) throws ParserException, IOException {
+		createAndSaveFakeHDT(spec, location.toAbsolutePath().toString());
 	}
 
 	/**
-	 * create an HDT from the stream using 2pass algorithm and save it to a file
+	 * create an HDT from the stream and save it to a file
 	 *
 	 * @param spec     hdt options
 	 * @param location save location
 	 * @throws ParserException parsing exception
 	 * @throws IOException     io exception
 	 */
-	public void createAndSaveFakeHDTTwoPass(HDTOptions spec, String location) throws ParserException, IOException {
-		try (HDT hdt = createFakeHDTTwoPass(spec)) {
+	public void createAndSaveFakeHDT(HDTOptions spec, String location) throws ParserException, IOException {
+		try (HDT hdt = createFakeHDT(spec)) {
 			hdt.saveToHDT(location, null);
 		}
+	}
+
+	private CharSequence createGraph() {
+		if (maxGraph == 0) {
+			return "";
+		}
+		int rnd = random.nextInt(10);
+		if (rnd < 4) {
+			return ""; // no graph
+		}
+		if (rnd == 4) {
+			return "_:bnode" + random.nextInt(maxGraph / 2);
+		}
+		return "http://test.org/#graph" + random.nextInt(maxGraph / 2);
 	}
 
 	private CharSequence createResource() {
@@ -317,7 +315,9 @@ public class LargeFakeDataSetStreamSupplier {
 		int size = random.nextInt(maxLiteralSize);
 		StringBuilder litText = new StringBuilder();
 		for (int i = 0; i < size; i++) {
-			litText.append(stringNameOfInt(unicode ? random.nextInt(Character.MAX_CODE_POINT - 30) + 30 : random.nextInt(maxElementSplit), unicode));
+			litText.append(stringNameOfInt(
+					unicode ? random.nextInt(Character.MAX_CODE_POINT - 30) + 30 : random.nextInt(maxElementSplit),
+					unicode));
 		}
 		String text = "\"" + litText + "\"";
 		int litType = random.nextInt(3);
@@ -331,6 +331,13 @@ public class LargeFakeDataSetStreamSupplier {
 			// no type/language node
 			return text;
 		}
+	}
+
+	/**
+	 * @return the stream of the objects
+	 */
+	public Iterator<? extends CharSequence> objectIterator() {
+		return new MapIterator<>(createTripleStringStream(), TripleString::getObject);
 	}
 
 	private class FakeStatementIterator implements Iterator<TripleString> {
@@ -368,18 +375,17 @@ public class LargeFakeDataSetStreamSupplier {
 			CharSequence value = createValue();
 
 			if (buffer != null) {
-				buffer.setAll(
-						resource,
-						iri,
-						value
-				);
+				buffer.setAll(resource, iri, value);
+				if (nquad) {
+					buffer.setGraph(createGraph());
+				}
 				next = buffer;
 			} else {
-				next = new TripleString(
-						resource,
-						iri,
-						value
-				);
+				if (nquad) {
+					next = new QuadString(resource, iri, value, createGraph());
+				} else {
+					next = new TripleString(resource, iri, value);
+				}
 			}
 
 			if (slowStream > 0) {
@@ -410,6 +416,7 @@ public class LargeFakeDataSetStreamSupplier {
 
 	/**
 	 * set the max size
+	 *
 	 * @param maxSize max size
 	 * @return this
 	 */
@@ -420,6 +427,7 @@ public class LargeFakeDataSetStreamSupplier {
 
 	/**
 	 * set the max triples count
+	 *
 	 * @param maxTriples max triples count
 	 * @return this
 	 */
@@ -485,17 +493,56 @@ public class LargeFakeDataSetStreamSupplier {
 	}
 
 	/**
-	 * use the same {@link org.rdfhdt.hdt.triples.TripleString} object, better to simulate the RDFParser outputs
+	 * use the same {@link TripleString} object, better to simulate the
+	 * RDFParser outputs
 	 *
 	 * @param sameTripleString use same triple
 	 * @return this
 	 */
 	public LargeFakeDataSetStreamSupplier withSameTripleString(boolean sameTripleString) {
 		if (sameTripleString) {
-			buffer = new TripleString();
+			if (nquad) {
+				buffer = new QuadString();
+			} else {
+				buffer = new TripleString();
+			}
 		} else {
 			buffer = null;
 		}
+		return this;
+	}
+
+	/**
+	 * generate quad with the triple strings
+	 *
+	 * @param quad quads
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withQuads(boolean quad) {
+		if (this.nquad == quad) {
+			return this;
+		}
+		this.nquad = quad;
+		if (buffer != null) {
+			// we need to reset the buffer
+			TripleString old = buffer;
+			if (quad) {
+				buffer = new QuadString(old);
+			} else {
+				buffer = new TripleString(old);
+			}
+		}
+		return this;
+	}
+
+	/**
+	 * set the maximum number of graph with quad generation
+	 *
+	 * @param maxGraph max number of graph (excluding the default graph)
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withMaxGraph(int maxGraph) {
+		this.maxGraph = maxGraph;
 		return this;
 	}
 

@@ -58,10 +58,10 @@ public class RDFParserFactory {
 	public static RDFParserCallback getParserCallback(RDFNotation notation, HDTOptions spec) {
 		switch(notation) {
 			case NTRIPLES:
+			case NQUAD:
 				if (useSimple(spec)) {
 					return new RDFParserSimple();
 				}
-			case NQUAD:
 			case TURTLE:
 			case N3:
 			case RDFXML:
