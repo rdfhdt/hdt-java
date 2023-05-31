@@ -27,6 +27,7 @@ public class PSFCTempDictionary implements TempDictionary {
     @Override public TempDictionarySection getSubjects() { return delegate.getSubjects(); }
     @Override public TempDictionarySection getPredicates() { return delegate.getPredicates(); }
     @Override public TempDictionarySection getObjects() { return delegate.getObjects(); }
+    @Override public TempDictionarySection getGraphs() { return delegate.getGraphs(); }
     @Override public TempDictionarySection getShared() { return delegate.getShared(); }
     @Override public void startProcessing() { delegate.startProcessing(); }
     @Override public void endProcessing() { delegate.endProcessing(); }

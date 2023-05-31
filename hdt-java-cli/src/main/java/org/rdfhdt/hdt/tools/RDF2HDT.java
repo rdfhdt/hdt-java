@@ -173,6 +173,11 @@ public class RDF2HDT implements ProgressListener {
 			}
 		}
 
+		if (notation == RDFNotation.NQUAD) {
+			spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_QUAD);
+			spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_QUAD_SECTION);
+		}
+
 		colorTool.log("Converting " +rdfInput+" to "+hdtOutput+" as "+notation.name());
 
 		if (ntSimpleLoading) {
@@ -251,6 +256,7 @@ public class RDF2HDT implements ProgressListener {
 				colorTool.logValue("Different subjects .... ", "" + hdt.getDictionary().getNsubjects());
 				colorTool.logValue("Different predicates .. ", "" + hdt.getDictionary().getNpredicates());
 				colorTool.logValue("Different objects ..... ", "" + hdt.getDictionary().getNobjects());
+				colorTool.logValue("Different graphs ...... ", "" + hdt.getDictionary().getNgraphs());
 				colorTool.logValue("Common Subject/Object . ", "" + hdt.getDictionary().getNshared());
 			}
 

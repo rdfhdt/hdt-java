@@ -188,6 +188,11 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
     }
 
     @Override
+    public long getNgraphs() {
+        return 0;
+    }
+
+    @Override
     public long getNshared() {
         return shared.getNumberOfElements();
     }
@@ -209,6 +214,11 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
 
     @Override
     public DictionarySection getObjects() {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public DictionarySection getGraphs() {
         throw new NotImplementedException();
     }
 

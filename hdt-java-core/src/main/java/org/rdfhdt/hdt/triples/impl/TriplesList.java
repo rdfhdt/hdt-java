@@ -244,6 +244,11 @@ public class TriplesList implements TempTriples {
 		return true;
 	}
 
+	@Override
+	public boolean insert(long subject, long predicate, long object, long graph) {
+		return this.insert(subject, predicate, object);
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.TempTriples#insert(int, int, int)
 	 */

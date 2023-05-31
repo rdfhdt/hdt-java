@@ -116,4 +116,9 @@ public class QuadString extends TripleString {
 	public QuadString tripleToString() {
 		return new QuadString(subject.toString(), predicate.toString(), object.toString(), context.toString());
 	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " " + context;
+	}
 }

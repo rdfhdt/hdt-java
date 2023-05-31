@@ -264,6 +264,10 @@ public class HDTOptionsKeys {
 	@Value(key = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary")
 	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH = "hash";
 	/**
+	 * use Hash quad to create the HDTQ
+	 */
+	public static final String TEMP_DICTIONARY_IMPL_VALUE_HASH_QUAD  = "hashQuad";
+	/**
 	 * use Hash map to create the HDT and store the multisection dictionary, mandatory to create MSC
 	 */
 	@Value(key = TEMP_DICTIONARY_IMPL_KEY, desc = "hash dictionary with literal count")
@@ -282,8 +286,13 @@ public class HDTOptionsKeys {
 	/**
 	 * 4 Section dictionary
 	 */
-	@Value(key = DICTIONARY_TYPE_KEY, desc = "Four sectiob dictionary")
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Four section dictionary")
 	public static final String DICTIONARY_TYPE_VALUE_FOUR_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION;
+	/*
+	 * 4 Quad Section dictionary
+	 */
+	@Value(key = DICTIONARY_TYPE_KEY, desc = "Four quad section dictionary")
+	public static final String DICTIONARY_TYPE_VALUE_FOUR_QUAD_SECTION = HDTVocabulary.DICTIONARY_TYPE_FOUR_QUAD_SECTION;
 	/**
 	 * Prefix AND Suffix front-coded (PSFC) 4 Section dictionary
 	 */

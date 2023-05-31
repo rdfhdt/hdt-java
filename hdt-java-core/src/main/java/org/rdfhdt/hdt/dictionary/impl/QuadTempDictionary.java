@@ -1,8 +1,8 @@
 /*
- * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/BaseTempDictionary.java $
+ * File: $HeadURL: https://hdt-java.googlecode.com/svn/trunk/hdt-java/src/org/rdfhdt/hdt/dictionary/impl/QuadTempDictionary.java $
  * Revision: $Rev: 191 $
- * Last modified: $Date: 2013-03-03 11:41:43 +0000 (dom, 03 mar 2013) $
- * Last modified by: $Author: mario.arias $
+ * Last modified: $Date: 2023-05-24 11:41:43 +0000 (dom, 03 mar 2013) $
+ * Last modified by: $Author: dappermink $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,12 +39,9 @@ import org.rdfhdt.hdt.triples.TempTriples;
 
 /**
  * This abstract class implements all methods that have implementation
- * common to all modifiable dictionaries (or could apply to)
- * 
- * @author Eugen
- *
+ * common to all modifiable quad dictionaries (or could apply to)
  */
-public abstract class BaseTempDictionary implements TempDictionary {
+public abstract class QuadTempDictionary implements TempDictionary {
 	
 	final HDTOptions spec;
 	protected boolean isOrganized;
@@ -53,8 +50,9 @@ public abstract class BaseTempDictionary implements TempDictionary {
 	protected TempDictionarySection predicates;
 	protected TempDictionarySection objects;
 	protected TempDictionarySection shared;
+	protected TempDictionarySection graphs;
 
-	public BaseTempDictionary(HDTOptions spec) {
+	public QuadTempDictionary(HDTOptions spec) {
 		this.spec = spec;
 	}
 	
@@ -73,6 +71,9 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		case OBJECT:
 			isOrganized = false;
 			return objects.add(str);
+		case GRAPH:
+			isOrganized = false;
+			return graphs.add(str);
 		default:
 			throw new IllegalArgumentException();
 		}
@@ -105,6 +106,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		subjects.sort();
 		objects.sort();
 		predicates.sort();
+		graphs.sort();
 		
 		isOrganized = true;
 
@@ -132,6 +134,7 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		predicates.clear();
 		shared.clear();
 		objects.clear();
+		graphs.clear();
 	}
 	
 	@Override
@@ -154,9 +157,8 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		return shared;
 	}
 
-	@Override
 	public TempDictionarySection getGraphs() {
-		throw new NotImplementedException();
+		return graphs;
 	}
 	
 	protected long getGlobalId(long id, DictionarySectionRole position) {
@@ -166,7 +168,8 @@ public abstract class BaseTempDictionary implements TempDictionary {
 			return shared.getNumberOfElements()+id;
 			
 		case PREDICATE:
-		case SHARED:	                
+		case SHARED:
+		case GRAPH:
 			return id;
 		default:
 			throw new IllegalArgumentException();
@@ -209,6 +212,12 @@ public abstract class BaseTempDictionary implements TempDictionary {
 			ret = objects.locate(str);
 			if(ret!=0) {
 				return getGlobalId(ret, DictionarySectionRole.OBJECT);
+			}
+			return -1;
+		case GRAPH:
+			ret = graphs.locate(str);
+			if(ret!=0) {
+				return getGlobalId(ret, DictionarySectionRole.GRAPH);
 			}
 			return -1;
 		default:

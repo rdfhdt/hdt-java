@@ -65,7 +65,8 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			triples.insert(
 					dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
 					dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
-					dict.insert(triple.getObject(), TripleComponentRole.OBJECT)
+					dict.insert(triple.getObject(), TripleComponentRole.OBJECT),
+					dict.insert(triple.getGraph(), TripleComponentRole.GRAPH)
 			);
 			num++;
 			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
@@ -82,7 +83,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 	@Override
 	public TempHDT loadFromRDF(HDTOptions specs, String filename, String baseUri, RDFNotation notation, ProgressListener listener)
 			throws ParserException {
-		
+
 		RDFParserCallback parser = RDFParserFactory.getParserCallback(notation, spec);
 
 		// Create Modifiable Instance

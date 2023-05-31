@@ -48,6 +48,8 @@ public interface TempDictionary extends Closeable {
 
 	TempDictionarySection getShared();
 
+	TempDictionarySection getGraphs();
+
 	/**
 	 * To be executed at the start of the processing
 	 *

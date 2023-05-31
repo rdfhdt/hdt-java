@@ -57,6 +57,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	protected DictionarySectionPrivate predicates;
 	protected DictionarySectionPrivate objects;
 	protected DictionarySectionPrivate shared;
+	protected DictionarySectionPrivate graphs;
 	
 	public BaseDictionary(HDTOptions spec) {
 		this.spec = spec;
@@ -69,7 +70,8 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			return shared.getNumberOfElements()+id;
 			
 		case PREDICATE:
-		case SHARED:	                
+		case GRAPH:
+		case SHARED:
 			return id;
 		default:
 			throw new IllegalArgumentException();
@@ -86,6 +88,7 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 				return id-shared.getNumberOfElements();
 			}
 		case PREDICATE:
+		case GRAPH:
 			return id;
 		default:
 			throw new IllegalArgumentException();
@@ -126,6 +129,12 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 				return getGlobalId(ret, DictionarySectionRole.PREDICATE);
 			}
 			return -1;
+		case GRAPH:
+			ret = graphs.locate(str);
+			if(ret!=0) {
+				return getGlobalId(ret, DictionarySectionRole.GRAPH);
+			}
+			return -1;
 		case OBJECT:
 			if(str.charAt(0)!='"') {
 				ret = shared.locate(str);
@@ -145,12 +154,12 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	
 	@Override
 	public long getNumberOfElements() {
-		return subjects.getNumberOfElements()+predicates.getNumberOfElements()+objects.getNumberOfElements()+shared.getNumberOfElements();
+		return subjects.getNumberOfElements()+predicates.getNumberOfElements()+objects.getNumberOfElements()+shared.getNumberOfElements()+graphs.getNumberOfElements();
 	}
 
 	@Override
 	public long size() {
-		return subjects.size()+predicates.size()+objects.size()+shared.size();
+		return subjects.size()+predicates.size()+objects.size()+shared.size()+graphs.size();
 	}
 
 	@Override
@@ -166,6 +175,11 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	@Override
 	public long getNobjects() {
 		return objects.getNumberOfElements()+shared.getNumberOfElements();
+	}
+
+	@Override
+	public long getNgraphs() {
+		return graphs.getNumberOfElements();
 	}
 
 	@Override
@@ -187,6 +201,11 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	public DictionarySection getObjects() {
 		return objects;
 	}
+
+	@Override
+	public DictionarySection getGraphs() {
+		return graphs;
+	}
 	
 	@Override
 	public DictionarySection getShared() {
@@ -203,6 +222,8 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 			}
 		case PREDICATE:
 			return predicates;
+		case GRAPH:
+			return graphs;
 		case OBJECT:
 			if(id<=shared.getNumberOfElements()) {
 				return shared;
