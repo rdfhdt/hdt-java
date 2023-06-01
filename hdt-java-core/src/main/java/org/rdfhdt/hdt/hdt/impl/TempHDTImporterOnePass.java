@@ -69,7 +69,7 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 					dict.insert(triple.getGraph(), TripleComponentRole.GRAPH)
 			);
 			num++;
-			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
+			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+4;  // Spaces and final dot
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
 	}

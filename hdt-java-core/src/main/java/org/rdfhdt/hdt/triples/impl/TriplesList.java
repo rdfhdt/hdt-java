@@ -246,7 +246,10 @@ public class TriplesList implements TempTriples {
 
 	@Override
 	public boolean insert(long subject, long predicate, long object, long graph) {
-		return this.insert(subject, predicate, object);
+		arrayOfTriples.add(new TripleIDInt(subject,predicate,object, graph));
+		numValidTriples++;
+		sorted = false;
+		return true;
 	}
 
 	/* (non-Javadoc)
