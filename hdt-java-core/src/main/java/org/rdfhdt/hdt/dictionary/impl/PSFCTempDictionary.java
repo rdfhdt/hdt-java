@@ -36,4 +36,5 @@ public class PSFCTempDictionary implements TempDictionary {
     @Override public void reorganize(TempTriples triples) { delegate.reorganize(triples); }
     @Override public void clear() { delegate.clear(); }
     @Override public void close() throws IOException { delegate.close(); }
+    @Override public boolean supportGraphs() { return delegate.supportGraphs(); }
 }

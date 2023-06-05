@@ -151,4 +151,9 @@ public class HashQuadDictionary extends QuadTempDictionary {
 	public void close() throws IOException {
 		// Do nothing.
 	}
+
+	@Override
+	public boolean supportGraphs() {
+		return true;
+	}
 }

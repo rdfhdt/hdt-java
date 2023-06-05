@@ -214,5 +214,10 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		default:
 			throw new IllegalArgumentException();
 		}
-	}	
+	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
+	}
 }

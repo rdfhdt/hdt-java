@@ -317,4 +317,9 @@ public abstract class MultipleBaseDictionary implements DictionaryPrivate {
         }
         return new AbstractMap.SimpleEntry<>(0L,0L);
     }
+
+    @Override
+    public boolean supportGraphs() {
+        return false;
+    }
 }

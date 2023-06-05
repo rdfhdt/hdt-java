@@ -190,4 +190,9 @@ public class FourQuadSectionDictionary extends BaseDictionary {
 				graphs
 		);
 	}
+
+	@Override
+	public boolean supportGraphs() {
+		return true;
+	}
 }

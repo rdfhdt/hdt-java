@@ -223,5 +223,10 @@ public abstract class QuadTempDictionary implements TempDictionary {
 		default:
 			throw new IllegalArgumentException();
 		}
-	}	
+	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
+	}
 }

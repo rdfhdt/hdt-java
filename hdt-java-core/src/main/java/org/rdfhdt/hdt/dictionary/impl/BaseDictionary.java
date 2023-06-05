@@ -154,12 +154,24 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	
 	@Override
 	public long getNumberOfElements() {
-		return subjects.getNumberOfElements()+predicates.getNumberOfElements()+objects.getNumberOfElements()+shared.getNumberOfElements()+graphs.getNumberOfElements();
+		long s = subjects.getNumberOfElements();
+		long p = predicates.getNumberOfElements();
+		long o = objects.getNumberOfElements();
+		if (!this.supportGraphs())
+			return s+p+o;
+		long g = graphs.getNumberOfElements();
+		return s+p+o+g;
 	}
 
 	@Override
 	public long size() {
-		return subjects.size()+predicates.size()+objects.size()+shared.size()+graphs.size();
+		long s = subjects.size();
+		long p = predicates.size();
+		long o = objects.size();
+		if (!this.supportGraphs())
+			return s+p+o;
+		long g = graphs.size();
+		return s+p+o+g;
 	}
 
 	@Override
@@ -179,6 +191,8 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 
 	@Override
 	public long getNgraphs() {
+		if (graphs == null)
+			return 0;
 		return graphs.getNumberOfElements();
 	}
 
@@ -260,5 +274,10 @@ public abstract class BaseDictionary implements DictionaryPrivate {
 	@Override
 	public void loadAsync(TempDictionary other, ProgressListener listener) throws InterruptedException {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
 	}
 }

@@ -132,4 +132,10 @@ public interface Dictionary extends Closeable {
 	 * @return type
 	 */
 	String getType();
+
+	/**
+	 * Returns whether the dictionary supports graphs
+	 * @return true if it supports graphs, false otherwise
+	 */
+	boolean supportGraphs();
 }

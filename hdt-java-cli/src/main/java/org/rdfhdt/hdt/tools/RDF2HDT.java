@@ -173,7 +173,9 @@ public class RDF2HDT implements ProgressListener {
 			}
 		}
 
-		if (notation == RDFNotation.NQUAD) {
+		boolean isQuad = notation == RDFNotation.NQUAD;
+
+		if (isQuad) {
 			spec.set(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_QUAD);
 			spec.set(HDTOptionsKeys.DICTIONARY_TYPE_KEY, HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_QUAD_SECTION);
 		}
@@ -256,7 +258,8 @@ public class RDF2HDT implements ProgressListener {
 				colorTool.logValue("Different subjects .... ", "" + hdt.getDictionary().getNsubjects());
 				colorTool.logValue("Different predicates .. ", "" + hdt.getDictionary().getNpredicates());
 				colorTool.logValue("Different objects ..... ", "" + hdt.getDictionary().getNobjects());
-				colorTool.logValue("Different graphs ...... ", "" + hdt.getDictionary().getNgraphs());
+				if (isQuad)
+					colorTool.logValue("Different graphs ...... ", "" + hdt.getDictionary().getNgraphs());
 				colorTool.logValue("Common Subject/Object . ", "" + hdt.getDictionary().getNshared());
 			}
 

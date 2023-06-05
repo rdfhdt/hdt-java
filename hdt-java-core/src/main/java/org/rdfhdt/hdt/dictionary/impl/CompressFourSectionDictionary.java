@@ -252,4 +252,9 @@ public class CompressFourSectionDictionary implements TempDictionary {
 	private interface NodeConsumerMethod {
 		void consume(long id, long header);
 	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
+	}
 }

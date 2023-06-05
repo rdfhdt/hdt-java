@@ -62,12 +62,15 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 
 		@Override
         public void processTriple(TripleString triple, long pos) {
-			triples.insert(
-					dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
-					dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
-					dict.insert(triple.getObject(), TripleComponentRole.OBJECT),
-					dict.insert(triple.getGraph(), TripleComponentRole.GRAPH)
-			);
+			long s = dict.insert(triple.getSubject(), TripleComponentRole.SUBJECT);
+			long p = dict.insert(triple.getPredicate(), TripleComponentRole.PREDICATE);
+			long o = dict.insert(triple.getObject(), TripleComponentRole.OBJECT);
+			if (dict.supportGraphs()) {
+				long g = dict.insert(triple.getGraph(), TripleComponentRole.GRAPH);
+				triples.insert(s, p, o, g);
+			} else {
+				triples.insert(s, p, o);
+			}
 			num++;
 			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+4;  // Spaces and final dot
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);

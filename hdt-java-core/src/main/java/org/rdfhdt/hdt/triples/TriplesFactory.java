@@ -30,7 +30,9 @@ package org.rdfhdt.hdt.triples;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.triples.impl.BitmapQuadTriples;
 import org.rdfhdt.hdt.triples.impl.BitmapTriples;
 import org.rdfhdt.hdt.triples.impl.TriplesList;
 
@@ -69,8 +71,13 @@ public class TriplesFactory {
 	 */
 	static public TriplesPrivate createTriples(HDTOptions spec) throws IOException {
 		String type = spec.get("triples.format");
-		
+		boolean isQuad = spec.get(
+			HDTOptionsKeys.DICTIONARY_TYPE_KEY,
+			""
+		).equals(HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_QUAD_SECTION);
 		if(type==null) {
+			if (isQuad)
+				return new BitmapQuadTriples(spec);
 			return new BitmapTriples(spec);
 		} else if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(type)) {
 			return new TriplesList(spec);
