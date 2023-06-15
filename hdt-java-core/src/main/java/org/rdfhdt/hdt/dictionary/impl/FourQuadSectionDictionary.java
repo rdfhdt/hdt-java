@@ -49,7 +49,7 @@ import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 
-public class FourQuadSectionDictionary extends BaseDictionary {
+public class FourQuadSectionDictionary extends FourSectionDictionary {
 
 	public FourQuadSectionDictionary(HDTOptions spec,
 			DictionarySectionPrivate s, DictionarySectionPrivate p, DictionarySectionPrivate o, DictionarySectionPrivate sh,

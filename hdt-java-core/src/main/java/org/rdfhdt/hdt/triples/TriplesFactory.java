@@ -98,12 +98,15 @@ public class TriplesFactory {
 	public static TriplesPrivate createTriples(ControlInfo ci) throws IOException {
 		String format = ci.getFormat();
 		
-		if(HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST.equals(format)) {
-			return new TriplesList(new HDTSpecification());
-		} else if(HDTVocabulary.TRIPLES_TYPE_BITMAP.equals(format)) {
-			return new BitmapTriples();
-		} else {
-			throw new IllegalArgumentException("No implementation for Triples type: "+format);
+		switch (format) {
+			case HDTVocabulary.TRIPLES_TYPE_TRIPLESLIST:
+				return new TriplesList(new HDTSpecification());
+			case HDTVocabulary.TRIPLES_TYPE_BITMAP:
+				return new BitmapTriples();
+			case HDTVocabulary.TRIPLES_TYPE_BITMAP_QUAD:
+				return new BitmapQuadTriples();
+			default:
+				throw new IllegalArgumentException("No implementation for Triples type: "+format);
 		}
 	}
 

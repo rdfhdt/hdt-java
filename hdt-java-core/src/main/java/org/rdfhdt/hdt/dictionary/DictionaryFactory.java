@@ -223,6 +223,8 @@ public class DictionaryFactory {
 		switch (name) {
 			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
 				return new FourSectionDictionary(new HDTSpecification());
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_QUAD_SECTION:
+				return new FourQuadSectionDictionary(new HDTSpecification());
 			case HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION:
 				return new PSFCFourSectionDictionary(new HDTSpecification());
 			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:
