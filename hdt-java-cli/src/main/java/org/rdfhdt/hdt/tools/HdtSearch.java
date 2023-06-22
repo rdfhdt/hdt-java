@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.dictionary.Dictionary;
-import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -96,13 +95,12 @@ public class HdtSearch {
 		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
 		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
 		object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
-
 		// Iterate over triples as Strings
 		IteratorTripleString it = hdt.search(subject,predicate,object);
 		count = 0;
 		while(it.hasNext()) {
 			TripleString triple = it.next();
-			System.out.println(triple);
+			System.out.println(triple + " (graph: " + triple.getGraph() + ")");
 			count++;
 		}
 
@@ -128,7 +126,7 @@ public class HdtSearch {
 	 * Read from a line, where each component is separated by space.
 	 * @param line line to parse
 	 */
-	private static void parseTriplePattern(QuadString dest, String line, boolean isHDTQ) throws ParserException {
+	private static void parseTriplePattern(TripleString dest, String line, boolean isHDTQ) throws ParserException {
 		int split, posa, posb;
 		ParserException ex = new ParserException(
 			isHDTQ
@@ -208,7 +206,7 @@ public class HdtSearch {
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in, UTF_8));
 		try {
-			QuadString triplePattern = new QuadString();
+			TripleString triplePattern = new QuadString();
 
 			while(true) {
 				System.out.print(">> ");

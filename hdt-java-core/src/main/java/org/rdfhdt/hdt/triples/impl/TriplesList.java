@@ -246,7 +246,7 @@ public class TriplesList implements TempTriples {
 
 	@Override
 	public boolean insert(long subject, long predicate, long object, long graph) {
-		arrayOfTriples.add(new TripleIDInt(subject,predicate,object, graph));
+		arrayOfTriples.add(new TripleIDInt(subject, predicate, object, graph));
 		numValidTriples++;
 		sorted = false;
 		return true;
@@ -520,14 +520,44 @@ public class TriplesList implements TempTriples {
 	}
 
 	@Override
-	public void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj) {
+	public void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj,
+		DictionaryIDMapping mapGraph
+	) {
 		sorted=false;
 		for(TripleIDInt triple : arrayOfTriples) {
-			triple.setAll(
-					(int)mapSubj.getNewID(triple.getSubject()-1),
-					(int)mapPred.getNewID(triple.getPredicate()-1),
-					(int)mapObj.getNewID(triple.getObject()-1)
+			if (triple.isQuad()) {
+				triple.setAll(
+					(int) mapSubj.getNewID(triple.getSubject()  -1),
+					(int) mapPred.getNewID(triple.getPredicate()-1),
+					(int)  mapObj.getNewID(triple.getObject()   -1),
+					(int)mapGraph.getNewID(triple.getGraph()    -1)
 				);
+			} else {
+				throw new RuntimeException("You must call the replaceAllIds  method without a DictionaryIDMapping for graphs if the triples are not quads.");
+			}
+		}
+	}
+
+	@Override
+	public void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj
+	) {
+		sorted=false;
+		for(TripleIDInt triple : arrayOfTriples) {
+			if (triple.isQuad()) {
+				throw new RuntimeException("You must call the replaceAllIds  method with a DictionaryIDMapping for graphs if the triples are quads.");
+			} else {
+				triple.setAll(
+					(int)mapSubj.getNewID(triple.getSubject()  -1),
+					(int)mapPred.getNewID(triple.getPredicate()-1),
+					(int) mapObj.getNewID(triple.getObject()   -1)
+				);
+			}
 		}
 	}
 

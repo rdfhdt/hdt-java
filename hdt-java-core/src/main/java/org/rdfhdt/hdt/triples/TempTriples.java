@@ -103,5 +103,16 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 */
 	void load(Triples triples, ProgressListener listener);
 
-	void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj);
+	void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj
+	);
+
+	void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj,
+		DictionaryIDMapping mapGraph
+	);
 }

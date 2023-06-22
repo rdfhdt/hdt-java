@@ -248,18 +248,23 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	 */
 	@Override
 	public int compareTo(TripleIDInt other) {
-		 int result = this.subject - other.subject;
+		int result = this.subject - other.subject;
 
-         if(result==0) {
-                 result = this.predicate - other.predicate;
-                 if(result==0) {
-                         return this.object - other.object;
-                 } else {
-                         return result;
-                 }
-         } else {
-                 return result;
-         }
+		if (result == 0) {
+			result = this.predicate - other.predicate;
+			if (result == 0) {
+				result = this.object - other.object;
+				if (result == 0) {
+					return this.graph - other.graph;
+				} else {
+					return result;
+				}
+			} else {
+				return result;
+			}
+		} else {
+			return result;
+		}
 	}
 
 	/**

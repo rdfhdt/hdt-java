@@ -132,7 +132,7 @@ public class HashQuadDictionary extends QuadTempDictionary {
 		}
 
 		// Replace old IDs with news
-		triples.replaceAllIds(mapSubj, mapPred, mapObj);
+		triples.replaceAllIds(mapSubj, mapPred, mapObj, mapGraph);
 
 		isOrganized = true;
 	}
