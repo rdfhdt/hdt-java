@@ -1267,6 +1267,10 @@ public class BitmapTriples implements TriplesPrivate {
 		return bitmapIndexZ;
 	}
 
+	public List<ModifiableBitmap> getQuadInfoAG() {
+		throw new UnsupportedOperationException("Cannot get quad info from a BitmapTriples");
+	}
+
 	public static class CreateOnUsePath implements Closeable {
 		boolean mkdir;
 		Path path;

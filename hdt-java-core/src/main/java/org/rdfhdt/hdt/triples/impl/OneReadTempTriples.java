@@ -89,6 +89,15 @@ public class OneReadTempTriples implements TempTriples {
 	public void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj) {
 		throw new NotImplementedException();
 	}
+	@Override
+	public void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj,
+		DictionaryIDMapping mapGraph
+	) {
+		throw new NotImplementedException();
+	}
 
 	@Override
 	public void save(OutputStream output, ControlInfo ci, ProgressListener listener) throws IOException {

@@ -27,6 +27,9 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
@@ -45,15 +48,27 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	private long patX, patY, patZ;
 
 	private AdjacencyList adjY, adjZ;
-	long posY, posZ, minY, minZ, maxY, maxZ;
+	long posY, posZ, minY, minZ, maxY, maxZ, posG;
 	private long nextY, nextZ;
-	private long x, y, z;
+	private long x, y, z, g;
+	private List<Long> currentGs;
+	private boolean isHDTQ;
 
 	public BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
 		this.pattern = new TripleID();
+		this.currentGs = new ArrayList<Long>();
 		newSearch(pattern);
+	}
+	
+	public BitmapTriplesIterator(
+		BitmapTriples triples,
+		TripleID pattern,
+		boolean isHDTQ
+	) {
+		this(triples, pattern);
+		this.isHDTQ = isHDTQ;
 	}
 
 	public BitmapTriplesIterator(BitmapTriples triples, long minZ, long maxZ) {
@@ -89,8 +104,15 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 
 	private void updateOutput() {
 		lastPosition = posZ;
-		returnTriple.setAll(x, y, z);
-		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
+		if (isHDTQ)
+			returnTriple.setAll(x, y, z, g);
+		else
+			returnTriple.setAll(x, y, z);
+		TripleOrderConvert.swapComponentOrder(
+			returnTriple,
+			triples.order,
+			TripleComponentOrder.SPO
+		);
 	}
 
 	private void findRange() {
@@ -142,7 +164,24 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public boolean hasNext() {
-		return posZ < maxZ;
+		return posZ < maxZ || currentGs.size() > 0;
+	}
+
+	public void updateCurrentGs() {
+		if (!currentGs.isEmpty()) {
+			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
+		}
+		var quadInfo = triples.getQuadInfoAG();
+		for (int i = 0; i < quadInfo.size(); i++) {
+			var graph = quadInfo.get(i);
+			if (graph.access(posG)) {
+				currentGs.add((long) i + 1);
+			}
+		}
+		if (currentGs.isEmpty()) {
+			throw new RuntimeException("CurrentGs should not be empty");
+		}
+		posG++;
 	}
 
 	/*
@@ -152,6 +191,11 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public TripleID next() {
+		if (!currentGs.isEmpty()) {
+			g = currentGs.remove(0);
+			updateOutput();
+			return returnTriple;
+		}
 		z = adjZ.get(posZ);
 		if(posZ==nextZ) {
 			posY++;
@@ -165,6 +209,9 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 				nextY = adjY.findNext(nextY) + 1;
 			}
 		}
+
+		updateCurrentGs();
+		g = currentGs.remove(0);
 
 		updateOutput();
 

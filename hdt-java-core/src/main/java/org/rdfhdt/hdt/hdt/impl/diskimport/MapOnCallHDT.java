@@ -92,4 +92,13 @@ public class MapOnCallHDT implements HDT {
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
 		return mapOrGetHDT().search(subject, predicate, object);
 	}
+	@Override
+	public IteratorTripleString search(
+		CharSequence subject,
+		CharSequence predicate,
+		CharSequence object,
+		CharSequence graph
+	) throws NotFoundException {
+		return mapOrGetHDT().search(subject, predicate, object, graph);
+	}
 }

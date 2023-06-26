@@ -121,4 +121,13 @@ public class WriteHDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, Trip
 	public IteratorTripleString search(CharSequence subject, CharSequence predicate, CharSequence object) {
 		throw new NotImplementedException();
 	}
+	@Override
+	public IteratorTripleString search(
+		CharSequence subject,
+		CharSequence predicate,
+		CharSequence object,
+		CharSequence graph
+	) {
+		throw new NotImplementedException();
+	}
 }

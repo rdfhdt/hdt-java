@@ -28,7 +28,6 @@
 package org.rdfhdt.hdt.triples.impl;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,16 +35,20 @@ import java.util.List;
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap375Big;
+import org.rdfhdt.hdt.compact.bitmap.BitmapFactory;
 import org.rdfhdt.hdt.compact.bitmap.ModifiableBitmap;
 import org.rdfhdt.hdt.compact.sequence.DynamicSequence;
 import org.rdfhdt.hdt.compact.sequence.Sequence;
+import org.rdfhdt.hdt.compact.sequence.SequenceFactory;
 import org.rdfhdt.hdt.compact.sequence.SequenceLog64Big;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
+import org.rdfhdt.hdt.iterator.SequentialSearchIteratorTripleID;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
@@ -221,11 +224,6 @@ public class BitmapQuadTriples extends BitmapTriples {
 	}
 
 	@Override
-	public void load(InputStream input, ControlInfo ci, ProgressListener listener) throws IOException {
-		this.todo("load 3");
-	}
-
-	@Override
 	public long getNumberOfElements() {
 		return super.getNumberOfElements();
 	}
@@ -264,18 +262,101 @@ public class BitmapQuadTriples extends BitmapTriples {
 
 	@Override
 	public SuppliableIteratorTripleID search(TripleID pattern) {
-		this.todo("search");
-		return null;
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search on BitmapTriples if it's already closed");
+		}
+		
+		if (getNumberOfElements() == 0 || pattern.isNoMatch()) {
+			return new EmptyTriplesIterator(order);
+		}
+		
+		TripleID reorderedPat = new TripleID(pattern);
+		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
+		String patternString = reorderedPat.getPatternString();
+
+		if(patternString.equals("?P?")) {
+			if(this.predicateIndex!=null) {
+				return new BitmapTriplesIteratorYFOQ(this, pattern);
+			} else {
+				return new BitmapTriplesIteratorY(this, pattern);
+			}
+		}
+		
+		if(indexZ!=null && bitmapIndexZ!=null) {
+			// USE FOQ
+			if(patternString.equals("?PO") || patternString.equals("??O")) {
+				return new BitmapTriplesIteratorZFOQ(this, pattern);	
+			}			
+		} else {
+			if(patternString.equals("?PO")) {
+				return new SequentialSearchIteratorTripleID(pattern, new BitmapTriplesIteratorZ(this, pattern));
+			}
+
+			if(patternString.equals("??O")) {
+				return new BitmapTriplesIteratorZ(this, pattern);
+			}
+		}
+
+		SuppliableIteratorTripleID bitIt = new BitmapTriplesIterator(
+			this,
+			pattern,
+			true
+		);
+		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
+			return bitIt;
+		} else {
+			return new SequentialSearchIteratorTripleID(pattern, bitIt);
+		}
 	}
 
 	@Override
-	public void mapFromFile(CountInputStream input, File f,	ProgressListener listener) throws IOException {
-		this.todo("mapFromFile");
+	public void mapFromFile(
+		CountInputStream input,
+		File f,
+		ProgressListener listener
+	) throws IOException {
+		ControlInformation ci = new ControlInformation();
+		ci.load(input);
+		if(ci.getType()!=ControlInfo.Type.TRIPLES) {
+			throw new IllegalFormatException("Trying to read a triples section, but was not triples.");
+		}
+		
+		if(!ci.getFormat().equals(getType())) {
+			throw new IllegalFormatException("Trying to read BitmapTriples, but the data does not seem to be BitmapTriples");
+		}
+		
+		order = TripleComponentOrder.values()[(int)ci.getInt("order")];
+		
+		IntermediateListener iListener = new IntermediateListener(listener);
+		
+		bitmapY = BitmapFactory.createBitmap(input);
+		bitmapY.load(input, iListener);
+		
+		bitmapZ = BitmapFactory.createBitmap(input);
+		bitmapZ.load(input, iListener);
+		
+		seqY = SequenceFactory.createStream(input, f);
+		seqZ = SequenceFactory.createStream(input, f);
+		
+		adjY = new AdjacencyList(seqY, bitmapY);
+		adjZ = new AdjacencyList(seqZ, bitmapZ);
+
+		quadInfoAG = new ArrayList<>();
+
+		long numTriples = seqZ.getNumberOfElements();
+		long numGraphs = 4;
+		for (int i = 0; i < numGraphs; i++) {
+			ModifiableBitmap b = Bitmap375Big.memory(numTriples);
+			b.load(input, iListener);
+			quadInfoAG.add(b);
+		}
+		
+		isClosed=false;
 	}
 
-	private void todo(String name) {
-		System.out.println("NOT SUPPORTED YET: " + name);
-		System.exit(1);
+	@Override
+	public List<ModifiableBitmap> getQuadInfoAG() {
+		return quadInfoAG;
 	}
 }
 

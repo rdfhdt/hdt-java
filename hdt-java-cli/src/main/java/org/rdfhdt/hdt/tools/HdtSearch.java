@@ -95,12 +95,18 @@ public class HdtSearch {
 		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
 		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
 		object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
+		graph = graph.length()==1 && graph.charAt(0)=='?' ? "" : graph;
 		// Iterate over triples as Strings
-		IteratorTripleString it = hdt.search(subject,predicate,object);
+		System.out.println("Searching for: "+subject+" "+predicate+" "+object+" "+graph);
+		System.out.println("hdt class name: " + hdt.getClass().getName());
+		IteratorTripleString it =
+			isHDTQ
+			? hdt.search(subject, predicate, object, graph)
+			: hdt.search(subject, predicate, object);
 		count = 0;
 		while(it.hasNext()) {
 			TripleString triple = it.next();
-			System.out.println(triple + " (graph: " + triple.getGraph() + ")");
+			System.out.println(triple);
 			count++;
 		}
 
