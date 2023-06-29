@@ -168,6 +168,7 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	}
 
 	public void updateCurrentGs() {
+		if (!isHDTQ) return;
 		if (!currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
 		}
@@ -191,7 +192,7 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public TripleID next() {
-		if (!currentGs.isEmpty()) {
+		if (isHDTQ && !currentGs.isEmpty()) {
 			g = currentGs.remove(0);
 			updateOutput();
 			return returnTriple;
@@ -210,8 +211,10 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 			}
 		}
 
-		updateCurrentGs();
-		g = currentGs.remove(0);
+		if (isHDTQ) {
+			updateCurrentGs();
+			g = currentGs.remove(0);
+		}
 
 		updateOutput();
 
