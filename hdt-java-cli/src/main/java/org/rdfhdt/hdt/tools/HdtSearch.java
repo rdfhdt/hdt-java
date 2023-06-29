@@ -97,8 +97,6 @@ public class HdtSearch {
 		object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
 		graph = graph.length()==1 && graph.charAt(0)=='?' ? "" : graph;
 		// Iterate over triples as Strings
-		System.out.println("Searching for: "+subject+" "+predicate+" "+object+" "+graph);
-		System.out.println("hdt class name: " + hdt.getClass().getName());
 		IteratorTripleString it =
 			isHDTQ
 			? hdt.search(subject, predicate, object, graph)

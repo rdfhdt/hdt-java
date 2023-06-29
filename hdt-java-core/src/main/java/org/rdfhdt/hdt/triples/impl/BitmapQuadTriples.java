@@ -255,6 +255,8 @@ public class BitmapQuadTriples extends BitmapTriples {
 		bitmapZ.save(output, iListener);
 		seqY.save(output, iListener);
 		seqZ.save(output, iListener);
+		int numGraphs = quadInfoAG.size();
+		output.write(numGraphs);
 		for (Bitmap b : quadInfoAG) {
 			b.save(output, iListener);
 		}
@@ -344,7 +346,7 @@ public class BitmapQuadTriples extends BitmapTriples {
 		quadInfoAG = new ArrayList<>();
 
 		long numTriples = seqZ.getNumberOfElements();
-		long numGraphs = 4;
+		int numGraphs = input.read();
 		for (int i = 0; i < numGraphs; i++) {
 			ModifiableBitmap b = Bitmap375Big.memory(numTriples);
 			b.load(input, iListener);
