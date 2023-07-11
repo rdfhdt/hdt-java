@@ -35,6 +35,7 @@ import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
+import org.roaringbitmap.RoaringBitmap;
 
 /**
  * @author mario.arias
@@ -172,12 +173,11 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		if (!currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
 		}
-		var quadInfo = triples.getQuadInfoAG();
+		List<RoaringBitmap> quadInfo = triples.getQuadInfoAG();
 		for (int i = 0; i < quadInfo.size(); i++) {
-			var graph = quadInfo.get(i);
-			if (graph.access(posG)) {
+			RoaringBitmap graph = quadInfo.get(i);
+			if (graph.contains((int)posG))
 				currentGs.add((long) i + 1);
-			}
 		}
 		if (currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be empty");

@@ -28,7 +28,9 @@
 package org.rdfhdt.hdt.triples.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +60,8 @@ import org.rdfhdt.hdt.util.io.CountInputStream;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
 
+import org.roaringbitmap.RoaringBitmap;
+
 import com.github.andrewoma.dexx.collection.Pair;
 
 import java.io.File;
@@ -68,7 +72,7 @@ import java.io.File;
  */
 public class BitmapQuadTriples extends BitmapTriples {
 
-	protected List<ModifiableBitmap> quadInfoAG;
+	protected List<RoaringBitmap> quadInfoAG;
 
 	public BitmapQuadTriples() throws IOException {
 		super();
@@ -94,7 +98,6 @@ public class BitmapQuadTriples extends BitmapTriples {
 
 	@Override
 	public void load(IteratorTripleID it, ProgressListener listener) {
-		System.out.println("Loading BitmapQuadTriples");
 		long number = it.estimatedNumResults();
 
 		DynamicSequence vectorY = new SequenceLog64Big(BitUtil.log2(number), number + 1);
@@ -178,24 +181,14 @@ public class BitmapQuadTriples extends BitmapTriples {
 		}
 		
 		for (int i = 0; i < numGraphs; i++) {
-			ModifiableBitmap b = Bitmap375Big.memory(numTriples);
-			for (int j = 0; j < numTriples; j++) {
-				b.append(false);
-			}
-			quadInfoAG.add(b);
+			quadInfoAG.add(new RoaringBitmap());
 		}
-
 		for (Pair<Long, Long> tripleInGraph : triplesInGraph) {
 			long iTriple = tripleInGraph.component1();
 			long iGraph = tripleInGraph.component2();
 			quadInfoAG
 				.get((int) iGraph)
-				.set(iTriple, true);
-		}
-
-		for (int i = 0; i < quadInfoAG.size(); i++) {
-			Bitmap b = quadInfoAG.get(i);
-			System.out.println("Bitmap "+i+": "+b);
+				.add((int) iTriple);
 		}
 
 		if(numTriples>0) {
@@ -234,12 +227,11 @@ public class BitmapQuadTriples extends BitmapTriples {
 	@Override
 	public long size() {
 		if(isClosed) return 0;
-		int numGraphs = quadInfoAG.size();
-		long sizeFirstGraph = 0;
-		if (numGraphs > 0) {
-			sizeFirstGraph = quadInfoAG.get(0).getSizeBytes();
-		}
-		return seqY.size()+seqZ.size()+bitmapY.getSizeBytes()+bitmapZ.getSizeBytes()+sizeFirstGraph*numGraphs;
+		int graphs = quadInfoAG
+			.stream()
+			.map(b -> b.serializedSizeInBytes())
+			.reduce(0, (a, b) -> a + b);
+		return seqY.size()+seqZ.size()+bitmapY.getSizeBytes()+bitmapZ.getSizeBytes()+graphs;
 	}
 
 	@Override
@@ -256,9 +248,9 @@ public class BitmapQuadTriples extends BitmapTriples {
 		seqY.save(output, iListener);
 		seqZ.save(output, iListener);
 		int numGraphs = quadInfoAG.size();
-		output.write(numGraphs);
-		for (Bitmap b : quadInfoAG) {
-			b.save(output, iListener);
+		StreamUtils.writeLong(output, numGraphs);
+		for (RoaringBitmap b : quadInfoAG) {
+			StreamUtils.writeRoaringBitmap(output, b);
 		}
 	}
 
@@ -345,11 +337,9 @@ public class BitmapQuadTriples extends BitmapTriples {
 
 		quadInfoAG = new ArrayList<>();
 
-		long numTriples = seqZ.getNumberOfElements();
-		int numGraphs = input.read();
+		int numGraphs = (int) StreamUtils.readLong(input);
 		for (int i = 0; i < numGraphs; i++) {
-			ModifiableBitmap b = Bitmap375Big.memory(numTriples);
-			b.load(input, iListener);
+			RoaringBitmap b = StreamUtils.readRoaringBitmap(input);
 			quadInfoAG.add(b);
 		}
 		
@@ -357,8 +347,82 @@ public class BitmapQuadTriples extends BitmapTriples {
 	}
 
 	@Override
-	public List<ModifiableBitmap> getQuadInfoAG() {
+	public List<RoaringBitmap> getQuadInfoAG() {
 		return quadInfoAG;
 	}
 }
 
+class ByteUtils {
+    public static byte[] longToBytes(long x) {
+		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.putLong(0, x);
+        return buffer.array();
+    }
+    public static long bytesToLong(byte[] bytes) {
+		ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+        buffer.put(bytes, 0, bytes.length);
+		buffer.flip();
+        return buffer.getLong();
+    }
+}
+
+class StreamUtils {
+	private static void writeBytes(
+		OutputStream output,
+		byte[] bytes,
+		boolean isLarge
+	) throws IOException {
+		int size = bytes.length;
+		if (isLarge) {
+			StreamUtils.writeLong(output, size);
+		} else {
+			output.write(size);
+		}
+		output.write(bytes);
+	}
+	private static byte[] readBytes(
+		InputStream input,
+		boolean isLarge
+	) throws IOException {
+		int size;
+		if (isLarge) {
+			size = (int) StreamUtils.readLong(input);
+		} else {
+			size = input.read();
+		}
+		byte[] bytes = new byte[size];
+		input.read(bytes);
+		return bytes;
+	}
+	public static void writeLong(
+		OutputStream output,
+		long l
+	) throws IOException {
+		byte[] bytes = ByteUtils.longToBytes(l);
+		StreamUtils.writeBytes(output, bytes, false);
+	}
+	public static long readLong(
+		InputStream input
+	) throws IOException {
+		byte[] bytes = StreamUtils.readBytes(input, false);
+		return ByteUtils.bytesToLong(bytes);
+	}
+	public static void writeRoaringBitmap(
+		OutputStream output,
+		RoaringBitmap bitmap
+	) throws IOException {
+		int size = bitmap.serializedSizeInBytes();
+		byte[] bytes = new byte[size];
+		bitmap.serialize(ByteBuffer.wrap(bytes));
+		StreamUtils.writeBytes(output, bytes, true);
+	}
+	public static RoaringBitmap readRoaringBitmap(
+		InputStream input
+	) throws IOException {
+		byte[] bytes = StreamUtils.readBytes(input, true);
+		ByteBuffer buffer = ByteBuffer.wrap(bytes);
+		RoaringBitmap bitmap = new RoaringBitmap();
+		bitmap.deserialize(buffer);
+		return bitmap;
+	}
+}
