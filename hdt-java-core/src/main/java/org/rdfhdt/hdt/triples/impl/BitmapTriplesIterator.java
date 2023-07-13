@@ -31,11 +31,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
+import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
-import org.roaringbitmap.RoaringBitmap;
 
 /**
  * @author mario.arias
@@ -173,10 +173,10 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		if (!currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
 		}
-		List<RoaringBitmap> quadInfo = triples.getQuadInfoAG();
+		List<Bitmap> quadInfo = triples.getQuadInfoAG();
 		for (int i = 0; i < quadInfo.size(); i++) {
-			RoaringBitmap graph = quadInfo.get(i);
-			if (graph.contains((int)posG))
+			Bitmap graph = quadInfo.get(i);
+			if (graph.access((int)posG))
 				currentGs.add((long) i + 1);
 		}
 		if (currentGs.isEmpty()) {

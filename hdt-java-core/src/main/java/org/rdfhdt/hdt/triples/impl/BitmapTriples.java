@@ -64,7 +64,6 @@ import org.rdfhdt.hdt.util.io.IOUtil;
 import org.rdfhdt.hdt.util.io.compress.Pair;
 import org.rdfhdt.hdt.util.listener.IntermediateListener;
 import org.rdfhdt.hdt.util.listener.ListenerUtil;
-import org.roaringbitmap.RoaringBitmap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1268,7 +1267,7 @@ public class BitmapTriples implements TriplesPrivate {
 		return bitmapIndexZ;
 	}
 
-	public List<RoaringBitmap> getQuadInfoAG() {
+	public List<Bitmap> getQuadInfoAG() {
 		throw new UnsupportedOperationException("Cannot get quad info from a BitmapTriples");
 	}
 
