@@ -29,6 +29,7 @@ package org.rdfhdt.hdt.triples.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
 import org.rdfhdt.hdt.compact.bitmap.Bitmap;
@@ -167,18 +168,38 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	public boolean hasNext() {
 		return posZ < maxZ || currentGs.size() > 0;
 	}
-
+	class Indexed<T> {
+		public T value;
+		public int index;
+		public Indexed(T value, int index) {
+			this.value = value;
+			this.index = index;
+		}
+	}
 	public void updateCurrentGs() {
 		if (!isHDTQ) return;
 		if (!currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
 		}
 		List<Bitmap> quadInfo = triples.getQuadInfoAG();
-		for (int i = 0; i < quadInfo.size(); i++) {
-			Bitmap graph = quadInfo.get(i);
-			if (graph.access((int)posG))
-				currentGs.add((long) i + 1);
-		}
+		// for (int i = 0; i < quadInfo.size(); i++) {
+		// 	Bitmap graph = quadInfo.get(i);
+		// 	if (graph.access((int)posG))
+		// 		currentGs.add((long) i + 1);
+		// }
+		currentGs = quadInfo
+			.stream()
+			.parallel()
+			.filter(graph -> graph.access((int)posG))
+			.map(graph -> quadInfo.indexOf(graph) + 1L)
+			.collect(Collectors.toList());
+		// currentGs = IntStream
+		// 	.range(0, quadInfo.size())
+		// 	.parallel()
+		// 	.mapToObj(i -> new Indexed<Bitmap>(quadInfo.get(i), i))
+		// 	.filter(ib -> ib.value.access((int)posG))
+		// 	.map(ib -> (long) ib.index + 1)
+		// 	.collect(Collectors.toList());
 		if (currentGs.isEmpty()) {
 			throw new RuntimeException("CurrentGs should not be empty");
 		}
@@ -219,7 +240,6 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		updateOutput();
 
 		posZ++;
-
 		return returnTriple;
 	}
 
