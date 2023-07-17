@@ -27,12 +27,7 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.rdfhdt.hdt.compact.bitmap.AdjacencyList;
-import org.rdfhdt.hdt.compact.bitmap.Bitmap;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentOrder;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
@@ -44,35 +39,26 @@ import org.rdfhdt.hdt.triples.TripleID;
  */
 public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 
-	private final BitmapTriples triples;
-	private final TripleID pattern, returnTriple;
-	private long lastPosition;
-	private long patX, patY, patZ;
+	protected BitmapTriples triples;
+	protected TripleID pattern, returnTriple;
+	protected long lastPosition;
+	protected long patX, patY, patZ;
 
-	private AdjacencyList adjY, adjZ;
-	long posY, posZ, minY, minZ, maxY, maxZ, posG;
-	private long nextY, nextZ;
-	private long x, y, z, g;
-	private List<Long> currentGs;
-	private boolean isHDTQ;
+	protected AdjacencyList adjY, adjZ;
+	protected long posY, posZ, minY, minZ, maxY, maxZ;
+	protected long nextY, nextZ;
+	protected long x, y, z;
+
+	protected BitmapTriplesIterator() {
+	}
 
 	public BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
 		this.pattern = new TripleID();
-		this.currentGs = new ArrayList<Long>();
 		newSearch(pattern);
 	}
 	
-	public BitmapTriplesIterator(
-		BitmapTriples triples,
-		TripleID pattern,
-		boolean isHDTQ
-	) {
-		this(triples, pattern);
-		this.isHDTQ = isHDTQ;
-	}
-
 	public BitmapTriplesIterator(BitmapTriples triples, long minZ, long maxZ) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
@@ -104,12 +90,9 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		goToStart();
 	}
 
-	private void updateOutput() {
+	protected void updateOutput() {
 		lastPosition = posZ;
-		if (isHDTQ)
-			returnTriple.setAll(x, y, z, g);
-		else
-			returnTriple.setAll(x, y, z);
+		returnTriple.setAll(x, y, z);
 		TripleOrderConvert.swapComponentOrder(
 			returnTriple,
 			triples.order,
@@ -166,44 +149,7 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public boolean hasNext() {
-		return posZ < maxZ || currentGs.size() > 0;
-	}
-	class Indexed<T> {
-		public T value;
-		public int index;
-		public Indexed(T value, int index) {
-			this.value = value;
-			this.index = index;
-		}
-	}
-	public void updateCurrentGs() {
-		if (!isHDTQ) return;
-		if (!currentGs.isEmpty()) {
-			throw new RuntimeException("CurrentGs should not be updated if it is not empty");
-		}
-		List<Bitmap> quadInfo = triples.getQuadInfoAG();
-		// for (int i = 0; i < quadInfo.size(); i++) {
-		// 	Bitmap graph = quadInfo.get(i);
-		// 	if (graph.access((int)posG))
-		// 		currentGs.add((long) i + 1);
-		// }
-		currentGs = quadInfo
-			.stream()
-			.parallel()
-			.filter(graph -> graph.access((int)posG))
-			.map(graph -> quadInfo.indexOf(graph) + 1L)
-			.collect(Collectors.toList());
-		// currentGs = IntStream
-		// 	.range(0, quadInfo.size())
-		// 	.parallel()
-		// 	.mapToObj(i -> new Indexed<Bitmap>(quadInfo.get(i), i))
-		// 	.filter(ib -> ib.value.access((int)posG))
-		// 	.map(ib -> (long) ib.index + 1)
-		// 	.collect(Collectors.toList());
-		if (currentGs.isEmpty()) {
-			throw new RuntimeException("CurrentGs should not be empty");
-		}
-		posG++;
+		return posZ < maxZ;
 	}
 
 	/*
@@ -213,11 +159,6 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public TripleID next() {
-		if (isHDTQ && !currentGs.isEmpty()) {
-			g = currentGs.remove(0);
-			updateOutput();
-			return returnTriple;
-		}
 		z = adjZ.get(posZ);
 		if(posZ==nextZ) {
 			posY++;
@@ -230,11 +171,6 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 				// nextY = adjY.find(x);
 				nextY = adjY.findNext(nextY) + 1;
 			}
-		}
-
-		if (isHDTQ) {
-			updateCurrentGs();
-			g = currentGs.remove(0);
 		}
 
 		updateOutput();

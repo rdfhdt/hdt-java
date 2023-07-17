@@ -52,6 +52,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.quads.impl.BitmapQuadsIterator;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -294,12 +295,11 @@ public class BitmapQuadTriples extends BitmapTriples {
 			}
 		}
 
-		SuppliableIteratorTripleID bitIt = new BitmapTriplesIterator(
+		SuppliableIteratorTripleID bitIt = new BitmapQuadsIterator(
 			this,
-			pattern,
-			true
+			pattern
 		);
-		if(patternString.equals("???") || patternString.equals("S??") || patternString.equals("SP?") || patternString.equals("SPO")) {
+		if(patternString.equals("????") || patternString.equals("S???") || patternString.equals("SP??") || patternString.equals("SPO?")) {
 			return bitIt;
 		} else {
 			return new SequentialSearchIteratorTripleID(pattern, bitIt);

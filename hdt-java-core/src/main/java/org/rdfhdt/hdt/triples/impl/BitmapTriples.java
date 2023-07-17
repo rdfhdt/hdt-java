@@ -81,10 +81,10 @@ import java.util.List;
 public class BitmapTriples implements TriplesPrivate {
 	protected static final Logger log = LoggerFactory.getLogger(BitmapTriples.class);
 
-	protected TripleComponentOrder order;
+	public TripleComponentOrder order;
 	
 	protected Sequence seqY, seqZ, indexZ, predicateCount;
-	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
+	public Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 
 	protected AdjacencyList adjY, adjZ, adjIndex;
 	
