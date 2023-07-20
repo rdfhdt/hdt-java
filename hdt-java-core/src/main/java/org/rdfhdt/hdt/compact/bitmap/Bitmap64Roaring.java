@@ -12,10 +12,8 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 
 public class Bitmap64Roaring implements ModifiableBitmap {
 	private Roaring64Bitmap bitmap;
-	private long numBits;
 	public Bitmap64Roaring() {
 		bitmap = new Roaring64Bitmap();
-		numBits = 0;
 	}
 	@Override
 	public boolean access(long position) {
@@ -23,19 +21,26 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	}
 	@Override
 	public long rank1(long position) {
-		return bitmap.rankLong(position);
+		if (position >= 0)
+			return bitmap.rankLong(position);
+		return 0;
 	}
 	@Override
 	public long rank0(long position) {
-		return position - rank1(position);
+		throw new NotImplementedException("rank0 method is not implemented in Roaring Bitmaps");
 	}
 	@Override
 	public long selectPrev1(long start) {
-		throw new NotImplementedException();
+		return select1(rank1(start));
 	}
 	@Override
 	public long selectNext1(long start) {
-		throw new NotImplementedException();
+		long pos = rank1(start - 1);
+		if (pos < bitmap.getLongCardinality()) {
+			return select1(pos + 1);
+		} else
+			return -1;
+
 	}
 	@Override
 	public long select0(long n) {
@@ -43,11 +48,18 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	}
 	@Override
 	public long select1(long n) {
-		return bitmap.select(n);
+		long position = n - 1;
+		if (position == -1)
+			return -1;
+		if (position < bitmap.getLongCardinality()) {
+			return bitmap.select(position);
+		} else {
+			return bitmap.select(bitmap.getLongCardinality() - 1) + 1;
+		}
 	}
 	@Override
 	public long getNumBits() {
-		return numBits;
+		return 0;
 	}
 	@Override
 	public long countOnes() {
@@ -55,7 +67,7 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	}
 	@Override
 	public long countZeros() {
-		return numBits - countOnes();
+		throw new NotImplementedException("rank0 method is not implemented in Roaring Bitmaps");
 	}
 	@Override
 	public long getSizeBytes() {
@@ -64,12 +76,9 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
 		long size = getSizeBytes();
-		// 
 		ByteBuffer b1 = ByteBuffer.allocate(Long.BYTES * 2);
-		b1.putLong(numBits);
 		b1.putLong(size);
 		output.write(b1.array());
-		// 
 		ByteBuffer b2 = ByteBuffer.allocate((int)size);
 		bitmap.serialize(b2);
 		output.write(b2.array());
@@ -78,9 +87,7 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	public void load(InputStream input, ProgressListener listener) throws IOException {
 		ByteBuffer b1 = ByteBuffer.allocate(Long.BYTES * 2);
 		input.read(b1.array());
-		numBits = b1.getLong();
 		long size = b1.getLong();
-		//
 		ByteBuffer b2 = ByteBuffer.allocate((int)size);
 		input.read(b2.array());
 		bitmap.deserialize(b2);
@@ -98,8 +105,9 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 		}
 	}
 	@Override
-	public void append(boolean value) {
-		numBits++;
-		set(numBits - 1, value);
+	public void append(boolean value) { }
+	@Override
+	public String toString() {
+		return bitmap.toString();
 	}
 }
