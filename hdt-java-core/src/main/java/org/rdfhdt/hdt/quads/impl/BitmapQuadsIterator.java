@@ -15,9 +15,9 @@ public class BitmapQuadsIterator extends BitmapTriplesIterator {
 	// resolves ????, S???, SP??, SPO? queries
 	
 	private List<Bitmap> bitmapsGraph; // one bitmap per graph
-	private int numberOfGraphs;
+	private long numberOfGraphs;
 	private long posG; // the current graph bitmap
-	private int g; // g is variable
+	private long g; // g is variable
 	
 	public BitmapQuadsIterator(BitmapTriples triples, TripleID pattern) {
 		super();
@@ -36,7 +36,7 @@ public class BitmapQuadsIterator extends BitmapTriplesIterator {
 		while(!bitmapsGraph.get((int) posG).access(posZ)) {
 			posG++;
 		}
-		g = (int) posG + 1;
+		g = posG + 1;
 	}
 	
 	@Override
@@ -53,18 +53,18 @@ public class BitmapQuadsIterator extends BitmapTriplesIterator {
 	 */
 	@Override
 	public TripleID next() {
-		z = (int) adjZ.get(posZ); // get the next object (Z). We just retrieve it from the list of objects (AdjZ) from current position posZ
+		z = adjZ.get(posZ); // get the next object (Z). We just retrieve it from the list of objects (AdjZ) from current position posZ
 		if(posZ>=nextZ) { // if, with the current position of the object (posZ), we have reached the next list of objects (starting in nexZ), then we should update the associated predicate (Y) and, potentially, also the associated subject (X)
 			posY = triples.bitmapZ.rank1(posZ-1);	// move to the next position of predicates
-			y = (int) adjY.get(posY); // get the next predicate (Y). We just retrieve it from the list of predicates(AdjY) from current position posY
+			y = adjY.get(posY); // get the next predicate (Y). We just retrieve it from the list of predicates(AdjY) from current position posY
 			nextZ = adjZ.findNext(posZ)+1;	// update nextZ, storing in which position (in adjZ) ends the list of objects associated with the current subject,predicate
 			if(posY>=nextY) { // if we have reached the next list of objects (starting in nexZ) we should update the associated predicate (Y) and, potentially, also the associated subject (X)
-				x = (int) triples.bitmapY.rank1(posY - 1) + 1;	// get the next subject (X)
+				x = triples.bitmapY.rank1(posY - 1) + 1;	// get the next subject (X)
 				nextY = adjY.findNext(posY)+1;	// update nextY, storing in which position (in AdjY) ends the list of predicates associated with the current subject
 			}
 		}
 		
-		g = (int) posG + 1;
+		g = posG + 1;
 		
 		// set posG to the next graph of this triple
 		do {
