@@ -53,6 +53,7 @@ import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIterator;
+import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorG;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TempTriples;
 import org.rdfhdt.hdt.triples.TripleID;
@@ -295,15 +296,19 @@ public class BitmapQuadTriples extends BitmapTriples {
 			}
 		}
 
-		SuppliableIteratorTripleID bitIt = new BitmapQuadsIterator(
-			this,
-			pattern
-		);
-		if(patternString.equals("????") || patternString.equals("S???") || patternString.equals("SP??") || patternString.equals("SPO?")) {
+		SuppliableIteratorTripleID bitIt;
+		if (patternString.endsWith("G"))
+			bitIt = new BitmapQuadsIteratorG(this, pattern);
+		else
+			bitIt = new BitmapQuadsIterator(this, pattern);
+		if(    patternString.equals("????") || patternString.equals("???G")
+			|| patternString.equals("S???") || patternString.equals("S??G")
+			|| patternString.equals("SP??") || patternString.equals("SP?G")
+			|| patternString.equals("SPO?") || patternString.equals("SPOG")
+		) {
 			return bitIt;
-		} else {
-			return new SequentialSearchIteratorTripleID(pattern, bitIt);
 		}
+		return new SequentialSearchIteratorTripleID(pattern, bitIt);
 	}
 
 	@Override
