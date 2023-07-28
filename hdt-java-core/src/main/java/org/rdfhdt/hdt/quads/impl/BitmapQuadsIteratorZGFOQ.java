@@ -17,8 +17,6 @@ public class BitmapQuadsIteratorZGFOQ extends BitmapTriplesIteratorZFOQ{
 	public BitmapQuadsIteratorZGFOQ(BitmapTriples triples, TripleID pattern) {
 		super(triples, pattern);
 
-		System.out.println("ZGFOQ");
-
 		this.triples = triples;
 		this.pattern = new TripleID();
 		this.returnTriple = new TripleID();
