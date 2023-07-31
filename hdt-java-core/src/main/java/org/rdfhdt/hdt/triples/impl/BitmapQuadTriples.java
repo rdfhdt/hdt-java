@@ -54,6 +54,7 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIterator;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorG;
+import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorYGFOQ;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorZFOQ;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorZGFOQ;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
@@ -297,6 +298,9 @@ public class BitmapQuadTriples extends BitmapTriples {
 				return new BitmapTriplesIteratorZ(this, pattern);
 			}
 		}
+
+		if(patternString.equals("?P?G"))
+			return new BitmapQuadsIteratorYGFOQ(this, pattern);
 
 		if(patternString.equals("?PO?") || patternString.equals("??O?"))
 			return new BitmapQuadsIteratorZFOQ(this, pattern);

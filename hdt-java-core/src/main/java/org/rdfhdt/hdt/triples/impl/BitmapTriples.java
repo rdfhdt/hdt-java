@@ -83,7 +83,7 @@ public class BitmapTriples implements TriplesPrivate {
 
 	public TripleComponentOrder order;
 	
-	protected Sequence seqY, seqZ, indexZ, predicateCount;
+	public Sequence seqY, seqZ, indexZ, predicateCount;
 	public Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 
 	public AdjacencyList adjY, adjZ, adjIndex;

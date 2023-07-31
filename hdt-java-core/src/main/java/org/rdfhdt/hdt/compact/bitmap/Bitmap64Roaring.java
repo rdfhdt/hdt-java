@@ -36,10 +36,9 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	@Override
 	public long selectNext1(long start) {
 		long pos = rank1(start - 1);
-		if (pos < bitmap.getLongCardinality()) {
+		if (pos < bitmap.getLongCardinality())
 			return select1(pos + 1);
-		} else
-			return -1;
+		return -1;
 
 	}
 	@Override
