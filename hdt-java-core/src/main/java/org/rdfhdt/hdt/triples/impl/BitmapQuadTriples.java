@@ -54,6 +54,7 @@ import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIterator;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorG;
+import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorYFOQ;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorYGFOQ;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorZFOQ;
 import org.rdfhdt.hdt.quads.impl.BitmapQuadsIteratorZGFOQ;
@@ -276,28 +277,8 @@ public class BitmapQuadTriples extends BitmapTriples {
 		TripleOrderConvert.swapComponentOrder(reorderedPat, TripleComponentOrder.SPO, order);
 		String patternString = reorderedPat.getPatternString();
 
-		if(patternString.equals("?P?")) {
-			if(this.predicateIndex!=null) {
-				return new BitmapTriplesIteratorYFOQ(this, pattern);
-			} else {
-				return new BitmapTriplesIteratorY(this, pattern);
-			}
-		}
-		
-		if(indexZ!=null && bitmapIndexZ!=null) {
-			// USE FOQ
-			if(patternString.equals("?PO") || patternString.equals("??O")) {
-				return new BitmapTriplesIteratorZFOQ(this, pattern);	
-			}			
-		} else {
-			if(patternString.equals("?PO")) {
-				return new SequentialSearchIteratorTripleID(pattern, new BitmapTriplesIteratorZ(this, pattern));
-			}
-
-			if(patternString.equals("??O")) {
-				return new BitmapTriplesIteratorZ(this, pattern);
-			}
-		}
+		if (patternString.equals("?P??"))
+			return new BitmapQuadsIteratorYFOQ(this, pattern);
 
 		if(patternString.equals("?P?G"))
 			return new BitmapQuadsIteratorYGFOQ(this, pattern);
