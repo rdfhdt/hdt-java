@@ -290,7 +290,10 @@ public final class TripleID implements Comparable<TripleID>, Serializable, Clone
 	 * @return boolean
 	 */
 	public boolean isNoMatch() {
-		return subject == -1 || predicate == -1 || object == -1 || graph == -1;
+		return subject == -1
+			|| predicate == -1
+			|| object == -1
+			|| isQuad && graph == -1;
 	}
 
 	/**
