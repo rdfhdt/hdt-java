@@ -101,7 +101,9 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 		}
 	}
 	@Override
-	public void append(boolean value) { }
+	public void append(boolean value) {
+		throw new NotImplementedException("append method is not implemented in Roaring Bitmaps");
+	}
 	@Override
 	public String toString() {
 		return bitmap.toString();
