@@ -42,23 +42,23 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
-	public BitmapTriples triples;
-	public long lastPosition;
-	public TripleID returnTriple;
-	public long patY;
+	private BitmapTriples triples;
+	private long lastPosition;
+	private TripleID returnTriple;
+	private long patY;
 
-	public AdjacencyList adjY;
-	public AdjacencyList adjZ;
-	public long posY;
+	private AdjacencyList adjY;
+	private AdjacencyList adjZ;
+	private long posY;
 	public long posZ;
-	public long prevZ;
-	public long nextZ;
-	public long maxZ;
-	public long x, y, z;
+	private long prevZ;
+	private long nextZ;
+	private long maxZ;
+	private long x, y, z;
 
-	public long numOccurrences;
-	public long numOccurrence;
-	public final long predBase;
+	private long numOccurrences;
+	private long numOccurrence;
+	private final long predBase;
 	public BitmapTriplesIteratorYFOQ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
 		TripleID pattern1 = new TripleID(pattern);
