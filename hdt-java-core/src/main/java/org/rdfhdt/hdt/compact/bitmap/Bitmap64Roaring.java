@@ -90,7 +90,7 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	}
 	@Override
 	public String getType() {
-		return HDTVocabulary.BITMAP_TYPE_PLAIN;
+		return HDTVocabulary.BITMAP_TYPE_ROARING;
 	}
 	@Override
 	public void set(long position, boolean value) {
