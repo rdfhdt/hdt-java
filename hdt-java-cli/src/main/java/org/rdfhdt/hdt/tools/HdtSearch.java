@@ -125,6 +125,14 @@ public class HdtSearch {
 		System.out.println("   http://www.somewhere.com/mysubject ? ?");
 		System.out.println("Use 'exit' or 'quit' to terminate interactive shell.");
 	}
+
+	private static void parseTriplePatternErr(boolean isHDTQ) throws ParserException {
+		throw new ParserException(
+			isHDTQ
+			? "Make sure that you included four terms."
+			: "Make sure that you included three terms."
+		);
+	}
 	
 	/**
 	 * Read from a line, where each component is separated by space.
@@ -132,18 +140,13 @@ public class HdtSearch {
 	 */
 	private static void parseTriplePattern(TripleString dest, String line, boolean isHDTQ) throws ParserException {
 		int split, posa, posb;
-		ParserException ex = new ParserException(
-			isHDTQ
-			? "Make sure that you included four terms."
-			: "Make sure that you included three terms."
-		); // Not found, error.
 		dest.clear();
 		
 		// SET SUBJECT
 		posa = 0;
 		posb = split = line.indexOf(' ', posa);
 		
-		if(posb==-1) throw ex;
+		if(posb==-1) parseTriplePatternErr(isHDTQ);
 		
 		dest.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 	
@@ -151,7 +154,7 @@ public class HdtSearch {
 		posa = split+1;
 		posb = split = line.indexOf(' ', posa);
 		
-		if(posb==-1) throw ex;
+		if(posb==-1) parseTriplePatternErr(isHDTQ);
 		
 		dest.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 		
@@ -160,7 +163,7 @@ public class HdtSearch {
 			posa = split+1;
 			posb = split = line.indexOf(' ', posa);
 			
-			if(posb==-1) throw ex;
+			if(posb==-1) parseTriplePatternErr(isHDTQ);
 			
 			dest.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 
