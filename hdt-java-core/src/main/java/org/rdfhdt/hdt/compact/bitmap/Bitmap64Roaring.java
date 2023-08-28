@@ -9,6 +9,7 @@ import org.roaringbitmap.longlong.Roaring64Bitmap;
 import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.util.io.IOUtil;
 
 public class Bitmap64Roaring implements ModifiableBitmap {
 	private Roaring64Bitmap bitmap;
@@ -75,18 +76,14 @@ public class Bitmap64Roaring implements ModifiableBitmap {
 	@Override
 	public void save(OutputStream output, ProgressListener listener) throws IOException {
 		long size = getSizeBytes();
-		ByteBuffer b1 = ByteBuffer.allocate(Long.BYTES * 2);
-		b1.putLong(size);
-		output.write(b1.array());
+		IOUtil.writeLong(output, size);
 		ByteBuffer b2 = ByteBuffer.allocate((int)size);
 		bitmap.serialize(b2);
 		output.write(b2.array());
 	}
 	@Override
 	public void load(InputStream input, ProgressListener listener) throws IOException {
-		ByteBuffer b1 = ByteBuffer.allocate(Long.BYTES * 2);
-		input.read(b1.array());
-		long size = b1.getLong();
+		long size = IOUtil.readLong(input);
 		ByteBuffer b2 = ByteBuffer.allocate((int)size);
 		input.read(b2.array());
 		bitmap.deserialize(b2);
