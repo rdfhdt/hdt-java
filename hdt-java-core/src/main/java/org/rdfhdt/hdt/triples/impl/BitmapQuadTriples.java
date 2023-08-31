@@ -352,10 +352,8 @@ public class BitmapQuadTriples extends BitmapTriples {
 
 	// Fast but dangerous covariant cast
 	@Override
-	@SuppressWarnings("unchecked")
-	public List<Bitmap> getQuadInfoAG() {
-		List<?> a = quadInfoAG;
-		return (List<Bitmap>) a;
+	public List<? extends Bitmap> getQuadInfoAG() {
+		return quadInfoAG;
 	}
 
 	// Slower but safer

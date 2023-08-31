@@ -14,7 +14,7 @@ public class BitmapQuadsIterator extends BitmapTriplesIterator {
 
 	// resolves ????, S???, SP??, SPO? queries
 	
-	private List<Bitmap> bitmapsGraph; // one bitmap per graph
+	private List<? extends Bitmap> bitmapsGraph; // one bitmap per graph
 	private long numberOfGraphs;
 	private long posG; // the current graph bitmap
 	private long g; // g is variable

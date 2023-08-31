@@ -15,7 +15,7 @@ import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 public class BitmapQuadsIteratorYFOQ implements SuppliableIteratorTripleID {
 
     private final BitmapTriplesIteratorYFOQ inIt;
-    private final List<Bitmap> bitmapGraphs;
+    private final List<? extends Bitmap> bitmapGraphs;
     private List<Long> graphs;
     private TripleID curTriple;
 

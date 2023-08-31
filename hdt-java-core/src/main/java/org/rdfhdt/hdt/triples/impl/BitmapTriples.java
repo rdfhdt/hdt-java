@@ -1267,7 +1267,7 @@ public class BitmapTriples implements TriplesPrivate {
 		return bitmapIndexZ;
 	}
 
-	public List<Bitmap> getQuadInfoAG() {
+	public List<? extends Bitmap> getQuadInfoAG() {
 		throw new UnsupportedOperationException("Cannot get quad info from a BitmapTriples");
 	}
 

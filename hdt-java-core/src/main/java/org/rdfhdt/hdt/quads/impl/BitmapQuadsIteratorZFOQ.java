@@ -15,7 +15,7 @@ public class BitmapQuadsIteratorZFOQ extends BitmapTriplesIteratorZFOQ{
 
 	// resolves ?PO?, ??O? queries
 	
-	private List<Bitmap> bitmapsGraph; // one bitmap per graph
+	private List<? extends Bitmap> bitmapsGraph; // one bitmap per graph
 	private int numberOfGraphs;
 	private long posG; // the current graph bitmap
 	private int g; // g is variable
