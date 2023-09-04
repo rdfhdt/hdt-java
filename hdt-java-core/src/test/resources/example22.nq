@@ -1,0 +1,14 @@
+<C2> <link1> <C2> <G1> .
+<S1> <link1> <O1> <G2> .
+<S1> <link1> <O2> <G3> .
+<S2> <link3> "1"^^<http://www.w3.org/2001/XMLSchema#int> <G1> .
+<S2> <link1> "2"^^<http://www.w3.org/2001/XMLSchema#int> <G1> .
+<O2> <link1> <O3> <G1> .
+<S2> <link2> "0.1602265625"^^<http://www.w3.org/2001/XMLSchema#float> <G1> .
+<S3> <link2> "0.2602265625"^^<http://www.w3.org/2001/XMLSchema#float> <G1> .
+<S4> <link2> "0.3602265625"^^<http://www.w3.org/2001/XMLSchema#float> <G1> .
+<S3> <link3> "🇫🇷"@ro <G7> .
+<S3> <link3> "Ali Haidar"@en <G1> .
+
+<S5> <link4> "1" <G1> .
+

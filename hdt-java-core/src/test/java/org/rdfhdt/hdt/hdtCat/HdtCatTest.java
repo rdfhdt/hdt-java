@@ -37,16 +37,23 @@ public class HdtCatTest extends AbstractMapMemoryTest implements ProgressListene
         }
         String concat = resource2.getFile();
 
-
-        String hdt1Location = file1.replace(".nt", ".hdt");
-        String hdt2Location = file2.replace(".nt", ".hdt");
-        try (HDT hdt = HDTManager.generateHDT(new File(file1).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+        String hdt1Location = file1
+            .replace(".nt", ".hdt")
+            .replace(".nq", ".hdt");
+        String hdt2Location = file2
+            .replace(".nt", ".hdt")
+            .replace(".nq", ".hdt");
+        RDFNotation notation = RDFNotation.NTRIPLES;
+        if (file1.endsWith(".nq")) {
+            notation = RDFNotation.NQUAD;
+        }
+        try (HDT hdt = HDTManager.generateHDT(new File(file1).getAbsolutePath(), "uri", notation, new HDTSpecification(), this)) {
             hdt.saveToHDT(hdt1Location, null);
         }
-        try (HDT hdt = HDTManager.generateHDT(new File(file2).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+        try (HDT hdt = HDTManager.generateHDT(new File(file2).getAbsolutePath(), "uri", notation, new HDTSpecification(), this)) {
             hdt.saveToHDT(hdt2Location, null);
         }
-        try (HDT hdtCatOld = HDTManager.generateHDT(new File(concat).getAbsolutePath(), "uri", RDFNotation.NTRIPLES, new HDTSpecification(), this)) {
+        try (HDT hdtCatOld = HDTManager.generateHDT(new File(concat).getAbsolutePath(), "uri", notation, new HDTSpecification(), this)) {
 
             File file = new File(file1);
             File theDir = new File(file.getAbsolutePath() + "_tmp");
@@ -126,9 +133,76 @@ public class HdtCatTest extends AbstractMapMemoryTest implements ProgressListene
         help("example22.nt", "example23.nt", "example22+23.nt");
     }
 
+    // QUADS
+    @Test
+    public void catQ1() throws ParserException, IOException {
+        help("example1.nq", "example2.nq", "example1+2.nq");
+    }
+
+    @Test
+    public void catQ2() throws ParserException, IOException {
+        help("example2.nq", "example3.nq", "example2+3.nq");
+    }
+
+    @Test
+    public void catQ3() throws ParserException, IOException {
+        help("example4.nq", "example5.nq", "example4+5.nq");
+    }
+
+    @Test
+    public void catQ4() throws ParserException, IOException {
+        help("example6.nq", "example7.nq", "example6+7.nq");
+    }
+
+    @Test
+    public void catQ5() throws ParserException, IOException {
+        help("example8.nq", "example9.nq", "example8+9.nq");
+    }
+
+    @Test
+    public void catQ6() throws ParserException, IOException {
+        help("example10.nq", "example11.nq", "example10+11.nq");
+    }
+
+    @Test
+    public void catQ7() throws ParserException, IOException {
+        help("example12.nq", "example13.nq", "example12+13.nq");
+    }
+
+    @Test
+    public void catQ9() throws ParserException, IOException {
+        help("example14.nq", "example15.nq", "example14+15.nq");
+    }
+
+    @Test
+    public void catQ10() throws ParserException, IOException {
+        help("example16.nq", "example17.nq", "example16+17.nq");
+    }
+
+    @Test
+    public void catQ11() throws ParserException, IOException {
+        help("example1.nq", "example1.nq", "example1.nq");
+    }
+
+    @Test
+    public void catQ12() throws ParserException, IOException {
+        help("example18.nq", "example19.nq", "example18+19.nq");
+    }
+
+    @Test
+    public void catQ13() throws ParserException, IOException {
+        help("example20.nq", "example21.nq", "example20+21.nq");
+    }
+
+    @Test
+    public void catQ14() throws ParserException, IOException {
+        help("example22.nq", "example23.nq", "example22+23.nq");
+    }
+
+    //
+
     @Override
     public void notifyProgress(float level, String message) {
 
     }
-
 }

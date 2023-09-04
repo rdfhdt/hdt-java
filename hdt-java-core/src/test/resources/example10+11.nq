@@ -1,0 +1,6 @@
+<C1> <link1> <C1> <G1> .
+<C2> <link1> <O1> <G2> .
+<S2> <link1> <O2> <G1> .
+<C2> <link1> <C2> <G2> .
+<O1> <link1> <C1> <G1> .
+<O2> <link1> <S2> <G2> .
