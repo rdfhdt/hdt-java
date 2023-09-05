@@ -536,7 +536,7 @@ public class TriplesList implements TempTriples {
 					(int)mapGraph.getNewID(triple.getGraph()    -1)
 				);
 			} else {
-				throw new RuntimeException("You must call the replaceAllIds  method without a DictionaryIDMapping for graphs if the triples are not quads.");
+				throw new RuntimeException("You must call the replaceAllIds method without a DictionaryIDMapping for graphs if the triples are not quads.");
 			}
 		}
 	}

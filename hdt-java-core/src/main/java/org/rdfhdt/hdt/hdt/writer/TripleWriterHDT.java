@@ -69,27 +69,57 @@ public class TripleWriterHDT implements TripleWriter {
 	
 	@Override
 	public void addTriple(TripleString triple) throws IOException {
-		triples.insert(
-    			dictionary.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
-    			dictionary.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
-    			dictionary.insert(triple.getObject(), TripleComponentRole.OBJECT)
-    			);
-    	num++;
-		size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
+		boolean isQuad = triple.getGraph().length() > 0;
+		if (isQuad) {
+			triples.insert(
+				dictionary.insert(
+					triple.getSubject(), TripleComponentRole.SUBJECT
+				),
+				dictionary.insert(
+					triple.getPredicate(), TripleComponentRole.PREDICATE
+				),
+				dictionary.insert(
+					triple.getObject(), TripleComponentRole.OBJECT
+				),
+				dictionary.insert(
+					triple.getGraph(), TripleComponentRole.GRAPH
+				)
+			);
+		} else {
+			triples.insert(
+				dictionary.insert(
+					triple.getSubject(), TripleComponentRole.SUBJECT
+				),
+				dictionary.insert(
+					triple.getPredicate(), TripleComponentRole.PREDICATE
+				),
+				dictionary.insert(
+					triple.getObject(), TripleComponentRole.OBJECT
+				)
+			);
+		}
+		num++;
+		size += triple.getSubject().length()
+			  + triple.getPredicate().length()
+			  + triple.getObject().length()
+			  + 4 // Spaces and final dot
+		;
+		if (isQuad) {
+			size += triple.getGraph().length() + 1; // Space
+		}
 	}
 
 	@Override
 	public void close() throws IOException {
 		ProgressListener listener=null;
-		
-        dictionary.endProcessing();
+
+		dictionary.endProcessing();
 		
 		// Reorganize both the dictionary and the triples
 		modHDT.reorganizeDictionary(listener);
 		modHDT.reorganizeTriples(listener);
 		
 		modHDT.getHeader().insert( "_:statistics", HDTVocabulary.ORIGINAL_SIZE, size);
-				
 		
 		// Convert to HDT
 		HDTImpl hdt = new HDTImpl(spec); 
