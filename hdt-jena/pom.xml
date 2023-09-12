@@ -8,7 +8,7 @@
   <parent>
     <groupId>org.rdfhdt</groupId>
     <artifactId>hdt-java-parent</artifactId>
-    <version>3.0.9</version>
+    <version>3.0.10</version>
   </parent>
 
   <licenses>
