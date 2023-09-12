@@ -2,7 +2,6 @@ package org.rdfhdt.hdt.util.disk;
 
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.Closeable;
 import java.io.IOException;

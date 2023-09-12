@@ -34,7 +34,6 @@ import org.rdfhdt.hdt.util.disk.LongArray;
 import org.rdfhdt.hdt.util.disk.LongArrayDisk;
 import org.rdfhdt.hdt.util.io.Closer;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.Closeable;
 import java.io.IOException;

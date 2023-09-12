@@ -28,15 +28,13 @@ package org.rdfhdt.hdt.util.io;
 
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.xz.XZCompressorInputStream;
-import org.apache.commons.math3.util.FastMath;
 import org.rdfhdt.hdt.compact.integer.VByte;
 import org.rdfhdt.hdt.enums.CompressionType;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.unsafe.MemoryUtils;
+import org.rdfhdt.hdt.unsafe.UnsafeLongArray;
 import org.rdfhdt.hdt.util.string.ByteString;
 import org.rdfhdt.hdt.util.string.ByteStringUtil;
-import org.visnow.jlargearrays.ConcurrencyUtils;
-import org.visnow.jlargearrays.LargeArrayUtils;
-import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -61,8 +59,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.zip.GZIPInputStream;
 
 import java.nio.ByteBuffer;
@@ -84,7 +80,7 @@ public class IOUtil {
 			return;
 		}
 
-		LargeArrayUtils.UNSAFE.invokeCleaner(buffer);
+		MemoryUtils.getUnsafe().invokeCleaner(buffer);
 	}
 
 	/**
@@ -117,7 +113,7 @@ public class IOUtil {
 	 * @param size size
 	 * @return array
 	 */
-	public static LongLargeArray createLargeArray(long size) {
+	public static UnsafeLongArray createLargeArray(long size) {
 		return createLargeArray(size, true);
 	}
 	/**
@@ -126,72 +122,10 @@ public class IOUtil {
 	 * @param init is the array filled with 0 or not
 	 * @return array
 	 */
-	public static LongLargeArray createLargeArray(long size, boolean init) {
-		if (init) {
-			return createLargeArray(size, 0);
-		}
-		return new LongLargeArray(size, false);
+	public static UnsafeLongArray createLargeArray(long size, boolean init) {
+		return UnsafeLongArray.allocate(size, init);
 	}
 
-	/**
-	 * create a large array with an initial value
-	 * @param size size
-	 * @param initialValue initial value to fill the array
-	 * @return array
-	 */
-	public static LongLargeArray createLargeArray(long size, long initialValue) {
-		LongLargeArray array = new LongLargeArray(size, false);
-		fillLargeArray(array, initialValue);
-		return array;
-	}
-
-	/**
-	 * Set long large array all values, faster than default implementation because there is <a href="https://gitlab.com/visnow.org/JLargeArrays/-/issues/7">a bug</a>.
-	 *
-	 * @param array array
-	 * @param initValue initialization value
-	 */
-	public static void fillLargeArray(LongLargeArray array, long initValue) {
-		fillLargeArray(array, 0, array.length(), initValue);
-	}
-
-	/**
-	 * Set long large array all values, faster than default implementation because there is <a href="https://gitlab.com/visnow.org/JLargeArrays/-/issues/7">a bug</a>.
-	 *
-	 * @param array array
-	 * @param start start (inclusive)
-	 * @param end end index (exclusive)
-	 * @param initValue initialization value
-	 */
-	public static void fillLargeArray(LongLargeArray array, long start, long end, long initValue) {
-		if (start >= end) {
-			return;
-		}
-		long length = end - start;
-		final int nthreads = (int) FastMath.min(length, ConcurrencyUtils.getNumberOfThreads());
-		if (nthreads <= 2 || length < ConcurrencyUtils.getConcurrentThreshold() || !array.isLarge()) {
-			for (long k = 0; k < length; k++) {
-				array.setLong(k, initValue);
-			}
-		} else {
-			final long perThreadElem = length / nthreads;
-			final Future<?>[] threads = new Future[nthreads];
-			for (int thread = 0; thread < nthreads; thread++) {
-				final long firstIdx = start + thread * perThreadElem;
-				final long lastIdx = (thread == nthreads - 1) ? end : (firstIdx + perThreadElem);
-				threads[thread] = ConcurrencyUtils.submit(() -> {
-						for (long k1 = firstIdx; k1 < lastIdx; k1++) {
-							array.setLong(k1, initValue);
-						}
-				});
-			}
-			try {
-				ConcurrencyUtils.waitForCompletion(threads);
-			} catch (InterruptedException | ExecutionException ex) {
-				throw new IllegalStateException(ex);
-			}
-		}
-	}
 	/**
 	 * call all the close method and merge the exceptions by suppressing them (if multiple)
 	 *
