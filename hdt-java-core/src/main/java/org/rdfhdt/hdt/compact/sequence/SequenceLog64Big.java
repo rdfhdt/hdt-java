@@ -30,7 +30,6 @@ package org.rdfhdt.hdt.compact.sequence;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import org.rdfhdt.hdt.compact.integer.VByte;
@@ -38,14 +37,13 @@ import org.rdfhdt.hdt.exceptions.CRCException;
 import org.rdfhdt.hdt.exceptions.IllegalFormatException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.listener.ProgressListener;
+import org.rdfhdt.hdt.unsafe.UnsafeLongArray;
 import org.rdfhdt.hdt.util.BitUtil;
 import org.rdfhdt.hdt.util.crc.CRC32;
 import org.rdfhdt.hdt.util.crc.CRC8;
 import org.rdfhdt.hdt.util.crc.CRCInputStream;
 import org.rdfhdt.hdt.util.crc.CRCOutputStream;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.visnow.jlargearrays.LargeArrayUtils;
-import org.visnow.jlargearrays.LongLargeArray;
 
 /**
  * @author mario.arias,Lyudmila Balakireva
@@ -55,7 +53,7 @@ public class SequenceLog64Big implements DynamicSequence {
 	private static final byte W = 64;
 	private static final int INDEX = 1073741824;
 
-	LongLargeArray data;
+	UnsafeLongArray data;
 	private int numbits;
 	private long numentries;
 	private long maxvalue;
@@ -74,8 +72,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		this.maxvalue = BitUtil.maxVal(numbits);
 		
 		long size = numWordsFor(numbits, capacity);
-		LongLargeArray.setMaxSizeOf32bitArray(SequenceLog64Big.INDEX);
-		
+
 		data = IOUtil.createLargeArray(Math.max(size,1));
 	}
 	
@@ -115,7 +112,7 @@ public class SequenceLog64Big implements DynamicSequence {
         * @param bitsField Length in bits of each field
         * @param index Position to be retrieved
         */
-	private static long getField(LongLargeArray data, int bitsField, long index) {
+	private static long getField(UnsafeLongArray data, int bitsField, long index) {
 		if(bitsField==0) return 0;
 		
         long bitPos = index*bitsField;
@@ -137,7 +134,7 @@ public class SequenceLog64Big implements DynamicSequence {
         * @param index Position to store in
         * @param value Value to be stored
         */
-	private static void setField(LongLargeArray data, int bitsField, long index, long value) {
+	private static void setField(UnsafeLongArray data, int bitsField, long index, long value) {
 		if(bitsField==0) return;
 		
 		long bitPos = index*bitsField;
@@ -145,7 +142,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		long j= bitPos%W;
 		
 		long mask = ~(~0L << bitsField) << j;
-		data.set(i, (data.getLong(i) & ~mask) | (value << j));
+		data.set(i, (data.get(i) & ~mask) | (value << j));
 			
 		if((j+bitsField>W)) {
 			mask = ~0L << (bitsField+j-W);
@@ -157,8 +154,8 @@ public class SequenceLog64Big implements DynamicSequence {
 		//data = Arrays.copyOf(data, size);
 		if(size > 0) {
 			if (data.length() != size) {
-				LongLargeArray a = IOUtil.createLargeArray(size, false);
-				LargeArrayUtils.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
+				UnsafeLongArray a = IOUtil.createLargeArray(size, false);
+				UnsafeLongArray.arraycopy(data, 0, a, 0, Math.min(size, data.length()));
 				data = a;
 			}
 		}else{
@@ -287,7 +284,7 @@ public class SequenceLog64Big implements DynamicSequence {
 
 	@Override
 	public void clear() {
-		IOUtil.fillLargeArray(data, 0);
+		data.clear();
 	}
 
 	/* (non-Javadoc)
@@ -316,7 +313,7 @@ public class SequenceLog64Big implements DynamicSequence {
 		
 		long numwords = numWordsFor(numbits, numentries);
 		for(long i=0;i<numwords-1;i++) {
-			IOUtil.writeLong(out, data.getLong(i));
+			IOUtil.writeLong(out, data.get(i));
 		}
 		
 		if(numwords>0) {

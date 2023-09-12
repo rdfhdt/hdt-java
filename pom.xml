@@ -184,11 +184,6 @@
                 <version>${slf4j.version}</version>
             </dependency>
             <dependency>
-                <groupId>pl.edu.icm</groupId>
-                <artifactId>JLargeArrays</artifactId>
-                <version>1.6</version>
-            </dependency>
-            <dependency>
                 <groupId>junit</groupId>
                 <artifactId>junit</artifactId>
                 <version>4.13.1</version>

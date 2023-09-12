@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.rdfhdt.hdt.util.io.IOUtil;
-import org.visnow.jlargearrays.LongLargeArray;
 
 import java.io.IOException;
 import java.util.Collection;
