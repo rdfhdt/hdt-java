@@ -79,14 +79,14 @@ import java.util.List;
  *
  */
 public class BitmapTriples implements TriplesPrivate {
-	private static final Logger log = LoggerFactory.getLogger(BitmapTriples.class);
+	protected static final Logger log = LoggerFactory.getLogger(BitmapTriples.class);
 
-	protected TripleComponentOrder order;
+	public TripleComponentOrder order;
 	
-	protected Sequence seqY, seqZ, indexZ, predicateCount;
-	protected Bitmap bitmapY, bitmapZ, bitmapIndexZ;
+	public Sequence seqY, seqZ, indexZ, predicateCount;
+	public Bitmap bitmapY, bitmapZ, bitmapIndexZ;
 
-	protected AdjacencyList adjY, adjZ, adjIndex;
+	public AdjacencyList adjY, adjZ, adjIndex;
 	
 	// Index for Y
 	public PredicateIndex predicateIndex;
@@ -95,7 +95,7 @@ public class BitmapTriples implements TriplesPrivate {
 	boolean diskSubIndex;
 	CreateOnUsePath diskSequenceLocation;
 
-	private boolean isClosed;
+	protected boolean isClosed;
 
 	public BitmapTriples() throws IOException {
 		this(new HDTSpecification());
@@ -138,7 +138,7 @@ public class BitmapTriples implements TriplesPrivate {
 		isClosed=false;
 	}
 
-	private void loadDiskSequence(HDTOptions spec) throws IOException {
+	protected void loadDiskSequence(HDTOptions spec) throws IOException {
 		diskSequence = spec != null && spec.getBoolean(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK, false);
 		diskSubIndex = spec != null && spec.getBoolean(HDTOptionsKeys.BITMAPTRIPLES_SEQUENCE_DISK_SUBINDEX, false);
 
@@ -1265,6 +1265,10 @@ public class BitmapTriples implements TriplesPrivate {
 	
 	public Bitmap getBitmapIndex(){
 		return bitmapIndexZ;
+	}
+
+	public List<? extends Bitmap> getQuadInfoAG() {
+		throw new UnsupportedOperationException("Cannot get quad info from a BitmapTriples");
 	}
 
 	public static class CreateOnUsePath implements Closeable {

@@ -50,6 +50,15 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	boolean insert(long subject, long predicate, long object);
 
 	/**
+	 * Add one triple with a graph
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @param graph
+	 */
+	boolean insert(long subject, long predicate, long object, long graph);
+
+	/**
 	 * Adds one or more triples
 	 *
 	 * @param triples
@@ -94,5 +103,16 @@ public interface TempTriples extends TriplesPrivate, Closeable {
 	 */
 	void load(Triples triples, ProgressListener listener);
 
-	void replaceAllIds(DictionaryIDMapping mapSubj, DictionaryIDMapping mapPred, DictionaryIDMapping mapObj);
+	void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj
+	);
+
+	void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj,
+		DictionaryIDMapping mapGraph
+	);
 }

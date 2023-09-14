@@ -27,6 +27,7 @@ public class PSFCTempDictionary implements TempDictionary {
     @Override public TempDictionarySection getSubjects() { return delegate.getSubjects(); }
     @Override public TempDictionarySection getPredicates() { return delegate.getPredicates(); }
     @Override public TempDictionarySection getObjects() { return delegate.getObjects(); }
+    @Override public TempDictionarySection getGraphs() { return delegate.getGraphs(); }
     @Override public TempDictionarySection getShared() { return delegate.getShared(); }
     @Override public void startProcessing() { delegate.startProcessing(); }
     @Override public void endProcessing() { delegate.endProcessing(); }
@@ -35,4 +36,5 @@ public class PSFCTempDictionary implements TempDictionary {
     @Override public void reorganize(TempTriples triples) { delegate.reorganize(triples); }
     @Override public void clear() { delegate.clear(); }
     @Override public void close() throws IOException { delegate.close(); }
+    @Override public boolean supportGraphs() { return delegate.supportGraphs(); }
 }

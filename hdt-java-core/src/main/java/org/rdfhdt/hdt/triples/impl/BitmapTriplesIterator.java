@@ -39,15 +39,18 @@ import org.rdfhdt.hdt.triples.TripleID;
  */
 public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 
-	private final BitmapTriples triples;
-	private final TripleID pattern, returnTriple;
-	private long lastPosition;
-	private long patX, patY, patZ;
+	protected BitmapTriples triples;
+	protected TripleID pattern, returnTriple;
+	protected long lastPosition;
+	protected long patX, patY, patZ;
 
-	private AdjacencyList adjY, adjZ;
-	long posY, posZ, minY, minZ, maxY, maxZ;
-	private long nextY, nextZ;
-	private long x, y, z;
+	protected AdjacencyList adjY, adjZ;
+	protected long posY, posZ, minY, minZ, maxY, maxZ;
+	protected long nextY, nextZ;
+	protected long x, y, z;
+
+	protected BitmapTriplesIterator() {
+	}
 
 	public BitmapTriplesIterator(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
@@ -55,7 +58,7 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		this.pattern = new TripleID();
 		newSearch(pattern);
 	}
-
+	
 	public BitmapTriplesIterator(BitmapTriples triples, long minZ, long maxZ) {
 		this.triples = triples;
 		this.returnTriple = new TripleID();
@@ -87,10 +90,14 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		goToStart();
 	}
 
-	private void updateOutput() {
+	protected void updateOutput() {
 		lastPosition = posZ;
 		returnTriple.setAll(x, y, z);
-		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);
+		TripleOrderConvert.swapComponentOrder(
+			returnTriple,
+			triples.order,
+			TripleComponentOrder.SPO
+		);
 	}
 
 	private void findRange() {
@@ -169,7 +176,6 @@ public class BitmapTriplesIterator implements SuppliableIteratorTripleID {
 		updateOutput();
 
 		posZ++;
-
 		return returnTriple;
 	}
 

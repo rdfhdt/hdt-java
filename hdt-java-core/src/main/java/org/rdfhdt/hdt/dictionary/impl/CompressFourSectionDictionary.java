@@ -190,6 +190,11 @@ public class CompressFourSectionDictionary implements TempDictionary {
 	}
 
 	@Override
+	public TempDictionarySection getGraphs() {
+		throw new NotImplementedException();
+	}
+
+	@Override
 	public void startProcessing() {
 	}
 
@@ -246,5 +251,10 @@ public class CompressFourSectionDictionary implements TempDictionary {
 
 	private interface NodeConsumerMethod {
 		void consume(long id, long header);
+	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
 	}
 }

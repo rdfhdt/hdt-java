@@ -153,6 +153,11 @@ public abstract class BaseTempDictionary implements TempDictionary {
 	public TempDictionarySection getShared() {
 		return shared;
 	}
+
+	@Override
+	public TempDictionarySection getGraphs() {
+		throw new NotImplementedException();
+	}
 	
 	protected long getGlobalId(long id, DictionarySectionRole position) {
 		switch (position) {
@@ -209,5 +214,10 @@ public abstract class BaseTempDictionary implements TempDictionary {
 		default:
 			throw new IllegalArgumentException();
 		}
-	}	
+	}
+
+	@Override
+	public boolean supportGraphs() {
+		return false;
+	}
 }

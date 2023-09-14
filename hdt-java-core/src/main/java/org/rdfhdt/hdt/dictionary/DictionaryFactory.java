@@ -27,10 +27,12 @@
 
 package org.rdfhdt.hdt.dictionary;
 
+import org.rdfhdt.hdt.dictionary.impl.FourQuadSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryDiff;
 import org.rdfhdt.hdt.dictionary.impl.HashDictionary;
+import org.rdfhdt.hdt.dictionary.impl.HashQuadDictionary;
 import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.MultipleSectionDictionaryDiff;
 import org.rdfhdt.hdt.dictionary.impl.PSFCFourSectionDictionary;
@@ -108,12 +110,13 @@ public class DictionaryFactory {
 	 */
 	public static TempDictionary createTempDictionary(HDTOptions spec) {
 		String name = spec.get(HDTOptionsKeys.TEMP_DICTIONARY_IMPL_KEY, "");
-
 		// Implementations available in the Core
 		switch (name) {
 			case "":
 			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH:
 				return new HashDictionary(spec, false);
+			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_QUAD:
+				return new HashQuadDictionary(spec, false);
 			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_HASH_PSFC:
 				return new PSFCTempDictionary(new HashDictionary(spec, false));
 			case HDTOptionsKeys.TEMP_DICTIONARY_IMPL_VALUE_MULT_HASH:
@@ -135,6 +138,8 @@ public class DictionaryFactory {
 			case "":
 			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION:
 				return new FourSectionDictionary(spec);
+			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_QUAD_SECTION:
+				return new FourQuadSectionDictionary(spec);
 			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_PSFC_SECTION:
 				return new PSFCFourSectionDictionary(spec);
 			case HDTOptionsKeys.DICTIONARY_TYPE_VALUE_FOUR_SECTION_BIG:
@@ -218,6 +223,8 @@ public class DictionaryFactory {
 		switch (name) {
 			case HDTVocabulary.DICTIONARY_TYPE_FOUR_SECTION:
 				return new FourSectionDictionary(new HDTSpecification());
+			case HDTVocabulary.DICTIONARY_TYPE_FOUR_QUAD_SECTION:
+				return new FourQuadSectionDictionary(new HDTSpecification());
 			case HDTVocabulary.DICTIONARY_TYPE_FOUR_PSFC_SECTION:
 				return new PSFCFourSectionDictionary(new HDTSpecification());
 			case HDTVocabulary.DICTIONARY_TYPE_MULT_SECTION:

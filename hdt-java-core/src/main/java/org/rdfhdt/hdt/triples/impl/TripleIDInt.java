@@ -38,6 +38,8 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	private int subject;
 	private int predicate;
 	private int object;
+	private int graph;
+	private boolean isQuad = false;
 
 	/**
 	 * Basic constructor
@@ -63,11 +65,36 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		this.object = object;
 	}
 
+	/**
+	 * Constructor
+	 * @param subject
+	 * @param predicate
+	 * @param object
+	 * @param graph
+	 */
+	public TripleIDInt(int subject, int predicate, int object, int graph) {
+		super();
+		this.subject = subject;
+		this.predicate = predicate;
+		this.object = object;
+		this.graph = graph;
+		this.isQuad = true;
+	}
+
 	public TripleIDInt(long subject, long predicate, long object) {
 		super();
 		this.subject = (int)subject;
 		this.predicate = (int)predicate;
 		this.object = (int)object;
+	}
+
+	public TripleIDInt(long subject, long predicate, long object, long graph) {
+		super();
+		this.subject = (int)subject;
+		this.predicate = (int)predicate;
+		this.object = (int)object;
+		this.graph = (int)graph;
+		this.isQuad = true;
 	}
 
 	/**
@@ -79,12 +106,16 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		this.subject = other.subject;
 		this.predicate = other.predicate;
 		this.object = other.object;
+		this.graph = other.graph;
+		this.isQuad = other.isQuad;
 	}
 
 	public TripleIDInt(TripleID other) {
 		this.subject = (int)other.getSubject();
 		this.predicate = (int)other.getPredicate();
 		this.object = (int)other.getObject();
+		this.graph = (int)other.getGraph();
+		this.isQuad = other.isQuad();
 	}
 
 	/**
@@ -133,6 +164,21 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	}
 
 	/**
+	 * @return the graph
+	 */
+	public int getGraph() {
+		return graph;
+	}
+
+	/**
+	 * @param graph
+	 *            the graph to set
+	 */
+	public void setGraph(int graph) {
+		this.graph = graph;
+	}
+
+	/**
 	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
 	 * @param subject subject
 	 * @param predicate predicate
@@ -142,19 +188,41 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		this.subject = subject;
 		this.predicate = predicate;
 		this.object = object;
+		this.isQuad = false;
+	}
+
+	/**
+	 * Replace all components of a TripleID at once. Useful to reuse existing objects.
+	 * @param subject subject
+	 * @param predicate predicate
+	 * @param object object
+	 * @param graph graph
+	 */
+	public void setAll(int subject, int predicate, int object, int graph) {
+		this.subject = subject;
+		this.predicate = predicate;
+		this.object = object;
+		this.graph = graph;
+		this.isQuad = true;
 	}
 
 	public void assign(TripleIDInt replacement) {
 		subject = replacement.getSubject();
         object = replacement.getObject();
         predicate = replacement.getPredicate();
+		graph = replacement.getGraph();
+		isQuad = replacement.isQuad();
+	}
+
+	public boolean isQuad() {
+		return isQuad;
 	}
 
 	/**
 	 * Set all components to zero.
 	 */
 	public void clear() {
-		subject = predicate = object = 0;
+		subject = predicate = object = graph = 0;
 	}
 
 	/*
@@ -164,11 +232,14 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	 */
 	@Override
 	public String toString() {
+		if(isQuad) {
+			return "" + subject + " " + predicate + " " + object + " " + graph;
+		}
 		return "" + subject + " " + predicate + " " + object;
 	}
 
 	public boolean equals(TripleIDInt other) {
-		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object );
+		return !( subject!=other.subject || predicate!=other.predicate || object!=other.object || graph!=other.graph );
 	}
 
 	/**
@@ -177,18 +248,23 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	 */
 	@Override
 	public int compareTo(TripleIDInt other) {
-		 int result = this.subject - other.subject;
+		int result = this.subject - other.subject;
 
-         if(result==0) {
-                 result = this.predicate - other.predicate;
-                 if(result==0) {
-                         return this.object - other.object;
-                 } else {
-                         return result;
-                 }
-         } else {
-                 return result;
-         }
+		if (result == 0) {
+			result = this.predicate - other.predicate;
+			if (result == 0) {
+				result = this.object - other.object;
+				if (result == 0) {
+					return this.graph - other.graph;
+				} else {
+					return result;
+				}
+			} else {
+				return result;
+			}
+		} else {
+			return result;
+		}
 	}
 
 	/**
@@ -204,11 +280,14 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		long subjectPattern = pattern.getSubject();
 		long predicatePattern = pattern.getPredicate();
 		long objectPattern = pattern.getObject();
+		long graphPattern = pattern.getGraph();
 
 		/* Remember that 0 acts as a wildcard */
 		if (subjectPattern == 0 || this.subject == subjectPattern) {
 			if (predicatePattern == 0 || this.predicate == predicatePattern) {
-				return objectPattern == 0 || this.object == objectPattern;
+				if (objectPattern == 0 || this.object == objectPattern) {
+					return graphPattern == 0 || this.graph == graphPattern;
+				}
 			}
 		}
 		return false;
@@ -218,14 +297,14 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 	 * Check whether all the components of the triple are empty (zero).
 	 */
 	public boolean isEmpty() {
-		return !(subject != 0 || predicate != 0 || object != 0);
+		return !(subject != 0 || predicate != 0 || object != 0 || graph != 0);
 	}
 
 	/**
 	 * Check whether none of the components of the triple are empty.
 	 */
 	public boolean isValid() {
-		return subject>0 && predicate>0 && object>0;
+		return subject>0 && predicate>0 && object>0 && (isQuad ? graph>0 : true);
 	}
 
 	/**
@@ -235,10 +314,14 @@ public final class TripleIDInt implements Comparable<TripleIDInt> {
 		return "" +
 			(subject==0   ? '?' : 'S') +
 			(predicate==0 ? '?' : 'P') +
-			(object==0    ? '?' : 'O');
+			(object==0    ? '?' : 'O') +
+			(isQuad ? (graph==0 ? '?' : 'G') : "");
 	}
 
 	public TripleID asTripleID() {
+		if (isQuad) {
+			return new TripleID(subject,predicate,object,graph);
+		}
 		return new TripleID(subject,predicate,object);
 	}
 

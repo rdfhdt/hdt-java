@@ -100,6 +100,11 @@ public interface Dictionary extends Closeable {
 	long getNobjects();
 
 	/**
+	 * Returns the number of objects in the dictionary. Note: Includes shared
+	 */
+	long getNgraphs();
+
+	/**
 	 * Returns the number of subjects/objects in the dictionary.
 	 */
 	long getNAllObjects();
@@ -110,6 +115,8 @@ public interface Dictionary extends Closeable {
 	DictionarySection getPredicates();
 
 	DictionarySection getObjects();
+
+	DictionarySection getGraphs();
 
 	Map<? extends CharSequence, DictionarySection> getAllObjects();
 
@@ -125,4 +132,10 @@ public interface Dictionary extends Closeable {
 	 * @return type
 	 */
 	String getType();
+
+	/**
+	 * Returns whether the dictionary supports graphs
+	 * @return true if it supports graphs, false otherwise
+	 */
+	boolean supportGraphs();
 }

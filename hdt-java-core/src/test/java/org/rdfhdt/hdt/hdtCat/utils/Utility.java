@@ -102,6 +102,12 @@ public class Utility {
                 d1.getPredicates().getSortedEntries(),
                 d2.getPredicates().getSortedEntries()
         );
+        if (d1.supportGraphs() && d2.supportGraphs()) {
+            assertEquals(
+                    d1.getGraphs().getSortedEntries(),
+                    d2.getGraphs().getSortedEntries()
+            );
+        }
     }
     public static void compareCustomDictionary(Dictionary d1, Dictionary d2){
         assertEquals(

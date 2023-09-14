@@ -35,7 +35,6 @@ import org.rdfhdt.hdt.dictionary.DictionaryCat;
 import org.rdfhdt.hdt.dictionary.DictionaryDiff;
 import org.rdfhdt.hdt.dictionary.DictionaryFactory;
 import org.rdfhdt.hdt.dictionary.DictionaryPrivate;
-import org.rdfhdt.hdt.dictionary.DictionarySection;
 import org.rdfhdt.hdt.dictionary.TempDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionary;
 import org.rdfhdt.hdt.dictionary.impl.FourSectionDictionaryBig;
@@ -52,11 +51,11 @@ import org.rdfhdt.hdt.hdt.HDT;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.hdt.TempHDT;
-import org.rdfhdt.hdt.header.Header;
 import org.rdfhdt.hdt.header.HeaderFactory;
 import org.rdfhdt.hdt.header.HeaderPrivate;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIterator;
 import org.rdfhdt.hdt.iterator.DictionaryTranslateIteratorBuffer;
+import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.ControlInformation;
@@ -319,6 +318,78 @@ public class HDTImpl extends HDTBase<HeaderPrivate, DictionaryPrivate, TriplesPr
 			}
 		} else {
 			return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object);
+		}
+	}
+
+	@Override
+	public IteratorTripleString search(
+		CharSequence subject,
+		CharSequence predicate,
+		CharSequence object,
+		CharSequence graph
+	) throws NotFoundException {
+		if(isClosed) {
+			throw new IllegalStateException("Cannot search an already closed HDT");
+		}
+		
+		// Conversion from TripleString to TripleID
+		TripleID triple = new TripleID(
+				dictionary.stringToId(subject, TripleComponentRole.SUBJECT),
+				dictionary.stringToId(predicate, TripleComponentRole.PREDICATE),
+				dictionary.stringToId(object, TripleComponentRole.OBJECT),
+				dictionary.stringToId(graph, TripleComponentRole.GRAPH)
+			);
+
+		if(triple.isNoMatch()) {
+			return new IteratorTripleString() {
+				@Override
+				public TripleString next() {
+					return null;
+				}
+				@Override
+				public boolean hasNext() {
+					return false;
+				}
+				@Override
+				public ResultEstimationType numResultEstimation() {
+					return ResultEstimationType.EXACT;
+				}
+				@Override
+				public void goToStart() {
+				}
+				@Override
+				public long estimatedNumResults() {
+					return 0;
+				}
+
+				@Override
+				public long getLastTriplePosition() {
+					throw new NotImplementedException();
+				}
+			};
+		}
+
+		if(isMapped) {
+			try {
+				if(dictionary instanceof MultipleSectionDictionary){
+					return new DictionaryTranslateIteratorBuffer(triples.search(triple), (MultipleSectionDictionary) dictionary, subject, predicate, object, graph);
+				}else{
+					SuppliableIteratorTripleID iterator = triples.search(triple);
+					return new DictionaryTranslateIteratorBuffer(
+						iterator,
+						(FourSectionDictionary) dictionary,
+						subject,
+						predicate,
+						object,
+						graph
+					);
+				}
+			}catch(NullPointerException e) {
+				e.printStackTrace();
+				return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object, graph);
+			}
+		} else {
+			return new DictionaryTranslateIterator(triples.search(triple), dictionary, subject, predicate, object, graph);
 		}
 	}
 

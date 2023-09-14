@@ -253,6 +253,11 @@ public class TriplesListLong implements TempTriples {
 		return true;
 	}
 
+	@Override
+	public boolean insert(long subject, long predicate, long object, long graph) {
+		return this.insert(subject, predicate, object);
+	}
+
 	/* (non-Javadoc)
 	 * @see hdt.triples.TempTriples#insert(int, int, int)
 	 */
@@ -529,6 +534,23 @@ public class TriplesListLong implements TempTriples {
 					mapPred.getNewID(triple.getPredicate()-1),
 					mapObj.getNewID(triple.getObject()-1)
 				);
+		}
+	}
+	@Override
+	public void replaceAllIds(
+		DictionaryIDMapping mapSubj,
+		DictionaryIDMapping mapPred,
+		DictionaryIDMapping mapObj,
+		DictionaryIDMapping mapGraph
+	) {
+		sorted = false;
+		for(TripleID triple : arrayOfTriples) {
+			triple.setAll(
+				mapSubj.getNewID(triple.getSubject()-1),
+				mapPred.getNewID(triple.getPredicate()-1),
+				mapObj.getNewID(triple.getObject()-1),
+				mapGraph.getNewID(triple.getGraph()-1)
+			);
 		}
 	}
 

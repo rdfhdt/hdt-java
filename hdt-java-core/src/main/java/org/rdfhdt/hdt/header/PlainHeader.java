@@ -33,7 +33,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import org.rdfhdt.hdt.enums.RDFNotation;
@@ -44,6 +43,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.ControlInfo;
 import org.rdfhdt.hdt.options.HDTOptions;
 import org.rdfhdt.hdt.options.HDTSpecification;
+import org.rdfhdt.hdt.quad.QuadString;
 import org.rdfhdt.hdt.rdf.RDFParserCallback.RDFCallback;
 import org.rdfhdt.hdt.rdf.parsers.RDFParserSimple;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
@@ -160,6 +160,32 @@ public class PlainHeader implements HeaderPrivate, RDFCallback {
 			pattern = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), HeaderUtil.cleanURI(object));
 		} else {
 			pattern = new TripleString(HeaderUtil.cleanURI(subject), HeaderUtil.cleanURI(predicate), '"'+objStr+'"');
+		}
+		return new PlainHeaderIterator(this, pattern);
+	}
+	@Override
+	public IteratorTripleString search(
+		CharSequence subject,
+		CharSequence predicate,
+		CharSequence object,
+		CharSequence graph
+	) {
+		TripleString pattern;
+		String objStr = object.toString();
+		if(objStr.isEmpty() || objStr.charAt(0)=='<'|| objStr.charAt(0)=='"' || objStr.startsWith("http://")||objStr.startsWith("file://")) {
+			pattern = new QuadString(
+				HeaderUtil.cleanURI(subject),
+				HeaderUtil.cleanURI(predicate),
+				HeaderUtil.cleanURI(object),
+				HeaderUtil.cleanURI(graph)
+			);
+		} else {
+			pattern = new QuadString(
+				HeaderUtil.cleanURI(subject),
+				HeaderUtil.cleanURI(predicate),
+				'"'+objStr+'"',
+				HeaderUtil.cleanURI(graph)
+			);
 		}
 		return new PlainHeaderIterator(this, pattern);
 	}

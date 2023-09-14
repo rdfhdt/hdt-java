@@ -37,6 +37,7 @@ import java.util.Map;
 import org.rdfhdt.hdt.dictionary.impl.*;
 import org.rdfhdt.hdt.enums.ResultEstimationType;
 import org.rdfhdt.hdt.enums.TripleComponentRole;
+import org.rdfhdt.hdt.quad.QuadString;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleID;
 import org.rdfhdt.hdt.triples.TripleString;
@@ -61,15 +62,17 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 
 	SuppliableIteratorTripleID iterator;
 	OptimizedExtractor dictionary;
-	CharSequence s, p, o;
+	CharSequence s, p, o, g;
 
 	List<TripleIdWithIndex> triples;
 	Iterator<TripleIdWithIndex> child = Collections.emptyIterator();
 	
-	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject;
+	Map<Long,CharSequence> mapSubject, mapPredicate, mapObject, mapGraph;
 
-	long lastSid, lastPid, lastOid;
-	CharSequence lastSstr, lastPstr, lastOstr;
+	long lastSid, lastPid, lastOid, lastGid;
+	CharSequence lastSstr, lastPstr, lastOstr, lastGstr;
+
+	boolean isHDTQ;
 	
 	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o) {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
@@ -78,6 +81,27 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this(iteratorTripleID,dictionary,s,p,o,DEFAULT_BLOCK_SIZE);
 	}
 
+	public DictionaryTranslateIteratorBuffer(
+		SuppliableIteratorTripleID iteratorTripleID,
+		FourSectionDictionary dictionary,
+		CharSequence s,
+		CharSequence p,
+		CharSequence o,
+		CharSequence g
+	) {
+		this(iteratorTripleID,dictionary,s,p,o,g,DEFAULT_BLOCK_SIZE);
+	}
+
+	public DictionaryTranslateIteratorBuffer(
+		SuppliableIteratorTripleID iteratorTripleID,
+		MultipleSectionDictionary dictionary,
+		CharSequence s,
+		CharSequence p,
+		CharSequence o,
+		CharSequence g
+	) {
+		this(iteratorTripleID,dictionary,s,p,o,g,DEFAULT_BLOCK_SIZE);
+	}
 
 	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, FourSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
@@ -87,6 +111,9 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this.s = s==null ? "" : s;
 		this.p = p==null ? "" : p;
 		this.o = o==null ? "" : o;
+		this.g = "";
+
+		this.isHDTQ = false;
 	}
 	public DictionaryTranslateIteratorBuffer(SuppliableIteratorTripleID iteratorTripleID, MultipleSectionDictionary dictionary, CharSequence s, CharSequence p, CharSequence o, int blockSize) {
 		this.blockSize = blockSize;
@@ -96,8 +123,51 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		this.s = s==null ? "" : s;
 		this.p = p==null ? "" : p;
 		this.o = o==null ? "" : o;
+		this.g = "";
+
+		this.isHDTQ = false;
 	}
 
+	public DictionaryTranslateIteratorBuffer(
+		SuppliableIteratorTripleID iteratorTripleID,
+		FourSectionDictionary dictionary,
+		CharSequence s,
+		CharSequence p,
+		CharSequence o,
+		CharSequence g,
+		int blockSize
+	) {
+		this.blockSize = blockSize;
+		this.iterator = iteratorTripleID;
+		this.dictionary = new DictionaryPFCOptimizedExtractor(dictionary);
+
+		this.s = s==null ? "" : s;
+		this.p = p==null ? "" : p;
+		this.o = o==null ? "" : o;
+		this.g = g==null ? "" : g;
+
+		this.isHDTQ = true;
+	}
+	public DictionaryTranslateIteratorBuffer(
+		SuppliableIteratorTripleID iteratorTripleID,
+		MultipleSectionDictionary dictionary,
+		CharSequence s,
+		CharSequence p,
+		CharSequence o,
+		CharSequence g,
+		int blockSize
+	) {
+		this.blockSize = blockSize;
+		this.iterator = iteratorTripleID;
+		this.dictionary = new MultDictionaryPFCOptimizedExtractor(dictionary);
+
+		this.s = s==null ? "" : s;
+		this.p = p==null ? "" : p;
+		this.o = o==null ? "" : o;
+		this.g = g==null ? "" : g;
+
+		this.isHDTQ = true;
+	}
 
 	private void reset() {
 		triples = new ArrayList<>(blockSize);
@@ -112,6 +182,10 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 
 		if(o.length()==0) {
 			mapObject = new HashMap<>(blockSize);
+		}
+
+		if(g.length()==0) {
+			mapGraph = new HashMap<>(blockSize);
 		}
 	}
 
@@ -138,6 +212,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 		long [] arrSubjects = new long[blockSize];
 		long [] arrPredicates = new long[blockSize];
 		long [] arrObjects = new long[blockSize];
+		long [] arrGraphs = new long[blockSize];
 
 		int count=0;
 		for(int i=0;i<blockSize && iterator.hasNext();i++) {
@@ -151,12 +226,14 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			if(s.length()==0) arrSubjects[count] = t.getSubject();
 			if(p.length()==0) arrPredicates[count] = t.getPredicate();
 			if(o.length()==0) arrObjects[count] = t.getObject();
+			if(g.length()==0) arrGraphs[count] = t.getGraph();
 
 			count++;
 		}
 		if(s.length()==0) fill(arrSubjects, count, mapSubject, TripleComponentRole.SUBJECT);
 		if(p.length()==0) fill(arrPredicates, count, mapPredicate, TripleComponentRole.PREDICATE);
 		if(o.length()==0) fill(arrObjects, count, mapObject, TripleComponentRole.OBJECT);
+		if(g.length()==0 && isHDTQ) fill(arrGraphs, count, mapGraph, TripleComponentRole.GRAPH);
 
 		this.child = triples.iterator();
 	}
@@ -171,7 +248,7 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 	public boolean hasNext() {
 		boolean more = child.hasNext() || iterator.hasNext();
 		if(!more) {
-			mapSubject = mapPredicate = mapObject = null;
+			mapSubject = mapPredicate = mapObject = mapGraph = null;
 			triples = null;
 		}
 		return more;
@@ -213,6 +290,16 @@ public class DictionaryTranslateIteratorBuffer implements IteratorTripleString {
 			lastOstr = mapObject.get(lastOid);
 		}
 		
+		if(g.length()!=0) {
+			lastGstr = g;
+		} else if(triple.getGraph()!=lastGid) {
+			lastGid = triple.getGraph();
+			lastGstr = mapGraph.get(lastGid);
+		}
+		
+		if (isHDTQ) {
+			return new QuadString(lastSstr, lastPstr, lastOstr, lastGstr);
+		}
 		return new TripleString(lastSstr, lastPstr, lastOstr);
 	}
 

@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.rdfhdt.hdt.dictionary.Dictionary;
 import org.rdfhdt.hdt.exceptions.NotFoundException;
 import org.rdfhdt.hdt.exceptions.ParserException;
 import org.rdfhdt.hdt.hdt.HDT;
@@ -39,6 +40,7 @@ import org.rdfhdt.hdt.hdt.HDTManager;
 import org.rdfhdt.hdt.hdt.HDTVersion;
 import org.rdfhdt.hdt.listener.ProgressListener;
 import org.rdfhdt.hdt.options.HDTOptions;
+import org.rdfhdt.hdt.quad.QuadString;
 import org.rdfhdt.hdt.triples.IteratorTripleString;
 import org.rdfhdt.hdt.triples.TripleString;
 import org.rdfhdt.hdt.util.StopWatch;
@@ -79,16 +81,26 @@ public class HdtSearch {
 	@Parameter(names = "-memory", description = "Load the whole file into main memory. Ensures fastest querying.")
 	public boolean loadInMemory;
 	
-	protected static void iterate(HDT hdt, CharSequence subject, CharSequence predicate, CharSequence object) throws NotFoundException {
+	protected static void iterate(
+		HDT hdt,
+		boolean isHDTQ,
+		CharSequence subject,
+		CharSequence predicate,
+		CharSequence object,
+		CharSequence graph
+	) throws NotFoundException {
 		StopWatch iterateTime = new StopWatch();
 		int count;
 
 		subject = subject.length()==1 && subject.charAt(0)=='?' ? "" : subject;
 		predicate = predicate.length()==1 && predicate.charAt(0)=='?' ? "" : predicate;
 		object = object.length()==1 && object.charAt(0)=='?' ? "" : object;
-
+		graph = graph.length()==1 && graph.charAt(0)=='?' ? "" : graph;
 		// Iterate over triples as Strings
-		IteratorTripleString it = hdt.search(subject,predicate,object);
+		IteratorTripleString it =
+			isHDTQ
+			? hdt.search(subject, predicate, object, graph)
+			: hdt.search(subject, predicate, object);
 		count = 0;
 		while(it.hasNext()) {
 			TripleString triple = it.next();
@@ -113,12 +125,20 @@ public class HdtSearch {
 		System.out.println("   http://www.somewhere.com/mysubject ? ?");
 		System.out.println("Use 'exit' or 'quit' to terminate interactive shell.");
 	}
+
+	private static void parseTriplePatternErr(boolean isHDTQ) throws ParserException {
+		throw new ParserException(
+			isHDTQ
+			? "Make sure that you included four terms."
+			: "Make sure that you included three terms."
+		);
+	}
 	
 	/**
 	 * Read from a line, where each component is separated by space.
 	 * @param line line to parse
 	 */
-	private static void parseTriplePattern(TripleString dest, String line) throws ParserException {
+	private static void parseTriplePattern(TripleString dest, String line, boolean isHDTQ) throws ParserException {
 		int split, posa, posb;
 		dest.clear();
 		
@@ -126,7 +146,7 @@ public class HdtSearch {
 		posa = 0;
 		posb = split = line.indexOf(' ', posa);
 		
-		if(posb==-1) throw new ParserException("Make sure that you included three terms."); // Not found, error.
+		if(posb==-1) parseTriplePatternErr(isHDTQ);
 		
 		dest.setSubject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 	
@@ -134,18 +154,37 @@ public class HdtSearch {
 		posa = split+1;
 		posb = split = line.indexOf(' ', posa);
 		
-		if(posb==-1) throw new ParserException("Make sure that you included three terms.");
+		if(posb==-1) parseTriplePatternErr(isHDTQ);
 		
 		dest.setPredicate(UnicodeEscape.unescapeString(line.substring(posa, posb)));
 		
-		// SET OBJECT
-		posa = split+1;
-		posb = line.length();
-		
-		if(line.charAt(posb-1)=='.') posb--;	// Remove trailing <space> <dot> from NTRIPLES.
-		if(line.charAt(posb-1)==' ') posb--;
-				
-		dest.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		if (isHDTQ) {
+			// SET OBJECT
+			posa = split+1;
+			posb = split = line.indexOf(' ', posa);
+			
+			if(posb==-1) parseTriplePatternErr(isHDTQ);
+			
+			dest.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+
+			// SET GRAPH
+			posa = split+1;
+			posb = line.length();
+			
+			if(line.charAt(posb-1)=='.') posb--;
+			if(line.charAt(posb-1)==' ') posb--;
+					
+			dest.setGraph(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		} else {
+			// SET OBJECT
+			posa = split+1;
+			posb = line.length();
+			
+			if(line.charAt(posb-1)=='.') posb--;	// Remove trailing <space> <dot> from NTRIPLES.
+			if(line.charAt(posb-1)==' ') posb--;
+					
+			dest.setObject(UnicodeEscape.unescapeString(line.substring(posa, posb)));
+		}
 	}
 	
 	public void execute() throws IOException {
@@ -169,10 +208,12 @@ public class HdtSearch {
 		} else {
 			hdt= HDTManager.mapIndexedHDT(hdtInput, spec, listenerConsole);
 		}
+		Dictionary dict = hdt.getDictionary();
+		boolean isHDTQ = dict.supportGraphs();
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in, UTF_8));
 		try {
-			TripleString triplePattern = new TripleString();
+			TripleString triplePattern = new QuadString();
 
 			while(true) {
 				System.out.print(">> ");
@@ -187,10 +228,21 @@ public class HdtSearch {
 				}
 
 				try {
-					parseTriplePattern(triplePattern, line);
-					System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"|");
+					parseTriplePattern(triplePattern, line, isHDTQ);
+					if (isHDTQ) {
+						System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"| |" + triplePattern.getGraph()+"|");
+					} else {
+						System.out.println("Query: |"+triplePattern.getSubject()+"| |"+triplePattern.getPredicate()+"| |" + triplePattern.getObject()+"|");
+					}
 
-					iterate(hdt,triplePattern.getSubject(),triplePattern.getPredicate(),triplePattern.getObject());
+					iterate(
+						hdt,
+						isHDTQ,
+						triplePattern.getSubject(),
+						triplePattern.getPredicate(),
+						triplePattern.getObject(),
+						triplePattern.getGraph()
+					);
 				} catch (ParserException e) {
 					System.err.println("Could not parse triple pattern: "+e.getMessage());
 					help();

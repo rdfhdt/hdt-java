@@ -39,17 +39,17 @@ import org.rdfhdt.hdt.triples.TripleID;
  *
  */
 public class BitmapTriplesIteratorZFOQ implements SuppliableIteratorTripleID {
-	private long lastPosIndex;
-	final BitmapTriples triples;
-	final TripleID pattern;
-    final TripleID returnTriple;
-	
-	AdjacencyList adjY, adjIndex;
-	long posIndex, minIndex, maxIndex;
-	long x, y, z;
-	
-	long patY;
-    final long patZ;
+	protected long lastPosIndex;
+	protected BitmapTriples triples;
+	protected TripleID pattern;
+	protected TripleID returnTriple;
+
+	protected AdjacencyList adjY, adjIndex;
+	protected long posIndex, minIndex, maxIndex;
+	protected long x, y, z;
+
+	protected long patY;
+    protected long patZ;
 	
 	public BitmapTriplesIteratorZFOQ(BitmapTriples triples, TripleID pattern) {
 		this.triples = triples;
@@ -70,8 +70,8 @@ public class BitmapTriplesIteratorZFOQ implements SuppliableIteratorTripleID {
 		calculateRange();
 		goToStart();
 	}
-	
-	private long getY(long index) {
+
+	protected long getY(long index) {
 		return adjY.get(adjIndex.get(index));
 	}
 	
@@ -134,7 +134,7 @@ public class BitmapTriplesIteratorZFOQ implements SuppliableIteratorTripleID {
 		}
 	}
 	
-	private void updateOutput() {
+	protected void updateOutput() {
 		lastPosIndex = posIndex;
 		returnTriple.setAll(x, y, z);
 		TripleOrderConvert.swapComponentOrder(returnTriple, triples.order, TripleComponentOrder.SPO);

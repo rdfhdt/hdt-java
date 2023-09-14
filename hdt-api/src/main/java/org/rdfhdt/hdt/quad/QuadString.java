@@ -18,7 +18,7 @@ public class QuadString extends TripleString {
 
 	public QuadString(TripleString other) {
 		super(other);
-		this.context = other.getObject();
+		this.context = other.getGraph();
 	}
 
 	@Override
@@ -29,9 +29,6 @@ public class QuadString extends TripleString {
 
 	@Override
 	public boolean equals(Object other) {
-		if (context.length() == 0) {
-			return super.equals(other);
-		}
 		if (!(other instanceof QuadString)) {
 			return false;
 		}
@@ -115,5 +112,10 @@ public class QuadString extends TripleString {
 	@Override
 	public QuadString tripleToString() {
 		return new QuadString(subject.toString(), predicate.toString(), object.toString(), context.toString());
+	}
+
+	@Override
+	public String toString() {
+		return super.toString() + " " + context;
 	}
 }

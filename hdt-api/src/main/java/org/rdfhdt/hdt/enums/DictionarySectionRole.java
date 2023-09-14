@@ -4,5 +4,6 @@ public enum DictionarySectionRole {
 	SUBJECT,
 	PREDICATE,
 	OBJECT,
-	SHARED
+	SHARED,
+	GRAPH,
 }

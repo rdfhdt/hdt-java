@@ -38,4 +38,6 @@ public enum TripleComponentRole {
 	PREDICATE,
 	/** The triple is an object */
 	OBJECT,
+	/** The triple is a graph */
+	GRAPH,
 }
