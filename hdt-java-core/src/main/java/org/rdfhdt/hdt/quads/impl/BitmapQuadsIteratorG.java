@@ -10,7 +10,7 @@ public class BitmapQuadsIteratorG extends BitmapTriplesIterator {
 
 	// resolves ???G, S??G, SP?G, SPOG queries
 	
-	private Bitmap bitmapGraph; // the graph bitmap for the search
+	private final Bitmap bitmapGraph; // the graph bitmap for the search
 	
 	public BitmapQuadsIteratorG(BitmapTriples triples, TripleID pattern) {
 		super();

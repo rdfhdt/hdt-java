@@ -68,11 +68,12 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
 			if (dict.supportGraphs()) {
 				long g = dict.insert(triple.getGraph(), TripleComponentRole.GRAPH);
 				triples.insert(s, p, o, g);
+				size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+5;
 			} else {
 				triples.insert(s, p, o);
+				size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+4;  // Spaces and final dot
 			}
 			num++;
-			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+4;  // Spaces and final dot
 			ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
 		}
 	}
@@ -122,13 +123,23 @@ public class TempHDTImporterOnePass implements TempHDTImporter {
         long size=0;
         while(iterator.hasNext()) {
         	TripleString triple = iterator.next();
-        	triples.insert(
-        			dictionary.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
-        			dictionary.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
-        			dictionary.insert(triple.getObject(), TripleComponentRole.OBJECT)
-        			);
+			if (dictionary.supportGraphs()) {
+				triples.insert(
+						dictionary.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
+						dictionary.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
+						dictionary.insert(triple.getObject(), TripleComponentRole.OBJECT),
+						dictionary.insert(triple.getGraph(), TripleComponentRole.GRAPH)
+				);
+				size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+triple.getGraph().length()+5;  // Spaces and final dot
+			} else {
+				triples.insert(
+						dictionary.insert(triple.getSubject(), TripleComponentRole.SUBJECT),
+						dictionary.insert(triple.getPredicate(), TripleComponentRole.PREDICATE),
+						dictionary.insert(triple.getObject(), TripleComponentRole.OBJECT)
+				);
+				size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
+			}
         	num++;
-			size+=triple.getSubject().length()+triple.getPredicate().length()+triple.getObject().length()+4;  // Spaces and final dot
         	ListenerUtil.notifyCond(listener, "Loaded "+num+" triples", num, 0, 100);
         }
         dictionary.endProcessing();
