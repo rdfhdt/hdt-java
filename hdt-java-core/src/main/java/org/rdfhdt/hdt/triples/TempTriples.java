@@ -36,7 +36,7 @@ import org.rdfhdt.hdt.listener.ProgressListener;
 /**
  * Interface for TempTriples implementation.
  *
- * This is a dynamic interface. For static(read-only) behaviour have a look at
+ * This is a dynamic interface. For static (read-only) behaviour have a look at
  * {@link Triples}
  *
  */

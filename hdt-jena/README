@@ -1,6 +1,6 @@
 HDT-Jena
 
-This is a wrapper to build a Read-Only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. HDT-Jena depends on the HDT-Java and Jena Libraries.
+This is a wrapper to build a read-only Jena Model on top of an HDT file. This allows for example using Jena's ARQ Query Engine to issue SPARQL queries against an RDF file. HDT-Jena depends on the HDT-Java and Jena Libraries.
 
 ######### Commandline scenario example #############
 
@@ -31,10 +31,10 @@ HDTGraph graph = new HDTGraph(hdt);
 // Create Jena Model on top of HDT.
 Model model = ModelFactory.createModelForGraph(graph);
 
-// Use Jena Model as Read-Only data storage, e.g. Using Jena ARQ for SPARQL.
+// Use Jena Model as read-only data storage, e.g. using Jena ARQ for SPARQL.
 
-########## Create SPARQL Endpoing on top of one or more HDT files using Fuseki #########
-# You need to create a fuseki config file specifying which HDT files you want to publish. You need to specify one for the default graph and zero or more named graphs with additional HDT files. You also need to ask fuseki to load the HDT Assembler class:
+########## Create SPARQL Endpoint on top of one or more HDT files using Fuseki #########
+# You need to create a Fuseki config file specifying which HDT files you want to publish. You need to specify one for the default graph and zero or more named graphs with additional HDT files. You also need to ask Fuseki to load the HDT Assembler class:
 
 []   ja:loadClass "org.rdfhdt.hdtjena.HDTGraphAssembler" .
 
