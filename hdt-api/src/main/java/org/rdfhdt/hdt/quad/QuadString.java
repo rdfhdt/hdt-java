@@ -30,6 +30,10 @@ public class QuadString extends TripleString {
 	@Override
 	public boolean equals(Object other) {
 		if (!(other instanceof QuadString)) {
+			if (context.length() == 0) {
+				// not a quad string, maybe it is a TripleString
+				return super.equals(other);
+			}
 			return false;
 		}
 		QuadString qs = (QuadString) other;
@@ -116,6 +120,9 @@ public class QuadString extends TripleString {
 
 	@Override
 	public String toString() {
+		if (context.length() == 0) {
+			return super.toString();
+		}
 		return super.toString() + " " + context;
 	}
 }
