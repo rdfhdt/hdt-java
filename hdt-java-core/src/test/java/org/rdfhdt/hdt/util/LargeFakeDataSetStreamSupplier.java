@@ -133,6 +133,7 @@ public class LargeFakeDataSetStreamSupplier {
 	private TripleString buffer;
 	private TripleString next;
 	private boolean nquad;
+	private boolean noDefaultGraph;
 
 	private LargeFakeDataSetStreamSupplier(long maxSize, long maxTriples, long seed) {
 		this.maxSize = maxSize;
@@ -284,7 +285,7 @@ public class LargeFakeDataSetStreamSupplier {
 			return "";
 		}
 		int rnd = random.nextInt(10);
-		if (rnd < 4) {
+		if (rnd < 4 && !noDefaultGraph) {
 			return ""; // no graph
 		}
 		if (rnd == 4) {
@@ -545,6 +546,18 @@ public class LargeFakeDataSetStreamSupplier {
 		this.maxGraph = maxGraph;
 		return this;
 	}
+	/**
+	 * do not use default graph with quad generation
+	 *
+	 * @param noDefaultGraph no default graph
+	 * @return this
+	 */
+	public LargeFakeDataSetStreamSupplier withNoDefaultGraph(boolean noDefaultGraph) {
+		this.noDefaultGraph = noDefaultGraph;
+		return this;
+	}
+
+
 
 	/**
 	 * Stream connected to a thread to interrupt in case of Exception

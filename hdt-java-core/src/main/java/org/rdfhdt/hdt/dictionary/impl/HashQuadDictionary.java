@@ -123,12 +123,19 @@ public class HashQuadDictionary extends QuadTempDictionary {
 			mapPred.setNewID(j, this.stringToId(mapPred.getString(j), TripleComponentRole.PREDICATE));
 		}
 
-		for(long j=0;j<mapGraph.size();j++) {
-			mapGraph.setNewID(j, this.stringToId(mapGraph.getString(j), TripleComponentRole.GRAPH));
-		}
-
 		for(long j=0;j<mapObj.size();j++) {
 			mapObj.setNewID(j, this.stringToId(mapObj.getString(j), TripleComponentRole.OBJECT));
+		}
+
+		for(long j=0;j<mapGraph.size();j++) {
+			CharSequence str = mapGraph.getString(j);
+			// check that because stringToId returns 0 for empty strings and if a string is empty its id is
+			// 0 no matter what
+			if (str.length() == 0) {
+				mapGraph.setNewID(j, 1);
+			} else {
+				mapGraph.setNewID(j, this.stringToId(str, TripleComponentRole.GRAPH));
+			}
 		}
 
 		// Replace old IDs with news

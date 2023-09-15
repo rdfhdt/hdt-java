@@ -102,7 +102,7 @@ public class BitmapTriplesIteratorPositionTest {
      *
      * @param it Iterator
      */
-    private void printIterator(Object it) {
+    public static void printIterator(Object it) {
         for (int depth = 0; ; depth++) {
             System.out.println("[" + depth + "] Used iterator: " + it.getClass());
             try {
