@@ -18,8 +18,8 @@ function showhelp {
 }
 
 # Defaults
-declare rdf2hdt="bin/rdf2hdt.sh"
-declare hdtCat="bin/hdtCat.sh"
+declare rdf2hdt="rdf2hdt.sh"
+declare hdtCat="hdtCat.sh"
 declare input="input.rdf"
 declare -i lines
 declare output="output.hdt"
@@ -91,7 +91,6 @@ for (( i=$splits; i>1; i=i/2 )); do
     echo "***************************************************************"
     echo "Merging $i hdt files: " "$input"_split_*_"$i".hdt
     echo "***************************************************************"
-    echo -n "$input"_split_*_"$i".hdt | xargs -d' ' -n2 -P$threads bash -c 'temp=${2%_*.hdt} ; bin/hdtCat.sh $1 $2 ${1%_*.hdt}_${temp#*split_}_$0.hdt' $((i/2))
     command='temp=${2%_*.hdt} ; '$hdtCat' $1 $2 ${1%_*.hdt}_${temp#*split_}_$0.hdt'
     echo -n "$input"_split_*_"$i".hdt | xargs -d' ' -n2 -P$threads bash -c "$command" $((i/2))
 done
