@@ -7,10 +7,14 @@ import org.rdfhdt.hdt.exceptions.NotImplementedException;
 import org.rdfhdt.hdt.hdt.HDTVocabulary;
 import org.rdfhdt.hdt.header.PlainHeader;
 import org.rdfhdt.hdt.iterator.SuppliableIteratorTripleID;
+import org.rdfhdt.hdt.options.ControlInformation;
 import org.rdfhdt.hdt.options.HDTOptionsKeys;
 import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -253,7 +257,22 @@ public class TriplesListLongTest {
 		assertThrows(UnsupportedOperationException.class, it::remove);
 	}
 
-	// Note: save/load round-trip is NOT tested because TriplesListLong.save writes
-	// 4-byte ints (see "FIXME: writeLong ??" at line 177) while load reads 8-byte longs.
-	// Round-trip is broken by construction.
+	@Test
+	public void saveLoadRoundTripPreservesTriples() throws Exception {
+		TriplesListLong src = listOf(new TripleID(1L, 2L, 3L), new TripleID(4L, 5L, 6L));
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		src.save(out, new ControlInformation(), null);
+
+		TriplesListLong dst = newList();
+		ControlInformation ci = new ControlInformation();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		ci.load(in);
+		dst.load(in, ci, null);
+
+		assertEquals(2, dst.getNumberOfElements());
+		IteratorTripleID it = dst.searchAll();
+		assertEquals(new TripleID(1L, 2L, 3L), it.next());
+		assertEquals(new TripleID(4L, 5L, 6L), it.next());
+	}
 }

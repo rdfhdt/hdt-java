@@ -13,6 +13,7 @@ import org.rdfhdt.hdt.options.HDTSpecification;
 import org.rdfhdt.hdt.triples.IteratorTripleID;
 import org.rdfhdt.hdt.triples.TripleID;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -160,17 +161,23 @@ public class TriplesListTest {
 	}
 
 	@Test
-	public void saveWritesControlInfoAndTripleData() throws Exception {
+	public void saveLoadRoundTripPreservesTriples() throws Exception {
 		TriplesList src = listOf(new TripleID(1, 2, 3), new TripleID(4, 5, 6));
+
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		src.save(out, new ControlInformation(), null);
-		assertTrue(out.size() > 0);
-	}
 
-	// save/load round-trip is NOT tested here: TriplesList.save uses
-	// DataOutputStream.writeInt (big-endian) while TriplesList.load uses
-	// IOUtil.readInt (little-endian). The two are inconsistent, so a round-trip
-	// test would fail against current code. Tracked separately.
+		TriplesList dst = newList();
+		ControlInformation ci = new ControlInformation();
+		ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+		ci.load(in);
+		dst.load(in, ci, null);
+
+		assertEquals(2, dst.getNumberOfElements());
+		IteratorTripleID it = dst.searchAll();
+		assertEquals(new TripleID(1, 2, 3), it.next());
+		assertEquals(new TripleID(4, 5, 6), it.next());
+	}
 
 	@Test
 	public void loadFromOtherTempTriplesCopiesAllTriples() {
