@@ -121,7 +121,7 @@ public class BitmapTriplesIteratorY implements SuppliableIteratorTripleID {
 	 */
 	@Override
 	public boolean hasPrevious() {
-		return prevY!=-1 || posZ>=prevZ;
+		return prevY!=-1 || posZ>prevZ;
 	}
 
 	/* (non-Javadoc)
@@ -134,9 +134,9 @@ public class BitmapTriplesIteratorY implements SuppliableIteratorTripleID {
 			posY = prevY;
 			prevY = adjY.findPreviousAppearance(prevY-1, patY);
 
-			posZ = prevZ = adjZ.find(posY);
-			nextZ = adjZ.last(posY); 
-			
+			prevZ = adjZ.find(posY);
+			posZ = nextZ = adjZ.last(posY);
+
 			x = adjY.findListIndex(posY)+1;
 			y = adjY.get(posY);
  			z = adjZ.get(posZ);
@@ -144,7 +144,7 @@ public class BitmapTriplesIteratorY implements SuppliableIteratorTripleID {
 			posZ--;
 			z = adjZ.get(posZ);
 		}
-		
+
 		updateOutput();
 
 		return returnTriple;

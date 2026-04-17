@@ -127,7 +127,7 @@ public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 		 */
 		@Override
 		public boolean hasPrevious() {
-			return numOccurrence>1 || posZ>=prevZ;
+			return numOccurrence>1 || posZ>prevZ;
 		}
 
 		/* (non-Javadoc)
@@ -140,16 +140,16 @@ public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 				posY = triples.predicateIndex.getOccurrence(predBase, numOccurrence);
 
 				prevZ = adjZ.find(posY);
-				posZ = nextZ = adjZ.last(posY); 
-				
+				posZ = nextZ = adjZ.last(posY);
+
 				x = adjY.findListIndex(posY)+1;
 				y = adjY.get(posY);
 	 			z = adjZ.get(posZ);
 			} else {
-				z = adjZ.get(posZ);
 				posZ--;
+				z = adjZ.get(posZ);
 			}
-			
+
 			updateOutput();
 
 			return returnTriple;
