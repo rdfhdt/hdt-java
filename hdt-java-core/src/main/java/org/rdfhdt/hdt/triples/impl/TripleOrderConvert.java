@@ -56,7 +56,7 @@ public class TripleOrderConvert {
 	 SPO       yz   xy   xyz2 xyz1 xz
 	 SOP  yz        xyz1 xz   xy   xyz2
 	 PSO  xy   xyz2      yz   xz   xyz1
-	 POS  xyz1 xz   yz        xyz2
+	 POS  xyz1 xz   yz        xyz2 xy
 	 OSP  xyz2 xy   xz   xyz1      yz
 	 OPS  xz   xyz1 xyz2 xy   yz
 	 */
@@ -67,7 +67,7 @@ public class TripleOrderConvert {
                 {false, false, true, true, true, false},
                 {false, false, true, false, true, true},
                 {true, true, false, false, false, true},
-                {true, false, false, false, true, false},
+                {true, false, false, false, true, true},
                 {true, true, false, true, false, false},
                 {false, true, true, true, false, false}
     };

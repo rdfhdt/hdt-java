@@ -213,16 +213,13 @@ public class AdjacencyList {
 	 * @return Position of the next appearance, -1 if no more appearances.
 	 */
 	public long findPreviousAppearance(long old, long element) {
-		long y;
-		do {
-			y = array.get(old--);
-		} while (old >= 0 && y != element);
-
-		// No previous appearances of predicate
-		if (old < 0) {
-			return -1;
+		while (old >= 0) {
+			if (array.get(old) == element) {
+				return old;
+			}
+			old--;
 		}
-		return old + 1;
+		return -1;
 	}
 
 	public void dump() {

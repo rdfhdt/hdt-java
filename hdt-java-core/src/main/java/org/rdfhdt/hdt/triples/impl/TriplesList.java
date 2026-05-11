@@ -26,7 +26,10 @@
 
 package org.rdfhdt.hdt.triples.impl;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -160,13 +163,12 @@ public class TriplesList implements TempTriples {
 		controlInformation.setInt("order", order.ordinal());
 		controlInformation.save(output);
 
-		DataOutputStream dout = new DataOutputStream(output);
 		int count = 0;
 		for (TripleIDInt triple : arrayOfTriples) {
 			if(triple.isValid()) {
-				dout.writeInt(triple.getSubject());
-				dout.writeInt(triple.getPredicate());
-				dout.writeInt(triple.getObject());
+				IOUtil.writeInt(output, triple.getSubject());
+				IOUtil.writeInt(output, triple.getPredicate());
+				IOUtil.writeInt(output, triple.getObject());
 				ListenerUtil.notifyCond(listener, "Saving TriplesList", count, arrayOfTriples.size());
 			}
 			count++;

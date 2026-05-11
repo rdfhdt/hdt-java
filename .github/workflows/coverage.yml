@@ -1,0 +1,54 @@
+name: Code coverage
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: temurin
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+
+      - name: Run tests with coverage
+        run: mvn -B test
+
+      - name: Collect Jacoco XML reports
+        id: collect
+        run: |
+          mkdir -p coverage-reports
+          find . -path '*/target/site/jacoco/jacoco.xml' -print0 \
+            | while IFS= read -r -d '' f; do
+                mod=$(echo "$f" | awk -F/ '{print $2}')
+                cp "$f" "coverage-reports/${mod}-jacoco.xml"
+              done
+          ls -la coverage-reports
+          echo "paths=$(ls coverage-reports/*.xml | paste -sd, -)" >> "$GITHUB_OUTPUT"
+
+      - name: Post coverage comment on PR
+        if: github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.7.1
+        with:
+          paths: ${{ steps.collect.outputs.paths }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Code coverage report
+          update-comment: true
+          min-coverage-overall: 0
+          min-coverage-changed-files: 0
