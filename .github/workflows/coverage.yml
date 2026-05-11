@@ -42,20 +42,6 @@ jobs:
           ls -la coverage-reports
           echo "paths=$(ls coverage-reports/*.xml | paste -sd, -)" >> "$GITHUB_OUTPUT"
 
-      - name: Upload Jacoco HTML reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-html-reports
-          path: '**/target/site/jacoco/'
-          if-no-files-found: error
-
-      - name: Upload Jacoco XML reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: jacoco-xml-reports
-          path: coverage-reports/
-          if-no-files-found: error
-
       - name: Post coverage comment on PR
         if: github.event_name == 'pull_request'
         uses: madrapps/jacoco-report@v1.7.1
