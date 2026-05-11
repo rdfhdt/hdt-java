@@ -141,7 +141,6 @@ public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 
 				prevZ = adjZ.find(posY);
 				posZ = nextZ = adjZ.last(posY);
-
 				x = adjY.findListIndex(posY)+1;
 				y = adjY.get(posY);
 	 			z = adjZ.get(posZ);
@@ -149,7 +148,6 @@ public class BitmapTriplesIteratorYFOQ implements SuppliableIteratorTripleID {
 				posZ--;
 				z = adjZ.get(posZ);
 			}
-
 			updateOutput();
 
 			return returnTriple;
